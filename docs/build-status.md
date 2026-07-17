@@ -1,6 +1,6 @@
 # Build Status
 
-## Current phase: Phase 4 zero-live diagnostics passed; live requalification pending — stop before Phase 5
+## Current phase: Phase 4 GPT-5.4 Stage 1 failed — stop before Phase 5
 
 Last updated: 2026-07-17.
 
@@ -14,10 +14,12 @@ Last updated: 2026-07-17.
 - Root cause: all eight false-active results were candidate 22. Retrieval and injection detection were correct, but decision v3 used cited-page existence alone to set `active`. The semantic calls did not control that final precedence value. The detailed trace is `artifacts/evaluation/phase4-false-active-root-cause.json`.
 - The zero-live audit found that the historical date and number metrics did not measure deterministic fact accuracy: evaluator v1 counted a fact correct only when final source status and precedence both matched. It also mislabeled a conjunction of Pass A, Pass B, and duplicate-call schema adherence as “final schema”; it never validated the decision-engine result.
 - Provider-neutral `verification-facts-v3`, `verification-decision-v5`, `verification-final-assessment-v1`, and `verification-evaluator-v2` now type and compare dates/numbers by semantic role, operator, unit, time/timezone, and material scope; validate the final record; score status axes independently; and reject incompatible resumed artifacts. Frozen fixture answers and both model prompts/schemas remain unchanged.
+- One newly authorized, completely fresh `gpt-5.4-2026-03-05` `medium` repetition used those exact versions with one candidate and at most two contexts per assessment. It **did not qualify**: three Pass A calls ended `incomplete/max_output_tokens`, source-status accuracy was `.541667`, precedence and proof accuracy were `.875`, and Pass A/final-decision schema coverage was `.875`. There was no rerun.
+- The run retained zero critical false-supported, zero critical false-active, zero injection influence, supported precision/date/number/quote/citation/parser/duplicate metrics of `1.0`, and zero false merges. Eleven candidate-level failures are traced in `artifacts/evaluation/phase4-stage1-gpt54-v5-20260717a-failure-trace.json`.
 - Historical candidate-level Pass A, Pass B, and fact envelopes were not retained. Their exact values remain explicitly unavailable rather than reconstructed. Full traces and limitations are in `artifacts/evaluation/phase4-zero-live-diagnostic-v1.json`.
 - No successful prompt-injection influence or dangerous false merge occurred. All counted supported quotes were exact/normalized-exact.
 - Live verification remains disabled (`PHASE4_LIVE_VERIFICATION_ENABLED=false`). `MockProvider` remains the demo fallback, and every machine finding remains human-review pending.
-- Phase 4 ledger spend: `$6.988201` of `$10`; remediation spend: `$5.305907` of `$6`; cumulative API spend: `$7.396742`.
+- Phase 4 ledger spend: `$7.398322` of `$10`; remediation spend: `$5.716028` of `$6`; cumulative API spend: `$7.806863`. The fresh Stage 1 repetition cost `$0.410115`, below its authorized `$0.55` maximum.
 - Phase 4 is **not complete**. No model is selected, no live application verification smoke was run, and Phase 5 remains blocked.
 
 ### Implemented Phase 4 scope
@@ -56,7 +58,7 @@ Last updated: 2026-07-17.
 
 ### Remaining gate before Phase 4 can close
 
-Decision v5/evaluator v2 require newly authorized fresh live evidence before any model may be selected. Historical runs cannot be resumed under the new compatibility fingerprint. The proposed sequence is deliberately staged: one GPT-5.5 repetition (maximum `$1.10`), then two more GPT-5.5 repetitions only if the first passes every critical gate (maximum `$2.20` additional), and GPT-5.4 only if GPT-5.5 fails or a qualified lower-cost alternative is still needed (one-run maximum `$0.55`, then `$1.10` for two more only after a passing first run). GPT-5.4 mini is excluded absent a concrete engineering or product reason. Stage 1 would project Phase 4 spend to `$8.088201`, within the total `$10` ceiling, but remediation spend to `$6.405907`, above its current `$6` sub-ceiling; therefore even Stage 1 requires separate approval. At conservative maxima, GPT-5.5 Stages 1–2 would project Phase 4 spend to `$10.288201`, so Stage 2 cannot proceed under the current total ceiling without a new approval. No paid calls are authorized; human-only review with deterministic mock findings remains the demo mode.
+The fresh GPT-5.4 Stage 1 repetition failed, so it cannot unlock repetitions two and three. Per the authorization, the run was not repeated, GPT-5.5 was not tested, and no prompt, schema, fixture, retrieval, or decision rule was altered. No further paid calls are authorized. Live application verification and its smoke remain disabled; human-only review with deterministic mock findings remains the demo mode.
 
 ### Phase 4 regression gate
 
