@@ -213,12 +213,12 @@ export class MockProvider implements ModelProvider {
       ? ('parser_uncertain' as const)
       : injection
         ? ('insufficient' as const)
-        : explicitConflict || valueMismatch || falseConflict
-          ? ('contradicts' as const)
-          : unsupported
-            ? ('insufficient' as const)
-            : partial
-              ? ('partially_entails' as const)
+        : partial
+          ? ('partially_entails' as const)
+          : explicitConflict || valueMismatch || falseConflict
+            ? ('contradicts' as const)
+            : unsupported
+              ? ('insufficient' as const)
               : ['exact', 'normalized_exact'].includes(factEnvelope.candidateQuoteMatch.matchType)
                 ? ('entails' as const)
                 : ('insufficient' as const);

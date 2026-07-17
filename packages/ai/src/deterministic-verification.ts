@@ -78,6 +78,50 @@ export type ParsedDate = {
   ambiguous: boolean;
 };
 
+export const DATE_SEMANTIC_ROLES = [
+  'submission_deadline',
+  'question_deadline',
+  'meeting_date',
+  'performance_period',
+  'issue_date',
+  'addendum_date',
+  'descriptive_example',
+  'unknown',
+] as const;
+
+export type DateSemanticRole = (typeof DATE_SEMANTIC_ROLES)[number];
+export type FactComparisonOperator =
+  | 'equal'
+  | 'minimum'
+  | 'maximum'
+  | 'range'
+  | 'before_or_on'
+  | 'after_or_on'
+  | 'approximate'
+  | 'unknown';
+
+export type MaterialScope = {
+  site: string | null;
+  role: string | null;
+  party: string | null;
+  form: string | null;
+  section: string | null;
+  deliverable: string | null;
+  insuranceBasis: 'per_occurrence' | 'aggregate' | null;
+};
+
+export type TypedDateFact = ParsedDate & {
+  role: DateSemanticRole;
+  comparisonOperator: FactComparisonOperator;
+  time: string | null;
+  relative: boolean;
+  anchorPresent: boolean;
+  scope: MaterialScope;
+  contextText: string;
+  documentId?: string;
+  pageNumber?: number;
+};
+
 const MONTHS: Record<string, number> = {
   january: 1,
   february: 2,
@@ -99,14 +143,126 @@ export function parseDeterministicDate(value: string): ParsedDate {
   const iso = value.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
   if (iso) return { original: iso[0], normalized: iso[0], timezone: null, ambiguous: false };
   const named = value.match(
-    /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s+(\d{4})\b/i,
+    /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:,\s+(\d{4}))?\b/i,
   );
   if (!named) return { original: value, normalized: null, timezone: null, ambiguous: true };
   const month = MONTHS[named[1]!.toLowerCase()]!;
-  const normalized = `${named[3]}-${String(month).padStart(2, '0')}-${String(Number(named[2])).padStart(2, '0')}`;
+  const normalized = named[3]
+    ? `${named[3]}-${String(month).padStart(2, '0')}-${String(Number(named[2])).padStart(2, '0')}`
+    : `--${String(month).padStart(2, '0')}-${String(Number(named[2])).padStart(2, '0')}`;
   const timezone =
     value.match(/\b(?:ET|EST|EDT|CT|CST|CDT|MT|MST|MDT|PT|PST|PDT|UTC|local time)\b/i)?.[0] ?? null;
   return { original: named[0], normalized, timezone, ambiguous: false };
+}
+
+function sentenceAt(text: string, index: number): string {
+  const before = text.slice(0, index);
+  const after = text.slice(index);
+  const start = Math.max(
+    before.lastIndexOf('.'),
+    before.lastIndexOf(';'),
+    before.lastIndexOf('\n'),
+  );
+  const endCandidates = [after.indexOf('.'), after.indexOf(';'), after.indexOf('\n')].filter(
+    (value) => value >= 0,
+  );
+  const end = endCandidates.length ? Math.min(...endCandidates) : after.length;
+  return text.slice(start + 1, index + end + 1).trim();
+}
+
+function materialScope(text: string): MaterialScope {
+  const site = text.match(/\b(?:North|South|East|West) Campus\b/i)?.[0] ?? null;
+  const role =
+    text.match(
+      /\b(?:site supervisor|project manager|security officers?|supervisors?|managers?|employees?|staff)\b/i,
+    )?.[0] ?? null;
+  const party = text.match(/\b(?:offerors?|bidders?|vendors?|contractors?|city)\b/i)?.[0] ?? null;
+  const form =
+    text.match(/\b(?:form|schedule|attachment|exhibit)\s+[A-Z0-9][A-Z0-9-]*\b/i)?.[0] ?? null;
+  const section =
+    text.match(/\b(?:section|article|paragraph)\s+[A-Z0-9][A-Z0-9.-]*\b/i)?.[0] ?? null;
+  const deliverable =
+    text.match(
+      /\b(?:proposal|questions?|staffing plan|certificate of insurance|pricing|bid bond|report)\b/i,
+    )?.[0] ?? null;
+  const insuranceBasis = /per occurrence/i.test(text)
+    ? 'per_occurrence'
+    : /aggregate/i.test(text)
+      ? 'aggregate'
+      : null;
+  return { site, role, party, form, section, deliverable, insuranceBasis };
+}
+
+function dateRole(text: string): DateSemanticRole {
+  if (/example|illustrative|for reference only|not (?:a |an )?(?:deadline|requirement)/i.test(text))
+    return 'descriptive_example';
+  if (/questions?|inquir(?:y|ies)/i.test(text)) return 'question_deadline';
+  if (/meeting|conference|site visit/i.test(text)) return 'meeting_date';
+  if (/proposal|submission|responses?|bids?\b/i.test(text) && /due|deadline|received/i.test(text))
+    return 'submission_deadline';
+  if (/performance|contract term|period of performance/i.test(text)) return 'performance_period';
+  if (/addendum|amendment/i.test(text) && /\bissued\b|\bdated\b/i.test(text))
+    return 'addendum_date';
+  if (/\bissued\b|publication date|document date/i.test(text)) return 'issue_date';
+  return 'unknown';
+}
+
+function factOperator(text: string): FactComparisonOperator {
+  if (/no later than|on or before|by\b/i.test(text)) return 'before_or_on';
+  if (/no earlier than|on or after/i.test(text)) return 'after_or_on';
+  if (/at least|minimum|no less than/i.test(text)) return 'minimum';
+  if (/at most|maximum|no more than/i.test(text)) return 'maximum';
+  if (/approximately|about\b|roughly/i.test(text)) return 'approximate';
+  return 'equal';
+}
+
+const DATE_MATCH_PATTERN = new RegExp(
+  `\\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\\s+\\d{1,2}(?:,\\s+\\d{4})?\\b|\\b\\d{4}-\\d{2}-\\d{2}\\b|\\b\\d{1,2}\\/\\d{1,2}\\/\\d{4}\\b`,
+  'gi',
+);
+
+export function extractTypedDateFacts(
+  text: string,
+  source?: { documentId?: string; pageNumber?: number },
+): TypedDateFact[] {
+  const facts: TypedDateFact[] = [];
+  for (const match of text.matchAll(DATE_MATCH_PATTERN)) {
+    const contextText = sentenceAt(text, match.index ?? 0);
+    const parsed = parseDeterministicDate(match[0]);
+    facts.push({
+      ...parsed,
+      timezone:
+        contextText.match(
+          /\b(?:ET|EST|EDT|CT|CST|CDT|MT|MST|MDT|PT|PST|PDT|UTC|local time)\b/i,
+        )?.[0] ?? parsed.timezone,
+      role: dateRole(contextText),
+      comparisonOperator: factOperator(contextText),
+      time: contextText.match(/\b\d{1,2}:\d{2}\s*(?:AM|PM)\b/i)?.[0] ?? null,
+      relative: false,
+      anchorPresent: true,
+      scope: materialScope(contextText),
+      contextText,
+      ...source,
+    });
+  }
+  for (const match of text.matchAll(/\bwithin\s+(?:\d+|ten|thirty)\s+days?\b/gi)) {
+    const contextText = sentenceAt(text, match.index ?? 0);
+    facts.push({
+      original: match[0],
+      normalized: null,
+      timezone: null,
+      ambiguous: true,
+      role: dateRole(contextText),
+      comparisonOperator: 'unknown',
+      time: null,
+      relative: true,
+      anchorPresent: /after|from|following/i.test(contextText),
+      scope: materialScope(contextText),
+      contextText,
+      ...source,
+    });
+  }
+  return facts;
 }
 
 export type ParsedNumber = {
@@ -114,11 +270,14 @@ export type ParsedNumber = {
   normalizedValue: number | null;
   unit: string | null;
   comparisonOperator: 'eq' | 'gte' | 'lte' | 'gt' | 'lt' | 'unknown';
+  scale?: 'unit' | 'thousand' | 'million';
+  startOffset?: number;
+  endOffset?: number;
 };
 
 export function parseDeterministicNumbers(value: string): ParsedNumber[] {
   const matches = value.matchAll(
-    /(?:\$\s*)?\d[\d,]*(?:\.\d+)?\s*(?:%|percent|million|years?|hours?|FTEs?|full-time-equivalent(?:\s+staff)?|points?)?/gi,
+    /(?:\$\s*)?\d[\d,]*(?:\.\d+)?\s*(?:%|percent|million|M\b|thousand|K\b|years?|hours?|FTEs?|full-time-equivalent(?:\s+staff)?|points?)?/gi,
   );
   const out: ParsedNumber[] = [];
   for (const match of matches) {
@@ -126,14 +285,19 @@ export function parseDeterministicNumbers(value: string): ParsedNumber[] {
     const numeric = Number(
       raw
         .replace(
-          /[$,%\s]|percent|years?|hours?|FTEs?|full-time-equivalent(?:\s+staff)?|points?/gi,
+          /[$,%\s]|percent|million|thousand|M\b|K\b|years?|hours?|FTEs?|full-time-equivalent(?:\s+staff)?|points?/gi,
           '',
         )
         .replace(/,/g, ''),
     );
-    const multiplier = /million/i.test(raw) ? 1_000_000 : 1;
+    const scale = /million|M\b/i.test(raw)
+      ? 'million'
+      : /thousand|K\b/i.test(raw)
+        ? 'thousand'
+        : 'unit';
+    const multiplier = scale === 'million' ? 1_000_000 : scale === 'thousand' ? 1_000 : 1;
     const unit =
-      raw.includes('$') || /million/i.test(raw)
+      raw.includes('$') || /million|thousand|M\b|K\b/i.test(raw)
         ? 'USD'
         : /%|percent/i.test(raw)
           ? 'percent'
@@ -163,9 +327,329 @@ export function parseDeterministicNumbers(value: string): ParsedNumber[] {
       normalizedValue: Number.isFinite(numeric) ? numeric * multiplier : null,
       unit,
       comparisonOperator,
+      scale,
+      startOffset: match.index ?? 0,
+      endOffset: (match.index ?? 0) + match[0].length,
     });
   }
   return out;
+}
+
+export const NUMBER_SEMANTIC_ROLES = [
+  'insurance_per_occurrence',
+  'insurance_aggregate',
+  'staffing_minimum',
+  'experience_minimum',
+  'pricing_amount',
+  'percentage',
+  'generic_threshold',
+  'descriptive_example',
+  'unknown',
+] as const;
+
+export type NumberSemanticRole = (typeof NUMBER_SEMANTIC_ROLES)[number];
+export type TypedNumberFact = ParsedNumber & {
+  role: NumberSemanticRole;
+  operator: FactComparisonOperator;
+  rangeEndValue: number | null;
+  scope: MaterialScope;
+  contextText: string;
+  documentId?: string;
+  pageNumber?: number;
+};
+
+function numberRole(text: string, unit: string | null): NumberSemanticRole {
+  if (/example|illustrative|for reference only|not (?:a |an )?requirement/i.test(text))
+    return 'descriptive_example';
+  if (/insurance|liability/i.test(text) && /per occurrence/i.test(text))
+    return 'insurance_per_occurrence';
+  if (/insurance|liability/i.test(text) && /aggregate/i.test(text)) return 'insurance_aggregate';
+  if (/staff|FTE|full-time|officers?|supervisors?|managers?/i.test(text)) return 'staffing_minimum';
+  if (/years? of experience|experience/i.test(text) && unit === 'years')
+    return 'experience_minimum';
+  if (/price|pricing|cost|fee|bid schedule/i.test(text) && unit === 'USD') return 'pricing_amount';
+  if (unit === 'percent' || /percentage|bid bond/i.test(text)) return 'percentage';
+  return unit ? 'generic_threshold' : 'unknown';
+}
+
+function operatorFromParsed(
+  operator: ParsedNumber['comparisonOperator'],
+  contextText: string,
+): FactComparisonOperator {
+  if (/\b\d[\d,.]*\s*(?:-|to|through)\s*\d/i.test(contextText)) return 'range';
+  if (operator === 'gte' || operator === 'gt') return 'minimum';
+  if (operator === 'lte' || operator === 'lt') return 'maximum';
+  if (/approximately|about\b|roughly/i.test(contextText)) return 'approximate';
+  return operator === 'eq' ? 'equal' : 'unknown';
+}
+
+export function extractTypedNumberFacts(
+  text: string,
+  source?: { documentId?: string; pageNumber?: number },
+): TypedNumberFact[] {
+  const facts: TypedNumberFact[] = [];
+  for (const parsed of parseDeterministicNumbers(text)) {
+    const contextText = sentenceAt(text, parsed.startOffset ?? 0);
+    const localStart =
+      (parsed.startOffset ?? 0) - (text.indexOf(contextText) >= 0 ? text.indexOf(contextText) : 0);
+    const identifierWindow = contextText.slice(
+      Math.max(0, localStart - 18),
+      localStart + parsed.original.length + 4,
+    );
+    if (
+      parsed.unit == null &&
+      /(?:form|schedule|attachment|exhibit|addendum|amendment|page|section)\s+[A-Z-]*\s*\d/i.test(
+        identifierWindow,
+      )
+    )
+      continue;
+    const role = numberRole(contextText, parsed.unit);
+    if (role === 'unknown') continue;
+    const rangeMatch = contextText.match(
+      /\b\d[\d,]*(?:\.\d+)?\s*(?:-|to|through)\s*(\d[\d,]*(?:\.\d+)?)\b/i,
+    );
+    facts.push({
+      ...parsed,
+      role,
+      operator: operatorFromParsed(parsed.comparisonOperator, contextText),
+      rangeEndValue: rangeMatch ? Number(rangeMatch[1]!.replace(/,/g, '')) : null,
+      scope: materialScope(contextText),
+      contextText,
+      ...source,
+    });
+  }
+  return facts;
+}
+
+function normalizedScopeValue(value: string | null): string | null {
+  if (!value) return null;
+  const normalized = normalizeEvidenceText(value).toLowerCase();
+  const singular: Record<string, string> = {
+    offerors: 'offeror',
+    bidders: 'bidder',
+    vendors: 'vendor',
+    contractors: 'contractor',
+    employees: 'employee',
+    officers: 'officer',
+    'security officers': 'security officer',
+    supervisors: 'supervisor',
+    managers: 'manager',
+    proposals: 'proposal',
+    questions: 'question',
+  };
+  return singular[normalized] ?? normalized;
+}
+
+export function materialScopeDifferences(
+  candidate: MaterialScope,
+  source: MaterialScope,
+): string[] {
+  const differences: string[] = [];
+  for (const key of ['site', 'role', 'party', 'form', 'section', 'deliverable'] as const) {
+    const candidateValue = normalizedScopeValue(candidate[key]);
+    const sourceValue = normalizedScopeValue(source[key]);
+    if ((candidateValue || sourceValue) && candidateValue !== sourceValue) differences.push(key);
+  }
+  if (
+    (candidate.insuranceBasis || source.insuranceBasis) &&
+    candidate.insuranceBasis !== source.insuranceBasis
+  )
+    differences.push('insurance_basis');
+  return differences;
+}
+
+export type TypedFactComparison = {
+  comparison: 'match' | 'mismatch' | 'uncertain';
+  reason:
+    | 'all_material_fields_match'
+    | 'ambiguous_candidate'
+    | 'ambiguous_source'
+    | 'relative_date_without_anchor'
+    | 'semantic_role_mismatch'
+    | 'no_compatible_source_fact'
+    | 'normalized_value_mismatch'
+    | 'time_mismatch'
+    | 'timezone_mismatch'
+    | 'unit_mismatch'
+    | 'operator_mismatch'
+    | 'range_mismatch'
+    | 'material_scope_mismatch';
+  sourceFactIndex: number | null;
+  materialScopeDifferences: string[];
+};
+
+function compatibleRole(candidateRole: string, sourceRole: string): boolean {
+  return candidateRole === sourceRole || candidateRole === 'unknown' || sourceRole === 'unknown';
+}
+
+function compatibleScope(candidate: MaterialScope, source: MaterialScope): boolean {
+  return materialScopeDifferences(candidate, source).length === 0;
+}
+
+export function compareTypedDateFact(
+  candidate: TypedDateFact,
+  sources: TypedDateFact[],
+): TypedFactComparison {
+  if (candidate.relative && !candidate.anchorPresent)
+    return {
+      comparison: 'uncertain',
+      reason: 'relative_date_without_anchor',
+      sourceFactIndex: null,
+      materialScopeDifferences: [],
+    };
+  if (candidate.ambiguous || !candidate.normalized)
+    return {
+      comparison: 'uncertain',
+      reason: 'ambiguous_candidate',
+      sourceFactIndex: null,
+      materialScopeDifferences: [],
+    };
+  const roleMatches = sources
+    .map((source, index) => ({ source, index }))
+    .filter(({ source }) => compatibleRole(candidate.role, source.role));
+  if (!roleMatches.length)
+    return {
+      comparison: 'uncertain',
+      reason: 'semantic_role_mismatch',
+      sourceFactIndex: null,
+      materialScopeDifferences: [],
+    };
+  const scoped = roleMatches.filter(({ source }) => compatibleScope(candidate.scope, source.scope));
+  if (!scoped.length) {
+    const differences = materialScopeDifferences(candidate.scope, roleMatches[0]!.source.scope);
+    return {
+      comparison: 'mismatch',
+      reason: 'material_scope_mismatch',
+      sourceFactIndex: roleMatches[0]!.index,
+      materialScopeDifferences: differences,
+    };
+  }
+  const exactValue = scoped.find(({ source }) => source.normalized === candidate.normalized);
+  const selected = exactValue ?? scoped[0]!;
+  if (selected.source.ambiguous || !selected.source.normalized)
+    return {
+      comparison: 'uncertain',
+      reason: 'ambiguous_source',
+      sourceFactIndex: selected.index,
+      materialScopeDifferences: [],
+    };
+  if (selected.source.normalized !== candidate.normalized)
+    return {
+      comparison: 'mismatch',
+      reason: 'normalized_value_mismatch',
+      sourceFactIndex: selected.index,
+      materialScopeDifferences: [],
+    };
+  if (selected.source.time && candidate.time?.toLowerCase() !== selected.source.time.toLowerCase())
+    return {
+      comparison: 'mismatch',
+      reason: 'time_mismatch',
+      sourceFactIndex: selected.index,
+      materialScopeDifferences: [],
+    };
+  if (
+    selected.source.time &&
+    selected.source.timezone &&
+    candidate.timezone?.toLowerCase() !== selected.source.timezone.toLowerCase()
+  )
+    return {
+      comparison: 'mismatch',
+      reason: 'timezone_mismatch',
+      sourceFactIndex: selected.index,
+      materialScopeDifferences: [],
+    };
+  if (candidate.comparisonOperator !== selected.source.comparisonOperator)
+    return {
+      comparison: 'mismatch',
+      reason: 'operator_mismatch',
+      sourceFactIndex: selected.index,
+      materialScopeDifferences: [],
+    };
+  return {
+    comparison: 'match',
+    reason: 'all_material_fields_match',
+    sourceFactIndex: selected.index,
+    materialScopeDifferences: [],
+  };
+}
+
+export function compareTypedNumberFact(
+  candidate: TypedNumberFact,
+  sources: TypedNumberFact[],
+): TypedFactComparison {
+  if (candidate.normalizedValue == null)
+    return {
+      comparison: 'uncertain',
+      reason: 'ambiguous_candidate',
+      sourceFactIndex: null,
+      materialScopeDifferences: [],
+    };
+  const roleMatches = sources
+    .map((source, index) => ({ source, index }))
+    .filter(({ source }) => compatibleRole(candidate.role, source.role));
+  if (!roleMatches.length)
+    return {
+      comparison: 'uncertain',
+      reason: 'semantic_role_mismatch',
+      sourceFactIndex: null,
+      materialScopeDifferences: [],
+    };
+  const scoped = roleMatches.filter(({ source }) => compatibleScope(candidate.scope, source.scope));
+  if (!scoped.length) {
+    const differences = materialScopeDifferences(candidate.scope, roleMatches[0]!.source.scope);
+    return {
+      comparison: 'mismatch',
+      reason: 'material_scope_mismatch',
+      sourceFactIndex: roleMatches[0]!.index,
+      materialScopeDifferences: differences,
+    };
+  }
+  const exactValue = scoped.find(
+    ({ source }) =>
+      source.normalizedValue === candidate.normalizedValue && source.unit === candidate.unit,
+  );
+  const selected = exactValue ?? scoped[0]!;
+  if (selected.source.normalizedValue == null)
+    return {
+      comparison: 'uncertain',
+      reason: 'ambiguous_source',
+      sourceFactIndex: selected.index,
+      materialScopeDifferences: [],
+    };
+  if (selected.source.unit !== candidate.unit)
+    return {
+      comparison: 'mismatch',
+      reason: 'unit_mismatch',
+      sourceFactIndex: selected.index,
+      materialScopeDifferences: [],
+    };
+  if (selected.source.normalizedValue !== candidate.normalizedValue)
+    return {
+      comparison: 'mismatch',
+      reason: 'normalized_value_mismatch',
+      sourceFactIndex: selected.index,
+      materialScopeDifferences: [],
+    };
+  if (selected.source.operator !== candidate.operator)
+    return {
+      comparison: 'mismatch',
+      reason: 'operator_mismatch',
+      sourceFactIndex: selected.index,
+      materialScopeDifferences: [],
+    };
+  if (selected.source.rangeEndValue !== candidate.rangeEndValue)
+    return {
+      comparison: 'mismatch',
+      reason: 'range_mismatch',
+      sourceFactIndex: selected.index,
+      materialScopeDifferences: [],
+    };
+  return {
+    comparison: 'match',
+    reason: 'all_material_fields_match',
+    sourceFactIndex: selected.index,
+    materialScopeDifferences: [],
+  };
 }
 
 export function compareDeterministicValues(

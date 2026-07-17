@@ -571,7 +571,7 @@ describe('Phase 4 verification persistence and isolation', () => {
         analysis_run_id: first.analysisRunId,
         verification_run_id: first.verificationRunId,
         candidate_id: second.candidateId,
-        envelope_version: 'verification-facts-v2',
+        envelope_version: 'verification-facts-v3',
         context_hash: 'a'.repeat(64),
         payload: { machineOnly: true },
       });
@@ -661,6 +661,6 @@ describe('Phase 4 verification persistence and isolation', () => {
       .single();
     expect(finding?.source_support_status).toBe('contradicted');
     expect(finding?.deterministic_model_disagreement).not.toEqual([]);
-    expect(finding?.decision_engine_version).toBe('verification-decision-v4');
+    expect(finding?.decision_engine_version).toBe('verification-decision-v5');
   });
 });

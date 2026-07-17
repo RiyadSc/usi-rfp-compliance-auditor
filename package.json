@@ -17,6 +17,7 @@
     "test:e2e": "playwright test",
     "eval:mock": "npx tsx scripts/eval-extraction.mjs",
     "eval:mock:verification": "npx tsx scripts/eval-verification-mock.mjs",
+    "diagnose:phase4": "node --import tsx scripts/diagnose-phase4-deterministic.mjs",
     "eval:live:probe": "npx tsx scripts/live-eval-extraction.mjs --probe",
     "eval:live": "npx tsx scripts/live-eval-extraction.mjs",
     "smoke:live:worker": "npx tsx scripts/live-worker-smoke.mjs",

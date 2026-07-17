@@ -31,9 +31,13 @@ function scanContent(content, label) {
   }
 }
 
-// 1. All git-tracked files.
+// 1. All git-tracked files plus untracked, non-ignored commit candidates.
 const tracked = execSync('git ls-files', { encoding: 'utf8' }).split('\n').filter(Boolean);
-for (const file of tracked) {
+const untracked = execSync('git ls-files --others --exclude-standard', { encoding: 'utf8' })
+  .split('\n')
+  .filter(Boolean);
+const repositoryFiles = [...new Set([...tracked, ...untracked])];
+for (const file of repositoryFiles) {
   if (/\.(pdf|png|jpg|jpeg|gif|webp|woff2?)$/.test(file)) continue;
   try {
     scanContent(readFileSync(file, 'utf8'), file);
@@ -87,4 +91,6 @@ if (failures.length > 0) {
   for (const f of failures) console.error(`  - ${f}`);
   process.exit(1);
 }
-console.info(`Secret scan passed (${tracked.length} tracked files + client bundle).`);
+console.info(
+  `Secret scan passed (${tracked.length} tracked + ${untracked.length} untracked commit candidates + client bundle).`,
+);

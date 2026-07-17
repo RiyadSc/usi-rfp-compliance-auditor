@@ -10,6 +10,8 @@ import {
   DUPLICATE_SCHEMA_VERSION,
   ENTAILMENT_PROMPT_VERSION,
   ENTAILMENT_SCHEMA_VERSION,
+  FACT_ENVELOPE_VERSION,
+  FINAL_ASSESSMENT_SCHEMA_VERSION,
   OpenAIProvider,
 } from '../packages/ai/src/index.ts';
 import {
@@ -20,7 +22,12 @@ import { runVerificationEvaluation } from './verification-evaluation-runner.mjs'
 import {
   aggregateVerificationPipelineRuns,
   scoreVerificationPipelineRun,
+  VERIFICATION_EVALUATOR_VERSION,
 } from './verification-metrics.mjs';
+import {
+  buildVerificationEvaluationCompatibility,
+  isResumableRunCompatible,
+} from './verification-evaluator-compatibility.mjs';
 
 loadEnv({ path: resolve('.env.local'), quiet: true });
 loadEnv({ path: resolve('.env'), quiet: true });
@@ -61,6 +68,7 @@ const resumeCompletedRuns = process.env.PHASE4_RESUME_COMPLETED_RUNS === '1';
 const outputLimits = { entailment: 1200, challenge: 1000, duplicate: 600 };
 const artifactDir = resolve('artifacts/evaluation');
 await mkdir(artifactDir, { recursive: true });
+const compatibility = buildVerificationEvaluationCompatibility();
 const resumableRuns = new Map();
 if (resumeCompletedRuns) {
   for (const model of models) {
@@ -68,7 +76,8 @@ if (resumeCompletedRuns) {
       const path = resolve(artifactDir, `phase4-remediation-${model}-run-${repetition}.json`);
       try {
         const run = JSON.parse(await readFile(path, 'utf8'));
-        if (run?.metrics?.totals?.calls > 0) resumableRuns.set(`${model}:${repetition}`, run);
+        if (isResumableRunCompatible(run, compatibility))
+          resumableRuns.set(`${model}:${repetition}`, run);
       } catch {
         // Missing or malformed artifacts are never treated as completed runs.
       }
@@ -197,7 +206,7 @@ for (const model of models) {
         'Live evaluation stopped before completing the scored run: remediation budget reserved',
       );
     const metrics = scoreVerificationPipelineRun(evaluation);
-    const run = { repetition, metrics };
+    const run = { repetition, compatibility, metrics };
     runs.push(run);
     await writeFile(runArtifactPath, `${JSON.stringify(run, null, 2)}\n`);
     console.log(JSON.stringify({ model, repetition, metrics }));
@@ -242,6 +251,10 @@ const artifact = {
     duplicate: DUPLICATE_SCHEMA_VERSION,
   },
   decisionEngineVersion: DECISION_ENGINE_VERSION,
+  factEnvelopeVersion: FACT_ENVELOPE_VERSION,
+  finalAssessmentSchemaVersion: FINAL_ASSESSMENT_SCHEMA_VERSION,
+  evaluatorVersion: VERIFICATION_EVALUATOR_VERSION,
+  compatibility,
   reasoning: 'medium',
   repetitions,
   maxContextsPerCandidate: 2,

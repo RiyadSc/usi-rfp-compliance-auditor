@@ -6,8 +6,9 @@ export const CHALLENGE_PROMPT_VERSION = 'verify-challenge-v1';
 export const CHALLENGE_SCHEMA_VERSION = 'verification-challenge-v1';
 export const DUPLICATE_PROMPT_VERSION = 'verify-duplicate-v1';
 export const DUPLICATE_SCHEMA_VERSION = 'verification-duplicate-v1';
-export const DECISION_ENGINE_VERSION = 'verification-decision-v4';
-export const FACT_ENVELOPE_VERSION = 'verification-facts-v2';
+export const DECISION_ENGINE_VERSION = 'verification-decision-v5';
+export const FACT_ENVELOPE_VERSION = 'verification-facts-v3';
+export const FINAL_ASSESSMENT_SCHEMA_VERSION = 'verification-final-assessment-v1';
 
 export const ENTAILMENT_CLASSES = [
   'entails',
@@ -103,9 +104,41 @@ export const duplicatePairResultSchema = z
   })
   .strict();
 
+export const finalMachineAssessmentSchema = z
+  .object({
+    candidateId: z.string().min(1),
+    sourceSupportStatus: z.enum([
+      'supported',
+      'partially_supported',
+      'unsupported',
+      'contradicted',
+      'parser_uncertain',
+    ]),
+    precedenceStatus: z.enum(['active', 'superseded', 'conflicting', 'undetermined']),
+    proofRequirement: z.enum([
+      'none_identified',
+      'requires_human_confirmation',
+      'requires_company_artifact',
+      'requires_external_validation',
+      'undetermined',
+    ]),
+    rationale: z.string().min(1).max(2000),
+    supportingEvidence: z.array(evidenceReference).max(2),
+    contradictingEvidence: z.array(evidenceReference).max(2),
+    materialMismatches: z.array(z.string().min(1).max(500)).max(30),
+    parserConcerns: z.array(z.string().min(1).max(500)).max(20),
+    ambiguityNotes: z.array(z.string().min(1).max(500)).max(20),
+    deterministicModelDisagreement: z.array(z.string().min(1).max(500)).max(20),
+    challengeStatus: z.enum(['not_required', 'completed', 'failed']),
+    humanReviewStatus: z.literal('pending'),
+    machineOnly: z.literal(true),
+  })
+  .strict();
+
 export type EntailmentResult = z.infer<typeof entailmentResultSchema>;
 export type ChallengeResult = z.infer<typeof challengeResultSchema>;
 export type DuplicatePairResult = z.infer<typeof duplicatePairResultSchema>;
+export type FinalMachineAssessmentResult = z.infer<typeof finalMachineAssessmentSchema>;
 
 const evidenceReferenceJsonSchema = {
   type: 'object',

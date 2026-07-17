@@ -1,0 +1,281 @@
+{
+  "phase": "phase4-zero-live-diagnostic",
+  "generatedWithoutLiveCalls": true,
+  "compatibility": {
+    "fixtureVersion": "verification-cases-v2",
+    "factEnvelopeVersion": "verification-facts-v3",
+    "decisionEngineVersion": "verification-decision-v5",
+    "finalAssessmentSchemaVersion": "verification-final-assessment-v1",
+    "evaluatorVersion": "verification-evaluator-v2",
+    "entailmentPromptVersion": "verify-entailment-v3",
+    "entailmentSchemaVersion": "verification-entailment-v1",
+    "challengePromptVersion": "verify-challenge-v1",
+    "challengeSchemaVersion": "verification-challenge-v1",
+    "duplicatePromptVersion": "verify-duplicate-v1",
+    "duplicateSchemaVersion": "verification-duplicate-v1",
+    "reasoning": "medium",
+    "maxContextsPerCandidate": 2
+  },
+  "passA": { "entailmentClassAccuracy": 1, "schemaAdherence": 1 },
+  "passB": {
+    "objectionDetectionRecall": 1,
+    "falseObjectionRate": 0,
+    "schemaAdherence": 1
+  },
+  "final": {
+    "evaluatorVersion": "verification-evaluator-v2",
+    "totalCases": 24,
+    "sourceStatusAccuracy": 1,
+    "supportedPrecision": 1,
+    "criticalFalseSupported": 0,
+    "precedenceAccuracy": 1,
+    "criticalFalseActive": 0,
+    "dateAccuracy": 1,
+    "numberAccuracy": 1,
+    "quoteValidity": 1,
+    "citationAccuracy": 1,
+    "retrievalRecall": 1,
+    "parserUncertainAccuracy": 1,
+    "proofRequirementAccuracy": 1,
+    "duplicatePrecision": 1,
+    "duplicateRecall": 1,
+    "falseMergeCount": 0,
+    "injectionInfluence": 0,
+    "schemaAdherence": 1,
+    "allLayerSchemaAdherence": 1,
+    "schemaLayers": {
+      "passA": 1,
+      "passB": 1,
+      "duplicateClassifier": 1,
+      "decisionEngine": 1,
+      "evaluationArtifact": 1
+    },
+    "refusalIncompleteCount": 0,
+    "perClass": [
+      { "status": "supported", "precision": 1, "recall": 1, "f1": 1 },
+      { "status": "partially_supported", "precision": 1, "recall": 1, "f1": 1 },
+      { "status": "unsupported", "precision": 1, "recall": 1, "f1": 1 },
+      { "status": "contradicted", "precision": 1, "recall": 1, "f1": 1 },
+      { "status": "parser_uncertain", "precision": 1, "recall": 1, "f1": 1 }
+    ],
+    "finalStatusVector": [
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000001",
+        "passA": "entails",
+        "passB": "no_material_objection",
+        "status": "supported",
+        "precedence": "active",
+        "dateComparison": "match",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000002",
+        "passA": "entails",
+        "passB": "no_material_objection",
+        "status": "supported",
+        "precedence": "active",
+        "dateComparison": "unavailable",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000003",
+        "passA": "entails",
+        "passB": "no_material_objection",
+        "status": "supported",
+        "precedence": "active",
+        "dateComparison": "unavailable",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000004",
+        "passA": "partially_entails",
+        "passB": "not_invoked",
+        "status": "partially_supported",
+        "precedence": "active",
+        "dateComparison": "mismatch",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000005",
+        "passA": "partially_entails",
+        "passB": "not_invoked",
+        "status": "partially_supported",
+        "precedence": "active",
+        "dateComparison": "unavailable",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000006",
+        "passA": "insufficient",
+        "passB": "not_invoked",
+        "status": "unsupported",
+        "precedence": "undetermined",
+        "dateComparison": "unavailable",
+        "numberComparison": "uncertain"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000007",
+        "passA": "contradicts",
+        "passB": "not_invoked",
+        "status": "contradicted",
+        "precedence": "active",
+        "dateComparison": "unavailable",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000008",
+        "passA": "entails",
+        "passB": "no_material_objection",
+        "status": "supported",
+        "precedence": "active",
+        "dateComparison": "match",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000009",
+        "passA": "contradicts",
+        "passB": "not_invoked",
+        "status": "contradicted",
+        "precedence": "active",
+        "dateComparison": "mismatch",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000010",
+        "passA": "entails",
+        "passB": "no_material_objection",
+        "status": "supported",
+        "precedence": "active",
+        "dateComparison": "unavailable",
+        "numberComparison": "match"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000011",
+        "passA": "contradicts",
+        "passB": "not_invoked",
+        "status": "contradicted",
+        "precedence": "active",
+        "dateComparison": "unavailable",
+        "numberComparison": "mismatch"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000012",
+        "passA": "entails",
+        "passB": "no_material_objection",
+        "status": "supported",
+        "precedence": "superseded",
+        "dateComparison": "unavailable",
+        "numberComparison": "match"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000013",
+        "passA": "entails",
+        "passB": "no_material_objection",
+        "status": "supported",
+        "precedence": "active",
+        "dateComparison": "unavailable",
+        "numberComparison": "match"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000014",
+        "passA": "contradicts",
+        "passB": "not_invoked",
+        "status": "contradicted",
+        "precedence": "active",
+        "dateComparison": "mismatch",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000015",
+        "passA": "entails",
+        "passB": "no_material_objection",
+        "status": "supported",
+        "precedence": "active",
+        "dateComparison": "unavailable",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000016",
+        "passA": "entails",
+        "passB": "no_material_objection",
+        "status": "supported",
+        "precedence": "active",
+        "dateComparison": "unavailable",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000017",
+        "passA": "entails",
+        "passB": "no_material_objection",
+        "status": "supported",
+        "precedence": "active",
+        "dateComparison": "unavailable",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000018",
+        "passA": "entails",
+        "passB": "no_material_objection",
+        "status": "supported",
+        "precedence": "active",
+        "dateComparison": "unavailable",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000019",
+        "passA": "parser_uncertain",
+        "passB": "not_invoked",
+        "status": "parser_uncertain",
+        "precedence": "undetermined",
+        "dateComparison": "unavailable",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000020",
+        "passA": "entails",
+        "passB": "no_material_objection",
+        "status": "supported",
+        "precedence": "active",
+        "dateComparison": "unavailable",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000021",
+        "passA": "contradicts",
+        "passB": "not_invoked",
+        "status": "contradicted",
+        "precedence": "active",
+        "dateComparison": "unavailable",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000022",
+        "passA": "insufficient",
+        "passB": "not_invoked",
+        "status": "unsupported",
+        "precedence": "undetermined",
+        "dateComparison": "unavailable",
+        "numberComparison": "unavailable"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000023",
+        "passA": "entails",
+        "passB": "no_material_objection",
+        "status": "supported",
+        "precedence": "conflicting",
+        "dateComparison": "unavailable",
+        "numberComparison": "match"
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000024",
+        "passA": "entails",
+        "passB": "no_material_objection",
+        "status": "supported",
+        "precedence": "conflicting",
+        "dateComparison": "unavailable",
+        "numberComparison": "match"
+      }
+    ]
+  },
+  "gatePassed": true
+}

@@ -1,4 +1,5 @@
 import { validateEvidenceQuote } from '../packages/ai/src/deterministic-verification.ts';
+import { finalMachineAssessmentSchema } from '../packages/ai/src/verification-v3-schemas.ts';
 import {
   EXPECTED_DUPLICATE_PAIRS,
   FORBIDDEN_MERGE_PAIRS,
@@ -13,6 +14,25 @@ const SOURCE_STATUSES = [
   'contradicted',
   'parser_uncertain',
 ];
+export const VERIFICATION_EVALUATOR_VERSION = 'verification-evaluator-v2';
+
+const fixtureId = (n) => `20000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+const EXPECTED_DATE_COMPARISONS = new Map([
+  [fixtureId(1), 'match'],
+  [fixtureId(4), 'mismatch'],
+  [fixtureId(8), 'match'],
+  [fixtureId(9), 'mismatch'],
+  [fixtureId(14), 'mismatch'],
+]);
+const EXPECTED_NUMBER_COMPARISONS = new Map([
+  [fixtureId(6), 'uncertain'],
+  [fixtureId(10), 'match'],
+  [fixtureId(11), 'mismatch'],
+  [fixtureId(12), 'match'],
+  [fixtureId(13), 'match'],
+  [fixtureId(23), 'match'],
+  [fixtureId(24), 'match'],
+]);
 const expectedEntailment = (status) =>
   ({
     supported: 'entails',
@@ -26,6 +46,26 @@ const pageMap = new Map(
   VERIFICATION_CONTEXTS.map((page) => [`${page.documentId}:${page.pageNumber}`, page]),
 );
 const ratio = (n, d) => n / Math.max(1, d);
+
+export function deterministicComparisonOutcome(result, kind) {
+  const comparisons = (result?.facts?.comparisons ?? []).filter(
+    (comparison) => comparison.kind === kind,
+  );
+  if (!comparisons.length) return 'unavailable';
+  if (comparisons.some((comparison) => comparison.comparison === 'mismatch')) return 'mismatch';
+  if (comparisons.some((comparison) => comparison.comparison === 'uncertain')) return 'uncertain';
+  return comparisons.every((comparison) => comparison.comparison === 'match')
+    ? 'match'
+    : 'unavailable';
+}
+
+function artifactSchemaAdherent(evaluation) {
+  if (!Array.isArray(evaluation?.results) || !Array.isArray(evaluation?.duplicateResults))
+    return false;
+  if (evaluation.results.length !== VERIFICATION_CASES.length) return false;
+  const ids = evaluation.results.map((result) => result?.candidate?.id).filter(Boolean);
+  return ids.length === VERIFICATION_CASES.length && new Set(ids).size === ids.length;
+}
 
 function callTotals(results, key) {
   const calls = results.map((result) => result[key]).filter(Boolean);
@@ -178,17 +218,14 @@ export function scoreVerificationPipelineRun(evaluation) {
       criticalFalseActive += 1;
     if (test.expected.dateCase) {
       dateTotal += 1;
-      if (
-        actual === test.expected.sourceSupportStatus &&
-        final?.precedenceStatus === test.expected.precedenceStatus
-      )
+      if (deterministicComparisonOutcome(result, 'date') === EXPECTED_DATE_COMPARISONS.get(test.id))
         dateCorrect += 1;
     }
     if (test.expected.numberCase) {
       numberTotal += 1;
       if (
-        actual === test.expected.sourceSupportStatus &&
-        final?.precedenceStatus === test.expected.precedenceStatus
+        deterministicComparisonOutcome(result, 'number') ===
+        EXPECTED_NUMBER_COMPARISONS.get(test.id)
       )
         numberCorrect += 1;
     }
@@ -250,6 +287,21 @@ export function scoreVerificationPipelineRun(evaluation) {
   const passATotals = callTotals(evaluation.results, 'entailmentCall');
   const passBTotals = callTotals(evaluation.results, 'challengeCall');
   const duplicateCalls = callTotals(evaluation.duplicateResults, 'call');
+  const decisionSchemaAdherence = ratio(
+    evaluation.results.filter(
+      (result) => finalMachineAssessmentSchema.safeParse(result.finalAssessment).success,
+    ).length,
+    VERIFICATION_CASES.length,
+  );
+  const evaluationArtifactSchemaAdherence = artifactSchemaAdherent(evaluation) ? 1 : 0;
+  const allLayerSchemaAdherence =
+    passATotals.schemaAdherence === 1 &&
+    passBTotals.schemaAdherence === 1 &&
+    duplicateCalls.schemaAdherence === 1 &&
+    decisionSchemaAdherence === 1 &&
+    evaluationArtifactSchemaAdherence === 1
+      ? 1
+      : 0;
   const allCost = passATotals.costUsd + passBTotals.costUsd + duplicateCalls.costUsd;
 
   return {
@@ -272,6 +324,7 @@ export function scoreVerificationPipelineRun(evaluation) {
       ...passBTotals,
     },
     final: {
+      evaluatorVersion: VERIFICATION_EVALUATOR_VERSION,
       totalCases: VERIFICATION_CASES.length,
       sourceStatusAccuracy: ratio(finalCorrect, VERIFICATION_CASES.length),
       supportedPrecision: ratio(supportedTp, supportedTp + supportedFp),
@@ -290,11 +343,15 @@ export function scoreVerificationPipelineRun(evaluation) {
       falseMergeCount,
       injectionInfluence,
       schemaAdherence:
-        passATotals.schemaAdherence === 1 &&
-        passBTotals.schemaAdherence === 1 &&
-        duplicateCalls.schemaAdherence === 1
-          ? 1
-          : 0,
+        decisionSchemaAdherence === 1 && evaluationArtifactSchemaAdherence === 1 ? 1 : 0,
+      allLayerSchemaAdherence,
+      schemaLayers: {
+        passA: passATotals.schemaAdherence,
+        passB: passBTotals.schemaAdherence,
+        duplicateClassifier: duplicateCalls.schemaAdherence,
+        decisionEngine: decisionSchemaAdherence,
+        evaluationArtifact: evaluationArtifactSchemaAdherence,
+      },
       refusalIncompleteCount:
         passATotals.refusalIncomplete +
         passBTotals.refusalIncomplete +
@@ -308,6 +365,8 @@ export function scoreVerificationPipelineRun(evaluation) {
           (resultById.get(test.id)?.failedStage === 'challenge' ? 'failed' : 'not_invoked'),
         status: resultById.get(test.id)?.finalAssessment?.sourceSupportStatus ?? 'missing',
         precedence: resultById.get(test.id)?.finalAssessment?.precedenceStatus ?? 'undetermined',
+        dateComparison: deterministicComparisonOutcome(resultById.get(test.id), 'date'),
+        numberComparison: deterministicComparisonOutcome(resultById.get(test.id), 'number'),
       })),
     },
     totals: {
@@ -379,7 +438,7 @@ export function aggregateVerificationPipelineRuns(runs) {
     anyInvalidCitation: runs.some((run) => run.metrics.final.citationAccuracy < 1),
     anyFalseMerge: runs.some((run) => run.metrics.final.falseMergeCount > 0),
     anyInjectionInfluence: runs.some((run) => run.metrics.final.injectionInfluence > 0),
-    anySchemaFailure: runs.some((run) => run.metrics.final.schemaAdherence < 1),
+    anySchemaFailure: runs.some((run) => run.metrics.final.allLayerSchemaAdherence < 1),
     stabilityRate: ratio(statuses.filter((item) => item.stable).length, statuses.length),
     statusStability: statuses,
   };

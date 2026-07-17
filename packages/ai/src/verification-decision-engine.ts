@@ -4,16 +4,21 @@ import type {
   DuplicatePairResult,
   EntailmentResult,
 } from './verification-v3-schemas';
+import { finalMachineAssessmentSchema } from './verification-v3-schemas';
 import type { VerificationCandidateInput, VerificationContext } from './provider';
 import {
   classifyDuplicateRelationship,
   classifyProofRequirement,
-  compareDeterministicValues,
+  compareTypedDateFact,
+  compareTypedNumberFact,
+  extractTypedDateFacts,
+  extractTypedNumberFacts,
   normalizeEvidenceText,
   parseDeterministicDate,
   parseDeterministicNumbers,
   validateEvidenceQuote,
 } from './deterministic-verification';
+import type { MaterialScope } from './deterministic-verification';
 
 export type DeterministicComparison = {
   kind: 'date' | 'number';
@@ -23,6 +28,10 @@ export type DeterministicComparison = {
   sourceValue: string | number | null;
   unit: string | null;
   comparison: 'match' | 'mismatch' | 'uncertain';
+  semanticRole: string;
+  comparisonOperator: string;
+  materialScope: MaterialScope;
+  reason: string;
 };
 
 export type AmendmentFact = {
@@ -35,7 +44,7 @@ export type AmendmentFact = {
 };
 
 export type DeterministicFactEnvelope = {
-  version: 'verification-facts-v2';
+  version: 'verification-facts-v3';
   candidateId: string;
   citedPageExists: boolean;
   candidateQuoteMatch: ReturnType<typeof validateEvidenceQuote>;
@@ -45,12 +54,12 @@ export type DeterministicFactEnvelope = {
     matchType: ReturnType<typeof validateEvidenceQuote>['matchType'];
   }>;
   dates: {
-    candidate: ReturnType<typeof parseDeterministicDate>[];
-    source: ReturnType<typeof parseDeterministicDate>[];
+    candidate: ReturnType<typeof extractTypedDateFacts>;
+    source: ReturnType<typeof extractTypedDateFacts>;
   };
   numbers: {
-    candidate: ReturnType<typeof parseDeterministicNumbers>;
-    source: ReturnType<typeof parseDeterministicNumbers>;
+    candidate: ReturnType<typeof extractTypedNumberFacts>;
+    source: ReturnType<typeof extractTypedNumberFacts>;
   };
   comparisons: DeterministicComparison[];
   times: { candidate: string[]; source: string[] };
@@ -87,6 +96,7 @@ export type FinalMachineAssessment = {
   ambiguityNotes: string[];
   deterministicModelDisagreement: string[];
   challengeStatus: 'not_required' | 'completed' | 'failed';
+  humanReviewStatus: 'pending';
   machineOnly: true;
 };
 
@@ -351,18 +361,21 @@ export function buildDeterministicFactEnvelope(
     cited && ['exact', 'normalized_exact'].includes(quoteMatch.matchType)
       ? candidate.evidenceQuote
       : (cited?.text ?? '');
-  const candidateDates = allDates(candidate.obligation);
-  const sourceDates = allDates(sourceForComparison);
-  const candidateNumbers = parseDeterministicNumbers(candidate.obligation).filter(
-    (number) => number.unit,
+  const candidateDates = extractTypedDateFacts(candidate.obligation);
+  const sourceDates = extractTypedDateFacts(
+    sourceForComparison,
+    cited ? { documentId: cited.documentId, pageNumber: cited.pageNumber } : undefined,
   );
-  const sourceNumbers = parseDeterministicNumbers(sourceForComparison).filter(
-    (number) => number.unit,
+  const candidateNumbers = extractTypedNumberFacts(candidate.obligation);
+  const sourceNumbers = extractTypedNumberFacts(
+    sourceForComparison,
+    cited ? { documentId: cited.documentId, pageNumber: cited.pageNumber } : undefined,
   );
   const comparisons: DeterministicComparison[] = [];
   for (const candidateDate of candidateDates) {
+    const result = compareTypedDateFact(candidateDate, sourceDates);
     const sourceDate =
-      sourceDates.find((date) => date.normalized === candidateDate.normalized) ?? sourceDates[0];
+      result.sourceFactIndex == null ? null : (sourceDates[result.sourceFactIndex] ?? null);
     comparisons.push({
       kind: 'date',
       candidateOriginal: candidateDate.original,
@@ -370,19 +383,17 @@ export function buildDeterministicFactEnvelope(
       sourceOriginal: sourceDate?.original ?? null,
       sourceValue: sourceDate?.normalized ?? null,
       unit: 'date',
-      comparison: sourceDate
-        ? compareDeterministicValues(
-            { value: candidateDate.normalized, unit: 'date' },
-            { value: sourceDate.normalized, unit: 'date' },
-          )
-        : 'uncertain',
+      comparison: result.comparison,
+      semanticRole: candidateDate.role,
+      comparisonOperator: candidateDate.comparisonOperator,
+      materialScope: candidateDate.scope,
+      reason: result.reason,
     });
   }
   for (const candidateNumber of candidateNumbers) {
-    const sameUnit = sourceNumbers.filter((source) => source.unit === candidateNumber.unit);
+    const result = compareTypedNumberFact(candidateNumber, sourceNumbers);
     const sourceNumber =
-      sameUnit.find((source) => source.normalizedValue === candidateNumber.normalizedValue) ??
-      sameUnit[0];
+      result.sourceFactIndex == null ? null : (sourceNumbers[result.sourceFactIndex] ?? null);
     comparisons.push({
       kind: 'number',
       candidateOriginal: candidateNumber.original,
@@ -390,12 +401,11 @@ export function buildDeterministicFactEnvelope(
       sourceOriginal: sourceNumber?.original ?? null,
       sourceValue: sourceNumber?.normalizedValue ?? null,
       unit: candidateNumber.unit,
-      comparison: sourceNumber
-        ? compareDeterministicValues(
-            { value: candidateNumber.normalizedValue, unit: candidateNumber.unit },
-            { value: sourceNumber.normalizedValue, unit: sourceNumber.unit },
-          )
-        : 'uncertain',
+      comparison: result.comparison,
+      semanticRole: candidateNumber.role,
+      comparisonOperator: candidateNumber.operator,
+      materialScope: candidateNumber.scope,
+      reason: result.reason,
     });
   }
   const amendmentFacts = contexts.flatMap((context) => {
@@ -425,7 +435,7 @@ export function buildDeterministicFactEnvelope(
   const parserReliable =
     Boolean(cited) && cited?.extractionStatus === 'ok' && !parserWarnings.length;
   return {
-    version: 'verification-facts-v2',
+    version: 'verification-facts-v3',
     candidateId: candidate.id,
     citedPageExists: Boolean(cited),
     candidateQuoteMatch: quoteMatch,
@@ -507,7 +517,7 @@ export function deriveMachineAssessment(input: {
     (comparison) => comparison.comparison === 'mismatch',
   );
   const ambiguousFact = facts.comparisons.some(
-    (comparison) => comparison.comparison === 'uncertain' && comparison.candidateValue == null,
+    (comparison) => comparison.comparison === 'uncertain',
   );
   const parserBad = !facts.citedPageExists || !facts.parserReliable;
   const injectionInfluence = Boolean(
@@ -557,7 +567,7 @@ export function deriveMachineAssessment(input: {
       `Challenge found no objection while deterministic precedence is ${facts.deterministicPrecedence}.`,
     );
 
-  return {
+  const assessment: FinalMachineAssessment = {
     candidateId: candidate.id,
     sourceSupportStatus: status,
     precedenceStatus:
@@ -587,17 +597,22 @@ export function deriveMachineAssessment(input: {
         .filter((comparison) => comparison.comparison === 'mismatch')
         .map(
           (comparison) =>
-            `${comparison.kind} mismatch: candidate ${comparison.candidateOriginal}; source ${comparison.sourceOriginal ?? 'none'}`,
+            `${comparison.kind} mismatch (${comparison.reason}, role ${comparison.semanticRole}): candidate ${comparison.candidateOriginal}; source ${comparison.sourceOriginal ?? 'none'}`,
         ),
     ],
     parserConcerns: [...facts.parserWarnings, ...(entailment?.parserConcerns ?? [])],
-    ambiguityNotes: ambiguousFact
-      ? ['A deterministic fact is ambiguous and was not normalized.']
-      : [],
+    ambiguityNotes: facts.comparisons
+      .filter((comparison) => comparison.comparison === 'uncertain')
+      .map(
+        (comparison) =>
+          `Deterministic ${comparison.kind} comparison is uncertain (${comparison.reason}, role ${comparison.semanticRole}).`,
+      ),
     deterministicModelDisagreement: disagreements,
     challengeStatus: input.challengeFailed ? 'failed' : challenge ? 'completed' : 'not_required',
+    humanReviewStatus: 'pending',
     machineOnly: true,
   };
+  return finalMachineAssessmentSchema.parse(assessment);
 }
 
 function materialDifferences(a: VerificationCandidateInput, b: VerificationCandidateInput) {
