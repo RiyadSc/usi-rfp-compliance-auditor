@@ -1,0 +1,1147 @@
+{
+  "phase": "phase4",
+  "fixture": "frozen-15-page-synthetic-rfp/verification-cases-v1",
+  "promptVersion": "verify-v2",
+  "schemaVersion": "verification-finding-v1",
+  "reasoning": "medium",
+  "repetitions": 3,
+  "projectedMaximumUsd": 4.5,
+  "phase4SpendBefore": 0.271975,
+  "phase4SpendAfter": 1.6822939999999997,
+  "models": [
+    {
+      "model": "gpt-5.5-2026-04-23",
+      "reasoning": "medium",
+      "runs": [
+        {
+          "repetition": 1,
+          "metrics": {
+            "totalCases": 22,
+            "sourceStatusAccuracy": 0.9090909090909091,
+            "macroPrecision": 0.9512820512820515,
+            "macroRecall": 0.8,
+            "macroF1": 0.8404848484848486,
+            "supportedPrecision": 0.9230769230769231,
+            "contradictedPrecision": 0.8333333333333334,
+            "partiallySupportedAccuracy": 0.5,
+            "parserUncertainAccuracy": 1,
+            "criticalFalseSupported": 1,
+            "criticalFalseActive": 0,
+            "precedenceAccuracy": 1,
+            "addendumPrecedenceAccuracy": 1,
+            "supersededRequirementAccuracy": 1,
+            "dateComparisonAccuracy": 0.8,
+            "numericalComparisonAccuracy": 1,
+            "quoteValidityRate": 1,
+            "citationPageAccuracy": 1,
+            "retrievalRecall": 1,
+            "duplicateDetectionPrecision": 0.25,
+            "duplicateDetectionRecall": 1,
+            "falseMergeCount": 0,
+            "proofRequirementAccuracy": 0.7727272727272727,
+            "schemaAdherence": 1,
+            "repairCount": 0,
+            "refusalIncompleteCount": 0,
+            "injectionInfluence": 0,
+            "inputTokens": 6434,
+            "outputTokens": 8040,
+            "reasoningTokens": 2588,
+            "cachedTokens": 0,
+            "latencyMs": 82238,
+            "retries": 0,
+            "estimatedCostUsd": 0.27337,
+            "perClass": [
+              {
+                "status": "supported",
+                "precision": 0.9230769230769231,
+                "recall": 1,
+                "f1": 0.9600000000000001
+              },
+              {
+                "status": "partially_supported",
+                "precision": 1,
+                "recall": 0.5,
+                "f1": 0.6666666666666666
+              },
+              {
+                "status": "unsupported",
+                "precision": 1,
+                "recall": 0.5,
+                "f1": 0.6666666666666666
+              },
+              {
+                "status": "contradicted",
+                "precision": 0.8333333333333334,
+                "recall": 1,
+                "f1": 0.9090909090909091
+              },
+              {
+                "status": "parser_uncertain",
+                "precision": 1,
+                "recall": 1,
+                "f1": 1
+              }
+            ]
+          }
+        },
+        {
+          "repetition": 2,
+          "metrics": {
+            "totalCases": 22,
+            "sourceStatusAccuracy": 0.9090909090909091,
+            "macroPrecision": 0.9,
+            "macroRecall": 0.8833333333333332,
+            "macroF1": 0.8664558629776021,
+            "supportedPrecision": 1,
+            "contradictedPrecision": 0.8333333333333334,
+            "partiallySupportedAccuracy": 1,
+            "parserUncertainAccuracy": 1,
+            "criticalFalseSupported": 0,
+            "criticalFalseActive": 0,
+            "precedenceAccuracy": 0.7272727272727273,
+            "addendumPrecedenceAccuracy": 0.625,
+            "supersededRequirementAccuracy": 1,
+            "dateComparisonAccuracy": 0.6,
+            "numericalComparisonAccuracy": 0.8,
+            "quoteValidityRate": 1,
+            "citationPageAccuracy": 1,
+            "retrievalRecall": 1,
+            "duplicateDetectionPrecision": 0.25,
+            "duplicateDetectionRecall": 1,
+            "falseMergeCount": 0,
+            "proofRequirementAccuracy": 0.7727272727272727,
+            "schemaAdherence": 1,
+            "repairCount": 0,
+            "refusalIncompleteCount": 0,
+            "injectionInfluence": 0,
+            "inputTokens": 6434,
+            "outputTokens": 7941,
+            "reasoningTokens": 2493,
+            "cachedTokens": 5888,
+            "latencyMs": 81731,
+            "retries": 0,
+            "estimatedCostUsd": 0.243904,
+            "perClass": [
+              {
+                "status": "supported",
+                "precision": 1,
+                "recall": 0.9166666666666666,
+                "f1": 0.9565217391304348
+              },
+              {
+                "status": "partially_supported",
+                "precision": 0.6666666666666666,
+                "recall": 1,
+                "f1": 0.8
+              },
+              {
+                "status": "unsupported",
+                "precision": 1,
+                "recall": 0.5,
+                "f1": 0.6666666666666666
+              },
+              {
+                "status": "contradicted",
+                "precision": 0.8333333333333334,
+                "recall": 1,
+                "f1": 0.9090909090909091
+              },
+              {
+                "status": "parser_uncertain",
+                "precision": 1,
+                "recall": 1,
+                "f1": 1
+              }
+            ]
+          }
+        },
+        {
+          "repetition": 3,
+          "metrics": {
+            "totalCases": 22,
+            "sourceStatusAccuracy": 0.9090909090909091,
+            "macroPrecision": 0.9512820512820515,
+            "macroRecall": 0.8,
+            "macroF1": 0.8404848484848486,
+            "supportedPrecision": 0.9230769230769231,
+            "contradictedPrecision": 0.8333333333333334,
+            "partiallySupportedAccuracy": 0.5,
+            "parserUncertainAccuracy": 1,
+            "criticalFalseSupported": 1,
+            "criticalFalseActive": 0,
+            "precedenceAccuracy": 0.7272727272727273,
+            "addendumPrecedenceAccuracy": 0.625,
+            "supersededRequirementAccuracy": 1,
+            "dateComparisonAccuracy": 0.4,
+            "numericalComparisonAccuracy": 0.8,
+            "quoteValidityRate": 1,
+            "citationPageAccuracy": 1,
+            "retrievalRecall": 1,
+            "duplicateDetectionPrecision": 0.1111111111111111,
+            "duplicateDetectionRecall": 1,
+            "falseMergeCount": 0,
+            "proofRequirementAccuracy": 0.8181818181818182,
+            "schemaAdherence": 1,
+            "repairCount": 0,
+            "refusalIncompleteCount": 0,
+            "injectionInfluence": 0,
+            "inputTokens": 6434,
+            "outputTokens": 7420,
+            "reasoningTokens": 1412,
+            "cachedTokens": 5888,
+            "latencyMs": 73505,
+            "retries": 0,
+            "estimatedCostUsd": 0.22827400000000003,
+            "perClass": [
+              {
+                "status": "supported",
+                "precision": 0.9230769230769231,
+                "recall": 1,
+                "f1": 0.9600000000000001
+              },
+              {
+                "status": "partially_supported",
+                "precision": 1,
+                "recall": 0.5,
+                "f1": 0.6666666666666666
+              },
+              {
+                "status": "unsupported",
+                "precision": 1,
+                "recall": 0.5,
+                "f1": 0.6666666666666666
+              },
+              {
+                "status": "contradicted",
+                "precision": 0.8333333333333334,
+                "recall": 1,
+                "f1": 0.9090909090909091
+              },
+              {
+                "status": "parser_uncertain",
+                "precision": 1,
+                "recall": 1,
+                "f1": 1
+              }
+            ]
+          }
+        }
+      ],
+      "aggregate": {
+        "repetitions": 3,
+        "averages": {
+          "totalCases": 22,
+          "sourceStatusAccuracy": 0.9090909090909091,
+          "macroPrecision": 0.9341880341880343,
+          "macroRecall": 0.8277777777777778,
+          "macroF1": 0.8491418533157664,
+          "supportedPrecision": 0.9487179487179488,
+          "contradictedPrecision": 0.8333333333333334,
+          "partiallySupportedAccuracy": 0.6666666666666666,
+          "parserUncertainAccuracy": 1,
+          "criticalFalseSupported": 0.6666666666666666,
+          "criticalFalseActive": 0,
+          "precedenceAccuracy": 0.8181818181818182,
+          "addendumPrecedenceAccuracy": 0.75,
+          "supersededRequirementAccuracy": 1,
+          "dateComparisonAccuracy": 0.6,
+          "numericalComparisonAccuracy": 0.8666666666666667,
+          "quoteValidityRate": 1,
+          "citationPageAccuracy": 1,
+          "retrievalRecall": 1,
+          "duplicateDetectionPrecision": 0.20370370370370372,
+          "duplicateDetectionRecall": 1,
+          "falseMergeCount": 0,
+          "proofRequirementAccuracy": 0.787878787878788,
+          "schemaAdherence": 1,
+          "repairCount": 0,
+          "refusalIncompleteCount": 0,
+          "injectionInfluence": 0,
+          "inputTokens": 6434,
+          "outputTokens": 7800.333333333333,
+          "reasoningTokens": 2164.3333333333335,
+          "cachedTokens": 3925.3333333333335,
+          "latencyMs": 79158,
+          "retries": 0,
+          "estimatedCostUsd": 0.24851600000000004
+        },
+        "anyCriticalFalseSupported": true,
+        "anyCriticalFalseActive": false,
+        "anyMissedSupersedingAddendum": false,
+        "anyIncorrectDate": true,
+        "anyIncorrectNumericalThreshold": true,
+        "anyInjectionInfluence": false,
+        "stabilityRate": 0.9090909090909091,
+        "statusStability": [
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000001",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000002",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000003",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000004",
+            "values": ["supported", "partially_supported", "supported"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000005",
+            "values": ["partially_supported", "partially_supported", "partially_supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000006",
+            "values": ["unsupported", "unsupported", "unsupported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000007",
+            "values": ["contradicted", "contradicted", "contradicted"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000008",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000009",
+            "values": ["contradicted", "contradicted", "contradicted"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000010",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000011",
+            "values": ["contradicted", "contradicted", "contradicted"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000012",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000013",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000014",
+            "values": ["contradicted", "contradicted", "contradicted"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000015",
+            "values": ["supported", "partially_supported", "supported"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000016",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000017",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000018",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000019",
+            "values": ["parser_uncertain", "parser_uncertain", "parser_uncertain"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000020",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000021",
+            "values": ["contradicted", "contradicted", "contradicted"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000022",
+            "values": ["contradicted", "contradicted", "contradicted"],
+            "stable": true
+          }
+        ]
+      },
+      "qualifies": false
+    },
+    {
+      "model": "gpt-5.4-2026-03-05",
+      "reasoning": "medium",
+      "runs": [
+        {
+          "repetition": 1,
+          "metrics": {
+            "totalCases": 22,
+            "sourceStatusAccuracy": 0.8636363636363636,
+            "macroPrecision": 0.7666666666666667,
+            "macroRecall": 0.7833333333333333,
+            "macroF1": 0.7731225296442688,
+            "supportedPrecision": 1,
+            "contradictedPrecision": 0.8333333333333334,
+            "partiallySupportedAccuracy": 0.5,
+            "parserUncertainAccuracy": 1,
+            "criticalFalseSupported": 0,
+            "criticalFalseActive": 0,
+            "precedenceAccuracy": 1,
+            "addendumPrecedenceAccuracy": 1,
+            "supersededRequirementAccuracy": 1,
+            "dateComparisonAccuracy": 1,
+            "numericalComparisonAccuracy": 1,
+            "quoteValidityRate": 1,
+            "citationPageAccuracy": 1,
+            "retrievalRecall": 1,
+            "duplicateDetectionPrecision": 0.25,
+            "duplicateDetectionRecall": 1,
+            "falseMergeCount": 0,
+            "proofRequirementAccuracy": 0.5909090909090909,
+            "schemaAdherence": 1,
+            "repairCount": 0,
+            "refusalIncompleteCount": 0,
+            "injectionInfluence": 0,
+            "inputTokens": 6434,
+            "outputTokens": 10298,
+            "reasoningTokens": 5415,
+            "cachedTokens": 0,
+            "latencyMs": 72476,
+            "retries": 0,
+            "estimatedCostUsd": 0.17055499999999998,
+            "perClass": [
+              {
+                "status": "supported",
+                "precision": 1,
+                "recall": 0.9166666666666666,
+                "f1": 0.9565217391304348
+              },
+              {
+                "status": "partially_supported",
+                "precision": 0.5,
+                "recall": 0.5,
+                "f1": 0.5
+              },
+              {
+                "status": "unsupported",
+                "precision": 0.5,
+                "recall": 0.5,
+                "f1": 0.5
+              },
+              {
+                "status": "contradicted",
+                "precision": 0.8333333333333334,
+                "recall": 1,
+                "f1": 0.9090909090909091
+              },
+              {
+                "status": "parser_uncertain",
+                "precision": 1,
+                "recall": 1,
+                "f1": 1
+              }
+            ]
+          }
+        },
+        {
+          "repetition": 2,
+          "metrics": {
+            "totalCases": 22,
+            "sourceStatusAccuracy": 0.8181818181818182,
+            "macroPrecision": 0.7261904761904762,
+            "macroRecall": 0.6833333333333333,
+            "macroF1": 0.6833333333333333,
+            "supportedPrecision": 0.9166666666666666,
+            "contradictedPrecision": 0.7142857142857143,
+            "partiallySupportedAccuracy": 0,
+            "parserUncertainAccuracy": 1,
+            "criticalFalseSupported": 1,
+            "criticalFalseActive": 1,
+            "precedenceAccuracy": 0.9545454545454546,
+            "addendumPrecedenceAccuracy": 1,
+            "supersededRequirementAccuracy": 1,
+            "dateComparisonAccuracy": 0.8,
+            "numericalComparisonAccuracy": 1,
+            "quoteValidityRate": 1,
+            "citationPageAccuracy": 1,
+            "retrievalRecall": 1,
+            "duplicateDetectionPrecision": 0.25,
+            "duplicateDetectionRecall": 1,
+            "falseMergeCount": 0,
+            "proofRequirementAccuracy": 0.6818181818181818,
+            "schemaAdherence": 1,
+            "repairCount": 0,
+            "refusalIncompleteCount": 0,
+            "injectionInfluence": 0,
+            "inputTokens": 6434,
+            "outputTokens": 10620,
+            "reasoningTokens": 5588,
+            "cachedTokens": 5888,
+            "latencyMs": 79132,
+            "retries": 0,
+            "estimatedCostUsd": 0.162137,
+            "perClass": [
+              {
+                "status": "supported",
+                "precision": 0.9166666666666666,
+                "recall": 0.9166666666666666,
+                "f1": 0.9166666666666666
+              },
+              {
+                "status": "partially_supported",
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              },
+              {
+                "status": "unsupported",
+                "precision": 1,
+                "recall": 0.5,
+                "f1": 0.6666666666666666
+              },
+              {
+                "status": "contradicted",
+                "precision": 0.7142857142857143,
+                "recall": 1,
+                "f1": 0.8333333333333333
+              },
+              {
+                "status": "parser_uncertain",
+                "precision": 1,
+                "recall": 1,
+                "f1": 1
+              }
+            ]
+          }
+        },
+        {
+          "repetition": 3,
+          "metrics": {
+            "totalCases": 22,
+            "sourceStatusAccuracy": 0.8636363636363636,
+            "macroPrecision": 0.8428571428571429,
+            "macroRecall": 0.7833333333333333,
+            "macroF1": 0.7913043478260869,
+            "supportedPrecision": 1,
+            "contradictedPrecision": 0.7142857142857143,
+            "partiallySupportedAccuracy": 0.5,
+            "parserUncertainAccuracy": 1,
+            "criticalFalseSupported": 0,
+            "criticalFalseActive": 0,
+            "precedenceAccuracy": 0.6818181818181818,
+            "addendumPrecedenceAccuracy": 0.625,
+            "supersededRequirementAccuracy": 1,
+            "dateComparisonAccuracy": 0.6,
+            "numericalComparisonAccuracy": 0.8,
+            "quoteValidityRate": 1,
+            "citationPageAccuracy": 1,
+            "retrievalRecall": 1,
+            "duplicateDetectionPrecision": 0.25,
+            "duplicateDetectionRecall": 1,
+            "falseMergeCount": 0,
+            "proofRequirementAccuracy": 0.6363636363636364,
+            "schemaAdherence": 1,
+            "repairCount": 0,
+            "refusalIncompleteCount": 0,
+            "injectionInfluence": 0,
+            "inputTokens": 6434,
+            "outputTokens": 11137,
+            "reasoningTokens": 6109,
+            "cachedTokens": 5888,
+            "latencyMs": 85600,
+            "retries": 0,
+            "estimatedCostUsd": 0.169892,
+            "perClass": [
+              {
+                "status": "supported",
+                "precision": 1,
+                "recall": 0.9166666666666666,
+                "f1": 0.9565217391304348
+              },
+              {
+                "status": "partially_supported",
+                "precision": 0.5,
+                "recall": 0.5,
+                "f1": 0.5
+              },
+              {
+                "status": "unsupported",
+                "precision": 1,
+                "recall": 0.5,
+                "f1": 0.6666666666666666
+              },
+              {
+                "status": "contradicted",
+                "precision": 0.7142857142857143,
+                "recall": 1,
+                "f1": 0.8333333333333333
+              },
+              {
+                "status": "parser_uncertain",
+                "precision": 1,
+                "recall": 1,
+                "f1": 1
+              }
+            ]
+          }
+        }
+      ],
+      "aggregate": {
+        "repetitions": 3,
+        "averages": {
+          "totalCases": 22,
+          "sourceStatusAccuracy": 0.8484848484848485,
+          "macroPrecision": 0.7785714285714286,
+          "macroRecall": 0.75,
+          "macroF1": 0.7492534036012297,
+          "supportedPrecision": 0.9722222222222222,
+          "contradictedPrecision": 0.753968253968254,
+          "partiallySupportedAccuracy": 0.3333333333333333,
+          "parserUncertainAccuracy": 1,
+          "criticalFalseSupported": 0.3333333333333333,
+          "criticalFalseActive": 0.3333333333333333,
+          "precedenceAccuracy": 0.8787878787878788,
+          "addendumPrecedenceAccuracy": 0.875,
+          "supersededRequirementAccuracy": 1,
+          "dateComparisonAccuracy": 0.7999999999999999,
+          "numericalComparisonAccuracy": 0.9333333333333332,
+          "quoteValidityRate": 1,
+          "citationPageAccuracy": 1,
+          "retrievalRecall": 1,
+          "duplicateDetectionPrecision": 0.25,
+          "duplicateDetectionRecall": 1,
+          "falseMergeCount": 0,
+          "proofRequirementAccuracy": 0.6363636363636364,
+          "schemaAdherence": 1,
+          "repairCount": 0,
+          "refusalIncompleteCount": 0,
+          "injectionInfluence": 0,
+          "inputTokens": 6434,
+          "outputTokens": 10685,
+          "reasoningTokens": 5704,
+          "cachedTokens": 3925.3333333333335,
+          "latencyMs": 79069.33333333333,
+          "retries": 0,
+          "estimatedCostUsd": 0.16752799999999998
+        },
+        "anyCriticalFalseSupported": true,
+        "anyCriticalFalseActive": true,
+        "anyMissedSupersedingAddendum": false,
+        "anyIncorrectDate": true,
+        "anyIncorrectNumericalThreshold": true,
+        "anyInjectionInfluence": false,
+        "stabilityRate": 0.9090909090909091,
+        "statusStability": [
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000001",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000002",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000003",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000004",
+            "values": ["partially_supported", "supported", "partially_supported"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000005",
+            "values": ["unsupported", "contradicted", "contradicted"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000006",
+            "values": ["unsupported", "unsupported", "unsupported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000007",
+            "values": ["contradicted", "contradicted", "contradicted"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000008",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000009",
+            "values": ["contradicted", "contradicted", "contradicted"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000010",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000011",
+            "values": ["contradicted", "contradicted", "contradicted"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000012",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000013",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000014",
+            "values": ["contradicted", "contradicted", "contradicted"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000015",
+            "values": ["partially_supported", "partially_supported", "partially_supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000016",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000017",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000018",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000019",
+            "values": ["parser_uncertain", "parser_uncertain", "parser_uncertain"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000020",
+            "values": ["supported", "supported", "supported"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000021",
+            "values": ["contradicted", "contradicted", "contradicted"],
+            "stable": true
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000022",
+            "values": ["contradicted", "contradicted", "contradicted"],
+            "stable": true
+          }
+        ]
+      },
+      "qualifies": false
+    },
+    {
+      "model": "gpt-5.4-mini-2026-03-17",
+      "reasoning": "medium",
+      "runs": [
+        {
+          "repetition": 1,
+          "metrics": {
+            "totalCases": 22,
+            "sourceStatusAccuracy": 0.8636363636363636,
+            "macroPrecision": 0.7274725274725276,
+            "macroRecall": 0.6,
+            "macroF1": 0.6253333333333334,
+            "supportedPrecision": 0.9230769230769231,
+            "contradictedPrecision": 0.7142857142857143,
+            "partiallySupportedAccuracy": 0.5,
+            "parserUncertainAccuracy": 0,
+            "criticalFalseSupported": 1,
+            "criticalFalseActive": 0,
+            "precedenceAccuracy": 0.7727272727272727,
+            "addendumPrecedenceAccuracy": 0.625,
+            "supersededRequirementAccuracy": 1,
+            "dateComparisonAccuracy": 0.4,
+            "numericalComparisonAccuracy": 0.8,
+            "quoteValidityRate": 1,
+            "citationPageAccuracy": 1,
+            "retrievalRecall": 1,
+            "duplicateDetectionPrecision": 0.2,
+            "duplicateDetectionRecall": 1,
+            "falseMergeCount": 0,
+            "proofRequirementAccuracy": 0.45454545454545453,
+            "schemaAdherence": 1,
+            "repairCount": 0,
+            "refusalIncompleteCount": 0,
+            "injectionInfluence": 0,
+            "inputTokens": 6434,
+            "outputTokens": 10591,
+            "reasoningTokens": 5163,
+            "cachedTokens": 0,
+            "latencyMs": 51785,
+            "retries": 0,
+            "estimatedCostUsd": 0.052485000000000004,
+            "perClass": [
+              {
+                "status": "supported",
+                "precision": 0.9230769230769231,
+                "recall": 1,
+                "f1": 0.9600000000000001
+              },
+              {
+                "status": "partially_supported",
+                "precision": 1,
+                "recall": 0.5,
+                "f1": 0.6666666666666666
+              },
+              {
+                "status": "unsupported",
+                "precision": 1,
+                "recall": 0.5,
+                "f1": 0.6666666666666666
+              },
+              {
+                "status": "contradicted",
+                "precision": 0.7142857142857143,
+                "recall": 1,
+                "f1": 0.8333333333333333
+              },
+              {
+                "status": "parser_uncertain",
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              }
+            ]
+          }
+        },
+        {
+          "repetition": 2,
+          "metrics": {
+            "totalCases": 22,
+            "sourceStatusAccuracy": 0,
+            "macroPrecision": 0,
+            "macroRecall": 0,
+            "macroF1": 0,
+            "supportedPrecision": 0,
+            "contradictedPrecision": 0,
+            "partiallySupportedAccuracy": 0,
+            "parserUncertainAccuracy": 0,
+            "criticalFalseSupported": 0,
+            "criticalFalseActive": 0,
+            "precedenceAccuracy": 0,
+            "addendumPrecedenceAccuracy": 0,
+            "supersededRequirementAccuracy": 0,
+            "dateComparisonAccuracy": 0,
+            "numericalComparisonAccuracy": 0,
+            "quoteValidityRate": 0,
+            "citationPageAccuracy": 0,
+            "retrievalRecall": 1,
+            "duplicateDetectionPrecision": 0,
+            "duplicateDetectionRecall": 0,
+            "falseMergeCount": 0,
+            "proofRequirementAccuracy": 0,
+            "schemaAdherence": 0,
+            "repairCount": 0,
+            "refusalIncompleteCount": 1,
+            "injectionInfluence": 0,
+            "inputTokens": 6434,
+            "outputTokens": 12000,
+            "reasoningTokens": 11056,
+            "cachedTokens": 5888,
+            "latencyMs": 70680,
+            "retries": 0,
+            "estimatedCostUsd": 0.0548511,
+            "perClass": [
+              {
+                "status": "supported",
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              },
+              {
+                "status": "partially_supported",
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              },
+              {
+                "status": "unsupported",
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              },
+              {
+                "status": "contradicted",
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              },
+              {
+                "status": "parser_uncertain",
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              }
+            ]
+          }
+        },
+        {
+          "repetition": 3,
+          "metrics": {
+            "totalCases": 22,
+            "sourceStatusAccuracy": 0,
+            "macroPrecision": 0,
+            "macroRecall": 0,
+            "macroF1": 0,
+            "supportedPrecision": 0,
+            "contradictedPrecision": 0,
+            "partiallySupportedAccuracy": 0,
+            "parserUncertainAccuracy": 0,
+            "criticalFalseSupported": 0,
+            "criticalFalseActive": 0,
+            "precedenceAccuracy": 0,
+            "addendumPrecedenceAccuracy": 0,
+            "supersededRequirementAccuracy": 0,
+            "dateComparisonAccuracy": 0,
+            "numericalComparisonAccuracy": 0,
+            "quoteValidityRate": 0,
+            "citationPageAccuracy": 0,
+            "retrievalRecall": 1,
+            "duplicateDetectionPrecision": 0,
+            "duplicateDetectionRecall": 0,
+            "falseMergeCount": 0,
+            "proofRequirementAccuracy": 0,
+            "schemaAdherence": 0,
+            "repairCount": 0,
+            "refusalIncompleteCount": 1,
+            "injectionInfluence": 0,
+            "inputTokens": 6434,
+            "outputTokens": 12000,
+            "reasoningTokens": 7731,
+            "cachedTokens": 5888,
+            "latencyMs": 62568,
+            "retries": 0,
+            "estimatedCostUsd": 0.0548511,
+            "perClass": [
+              {
+                "status": "supported",
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              },
+              {
+                "status": "partially_supported",
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              },
+              {
+                "status": "unsupported",
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              },
+              {
+                "status": "contradicted",
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              },
+              {
+                "status": "parser_uncertain",
+                "precision": 0,
+                "recall": 0,
+                "f1": 0
+              }
+            ]
+          }
+        }
+      ],
+      "aggregate": {
+        "repetitions": 3,
+        "averages": {
+          "totalCases": 22,
+          "sourceStatusAccuracy": 0.2878787878787879,
+          "macroPrecision": 0.24249084249084252,
+          "macroRecall": 0.19999999999999998,
+          "macroF1": 0.20844444444444446,
+          "supportedPrecision": 0.3076923076923077,
+          "contradictedPrecision": 0.2380952380952381,
+          "partiallySupportedAccuracy": 0.16666666666666666,
+          "parserUncertainAccuracy": 0,
+          "criticalFalseSupported": 0.3333333333333333,
+          "criticalFalseActive": 0,
+          "precedenceAccuracy": 0.25757575757575757,
+          "addendumPrecedenceAccuracy": 0.20833333333333334,
+          "supersededRequirementAccuracy": 0.3333333333333333,
+          "dateComparisonAccuracy": 0.13333333333333333,
+          "numericalComparisonAccuracy": 0.26666666666666666,
+          "quoteValidityRate": 0.3333333333333333,
+          "citationPageAccuracy": 0.3333333333333333,
+          "retrievalRecall": 1,
+          "duplicateDetectionPrecision": 0.06666666666666667,
+          "duplicateDetectionRecall": 0.3333333333333333,
+          "falseMergeCount": 0,
+          "proofRequirementAccuracy": 0.15151515151515152,
+          "schemaAdherence": 0.3333333333333333,
+          "repairCount": 0,
+          "refusalIncompleteCount": 0.6666666666666666,
+          "injectionInfluence": 0,
+          "inputTokens": 6434,
+          "outputTokens": 11530.333333333334,
+          "reasoningTokens": 7983.333333333333,
+          "cachedTokens": 3925.3333333333335,
+          "latencyMs": 61677.666666666664,
+          "retries": 0,
+          "estimatedCostUsd": 0.054062400000000004
+        },
+        "anyCriticalFalseSupported": true,
+        "anyCriticalFalseActive": false,
+        "anyMissedSupersedingAddendum": true,
+        "anyIncorrectDate": true,
+        "anyIncorrectNumericalThreshold": true,
+        "anyInjectionInfluence": false,
+        "stabilityRate": 0,
+        "statusStability": [
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000001",
+            "values": ["supported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000002",
+            "values": ["supported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000003",
+            "values": ["supported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000004",
+            "values": ["supported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000005",
+            "values": ["partially_supported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000006",
+            "values": ["unsupported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000007",
+            "values": ["contradicted", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000008",
+            "values": ["supported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000009",
+            "values": ["contradicted", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000010",
+            "values": ["supported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000011",
+            "values": ["contradicted", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000012",
+            "values": ["supported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000013",
+            "values": ["supported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000014",
+            "values": ["contradicted", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000015",
+            "values": ["supported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000016",
+            "values": ["supported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000017",
+            "values": ["supported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000018",
+            "values": ["supported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000019",
+            "values": ["contradicted", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000020",
+            "values": ["supported", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000021",
+            "values": ["contradicted", "missing", "missing"],
+            "stable": false
+          },
+          {
+            "candidateId": "20000000-0000-4000-8000-000000000022",
+            "values": ["contradicted", "missing", "missing"],
+            "stable": false
+          }
+        ]
+      },
+      "qualifies": false
+    }
+  ]
+}

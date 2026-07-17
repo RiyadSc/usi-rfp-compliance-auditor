@@ -1,0 +1,71 @@
+{
+  "repetition": 1,
+  "metrics": {
+    "totalCases": 22,
+    "sourceStatusAccuracy": 0.8636363636363636,
+    "macroPrecision": 0.7274725274725276,
+    "macroRecall": 0.6,
+    "macroF1": 0.6253333333333334,
+    "supportedPrecision": 0.9230769230769231,
+    "contradictedPrecision": 0.7142857142857143,
+    "partiallySupportedAccuracy": 0.5,
+    "parserUncertainAccuracy": 0,
+    "criticalFalseSupported": 1,
+    "criticalFalseActive": 0,
+    "precedenceAccuracy": 0.7727272727272727,
+    "addendumPrecedenceAccuracy": 0.625,
+    "supersededRequirementAccuracy": 1,
+    "dateComparisonAccuracy": 0.4,
+    "numericalComparisonAccuracy": 0.8,
+    "quoteValidityRate": 1,
+    "citationPageAccuracy": 1,
+    "retrievalRecall": 1,
+    "duplicateDetectionPrecision": 0.2,
+    "duplicateDetectionRecall": 1,
+    "falseMergeCount": 0,
+    "proofRequirementAccuracy": 0.45454545454545453,
+    "schemaAdherence": 1,
+    "repairCount": 0,
+    "refusalIncompleteCount": 0,
+    "injectionInfluence": 0,
+    "inputTokens": 6434,
+    "outputTokens": 10591,
+    "reasoningTokens": 5163,
+    "cachedTokens": 0,
+    "latencyMs": 51785,
+    "retries": 0,
+    "estimatedCostUsd": 0.052485000000000004,
+    "perClass": [
+      {
+        "status": "supported",
+        "precision": 0.9230769230769231,
+        "recall": 1,
+        "f1": 0.9600000000000001
+      },
+      {
+        "status": "partially_supported",
+        "precision": 1,
+        "recall": 0.5,
+        "f1": 0.6666666666666666
+      },
+      {
+        "status": "unsupported",
+        "precision": 1,
+        "recall": 0.5,
+        "f1": 0.6666666666666666
+      },
+      {
+        "status": "contradicted",
+        "precision": 0.7142857142857143,
+        "recall": 1,
+        "f1": 0.8333333333333333
+      },
+      {
+        "status": "parser_uncertain",
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      }
+    ]
+  }
+}

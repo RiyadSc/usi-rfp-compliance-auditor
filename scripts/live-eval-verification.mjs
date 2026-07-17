@@ -108,22 +108,9 @@ for (const model of models) {
       });
       if (error) throw error;
     }
-    const safeOutput = {
-      findings: output.findings,
-      modelId: output.modelId,
-      promptTokens: output.promptTokens,
-      completionTokens: output.completionTokens,
-      reasoningTokens: output.reasoningTokens,
-      cachedTokens: output.cachedTokens,
-      latencyMs: output.latencyMs,
-      estimatedCostUsd: output.estimatedCostUsd,
-      retries: output.retries,
-      repairAttempts: output.repairAttempts,
-      schemaAdherent: output.schemaAdherent,
-      refused: Boolean(output.refused),
-      incomplete: Boolean(output.incomplete),
-    };
-    const run = { repetition, metrics, output: safeOutput };
+    // Persist scored, non-secret metrics only. Raw provider findings and evidence text remain
+    // process-local and must not be committed as evaluation artifacts.
+    const run = { repetition, metrics };
     runs.push(run);
     await writeFile(
       resolve(artifactDir, `phase4-live-${model}-run-${repetition}.json`),

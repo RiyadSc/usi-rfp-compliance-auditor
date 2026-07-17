@@ -82,3 +82,20 @@ Append-only. Each entry: date, decision, rationale, reversibility, source.
 - 2026-07-17: Context7 `/websites/developers_openai_api` — Responses API structured outputs (`json_schema` strict), embeddings create, `store` parameter semantics, rate-limit/retry guidance.
 - 2026-07-17: Live account enumeration/probes confirmed four evaluated dated pins plus `text-embedding-3-small`; GPT-5.6 variants were visible without dated pins.
 - 2026-07-17: Official model, pricing, retention, caching, batch, and rate-limit references are recorded in `docs/provider-decision.md`.
+
+## Phase 4 decisions (2026-07-17)
+
+- **D-035 — Verification is multi-axis and append-only.** Source support, precedence, proof requirement, and human review are separate fields/tables. Extraction candidates are immutable proposals; machine findings and human decisions are versioned/append-only rather than overwritten.
+- **D-036 — Independent verification queue.** `requirements-verify` has a separate run, job, prompt (`verify-v2`), schema (`verification-finding-v1`), retrieval record, model call, cost row, failure state, and UI. Extraction output is never reused as verification judgment.
+- **D-037 — Exact evidence gate.** Only exact or NFKC/quote/whitespace normalized-exact page matches can validate quotation evidence. Fuzzy matches remain recovery candidates and cannot silently qualify support.
+- **D-038 — Non-destructive relationships.** Duplicate/addendum relationships are proposals; no machine merge deletes candidates or evidence. Material date, amount, party, form, role, condition, location, deliverable, and scope differences force related-distinct/uncertain handling.
+- **D-039 — Human review RPC.** Authorized members append accepted/rejected/needs-follow-up/waived decisions through a scoped SECURITY DEFINER RPC. Waiver requires a reason, revisions link the prior decision, and each decision creates an immutable audit event.
+- **D-040 — Phase 4 live model gate failed.** Three dated pins × three `medium` repetitions were scored. No candidate met zero-critical-false and consistency gates. GPT-5.5 provisional status is revoked; Phase 5 is blocked.
+- **D-041 — Live verification disabled by default.** `PHASE4_LIVE_VERIFICATION_ENABLED=false` forces MockProvider for the application verification worker even when the extraction key is present. Live bake-off requires the standalone `PHASE4_LIVE_EVAL=1` command and a Phase 4 ceiling no greater than $10.
+- **D-042 — One provider-neutral prompt revision consumed.** The 8K `verify-v1` envelope produced an incomplete GPT-5.5 response. `verify-v2` bounds rationale/evidence/facts and uses a uniform 12K output limit; all three candidates were rerun three times with the fixture/answers unchanged.
+- **D-043 — Composite database scope is enforced on privileged verification writes.** Final diff inspection found that simple foreign keys did not prove every same-workspace document/page and verification-run/relationship pairing. Additive migration `20260717000012` enforces composite run/workspace scope and trigger-level evidence, relationship, review-revision, and model-call consistency without weakening RLS or rewriting the applied Phase 4 migration.
+
+## External documentation decisions (Phase 4)
+
+- 2026-07-17: Context7 `/supabase/supabase` — explicit function EXECUTE revocation/grants, SECURITY DEFINER membership authorization, and RLS minimum-privilege patterns informed the review RPC and SELECT-only machine tables.
+- 2026-07-17: Official OpenAI model pages/catalog — confirmed Responses, structured output, reasoning settings, dated pins, context, pricing, caching, Batch, and account-tier rate-limit behavior. The official docs MCP was registered but requires a Codex restart before it is callable in-session; official OpenAI web docs were used as the documented fallback.

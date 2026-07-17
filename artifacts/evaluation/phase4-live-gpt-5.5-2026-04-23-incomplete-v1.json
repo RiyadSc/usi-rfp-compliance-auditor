@@ -1,0 +1,23 @@
+{
+  "phase": "phase4",
+  "model": "gpt-5.5-2026-04-23",
+  "reasoning": "medium",
+  "fixture": "frozen-15-page-synthetic-rfp/verification-cases-v1",
+  "promptVersion": "verify-v1",
+  "schemaVersion": "verification-finding-v1",
+  "maxOutputTokens": 8000,
+  "status": "incomplete",
+  "incompleteReason": "max_output_tokens",
+  "providerUsage": {
+    "inputTokens": 6395,
+    "outputTokens": 8000,
+    "reasoningTokens": 1958,
+    "cachedTokens": 0
+  },
+  "latencyMs": 73904,
+  "repairAttempts": 0,
+  "retries": 0,
+  "estimatedCostUsd": 0.271975,
+  "persistedModelOutput": false,
+  "notes": "The first live envelope reached the uniform output limit before producing a complete schema-valid response. Evaluation stopped immediately; the single allowed provider-neutral concise-output revision was then applied before all candidates were rerun under identical verify-v2 conditions."
+}

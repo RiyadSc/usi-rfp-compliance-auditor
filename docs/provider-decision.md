@@ -1,11 +1,11 @@
-# Provider Decision — Phase 3 Live Qualification
+# Provider Decision — Phase 3 Extraction and Phase 4 Verification
 
-Date: 2026-07-17. Scope: Phase 3 extraction gate only. No Phase 4 implementation was performed.
+Date: 2026-07-17. Phase 3 extraction is approved. The Phase 4 verification comparison rejected every provisional candidate, so no live verification model is approved.
 
 ## Decision summary
 
 1. **Phase 3 extraction:** OpenAI Responses API with pinned `gpt-5.4-mini-2026-03-17`, reasoning `low`, strict JSON Schema, server-side Zod validation, `store: false`, bounded timeout/retry, and forced `unverified` status. It tied the best live quality result at the lowest evaluated cost and latency.
-2. **Provisional Phase 4 verification:** pinned `gpt-5.5-2026-04-23`, reasoning initially `low`. This is only a provisional model choice for a future independent verification call; it must pass a Phase 4-specific evidence/contradiction evaluation before use.
+2. **Phase 4 verification:** no model selected. Pinned GPT-5.5, GPT-5.4, and GPT-5.4 mini were compared three times each at `medium`; all failed at least one non-negotiable verification gate. Live verification remains disabled.
 3. **Embeddings:** `text-embedding-3-small` (1536 dimensions in this application) at $0.02/1M tokens. It is sufficient for the existing hybrid retrieval path and was verified in the worker smoke.
 
 `MockProvider` remains the deterministic demo, test, Playwright, and keyless fallback.
@@ -73,3 +73,38 @@ The document attempted to override the system prompt, request the API key, mark 
 ## Real worker-path smoke
 
 The selected pin completed one controlled synthetic extraction through `handleExtractJob`: analysis run completed, processing job completed, embedding and extraction metadata persisted, 22 candidates persisted, all statuses were `unverified`, every cited page resolved, two spend rows were written, source navigation matched `/w/{workspaceId}/documents/{documentId}?page={preliminaryPage}`, and the UI safety contract held. Cost: $0.008805.
+
+## Phase 4 verification decision addendum — no model selected
+
+Date: 2026-07-17. The live account again confirmed the three required dated pins. All support Responses, strict structured output, `medium` reasoning, prompt caching, and Batch. Context/pricing remain: GPT-5.5 1.05M/$5 input/$0.50 cached/$30 output per MTok; GPT-5.4 1.05M/$2.50/$0.25/$15; GPT-5.4 mini 400K/$0.75/$0.075/$4.50. Calls used Responses, no tools, `store:false`, strict JSON Schema, Zod validation, 90-second timeout, application-owned retries, and no hidden reasoning persistence.
+
+### Frozen comparison
+
+- Fixture: existing 15 synthetic pages plus 22 deterministic verification candidates covering support/paraphrase/partial/unsupported/contradicted, correct and incorrect dates/numbers, superseded and active replacements, false ambiguity, duplicates/false merges, parser damage, proof requirements, optional language, and injection.
+- First envelope `verify-v1`/8,000 output tokens produced one observable GPT-5.5 incomplete call (`$0.271975`). The process was stopped immediately.
+- Single allowed provider-neutral revision: `verify-v2` requires concise bounded fields; every candidate then used the same 12,000 output-token limit. Fixture and answer set were unchanged.
+- Full artifact: `artifacts/evaluation/phase4-live-verification-results.json`; nine per-run artifacts retain every required metric and provider-usage total. Raw live findings, evidence text, prompts, and document context are intentionally excluded.
+
+| Model / run     | Status acc. |   Macro P/R/F1 | Critical false supported / active | Addendum |  Date | Number | Quote / cite | Proof | Schema / incomplete | Stability |     Cost |
+| --------------- | ----------: | -------------: | --------------------------------: | -------: | ----: | -----: | -----------: | ----: | ------------------: | --------: | -------: |
+| GPT-5.5 r1      |        .909 | .951/.800/.840 |                             1 / 0 |    1.000 |  .800 |  1.000 |          1/1 |  .773 |                 1/0 |         — | $.273370 |
+| GPT-5.5 r2      |        .909 | .900/.883/.866 |                             0 / 0 |     .625 |  .600 |   .800 |          1/1 |  .773 |                 1/0 |         — | $.243904 |
+| GPT-5.5 r3      |        .909 | .951/.800/.840 |                             1 / 0 |     .625 |  .400 |   .800 |          1/1 |  .818 |                 1/0 | .909 agg. | $.228274 |
+| GPT-5.4 r1      |        .864 | .767/.783/.773 |                             0 / 0 |    1.000 | 1.000 |  1.000 |          1/1 |  .591 |                 1/0 |         — | $.170555 |
+| GPT-5.4 r2      |        .818 | .726/.683/.683 |                             1 / 1 |    1.000 |  .800 |  1.000 |          1/1 |  .682 |                 1/0 |         — | $.162137 |
+| GPT-5.4 r3      |        .864 | .843/.783/.791 |                             0 / 0 |     .625 |  .600 |   .800 |          1/1 |  .636 |                 1/0 | .909 agg. | $.169892 |
+| GPT-5.4 mini r1 |        .864 | .727/.600/.625 |                             1 / 0 |     .625 |  .400 |   .800 |          1/1 |  .455 |                 1/0 |         — | $.052485 |
+| GPT-5.4 mini r2 |           0 |          0/0/0 |                             0 / 0 |        0 |     0 |      0 |          0/0 |     0 |                 0/1 |         — | $.054851 |
+| GPT-5.4 mini r3 |           0 |          0/0/0 |                             0 / 0 |        0 |     0 |      0 |          0/0 |     0 |                 0/1 |    0 agg. | $.054851 |
+
+Every completed run had retrieval recall 1.0, quote validity 1.0, citation accuracy 1.0, duplicate recall 1.0, false merges 0, repairs 0, retries 0, and injection influence 0. Duplicate precision was low (.111–.25), so relationships remain proposals pending human review. GPT-5.4 mini incomplete runs are not misreported as injection successes.
+
+### Decision and operations
+
+No candidate passes the required gate. The provisional GPT-5.5 choice is rejected. `PHASE4_LIVE_VERIFICATION_ENABLED` defaults false; `MockProvider` remains the safe demo path, and live evaluation remains a standalone opt-in command requiring `PHASE4_LIVE_EVAL=1` and `PHASE4_SPEND_CEILING_USD<=10`.
+
+Before calls, Phase 3 cumulative spend was `$0.408541`, Phase 4 spend was `$0`, and the original plan was capped at `$3.00`. After the first incomplete `$0.271975` call, the revised nine-call plan had a `$4.50` maximum and a projected Phase 4 total of `$4.771975`, still below the authoritative `$10` ceiling. Actual Phase 4 usage across ten calls was 64,301 input, 98,047 output, 49,513 reasoning, and 35,328 cached tokens; summed latency was 733.619 seconds. Phase 4 spend is `$1.682294`; cumulative Phase 3+4 spend is `$2.090835`.
+
+No live application verification smoke was run because that step requires a selected model. The implementation-level worker path was exercised with MockProvider and persisted linked machine-only findings, validated evidence, ledger/model metadata where applicable, and pending review state.
+
+Retention remains unchanged: `store:false` is used but is not a ZDR claim; account-level retention controls were not established. Official model capability/pricing references remain the model pages linked above; current model catalog guidance was also checked on 2026-07-17.
