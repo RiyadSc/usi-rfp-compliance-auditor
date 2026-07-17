@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { config as loadEnv } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
@@ -57,11 +57,43 @@ const priorRemediationSpend = (spentRows ?? [])
 
 const models = ['gpt-5.5-2026-04-23', 'gpt-5.4-2026-03-05', 'gpt-5.4-mini-2026-03-17'];
 const repetitions = 3;
+const resumeCompletedRuns = process.env.PHASE4_RESUME_COMPLETED_RUNS === '1';
 const outputLimits = { entailment: 1200, challenge: 1000, duplicate: 600 };
+const artifactDir = resolve('artifacts/evaluation');
+await mkdir(artifactDir, { recursive: true });
+const resumableRuns = new Map();
+if (resumeCompletedRuns) {
+  for (const model of models) {
+    for (let repetition = 1; repetition <= repetitions; repetition += 1) {
+      const path = resolve(artifactDir, `phase4-remediation-${model}-run-${repetition}.json`);
+      try {
+        const run = JSON.parse(await readFile(path, 'utf8'));
+        if (run?.metrics?.totals?.calls > 0) resumableRuns.set(`${model}:${repetition}`, run);
+      } catch {
+        // Missing or malformed artifacts are never treated as completed runs.
+      }
+    }
+  }
+}
 // Conservative planned estimate: all 24 Pass A contexts, all possible Pass B prompt
 // inputs, the 14 planted positive challenges, and both prequalified duplicate pairs.
 // A runtime reservation stops before any next call that could cross the approved cap.
-const projectedMaximumUsd = 3.45;
+const projectedMaximumByModelRun = {
+  'gpt-5.5-2026-04-23': 1.1,
+  'gpt-5.4-2026-03-05': 0.55,
+  'gpt-5.4-mini-2026-03-17': 0.3,
+};
+const projectedMaximumUsd = models.reduce(
+  (sum, model) =>
+    sum +
+    Array.from({ length: repetitions }, (_, index) => index + 1).reduce(
+      (modelSum, repetition) =>
+        modelSum +
+        (resumableRuns.has(`${model}:${repetition}`) ? 0 : projectedMaximumByModelRun[model]),
+      0,
+    ),
+  0,
+);
 const totalRemediationCeilingUsd = Number(process.env.PHASE4_REMEDIATION_SPEND_CEILING_USD ?? 4);
 if (
   !Number.isFinite(totalRemediationCeilingUsd) ||
@@ -108,20 +140,29 @@ console.log(
   JSON.stringify({ modelAvailability: models.map((model) => ({ model, available: true })) }),
 );
 
-const artifactDir = resolve('artifacts/evaluation');
-await mkdir(artifactDir, { recursive: true });
 let additionalActualUsd = 0;
 const reservePerCallUsd = 0.08;
 const modelResults = [];
 for (const model of models) {
   const runs = [];
   for (let repetition = 1; repetition <= repetitions; repetition += 1) {
+    const runArtifactPath = resolve(
+      artifactDir,
+      `phase4-remediation-${model}-run-${repetition}.json`,
+    );
+    const previousRun = resumableRuns.get(`${model}:${repetition}`);
+    if (previousRun) {
+      runs.push(previousRun);
+      console.log(JSON.stringify({ model, repetition, resumed: true }));
+      continue;
+    }
     const provider = new OpenAIProvider({
       apiKey,
       verifyModel: model,
       verifyReasoningEffort: 'medium',
       timeoutMs: 90_000,
     });
+    let budgetBlocked = false;
     const evaluation = await runVerificationEvaluation(provider, {
       maxContexts: 2,
       entailmentMaxOutputTokens: outputLimits.entailment,
@@ -131,8 +172,10 @@ for (const model of models) {
         if (
           priorRemediationSpend + additionalActualUsd + reservePerCallUsd >
           totalRemediationCeilingUsd + 1e-9
-        )
+        ) {
+          budgetBlocked = true;
           throw new Error('Live evaluation stopped before call: additional Phase 4 cap reserved');
+        }
       },
       onCall: async (stage, candidateId, call, targetCandidateId) => {
         additionalActualUsd += call.estimatedCostUsd;
@@ -149,13 +192,14 @@ for (const model of models) {
         }
       },
     });
+    if (budgetBlocked)
+      throw new Error(
+        'Live evaluation stopped before completing the scored run: remediation budget reserved',
+      );
     const metrics = scoreVerificationPipelineRun(evaluation);
     const run = { repetition, metrics };
     runs.push(run);
-    await writeFile(
-      resolve(artifactDir, `phase4-remediation-${model}-run-${repetition}.json`),
-      `${JSON.stringify(run, null, 2)}\n`,
-    );
+    await writeFile(runArtifactPath, `${JSON.stringify(run, null, 2)}\n`);
     console.log(JSON.stringify({ model, repetition, metrics }));
   }
   const aggregate = aggregateVerificationPipelineRuns(runs);

@@ -1,0 +1,230 @@
+{
+  "repetition": 3,
+  "metrics": {
+    "passA": {
+      "entailmentClassAccuracy": 0.8333333333333334,
+      "entailsPrecision": 1,
+      "contradictionPrecision": 0.7142857142857143,
+      "partialEntailmentAccuracy": 0.5,
+      "insufficientEvidenceAccuracy": 0.5,
+      "parserUncertainAccuracy": 1,
+      "calls": 24,
+      "schemaAdherence": 1,
+      "latencyMs": 161937,
+      "inputTokens": 31746,
+      "outputTokens": 12294,
+      "reasoningTokens": 7159,
+      "cachedTokens": 0,
+      "retries": 0,
+      "repairs": 0,
+      "costUsd": 0.263775,
+      "refusalIncomplete": 0,
+      "incompleteReasons": {}
+    },
+    "passB": {
+      "objectionDetectionRecall": 1,
+      "falseObjectionRate": 0.16666666666666666,
+      "missedMaterialQualificationCount": 0,
+      "missedPrecedenceProblemCount": 0,
+      "missedContradictionCount": 0,
+      "calls": 12,
+      "schemaAdherence": 1,
+      "latencyMs": 60803,
+      "inputTokens": 19893,
+      "outputTokens": 4642,
+      "reasoningTokens": 3118,
+      "cachedTokens": 0,
+      "retries": 0,
+      "repairs": 0,
+      "costUsd": 0.1193625,
+      "refusalIncomplete": 0,
+      "incompleteReasons": {}
+    },
+    "final": {
+      "totalCases": 24,
+      "sourceStatusAccuracy": 0.6666666666666666,
+      "supportedPrecision": 1,
+      "criticalFalseSupported": 0,
+      "precedenceAccuracy": 0.9583333333333334,
+      "criticalFalseActive": 1,
+      "dateAccuracy": 1,
+      "numberAccuracy": 0.42857142857142855,
+      "quoteValidity": 1,
+      "citationAccuracy": 1,
+      "retrievalRecall": 1,
+      "parserUncertainAccuracy": 1,
+      "proofRequirementAccuracy": 1,
+      "duplicatePrecision": 0,
+      "duplicateRecall": 0,
+      "falseMergeCount": 0,
+      "injectionInfluence": 0,
+      "schemaAdherence": 0,
+      "refusalIncompleteCount": 0,
+      "perClass": [
+        {
+          "status": "supported",
+          "precision": 1,
+          "recall": 0.5714285714285714,
+          "f1": 0.7272727272727273
+        },
+        {
+          "status": "partially_supported",
+          "precision": 0.14285714285714285,
+          "recall": 0.5,
+          "f1": 0.14285714285714285
+        },
+        {
+          "status": "unsupported",
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.6666666666666666
+        },
+        {
+          "status": "contradicted",
+          "precision": 0.7142857142857143,
+          "recall": 1,
+          "f1": 0.8333333333333333
+        },
+        {
+          "status": "parser_uncertain",
+          "precision": 1,
+          "recall": 1,
+          "f1": 1
+        }
+      ],
+      "finalStatusVector": [
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000001",
+          "status": "supported",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000002",
+          "status": "supported",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000003",
+          "status": "partially_supported",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000004",
+          "status": "partially_supported",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000005",
+          "status": "contradicted",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000006",
+          "status": "unsupported",
+          "precedence": "undetermined"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000007",
+          "status": "contradicted",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000008",
+          "status": "supported",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000009",
+          "status": "contradicted",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000010",
+          "status": "partially_supported",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000011",
+          "status": "contradicted",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000012",
+          "status": "partially_supported",
+          "precedence": "superseded"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000013",
+          "status": "supported",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000014",
+          "status": "contradicted",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000015",
+          "status": "partially_supported",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000016",
+          "status": "supported",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000017",
+          "status": "supported",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000018",
+          "status": "supported",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000019",
+          "status": "parser_uncertain",
+          "precedence": "undetermined"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000020",
+          "status": "supported",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000021",
+          "status": "contradicted",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000022",
+          "status": "contradicted",
+          "precedence": "active"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000023",
+          "status": "partially_supported",
+          "precedence": "conflicting"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000024",
+          "status": "partially_supported",
+          "precedence": "conflicting"
+        }
+      ]
+    },
+    "totals": {
+      "calls": 36,
+      "inputTokens": 51639,
+      "outputTokens": 16936,
+      "reasoningTokens": 10277,
+      "cachedTokens": 0,
+      "latencyMs": 222740,
+      "retries": 0,
+      "repairs": 0,
+      "estimatedCostUsd": 0.38313749999999996
+    }
+  }
+}
