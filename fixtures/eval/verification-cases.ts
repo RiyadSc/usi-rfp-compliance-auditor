@@ -1,5 +1,18 @@
 import { PLANTED_PAGES } from './planted-pages';
 
+export const VERIFICATION_FIXTURE_VERSION = 'verification-cases-v2';
+export const VERIFICATION_PAGES_V2 = [
+  ...PLANTED_PAGES,
+  {
+    pageNumber: 16,
+    text: 'ADDENDUM 3 — NORTH CAMPUS INSURANCE. For North Campus security operations, commercial general liability insurance must be at least $3,000,000 per occurrence. This addendum does not reference Addendum 4 and does not state that a later-numbered addendum automatically controls.',
+  },
+  {
+    pageNumber: 17,
+    text: 'ADDENDUM 4 — NORTH CAMPUS INSURANCE. For North Campus security operations, commercial general liability insurance must be at least $4,000,000 per occurrence. This addendum does not reference Addendum 3. The procurement documents contain no rule establishing that the latest-numbered or latest-dated addendum automatically controls.',
+  },
+] as const;
+
 export const FIXTURE_WORKSPACE_ID = '10000000-0000-4000-8000-000000000001';
 export const FIXTURE_DOCUMENT_ID = '10000000-0000-4000-8000-000000000002';
 export const FIXTURE_ANALYSIS_RUN_ID = '10000000-0000-4000-8000-000000000003';
@@ -22,7 +35,7 @@ export type VerificationExpected = {
   addendumCase?: boolean;
 };
 
-type Case = {
+export type VerificationCase = {
   id: string;
   title: string;
   category: string;
@@ -36,7 +49,7 @@ function id(n: number) {
   return `20000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 }
 
-export const VERIFICATION_CASES: readonly Case[] = [
+export const VERIFICATION_CASES: readonly VerificationCase[] = [
   {
     id: id(1),
     title: 'Mandatory meeting',
@@ -400,12 +413,57 @@ export const VERIFICATION_CASES: readonly Case[] = [
       critical: true,
     },
   },
+  {
+    id: id(23),
+    title: 'North Campus Addendum 3 insurance statement',
+    category: 'insurance',
+    obligation:
+      'Addendum 3 states that North Campus commercial general liability insurance must be at least $3,000,000 per occurrence.',
+    preliminaryPage: 16,
+    evidenceQuote:
+      'For North Campus security operations, commercial general liability insurance must be at least $3,000,000 per occurrence.',
+    expected: {
+      sourceSupportStatus: 'supported',
+      precedenceStatus: 'conflicting',
+      proofRequirement: 'requires_company_artifact',
+      pages: [16, 17],
+      critical: true,
+      numberCase: true,
+      addendumCase: true,
+    },
+  },
+  {
+    id: id(24),
+    title: 'North Campus Addendum 4 insurance statement',
+    category: 'insurance',
+    obligation:
+      'Addendum 4 states that North Campus commercial general liability insurance must be at least $4,000,000 per occurrence.',
+    preliminaryPage: 17,
+    evidenceQuote:
+      'For North Campus security operations, commercial general liability insurance must be at least $4,000,000 per occurrence.',
+    expected: {
+      sourceSupportStatus: 'supported',
+      precedenceStatus: 'conflicting',
+      proofRequirement: 'requires_company_artifact',
+      pages: [16, 17],
+      critical: true,
+      numberCase: true,
+      addendumCase: true,
+    },
+  },
 ] as const;
 
-export const EXPECTED_DUPLICATE_PAIRS = [[id(15), id(16)]] as const;
-export const FORBIDDEN_MERGE_PAIRS = [[id(17), id(18)]] as const;
+export const EXPECTED_DUPLICATE_PAIRS = [
+  [id(2), id(18)],
+  [id(15), id(16)],
+] as const;
+export const FORBIDDEN_MERGE_PAIRS = [
+  [id(17), id(18)],
+  [id(23), id(24)],
+  [id(10), id(23)],
+] as const;
 
-export const VERIFICATION_CONTEXTS = PLANTED_PAGES.map((page) => ({
+export const VERIFICATION_CONTEXTS = VERIFICATION_PAGES_V2.map((page) => ({
   chunkId: `page-${page.pageNumber}`,
   documentId: FIXTURE_DOCUMENT_ID,
   documentType: page.text.startsWith('ADDENDUM') ? 'addendum' : 'primary_rfp',

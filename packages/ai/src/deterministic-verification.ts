@@ -190,7 +190,7 @@ export function classifyProofRequirement(
   )
     return 'requires_human_confirmation';
   if (
-    /certificate|certification|license|insurance|staffing plan|resume|years of experience|references?/i.test(
+    /certificate|certification|license|insurance|liability|staffing plan|resume|years of experience|references?|\bform\s+[a-z0-9-]+|\battachment\s+[a-z0-9-]+|\bexhibit\s+[a-z0-9-]+/i.test(
       text,
     )
   )

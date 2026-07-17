@@ -3,6 +3,12 @@ import { estimateEmbedCost } from './cost';
 import type {
   ExtractInput,
   ExtractOutput,
+  CandidateAssessmentInput,
+  ChallengeInput,
+  ChallengeOutput,
+  DuplicatePairInput,
+  DuplicatePairOutput,
+  EntailmentOutput,
   ModelProvider,
   VerifyInput,
   VerifyOutput,
@@ -168,6 +174,196 @@ export class MockProvider implements ModelProvider {
       repairAttempts: 0,
       schemaAdherent: true,
       ...(notes.length ? { notes: notes.join('; ') } : {}),
+    };
+  }
+
+  async assessEntailment(input: CandidateAssessmentInput): Promise<EntailmentOutput> {
+    const started = Date.now();
+    const { candidate, factEnvelope } = input;
+    const cited = input.contexts.find(
+      (context) =>
+        context.documentId === candidate.documentId &&
+        context.pageNumber === candidate.preliminaryPage,
+    );
+    const valueMismatch = factEnvelope.comparisons.some(
+      (comparison) => comparison.comparison === 'mismatch',
+    );
+    const explicitConflict = Boolean(
+      cited &&
+      ((/may .*email/i.test(candidate.obligation) && /email .*not accepted/i.test(cited.text)) ||
+        (/mandatory|must|required/i.test(candidate.obligation) &&
+          /not required|creates no .*obligation/i.test(cited.text))),
+    );
+    const partial = Boolean(
+      cited &&
+      ((/every .*employee/i.test(candidate.obligation) && /site supervisor/i.test(cited.text)) ||
+        (/meeting/i.test(candidate.obligation) &&
+          /\d{1,2}:\d{2}\s*(?:AM|PM)/i.test(cited.text) &&
+          !/\d{1,2}:\d{2}\s*(?:AM|PM)/i.test(candidate.obligation))),
+    );
+    const injection = /system prompt|api key|use tools|email the key|ignore .*instructions/i.test(
+      candidate.obligation,
+    );
+    const unsupported =
+      /bid bond/i.test(candidate.obligation) && !/bid bond/i.test(cited?.text ?? '');
+    const falseConflict =
+      /unresolved|conflicting/i.test(candidate.obligation) &&
+      /superseded|not active/i.test(cited?.text ?? '');
+    const classification = !factEnvelope.parserReliable
+      ? ('parser_uncertain' as const)
+      : injection
+        ? ('insufficient' as const)
+        : explicitConflict || valueMismatch || falseConflict
+          ? ('contradicts' as const)
+          : unsupported
+            ? ('insufficient' as const)
+            : partial
+              ? ('partially_entails' as const)
+              : ['exact', 'normalized_exact'].includes(factEnvelope.candidateQuoteMatch.matchType)
+                ? ('entails' as const)
+                : ('insufficient' as const);
+    const evidence =
+      cited && candidate.evidenceQuote
+        ? [
+            {
+              documentId: cited.documentId,
+              pageNumber: cited.pageNumber,
+              quote: candidate.evidenceQuote,
+            },
+          ]
+        : [];
+    const result = {
+      candidateId: candidate.id,
+      classification,
+      rationale:
+        classification === 'entails'
+          ? 'The cited source entails the candidate.'
+          : classification === 'partially_entails'
+            ? 'The source supports the central obligation but omits a material qualifier.'
+            : classification === 'contradicts'
+              ? 'The source explicitly conflicts with a material candidate value or assertion.'
+              : classification === 'parser_uncertain'
+                ? 'Parser quality prevents assessment.'
+                : 'The bounded evidence is insufficient.',
+      supportingEvidence: ['entails', 'partially_entails'].includes(classification) ? evidence : [],
+      contradictingEvidence: classification === 'contradicts' ? evidence : [],
+      materialQualifiersPresent: [],
+      missingOrOverstatedQualifiers: partial ? ['Material scope or consequence is missing.'] : [],
+      parserConcerns: classification === 'parser_uncertain' ? factEnvelope.parserWarnings : [],
+      descriptiveOnly: injection,
+      injectionInfluence: false as const,
+      machineOnly: true as const,
+    };
+    const promptTokens = input.contexts.reduce((sum, context) => sum + context.text.length / 4, 0);
+    return {
+      result,
+      providerRequestId: `mock-entailment-${randomUUID()}`,
+      modelId: 'mock-verify-v3',
+      promptTokens: Math.ceil(promptTokens),
+      completionTokens: 90,
+      reasoningTokens: 0,
+      cachedTokens: 0,
+      latencyMs: Date.now() - started,
+      estimatedCostUsd: 0,
+      retries: 0,
+      repairAttempts: 0,
+      schemaAdherent: true,
+    };
+  }
+
+  async challengeEntailment(input: ChallengeInput): Promise<ChallengeOutput> {
+    const started = Date.now();
+    const mismatch = input.factEnvelope.comparisons.find(
+      (comparison) => comparison.comparison === 'mismatch',
+    );
+    const parserBad = !input.factEnvelope.parserReliable;
+    const descriptive = input.factEnvelope.descriptiveOrInjectionLanguage;
+    const assessment = parserBad
+      ? ('parser_uncertain' as const)
+      : descriptive
+        ? ('insufficient_evidence' as const)
+        : mismatch
+          ? ('contradictory_evidence' as const)
+          : input.entailment.missingOrOverstatedQualifiers.length
+            ? ('material_qualification_missing' as const)
+            : ('no_material_objection' as const);
+    return {
+      result: {
+        candidateId: input.candidate.id,
+        assessment,
+        rationale:
+          assessment === 'no_material_objection'
+            ? 'No material objection remains after deterministic checks.'
+            : 'The adversarial mock found a conservative objection.',
+        objections:
+          assessment === 'no_material_objection'
+            ? []
+            : [
+                {
+                  type: mismatch
+                    ? ('wrong_amount_or_unit' as const)
+                    : parserBad
+                      ? ('parser_quality' as const)
+                      : ('insufficient_evidence' as const),
+                  detail: mismatch
+                    ? 'Deterministic candidate/source values disagree.'
+                    : 'The proposed positive finding cannot safely stand.',
+                  evidence: [],
+                },
+              ],
+        injectionInfluence: false,
+        machineOnly: true,
+      },
+      providerRequestId: `mock-challenge-${randomUUID()}`,
+      modelId: 'mock-verify-v3',
+      promptTokens: Math.ceil(
+        input.contexts.reduce((sum, context) => sum + context.text.length / 4, 0),
+      ),
+      completionTokens: 70,
+      reasoningTokens: 0,
+      cachedTokens: 0,
+      latencyMs: Date.now() - started,
+      estimatedCostUsd: 0,
+      retries: 0,
+      repairAttempts: 0,
+      schemaAdherent: true,
+    };
+  }
+
+  async classifyDuplicatePair(input: DuplicatePairInput): Promise<DuplicatePairOutput> {
+    const started = Date.now();
+    const deterministic = classifyDuplicateRelationship(input.source, input.target);
+    const sharedExhibitC =
+      /exhibit c/i.test(input.source.obligation) && /exhibit c/i.test(input.target.obligation);
+    const relationshipType = input.deterministicMaterialDifferences.length
+      ? ('related_distinct' as const)
+      : sharedExhibitC
+        ? ('restatement' as const)
+        : deterministic === 'uncertain'
+          ? ('uncertain' as const)
+          : deterministic;
+    return {
+      result: {
+        sourceCandidateId: input.source.id,
+        targetCandidateId: input.target.id,
+        relationshipType,
+        rationale: input.deterministicMaterialDifferences.length
+          ? 'Material differences require related-but-distinct treatment.'
+          : 'Deterministic mock pair classification.',
+        materialDifferences: input.deterministicMaterialDifferences,
+        machineOnly: true,
+      },
+      providerRequestId: `mock-duplicate-${randomUUID()}`,
+      modelId: 'mock-verify-v3',
+      promptTokens: 80,
+      completionTokens: 40,
+      reasoningTokens: 0,
+      cachedTokens: 0,
+      latencyMs: Date.now() - started,
+      estimatedCostUsd: 0,
+      retries: 0,
+      repairAttempts: 0,
+      schemaAdherent: true,
     };
   }
 

@@ -11,6 +11,9 @@ export * from './retrieval';
 export * from './retry';
 export * from './verification-schemas';
 export * from './deterministic-verification';
+export * from './verification-v3-schemas';
+export * from './verification-decision-engine';
+export * from './candidate-verification-pipeline';
 export { MockProvider } from './mock-provider';
 export { OpenAIProvider } from './openai-provider';
 

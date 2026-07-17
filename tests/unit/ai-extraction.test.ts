@@ -31,6 +31,16 @@ import {
   validateEvidenceQuote,
   buildVerificationSystemPrompt,
   buildVerificationUserPayload,
+  applyDuplicateSafetyBlock,
+  buildDeterministicFactEnvelope,
+  challengeJsonSchema,
+  challengeResultSchema,
+  deriveMachineAssessment,
+  entailmentJsonSchema,
+  entailmentResultSchema,
+  findExplicitPrecedenceRelationships,
+  generateDuplicatePairCandidates,
+  runCandidateVerificationPipeline,
 } from '../../packages/ai/src/index.js';
 
 describe('candidate schema', () => {
@@ -422,5 +432,205 @@ describe('Phase 4 precedence, duplicate, proof, and injection controls', () => {
     expect(system).toMatch(/Never determine compliance/);
     expect(payload).toContain('<<<UNTRUSTED_EVIDENCE');
     expect(payload).toContain('<<<END_UNTRUSTED_EVIDENCE');
+  });
+});
+
+describe('Phase 4 conservative candidate-centered remediation', () => {
+  const candidate = {
+    id: 'candidate-a',
+    documentId: 'primary',
+    category: 'insurance' as const,
+    title: 'Insurance threshold',
+    obligation: 'The contractor must maintain $3,000,000 per occurrence.',
+    mandatoryClass: 'mandatory' as const,
+    preliminaryPage: 2,
+    evidenceQuote: 'The contractor must maintain $3,000,000 per occurrence.',
+  };
+  const context = {
+    chunkId: 'page-2',
+    documentId: 'primary',
+    documentType: 'primary_rfp',
+    pageNumber: 2,
+    text: candidate.evidenceQuote,
+    extractionStatus: 'ok',
+    parserWarnings: [],
+    retrievalReason: 'test',
+  };
+
+  it('keeps both pass schemas strict and machine-only', () => {
+    expect(entailmentJsonSchema.required).toEqual(Object.keys(entailmentJsonSchema.properties));
+    expect(challengeJsonSchema.required).toEqual(Object.keys(challengeJsonSchema.properties));
+    expect(
+      entailmentResultSchema.safeParse({
+        candidateId: candidate.id,
+        classification: 'entails',
+        rationale: 'Source entails it.',
+        supportingEvidence: [
+          { documentId: 'primary', pageNumber: 2, quote: candidate.evidenceQuote },
+        ],
+        contradictingEvidence: [],
+        materialQualifiersPresent: [],
+        missingOrOverstatedQualifiers: [],
+        parserConcerns: [],
+        descriptiveOnly: false,
+        injectionInfluence: false,
+        machineOnly: true,
+        finalStatus: 'supported',
+      }).success,
+    ).toBe(false);
+    expect(
+      challengeResultSchema.safeParse({
+        candidateId: candidate.id,
+        assessment: 'no_material_objection',
+        rationale: 'No objection.',
+        objections: [],
+        injectionInfluence: false,
+        machineOnly: true,
+      }).success,
+    ).toBe(true);
+  });
+
+  it('requires both semantic passes and exact evidence before deterministic support', async () => {
+    const output = await runCandidateVerificationPipeline({
+      provider: new MockProvider(),
+      workspaceId: 'workspace',
+      analysisRunId: 'analysis',
+      verificationRunId: 'verification',
+      candidate,
+      availableContexts: [context],
+    });
+    expect(output.entailment?.classification).toBe('entails');
+    expect(output.challenge?.assessment).toBe('no_material_objection');
+    expect(output.finalAssessment).toMatchObject({
+      sourceSupportStatus: 'supported',
+      challengeStatus: 'completed',
+      machineOnly: true,
+    });
+  });
+
+  it('blocks support when challenge fails or deterministic values disagree', () => {
+    const facts = buildDeterministicFactEnvelope(candidate, [
+      { ...context, text: 'The contractor must maintain $4,000,000 per occurrence.' },
+    ]);
+    const entailment = {
+      candidateId: candidate.id,
+      classification: 'entails' as const,
+      rationale: 'Model claimed entailment.',
+      supportingEvidence: [
+        {
+          documentId: 'primary',
+          pageNumber: 2,
+          quote: 'The contractor must maintain $4,000,000 per occurrence.',
+        },
+      ],
+      contradictingEvidence: [],
+      materialQualifiersPresent: [],
+      missingOrOverstatedQualifiers: [],
+      parserConcerns: [],
+      descriptiveOnly: false,
+      injectionInfluence: false as const,
+      machineOnly: true as const,
+    };
+    expect(
+      deriveMachineAssessment({
+        candidate,
+        contexts: [{ ...context, text: 'The contractor must maintain $4,000,000 per occurrence.' }],
+        facts,
+        entailment,
+        challenge: null,
+        challengeFailed: true,
+      }),
+    ).toMatchObject({
+      sourceSupportStatus: 'unsupported',
+      challengeStatus: 'failed',
+    });
+  });
+
+  it('forces parser uncertainty and preserves proof as a separate axis', () => {
+    const facts = buildDeterministicFactEnvelope(candidate, [
+      { ...context, extractionStatus: 'error', parserWarnings: ['image only'], text: '' },
+    ]);
+    expect(
+      deriveMachineAssessment({
+        candidate,
+        contexts: [
+          { ...context, extractionStatus: 'error', parserWarnings: ['image only'], text: '' },
+        ],
+        facts,
+        entailment: null,
+        challenge: null,
+      }),
+    ).toMatchObject({
+      sourceSupportStatus: 'parser_uncertain',
+      precedenceStatus: 'undetermined',
+      proofRequirement: 'undetermined',
+    });
+  });
+
+  it('persists only explicit precedence proposals and never infers them from different values alone', () => {
+    const original = {
+      ...candidate,
+      id: 'old',
+      obligation: 'The old original insurance amount was $2,000,000.',
+      preliminaryPage: 1,
+    };
+    const replacement = {
+      ...candidate,
+      id: 'new',
+      documentId: 'addendum',
+      obligation: 'The active amount must be $3,000,000.',
+      preliminaryPage: 3,
+    };
+    expect(
+      findExplicitPrecedenceRelationships(
+        [original, replacement],
+        [
+          context,
+          {
+            ...context,
+            chunkId: 'addendum-3',
+            documentId: 'addendum',
+            documentType: 'addendum',
+            pageNumber: 3,
+            text: 'Addendum 1 replaces the original $2,000,000 amount with $3,000,000.',
+          },
+        ],
+      ),
+    ).toHaveLength(1);
+    expect(
+      findExplicitPrecedenceRelationships(
+        [original, replacement],
+        [
+          {
+            ...context,
+            documentId: 'addendum',
+            documentType: 'addendum',
+            pageNumber: 3,
+            text: 'Insurance amount: $3,000,000.',
+          },
+        ],
+      ),
+    ).toHaveLength(0);
+  });
+
+  it('hard-blocks duplicate merges across material amounts and scope', () => {
+    const north = { ...candidate, id: 'north', obligation: 'North Campus requires $3,000,000.' };
+    const south = { ...candidate, id: 'south', obligation: 'South Campus requires $4,000,000.' };
+    const pair = generateDuplicatePairCandidates([
+      { ...north, title: 'Insurance threshold' },
+      { ...south, title: 'Insurance threshold' },
+    ])[0]!;
+    const blocked = applyDuplicateSafetyBlock(pair, {
+      sourceCandidateId: north.id,
+      targetCandidateId: south.id,
+      relationshipType: 'semantic_duplicate',
+      rationale: 'Similar wording.',
+      materialDifferences: [],
+      machineOnly: true,
+    });
+    expect(blocked.relationshipType).toBe('related_distinct');
+    expect(blocked.materialDifferences).toEqual(
+      expect.arrayContaining(['amount_or_unit', 'scope:north campus', 'scope:south campus']),
+    );
   });
 });

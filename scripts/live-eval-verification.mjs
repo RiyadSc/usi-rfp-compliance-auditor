@@ -3,21 +3,27 @@ import { resolve } from 'node:path';
 import { config as loadEnv } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import {
+  CHALLENGE_PROMPT_VERSION,
+  CHALLENGE_SCHEMA_VERSION,
+  DECISION_ENGINE_VERSION,
+  DUPLICATE_PROMPT_VERSION,
+  DUPLICATE_SCHEMA_VERSION,
+  ENTAILMENT_PROMPT_VERSION,
+  ENTAILMENT_SCHEMA_VERSION,
   OpenAIProvider,
-  VERIFICATION_PROMPT_VERSION,
-  VERIFICATION_SCHEMA_VERSION,
 } from '../packages/ai/src/index.ts';
 import {
-  FIXTURE_ANALYSIS_RUN_ID,
-  FIXTURE_VERIFICATION_RUN_ID,
-  FIXTURE_WORKSPACE_ID,
-  VERIFICATION_CONTEXTS,
-  VERIFICATION_INPUT_CANDIDATES,
+  VERIFICATION_CASES,
+  VERIFICATION_FIXTURE_VERSION,
 } from '../fixtures/eval/verification-cases.ts';
-import { aggregateVerificationRuns, scoreVerificationRun } from './verification-metrics.mjs';
+import { runVerificationEvaluation } from './verification-evaluation-runner.mjs';
+import {
+  aggregateVerificationPipelineRuns,
+  scoreVerificationPipelineRun,
+} from './verification-metrics.mjs';
 
-loadEnv({ path: resolve('.env.local') });
-loadEnv({ path: resolve('.env') });
+loadEnv({ path: resolve('.env.local'), quiet: true });
+loadEnv({ path: resolve('.env'), quiet: true });
 
 if (process.env.PHASE4_LIVE_EVAL !== '1')
   throw new Error('Refusing live verification evaluation: set PHASE4_LIVE_EVAL=1 explicitly');
@@ -26,9 +32,9 @@ if (!Number.isFinite(ceiling) || ceiling <= 0 || ceiling > 10)
   throw new Error('PHASE4_SPEND_CEILING_USD must be present and no greater than 10');
 const apiKey = process.env.OPENAI_API_KEY?.trim();
 if (!apiKey) throw new Error('OPENAI_API_KEY absent for opt-in live verification evaluation');
-const required = ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
-for (const name of required)
+for (const name of ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'])
   if (!process.env[name]) throw new Error(`${name} is required for spend ledger accounting`);
+
 const admin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -45,22 +51,35 @@ const cumulativeApiSpend = (spentRows ?? []).reduce(
 const phase4Spend = (spentRows ?? [])
   .filter((row) => row.phase === 'phase4')
   .reduce((sum, row) => sum + Number(row.estimated_cost_usd ?? 0), 0);
+
 const models = ['gpt-5.5-2026-04-23', 'gpt-5.4-2026-03-05', 'gpt-5.4-mini-2026-03-17'];
 const repetitions = 3;
-const projectedMaximumUsd = 4.5;
+const outputLimits = { entailment: 400, challenge: 360, duplicate: 240 };
+// Conservative planned estimate: all 24 Pass A contexts, all possible Pass B prompt
+// inputs, the 14 planted positive challenges, and both prequalified duplicate pairs.
+// A runtime reservation stops before any next call that could cross the approved cap.
+const projectedMaximumUsd = 3.96;
+const additionalCeilingUsd = Math.min(4, Math.max(0, ceiling - phase4Spend));
 console.log(
   JSON.stringify({
     cumulativeApiSpend,
     phase4Spend,
     projectedMaximumUsd,
     projectedPhase4Cumulative: phase4Spend + projectedMaximumUsd,
-    ceiling,
-    calls: models.length * repetitions,
+    phase4CeilingUsd: ceiling,
+    additionalCeilingUsd,
+    candidates: VERIFICATION_CASES.length,
+    plannedModels: models.length,
+    repetitions,
     reasoning: 'medium',
+    maxContextsPerCandidate: 4,
+    outputLimits,
   }),
 );
+if (projectedMaximumUsd > additionalCeilingUsd + 1e-9)
+  throw new Error('Refusing live calls: planned remediation evaluation exceeds its approved cap');
 if (phase4Spend + projectedMaximumUsd > ceiling + 1e-9)
-  throw new Error('Refusing live calls: projected Phase 4 cumulative spend exceeds ceiling');
+  throw new Error('Refusing live calls: projected Phase 4 cumulative spend exceeds $10');
 
 const modelResponse = await fetch('https://api.openai.com/v1/models', {
   headers: { authorization: `Bearer ${apiKey}` },
@@ -77,88 +96,109 @@ console.log(
 
 const artifactDir = resolve('artifacts/evaluation');
 await mkdir(artifactDir, { recursive: true });
+let additionalActualUsd = 0;
+const reservePerCallUsd = 0.08;
 const modelResults = [];
 for (const model of models) {
   const runs = [];
-  for (let repetition = 1; repetition <= repetitions; repetition++) {
+  for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     const provider = new OpenAIProvider({
       apiKey,
       verifyModel: model,
       verifyReasoningEffort: 'medium',
       timeoutMs: 90_000,
     });
-    const output = await provider.verifyCandidates({
-      workspaceId: FIXTURE_WORKSPACE_ID,
-      analysisRunId: FIXTURE_ANALYSIS_RUN_ID,
-      verificationRunId: FIXTURE_VERIFICATION_RUN_ID,
-      candidates: VERIFICATION_INPUT_CANDIDATES,
-      contexts: VERIFICATION_CONTEXTS,
-      promptVersion: VERIFICATION_PROMPT_VERSION,
-      schemaVersion: VERIFICATION_SCHEMA_VERSION,
-      maxOutputTokens: 12_000,
+    const evaluation = await runVerificationEvaluation(provider, {
+      maxContexts: 4,
+      entailmentMaxOutputTokens: outputLimits.entailment,
+      challengeMaxOutputTokens: outputLimits.challenge,
+      duplicateMaxOutputTokens: outputLimits.duplicate,
+      beforeCall: async () => {
+        if (additionalActualUsd + reservePerCallUsd > additionalCeilingUsd + 1e-9)
+          throw new Error('Live evaluation stopped before call: additional Phase 4 cap reserved');
+      },
+      onCall: async (stage, candidateId, call, targetCandidateId) => {
+        additionalActualUsd += call.estimatedCostUsd;
+        if (additionalActualUsd > additionalCeilingUsd + 1e-9)
+          throw new Error('Live evaluation cost crossed the additional Phase 4 cap');
+        if (call.estimatedCostUsd > 0) {
+          const { error } = await admin.from('spend_ledger').insert({
+            phase: 'phase4',
+            kind: 'verify',
+            estimated_cost_usd: call.estimatedCostUsd,
+            note: `phase4-remediation:${model}:run-${repetition}:${stage}:${candidateId}${targetCandidateId ? `:${targetCandidateId}` : ''}`,
+          });
+          if (error) throw error;
+        }
+      },
     });
-    const metrics = scoreVerificationRun(output);
-    const ledgerNote = `phase4-live-eval:${model}:repetition-${repetition}`;
-    if (metrics.estimatedCostUsd > 0) {
-      const { error } = await admin.from('spend_ledger').insert({
-        phase: 'phase4',
-        kind: 'verify',
-        estimated_cost_usd: metrics.estimatedCostUsd,
-        note: ledgerNote,
-      });
-      if (error) throw error;
-    }
-    // Persist scored, non-secret metrics only. Raw provider findings and evidence text remain
-    // process-local and must not be committed as evaluation artifacts.
+    const metrics = scoreVerificationPipelineRun(evaluation);
     const run = { repetition, metrics };
     runs.push(run);
     await writeFile(
-      resolve(artifactDir, `phase4-live-${model}-run-${repetition}.json`),
-      JSON.stringify(run, null, 2) + '\n',
+      resolve(artifactDir, `phase4-remediation-${model}-run-${repetition}.json`),
+      `${JSON.stringify(run, null, 2)}\n`,
     );
     console.log(JSON.stringify({ model, repetition, metrics }));
   }
-  const aggregate = aggregateVerificationRuns(runs);
+  const aggregate = aggregateVerificationPipelineRuns(runs);
   const qualifies =
     !aggregate.anyCriticalFalseSupported &&
     !aggregate.anyCriticalFalseActive &&
-    !aggregate.anyMissedSupersedingAddendum &&
     !aggregate.anyIncorrectDate &&
-    !aggregate.anyIncorrectNumericalThreshold &&
+    !aggregate.anyIncorrectNumber &&
+    !aggregate.anyInvalidQuote &&
+    !aggregate.anyInvalidCitation &&
+    !aggregate.anyFalseMerge &&
     !aggregate.anyInjectionInfluence &&
-    aggregate.averages.schemaAdherence === 1 &&
-    aggregate.averages.quoteValidityRate === 1 &&
-    aggregate.averages.citationPageAccuracy === 1 &&
-    aggregate.averages.falseMergeCount === 0 &&
-    aggregate.averages.proofRequirementAccuracy >= 0.9 &&
-    aggregate.stabilityRate >= 0.9;
+    !aggregate.anySchemaFailure &&
+    aggregate.averages.supportedPrecision === 1 &&
+    aggregate.averages.precedenceAccuracy === 1 &&
+    aggregate.averages.proofRequirementAccuracy === 1 &&
+    aggregate.stabilityRate >= 0.95;
   modelResults.push({ model, reasoning: 'medium', runs, aggregate, qualifies });
 }
-const { data: finalSpendRows } = await admin
+
+const { data: finalSpendRows, error: finalSpendError } = await admin
   .from('spend_ledger')
   .select('estimated_cost_usd, phase');
+if (finalSpendError) throw finalSpendError;
 const finalPhase4Spend = (finalSpendRows ?? [])
   .filter((row) => row.phase === 'phase4')
   .reduce((sum, row) => sum + Number(row.estimated_cost_usd ?? 0), 0);
 const artifact = {
-  phase: 'phase4',
-  fixture: 'frozen-15-page-synthetic-rfp/verification-cases-v1',
-  promptVersion: VERIFICATION_PROMPT_VERSION,
-  schemaVersion: VERIFICATION_SCHEMA_VERSION,
+  phase: 'phase4-remediation',
+  fixtureVersion: VERIFICATION_FIXTURE_VERSION,
+  candidateCount: VERIFICATION_CASES.length,
+  prompts: {
+    entailment: ENTAILMENT_PROMPT_VERSION,
+    challenge: CHALLENGE_PROMPT_VERSION,
+    duplicate: DUPLICATE_PROMPT_VERSION,
+  },
+  schemas: {
+    entailment: ENTAILMENT_SCHEMA_VERSION,
+    challenge: CHALLENGE_SCHEMA_VERSION,
+    duplicate: DUPLICATE_SCHEMA_VERSION,
+  },
+  decisionEngineVersion: DECISION_ENGINE_VERSION,
   reasoning: 'medium',
   repetitions,
+  maxContextsPerCandidate: 4,
+  outputLimits,
   projectedMaximumUsd,
   phase4SpendBefore: phase4Spend,
+  additionalActualUsd,
   phase4SpendAfter: finalPhase4Spend,
   models: modelResults,
 };
 await writeFile(
-  resolve(artifactDir, 'phase4-live-verification-results.json'),
-  JSON.stringify(artifact, null, 2) + '\n',
+  resolve(artifactDir, 'phase4-remediation-live-results.json'),
+  `${JSON.stringify(artifact, null, 2)}\n`,
 );
 console.log(
   JSON.stringify({
     completed: true,
+    additionalActualUsd,
     finalPhase4Spend,
     qualified: modelResults.filter((item) => item.qualifies).map((item) => item.model),
   }),

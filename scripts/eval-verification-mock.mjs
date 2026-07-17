@@ -1,25 +1,17 @@
-import {
-  MockProvider,
-  VERIFICATION_PROMPT_VERSION,
-  VERIFICATION_SCHEMA_VERSION,
-} from '../packages/ai/src/index.ts';
-import {
-  FIXTURE_ANALYSIS_RUN_ID,
-  FIXTURE_VERIFICATION_RUN_ID,
-  FIXTURE_WORKSPACE_ID,
-  VERIFICATION_CONTEXTS,
-  VERIFICATION_INPUT_CANDIDATES,
-} from '../fixtures/eval/verification-cases.ts';
-import { scoreVerificationRun } from './verification-metrics.mjs';
+import { MockProvider } from '../packages/ai/src/index.ts';
+import { VERIFICATION_FIXTURE_VERSION } from '../fixtures/eval/verification-cases.ts';
+import { runVerificationEvaluation } from './verification-evaluation-runner.mjs';
+import { scoreVerificationPipelineRun } from './verification-metrics.mjs';
 
-const output = await new MockProvider().verifyCandidates({
-  workspaceId: FIXTURE_WORKSPACE_ID,
-  analysisRunId: FIXTURE_ANALYSIS_RUN_ID,
-  verificationRunId: FIXTURE_VERIFICATION_RUN_ID,
-  candidates: VERIFICATION_INPUT_CANDIDATES,
-  contexts: VERIFICATION_CONTEXTS,
-  promptVersion: VERIFICATION_PROMPT_VERSION,
-  schemaVersion: VERIFICATION_SCHEMA_VERSION,
-  maxOutputTokens: 8000,
-});
-console.log(JSON.stringify({ provider: 'mock', metrics: scoreVerificationRun(output) }, null, 2));
+const evaluation = await runVerificationEvaluation(new MockProvider());
+console.log(
+  JSON.stringify(
+    {
+      provider: 'mock',
+      fixtureVersion: VERIFICATION_FIXTURE_VERSION,
+      metrics: scoreVerificationPipelineRun(evaluation),
+    },
+    null,
+    2,
+  ),
+);

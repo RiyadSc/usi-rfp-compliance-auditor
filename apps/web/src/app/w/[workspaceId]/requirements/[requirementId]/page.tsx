@@ -47,10 +47,21 @@ export default async function RequirementDetailPage({
         .eq('workspace_id', workspaceId)
         .order('evidence_role')
     : { data: [] };
+  const { data: passResults } = await supabase
+    .from('verification_pass_results')
+    .select(
+      'id, verification_run_id, pass_type, status, prompt_version, schema_version, model_id, result, error_category, error_detail, created_at',
+    )
+    .eq('candidate_id', candidate.id)
+    .eq('workspace_id', workspaceId)
+    .is('target_candidate_id', null)
+    .order('created_at', { ascending: false });
   const { data: relationships } = finding
     ? await supabase
         .from('requirement_relationships')
-        .select('id, target_candidate_id, relationship_type, rationale, human_status')
+        .select(
+          'id, target_candidate_id, relationship_type, rationale, human_status, original_document_id, original_page_number, addendum_document_id, addendum_page_number, precedence_quote, deterministic_metadata, relationship_version, machine_assessment',
+        )
         .eq('finding_id', finding.id)
         .eq('workspace_id', workspaceId)
     : { data: [] };
@@ -99,6 +110,11 @@ export default async function RequirementDetailPage({
   const primaryPage = primaryEvidence ? evidencePages.get(primaryEvidence.id) : null;
   const findingDecisions = (decisions ?? []).filter((decision) => !decision.relationship_id);
   const latestReview = findingDecisions[0]?.decision ?? 'pending';
+  const latestPasses = new Map<string, NonNullable<typeof passResults>[number]>();
+  for (const pass of passResults ?? [])
+    if (!latestPasses.has(pass.pass_type)) latestPasses.set(pass.pass_type, pass);
+  const entailmentPass = latestPasses.get('entailment');
+  const challengePass = latestPasses.get('challenge');
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-10">
@@ -162,6 +178,45 @@ export default async function RequirementDetailPage({
               <p className="text-sm text-slate-600">No evidence references persisted.</p>
             )}
           </Panel>
+          <Panel title="Candidate-centered verification passes">
+            <dl className="grid grid-cols-2 gap-3 text-sm">
+              <Field
+                name="Pass A — entailment"
+                value={
+                  entailmentPass
+                    ? `${entailmentPass.status}: ${String(entailmentPass.result?.classification ?? 'no result')}`
+                    : 'pending'
+                }
+              />
+              <Field
+                name="Pass B — challenge"
+                value={
+                  challengePass
+                    ? `${challengePass.status}: ${String(challengePass.result?.assessment ?? 'no result')}`
+                    : entailmentPass?.result?.classification === 'entails'
+                      ? 'pending'
+                      : 'not required'
+                }
+              />
+              <Field name="Decision engine" value={finding?.decision_engine_version ?? 'pending'} />
+              <Field name="Challenge state" value={finding?.challenge_status ?? 'pending'} />
+            </dl>
+            {finding?.deterministic_model_disagreement?.length ? (
+              <div className="mt-3 rounded border border-amber-300 bg-amber-50 p-3 text-sm">
+                <strong>Deterministic/model disagreement</strong>
+                <ul className="mt-1 list-disc pl-5">
+                  {finding.deterministic_model_disagreement.map((item: string) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {challengePass?.status === 'failed' ? (
+              <p className="mt-3 text-sm text-red-700">
+                Challenge failed; this candidate cannot be source-supported.
+              </p>
+            ) : null}
+          </Panel>
           <Panel title="Addendum and duplicate relationships">
             {(relationships ?? []).length ? (
               <ul className="space-y-2 text-sm">
@@ -175,6 +230,11 @@ export default async function RequirementDetailPage({
                       related requirement
                     </Link>
                     <p className="text-slate-600">{item.rationale}</p>
+                    {item.precedence_quote ? (
+                      <blockquote className="mt-2 border-l-2 border-slate-300 pl-3 text-xs">
+                        {item.precedence_quote}
+                      </blockquote>
+                    ) : null}
                     <details className="mt-3">
                       <summary className="cursor-pointer text-blue-700">
                         Review this relationship
@@ -279,6 +339,22 @@ export default async function RequirementDetailPage({
               <Field
                 name="Verification prompt/schema"
                 value={finding ? `${finding.prompt_version} / ${finding.schema_version}` : 'none'}
+              />
+              <Field
+                name="Pass A prompt/schema"
+                value={
+                  entailmentPass
+                    ? `${entailmentPass.prompt_version} / ${entailmentPass.schema_version}`
+                    : 'none'
+                }
+              />
+              <Field
+                name="Pass B prompt/schema"
+                value={
+                  challengePass
+                    ? `${challengePass.prompt_version} / ${challengePass.schema_version}`
+                    : 'none'
+                }
               />
             </dl>
             <p className="mt-3 text-xs text-slate-500">

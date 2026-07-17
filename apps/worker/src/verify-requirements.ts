@@ -1,24 +1,31 @@
 import { createHash } from 'node:crypto';
 import {
-  VERIFICATION_PROMPT_VERSION,
-  VERIFICATION_SCHEMA_VERSION,
+  CHALLENGE_PROMPT_VERSION,
+  CHALLENGE_SCHEMA_VERSION,
+  DECISION_ENGINE_VERSION,
+  DUPLICATE_PROMPT_VERSION,
+  DUPLICATE_SCHEMA_VERSION,
+  ENTAILMENT_PROMPT_VERSION,
+  ENTAILMENT_SCHEMA_VERSION,
+  FACT_ENVELOPE_VERSION,
+  applyDuplicateSafetyBlock,
   checkBudget,
-  classifyDuplicateRelationship,
-  classifyProofRequirement,
-  compareDeterministicValues,
   createProvider,
+  findExplicitPrecedenceRelationships,
+  generateDuplicatePairCandidates,
   normalizeEvidenceText,
-  parseDeterministicDate,
-  parseDeterministicNumbers,
-  postValidateFinding,
+  runCandidateVerificationPipeline,
+  type ModelCallMetadata,
   type ModelProvider,
+  type VerificationCandidateInput,
+  type VerificationContext,
   MockProvider,
   validateEvidenceQuote,
 } from '@usi/ai';
 import { adminClient } from './db.js';
 import { env } from './env.js';
 
-export const VERIFICATION_RETRIEVAL_VERSION = 'verify-retrieval-v1';
+export const VERIFICATION_RETRIEVAL_VERSION = 'verify-retrieval-v2-candidate-centered';
 export const EVIDENCE_NORMALIZATION_VERSION = 'evidence-nfkc-v1';
 
 export type VerifyJobPayload = {
@@ -39,20 +46,23 @@ type PageRow = {
   warnings: unknown;
 };
 
-function queryTerms(text: string): string[] {
-  return [...new Set(text.toLowerCase().match(/[a-z0-9$-]{3,}/g) ?? [])]
-    .filter(
-      (term) => !['must', 'shall', 'with', 'from', 'this', 'that', 'requirement'].includes(term),
-    )
-    .slice(0, 12);
+type CallStage = 'verify_entailment' | 'verify_challenge' | 'verify_duplicate';
+
+function asCandidate(row: Record<string, any>): VerificationCandidateInput {
+  return {
+    id: row.id,
+    documentId: row.document_id,
+    category: row.category,
+    title: row.title,
+    obligation: row.obligation,
+    mandatoryClass: row.mandatory_class,
+    preliminaryPage: row.preliminary_page,
+    evidenceQuote: row.evidence_quote,
+  };
 }
 
-function relevantPage(page: PageRow, terms: string[]): boolean {
-  const lower = page.text.toLowerCase();
-  return (
-    terms.some((term) => lower.includes(term)) ||
-    /addendum|amendment|replaces|supersedes|revises|changed to/i.test(page.text)
-  );
+function passStatus(call: ModelCallMetadata) {
+  return call.refused ? 'refused' : call.incomplete ? 'incomplete' : 'succeeded';
 }
 
 export async function handleVerifyJob(
@@ -94,14 +104,89 @@ export async function handleVerifyJob(
     .from('spend_ledger')
     .select('estimated_cost_usd')
     .eq('phase', 'phase4');
-  const spent = (spentRows ?? []).reduce(
+  const initialSpent = (spentRows ?? []).reduce(
     (sum, row) => sum + Number(row.estimated_cost_usd ?? 0),
     0,
   );
-  if (checkBudget(spent, 0.01, env.PHASE4_SPEND_CEILING_USD) === 'exceeded') {
+  if (checkBudget(initialSpent, 0.01, env.PHASE4_SPEND_CEILING_USD) === 'exceeded') {
     await budgetCancel(payload, 'Phase 4 spend ceiling reached');
     return;
   }
+
+  let runCost = 0;
+  let budgetExceeded = false;
+  const persistCall = async (input: {
+    candidateId: string;
+    targetCandidateId?: string;
+    stage: CallStage;
+    passType: 'entailment' | 'challenge' | 'duplicate';
+    promptVersion: string;
+    schemaVersion: string;
+    call: ModelCallMetadata;
+    result: unknown;
+  }) => {
+    const wouldExceed =
+      checkBudget(
+        initialSpent + runCost,
+        input.call.estimatedCostUsd,
+        env.PHASE4_SPEND_CEILING_USD,
+      ) === 'exceeded';
+    const status = wouldExceed ? 'cancelled' : passStatus(input.call);
+    const { error: callError } = await admin.from('model_calls').insert({
+      workspace_id: payload.workspaceId,
+      analysis_run_id: payload.analysisRunId,
+      verification_run_id: run.id,
+      stage: input.stage,
+      provider: provider.name,
+      model: input.call.modelId,
+      provider_request_id: input.call.providerRequestId,
+      prompt_version: input.promptVersion,
+      schema_version: input.schemaVersion,
+      input_tokens: input.call.promptTokens,
+      output_tokens: input.call.completionTokens,
+      reasoning_tokens: input.call.reasoningTokens,
+      cached_tokens: input.call.cachedTokens,
+      latency_ms: input.call.latencyMs,
+      estimated_cost_usd: input.call.estimatedCostUsd,
+      retries: input.call.retries,
+      repair_attempts: input.call.repairAttempts,
+      status,
+      error_category: wouldExceed ? 'budget' : null,
+    });
+    if (callError) throw callError;
+    if (input.call.estimatedCostUsd > 0) {
+      const { error: spendError } = await admin.from('spend_ledger').insert({
+        workspace_id: payload.workspaceId,
+        analysis_run_id: payload.analysisRunId,
+        phase: 'phase4',
+        kind: 'verify',
+        estimated_cost_usd: input.call.estimatedCostUsd,
+        note: `${input.stage}:${run.id}:${input.candidateId}`,
+      });
+      if (spendError) throw spendError;
+      runCost += input.call.estimatedCostUsd;
+    }
+    if (wouldExceed) {
+      budgetExceeded = true;
+      throw new Error('Phase 4 ceiling would be exceeded by verification call');
+    }
+    const { error: passError } = await admin.from('verification_pass_results').insert({
+      workspace_id: payload.workspaceId,
+      analysis_run_id: payload.analysisRunId,
+      verification_run_id: run.id,
+      candidate_id: input.candidateId,
+      target_candidate_id: input.targetCandidateId ?? null,
+      pass_type: input.passType,
+      status: passStatus(input.call),
+      prompt_version: input.promptVersion,
+      schema_version: input.schemaVersion,
+      model_id: input.call.modelId,
+      provider_request_id: input.call.providerRequestId,
+      result: input.result,
+      error_category: input.call.refused ? 'refusal' : input.call.incomplete ? 'incomplete' : null,
+    });
+    if (passError) throw passError;
+  };
 
   await admin
     .from('verification_runs')
@@ -119,7 +204,7 @@ export async function handleVerifyJob(
     .eq('id', payload.processingJobId);
 
   try {
-    const { data: candidates, error: candidateError } = await admin
+    const { data: candidateRows, error: candidateError } = await admin
       .from('requirement_candidates')
       .select(
         'id, workspace_id, analysis_run_id, document_id, category, title, obligation, mandatory_class, preliminary_page, evidence_quote',
@@ -128,12 +213,13 @@ export async function handleVerifyJob(
       .eq('analysis_run_id', payload.analysisRunId)
       .order('created_at');
     if (candidateError) throw candidateError;
-    if (!candidates?.length)
+    if (!candidateRows?.length)
       throw new Error('No immutable extraction candidates available for verification');
+    const candidates = candidateRows.map(asCandidate);
 
     const { data: documents } = await admin
       .from('documents')
-      .select('id, document_type, normalized_filename')
+      .select('id, document_type')
       .eq('workspace_id', payload.workspaceId)
       .is('deleted_at', null);
     const documentMap = new Map((documents ?? []).map((document) => [document.id, document]));
@@ -150,247 +236,128 @@ export async function handleVerifyJob(
     const pageByKey = new Map(
       pages.map((page) => [`${page.document_id}:${page.page_number}`, page]),
     );
-
-    const supplied = new Map<
-      string,
-      {
-        chunkId: string;
-        documentId: string;
-        documentType: string;
-        pageNumber: number;
-        text: string;
-        extractionStatus: string;
-        parserWarnings: string[];
-        retrievalReason: string;
-      }
-    >();
-    const retrievalRows: Record<string, unknown>[] = [];
-    for (const candidate of candidates) {
-      const terms = queryTerms(
-        `${candidate.title} ${candidate.obligation} ${candidate.evidence_quote}`,
-      );
-      const selected = new Map<string, { page: PageRow; reason: string; rank: number }>();
-      for (const page of pages) {
-        const cited =
-          page.document_id === candidate.document_id &&
-          page.page_number === candidate.preliminary_page;
-        const neighbor =
-          page.document_id === candidate.document_id &&
-          Math.abs(page.page_number - candidate.preliminary_page) === 1;
-        const addendum =
-          documentMap.get(page.document_id)?.document_type === 'addendum' ||
-          /addendum|amendment/i.test(page.text);
-        if (cited) selected.set(page.id, { page, reason: 'candidate_cited_page', rank: 1 });
-        else if (neighbor) selected.set(page.id, { page, reason: 'neighbor_page', rank: 2 });
-        else if (addendum) selected.set(page.id, { page, reason: 'addendum_scan', rank: 3 });
-        else if (relevantPage(page, terms) && selected.size < 12)
-          selected.set(page.id, { page, reason: 'keyword_or_conflict_scan', rank: 4 });
-      }
-      const { data: hybrid } = await admin.rpc('search_chunks_hybrid', {
-        p_workspace_id: payload.workspaceId,
-        p_analysis_run_id: payload.analysisRunId,
-        p_query: `${candidate.title} ${candidate.obligation}`.slice(0, 500),
-        p_limit: 8,
-      });
-      for (const hit of hybrid ?? []) {
-        const page = pages.find(
-          (p) => p.document_id === candidate.document_id && p.page_number === hit.page_number,
-        );
-        if (page && !selected.has(page.id))
-          selected.set(page.id, { page, reason: 'hybrid_retrieval', rank: 5 });
-      }
-      let rank = 0;
-      for (const item of [...selected.values()].sort((a, b) => a.rank - b.rank).slice(0, 16)) {
-        rank += 1;
-        const document = documentMap.get(item.page.document_id);
-        const key = `${item.page.document_id}:${item.page.page_number}`;
-        if (!supplied.has(key))
-          supplied.set(key, {
-            chunkId: item.page.id,
-            documentId: item.page.document_id,
-            documentType: document?.document_type ?? 'unknown',
-            pageNumber: item.page.page_number,
-            text: item.page.text ?? '',
-            extractionStatus: item.page.extraction_status,
-            parserWarnings: Array.isArray(item.page.warnings) ? item.page.warnings.map(String) : [],
-            retrievalReason: item.reason,
-          });
-        retrievalRows.push({
-          workspace_id: payload.workspaceId,
-          analysis_run_id: payload.analysisRunId,
-          verification_run_id: run.id,
-          candidate_id: candidate.id,
-          chunk_id: null,
-          document_id: item.page.document_id,
-          document_page_id: item.page.id,
-          page_number: item.page.page_number,
-          retrieval_reason: item.reason,
-          retrieval_rank: rank,
-          score: null,
-          text_sha256: item.page.text_sha256,
-        });
-      }
-    }
-    if (retrievalRows.length) {
-      const { error } = await admin.from('verification_retrieval_chunks').upsert(retrievalRows, {
-        onConflict: 'verification_run_id,candidate_id,document_page_id,retrieval_reason',
-        ignoreDuplicates: true,
-      });
-      if (error) throw error;
-    }
+    const availableContexts: VerificationContext[] = pages.map((page) => ({
+      chunkId: page.id,
+      documentId: page.document_id,
+      documentType: documentMap.get(page.document_id)?.document_type ?? 'unknown',
+      pageNumber: page.page_number,
+      text: page.text ?? '',
+      extractionStatus: page.extraction_status,
+      parserWarnings: Array.isArray(page.warnings) ? page.warnings.map(String) : [],
+      retrievalReason: 'candidate_centered_retrieval_pool',
+    }));
 
     await admin.from('verification_runs').update({ status: 'verifying' }).eq('id', run.id);
-    const verifyOut = await provider.verifyCandidates({
-      workspaceId: payload.workspaceId,
-      analysisRunId: payload.analysisRunId,
-      verificationRunId: run.id,
-      candidates: candidates.map((candidate) => ({
-        id: candidate.id,
-        documentId: candidate.document_id,
-        category: candidate.category,
-        title: candidate.title,
-        obligation: candidate.obligation,
-        mandatoryClass: candidate.mandatory_class,
-        preliminaryPage: candidate.preliminary_page,
-        evidenceQuote: candidate.evidence_quote,
-      })),
-      contexts: [...supplied.values()],
-      promptVersion: VERIFICATION_PROMPT_VERSION,
-      schemaVersion: VERIFICATION_SCHEMA_VERSION,
-      maxOutputTokens: Math.max(env.MAX_OUTPUT_TOKENS, 12_000),
-    });
-    if (
-      checkBudget(spent, verifyOut.estimatedCostUsd, env.PHASE4_SPEND_CEILING_USD) === 'exceeded'
-    ) {
-      await admin.from('model_calls').insert({
-        workspace_id: payload.workspaceId,
-        analysis_run_id: payload.analysisRunId,
-        verification_run_id: run.id,
-        stage: 'verify',
-        provider: provider.name,
-        model: verifyOut.modelId,
-        provider_request_id: verifyOut.providerRequestId,
-        prompt_version: VERIFICATION_PROMPT_VERSION,
-        schema_version: VERIFICATION_SCHEMA_VERSION,
-        input_tokens: verifyOut.promptTokens,
-        output_tokens: verifyOut.completionTokens,
-        reasoning_tokens: verifyOut.reasoningTokens,
-        cached_tokens: verifyOut.cachedTokens,
-        latency_ms: verifyOut.latencyMs,
-        estimated_cost_usd: verifyOut.estimatedCostUsd,
-        retries: verifyOut.retries,
-        repair_attempts: verifyOut.repairAttempts,
-        status: 'cancelled',
-        error_category: 'budget',
-      });
-      await budgetCancel(payload, 'Phase 4 ceiling would be exceeded by verification call');
-      return;
-    }
-    await admin.from('model_calls').insert({
-      workspace_id: payload.workspaceId,
-      analysis_run_id: payload.analysisRunId,
-      verification_run_id: run.id,
-      stage: 'verify',
-      provider: provider.name,
-      model: verifyOut.modelId,
-      provider_request_id: verifyOut.providerRequestId,
-      prompt_version: VERIFICATION_PROMPT_VERSION,
-      schema_version: VERIFICATION_SCHEMA_VERSION,
-      input_tokens: verifyOut.promptTokens,
-      output_tokens: verifyOut.completionTokens,
-      reasoning_tokens: verifyOut.reasoningTokens,
-      cached_tokens: verifyOut.cachedTokens,
-      latency_ms: verifyOut.latencyMs,
-      estimated_cost_usd: verifyOut.estimatedCostUsd,
-      retries: verifyOut.retries,
-      repair_attempts: verifyOut.repairAttempts,
-      status: verifyOut.refused ? 'refused' : verifyOut.incomplete ? 'incomplete' : 'succeeded',
-    });
-    if (verifyOut.estimatedCostUsd > 0)
-      await admin.from('spend_ledger').insert({
-        workspace_id: payload.workspaceId,
-        analysis_run_id: payload.analysisRunId,
-        phase: 'phase4',
-        kind: 'verify',
-        estimated_cost_usd: verifyOut.estimatedCostUsd,
-        note: `verification_run:${run.id}`,
-      });
-    if (verifyOut.refused || verifyOut.incomplete)
-      throw new Error(
-        verifyOut.refused ? 'Verification model refused' : 'Verification model response incomplete',
-      );
-
-    await admin.from('verification_runs').update({ status: 'post_validating' }).eq('id', run.id);
-    const contextMap = new Map(
-      [...supplied.values()].map((context) => [
-        `${context.documentId}:${context.pageNumber}`,
-        { text: context.text, extractionStatus: context.extractionStatus },
-      ]),
-    );
+    const findings = new Map<string, string>();
     let findingCount = 0;
-    for (const rawFinding of verifyOut.findings) {
-      const candidate = candidates.find((item) => item.id === rawFinding.candidateId);
-      if (!candidate) throw new Error('Verifier returned an unknown candidate ID');
-      const finding = postValidateFinding(rawFinding, contextMap);
-      const deterministicProof = classifyProofRequirement(candidate.obligation);
-      const proofRequirement =
-        deterministicProof === 'none_identified' ? finding.proofRequirement : deterministicProof;
+    let incompletePipeline = false;
+
+    for (const candidate of candidates) {
+      const result = await runCandidateVerificationPipeline({
+        provider,
+        workspaceId: payload.workspaceId,
+        analysisRunId: payload.analysisRunId,
+        verificationRunId: run.id,
+        candidate,
+        availableContexts,
+        maxContexts: 8,
+        maxOutputTokens: Math.min(Math.max(env.MAX_OUTPUT_TOKENS, 1800), 4000),
+        onEnvelope: async (facts, contexts) => {
+          const retrievalRows = contexts.map((context, index) => {
+            const page = pageByKey.get(`${context.documentId}:${context.pageNumber}`)!;
+            return {
+              workspace_id: payload.workspaceId,
+              analysis_run_id: payload.analysisRunId,
+              verification_run_id: run.id,
+              candidate_id: candidate.id,
+              chunk_id: null,
+              document_id: context.documentId,
+              document_page_id: page.id,
+              page_number: context.pageNumber,
+              retrieval_reason:
+                context.documentId === candidate.documentId &&
+                context.pageNumber === candidate.preliminaryPage
+                  ? 'candidate_cited_page'
+                  : context.retrievalReason,
+              retrieval_rank: index + 1,
+              score: null,
+              text_sha256: page.text_sha256,
+            };
+          });
+          if (retrievalRows.length) {
+            const { error } = await admin
+              .from('verification_retrieval_chunks')
+              .upsert(retrievalRows, {
+                onConflict: 'verification_run_id,candidate_id,document_page_id,retrieval_reason',
+                ignoreDuplicates: true,
+              });
+            if (error) throw error;
+          }
+          const contextHash = createHash('sha256')
+            .update(JSON.stringify(facts.evidenceSourceHashes))
+            .digest('hex');
+          const { error } = await admin.from('verification_fact_envelopes').insert({
+            workspace_id: payload.workspaceId,
+            analysis_run_id: payload.analysisRunId,
+            verification_run_id: run.id,
+            candidate_id: candidate.id,
+            envelope_version: FACT_ENVELOPE_VERSION,
+            context_hash: contextHash,
+            payload: facts,
+          });
+          if (error) throw error;
+        },
+        onEntailmentCall: async (call) =>
+          persistCall({
+            candidateId: candidate.id,
+            stage: 'verify_entailment',
+            passType: 'entailment',
+            promptVersion: ENTAILMENT_PROMPT_VERSION,
+            schemaVersion: ENTAILMENT_SCHEMA_VERSION,
+            call,
+            result: call.result,
+          }),
+        onChallengeCall: async (call) =>
+          persistCall({
+            candidateId: candidate.id,
+            stage: 'verify_challenge',
+            passType: 'challenge',
+            promptVersion: CHALLENGE_PROMPT_VERSION,
+            schemaVersion: CHALLENGE_SCHEMA_VERSION,
+            call,
+            result: call.result,
+          }),
+      });
+
+      if (!result.finalAssessment) {
+        incompletePipeline = true;
+        await persistFailedPass(
+          payload,
+          result.failedStage ?? 'entailment',
+          candidate.id,
+          provider.name,
+          result.error ?? 'Verification pass failed before producing metadata',
+        );
+        continue;
+      }
+      if (result.failedStage === 'challenge' && !result.challengeCall) {
+        await persistFailedPass(
+          payload,
+          'challenge',
+          candidate.id,
+          provider.name,
+          result.error ?? 'Challenge pass failed before producing metadata',
+        );
+      }
+
+      await admin.from('verification_runs').update({ status: 'post_validating' }).eq('id', run.id);
       const { data: previous } = await admin
         .from('verification_findings')
         .select('finding_version')
         .eq('candidate_id', candidate.id)
         .order('finding_version', { ascending: false })
         .limit(1);
-      const findingVersion = Number(previous?.[0]?.finding_version ?? 0) + 1;
-      const sourceTexts = finding.supportingEvidence.map(
-        (ref) => pageByKey.get(`${ref.documentId}:${ref.pageNumber}`)?.text ?? '',
-      );
-      const candidateDate = parseDeterministicDate(candidate.obligation);
-      const sourceDates = sourceTexts.map(parseDeterministicDate);
-      const dateComparisons = sourceDates.map((sourceDate) => ({
-        candidate: candidateDate,
-        source: sourceDate,
-        comparison_result: compareDeterministicValues(
-          { value: candidateDate.normalized, unit: 'date' },
-          { value: sourceDate.normalized, unit: 'date' },
-        ),
-      }));
-      const candidateNumbers = parseDeterministicNumbers(candidate.obligation);
-      const sourceNumbers = sourceTexts.flatMap(parseDeterministicNumbers);
-      const numberComparisons = candidateNumbers.map((candidateNumber) => {
-        const sameUnit = sourceNumbers.filter(
-          (sourceNumber) => sourceNumber.unit === candidateNumber.unit,
-        );
-        const sourceNumber =
-          sameUnit.find((item) => item.normalizedValue === candidateNumber.normalizedValue) ??
-          sameUnit[0];
-        return {
-          candidate: candidateNumber,
-          source: sourceNumber ?? null,
-          comparison_result: sourceNumber
-            ? compareDeterministicValues(
-                { value: candidateNumber.normalizedValue, unit: candidateNumber.unit },
-                { value: sourceNumber.normalizedValue, unit: sourceNumber.unit },
-              )
-            : 'uncertain',
-        };
-      });
-      const facts = {
-        candidate_dates: [candidateDate],
-        source_dates: sourceDates,
-        date_comparisons: dateComparisons,
-        candidate_numbers: candidateNumbers,
-        source_numbers: sourceNumbers,
-        number_comparisons: numberComparisons,
-        model_proposals: finding.deterministicFacts,
-      };
-      const explicitValueMismatch =
-        dateComparisons.some((comparison) => comparison.comparison_result === 'mismatch') ||
-        numberComparisons.some((comparison) => comparison.comparison_result === 'mismatch');
-      const sourceSupportStatus =
-        finding.sourceSupportStatus === 'supported' && explicitValueMismatch
-          ? 'contradicted'
-          : finding.sourceSupportStatus;
+      const final = result.finalAssessment;
       const { data: inserted, error: findingError } = await admin
         .from('verification_findings')
         .insert({
@@ -398,104 +365,199 @@ export async function handleVerifyJob(
           analysis_run_id: payload.analysisRunId,
           verification_run_id: run.id,
           candidate_id: candidate.id,
-          finding_version: findingVersion,
-          source_support_status: sourceSupportStatus,
-          precedence_status: finding.precedenceStatus,
-          proof_requirement: proofRequirement,
-          rationale: finding.rationale,
-          material_mismatches: finding.materialMismatches,
-          deterministic_facts: facts,
-          parser_concerns: finding.parserConcerns,
-          ambiguity_notes: finding.ambiguityNotes,
-          prompt_version: VERIFICATION_PROMPT_VERSION,
-          schema_version: VERIFICATION_SCHEMA_VERSION,
-          model_id: verifyOut.modelId,
-          provider_request_id: verifyOut.providerRequestId,
+          finding_version: Number(previous?.[0]?.finding_version ?? 0) + 1,
+          source_support_status: final.sourceSupportStatus,
+          precedence_status: final.precedenceStatus,
+          proof_requirement: final.proofRequirement,
+          rationale: final.rationale,
+          material_mismatches: final.materialMismatches,
+          deterministic_facts: result.facts,
+          parser_concerns: final.parserConcerns,
+          ambiguity_notes: final.ambiguityNotes,
+          prompt_version: `${ENTAILMENT_PROMPT_VERSION}+${CHALLENGE_PROMPT_VERSION}`,
+          schema_version: `${ENTAILMENT_SCHEMA_VERSION}+${CHALLENGE_SCHEMA_VERSION}`,
+          decision_engine_version: DECISION_ENGINE_VERSION,
+          deterministic_model_disagreement: final.deterministicModelDisagreement,
+          challenge_status: final.challengeStatus,
+          model_id:
+            result.challengeCall?.modelId ?? result.entailmentCall?.modelId ?? provider.name,
+          provider_request_id:
+            result.challengeCall?.providerRequestId ?? result.entailmentCall?.providerRequestId,
         })
         .select('id')
         .single();
       if (findingError || !inserted) throw findingError ?? new Error('Finding insert failed');
+      findings.set(candidate.id, inserted.id);
       findingCount += 1;
 
-      for (const [role, refs] of [
-        ['supporting', finding.supportingEvidence],
-        ['contradicting', finding.contradictingEvidence],
-        ['addendum', finding.addendumEvidence],
+      for (const [role, references] of [
+        ['supporting', final.supportingEvidence],
+        ['contradicting', final.contradictingEvidence],
       ] as const) {
-        for (const ref of refs) {
-          const page = pageByKey.get(`${ref.documentId}:${ref.pageNumber}`);
+        for (const reference of references) {
+          const page = pageByKey.get(`${reference.documentId}:${reference.pageNumber}`);
           if (!page) continue;
-          const match = validateEvidenceQuote(page.text, ref.quote);
-          await admin.from('verification_evidence').insert({
+          const match = validateEvidenceQuote(page.text, reference.quote);
+          const { error } = await admin.from('verification_evidence').insert({
             workspace_id: payload.workspaceId,
             finding_id: inserted.id,
-            document_id: ref.documentId,
+            document_id: reference.documentId,
             document_page_id: page.id,
-            page_number: ref.pageNumber,
+            page_number: reference.pageNumber,
             evidence_role: role,
-            quote_exact: ref.quote,
-            quote_normalized: normalizeEvidenceText(ref.quote),
+            quote_exact: reference.quote,
+            quote_normalized: normalizeEvidenceText(reference.quote),
             normalization_version: EVIDENCE_NORMALIZATION_VERSION,
             match_type: match.matchType,
             start_offset: match.startOffset,
             end_offset: match.endOffset,
-            validated: match.matchType === 'exact' || match.matchType === 'normalized_exact',
+            validated: ['exact', 'normalized_exact'].includes(match.matchType),
           });
+          if (error) throw error;
         }
       }
-      for (const proposal of finding.duplicateProposals) {
-        const target = candidates.find((item) => item.id === proposal.candidateId);
-        if (!target || target.id === candidate.id) continue;
-        const relationshipType = classifyDuplicateRelationship(
-          { id: candidate.id, obligation: candidate.obligation },
-          { id: target.id, obligation: target.obligation },
-        );
-        await admin.from('requirement_relationships').upsert(
-          {
-            workspace_id: payload.workspaceId,
-            verification_run_id: run.id,
-            finding_id: inserted.id,
-            source_candidate_id: candidate.id,
-            target_candidate_id: target.id,
-            relationship_type: relationshipType,
-            rationale: proposal.rationale,
-            machine_confidence: relationshipType === 'exact_duplicate' ? 1 : null,
-          },
-          {
-            onConflict:
-              'verification_run_id,source_candidate_id,target_candidate_id,relationship_type',
-            ignoreDuplicates: true,
-          },
-        );
-      }
+      if (result.failedStage === 'challenge') incompletePipeline = true;
     }
 
+    for (const relationship of findExplicitPrecedenceRelationships(candidates, availableContexts)) {
+      const findingId = findings.get(relationship.sourceCandidateId);
+      if (!findingId) continue;
+      const { error } = await admin.from('requirement_relationships').upsert(
+        {
+          workspace_id: payload.workspaceId,
+          verification_run_id: run.id,
+          finding_id: findingId,
+          source_candidate_id: relationship.sourceCandidateId,
+          target_candidate_id: relationship.targetCandidateId,
+          relationship_type: relationship.relationshipType,
+          rationale: 'Explicit amendment relationship derived from quoted source language.',
+          original_document_id: relationship.originalDocumentId,
+          original_page_number: relationship.originalPageNumber,
+          addendum_document_id: relationship.addendumDocumentId,
+          addendum_page_number: relationship.addendumPageNumber,
+          precedence_quote: relationship.precedenceQuote,
+          deterministic_metadata: relationship.deterministicMetadata,
+          relationship_version: 'precedence-relationship-v2',
+          machine_assessment: 'machine_proposal_only',
+        },
+        {
+          onConflict:
+            'verification_run_id,source_candidate_id,target_candidate_id,relationship_type',
+          ignoreDuplicates: true,
+        },
+      );
+      if (error) throw error;
+    }
+
+    for (const pair of generateDuplicatePairCandidates(candidates)) {
+      if (budgetExceeded) break;
+      let call;
+      try {
+        call = await provider.classifyDuplicatePair({
+          workspaceId: payload.workspaceId,
+          analysisRunId: payload.analysisRunId,
+          verificationRunId: run.id,
+          source: pair.source,
+          target: pair.target,
+          deterministicMaterialDifferences: pair.materialDifferences,
+          maxOutputTokens: 1000,
+        });
+        await persistCall({
+          candidateId: pair.source.id,
+          targetCandidateId: pair.target.id,
+          stage: 'verify_duplicate',
+          passType: 'duplicate',
+          promptVersion: DUPLICATE_PROMPT_VERSION,
+          schemaVersion: DUPLICATE_SCHEMA_VERSION,
+          call,
+          result: call.result,
+        });
+      } catch (error) {
+        if (budgetExceeded) throw error;
+        await persistFailedPass(
+          payload,
+          'duplicate',
+          pair.source.id,
+          provider.name,
+          error instanceof Error ? error.message : 'Duplicate assessment failed',
+          pair.target.id,
+        );
+        continue;
+      }
+      if (call.refused || call.incomplete || !call.result) continue;
+      const assessed = applyDuplicateSafetyBlock(pair, call.result);
+      const findingId = findings.get(pair.source.id);
+      if (!findingId) continue;
+      const { error } = await admin.from('requirement_relationships').upsert(
+        {
+          workspace_id: payload.workspaceId,
+          verification_run_id: run.id,
+          finding_id: findingId,
+          source_candidate_id: pair.source.id,
+          target_candidate_id: pair.target.id,
+          relationship_type: assessed.relationshipType,
+          rationale: assessed.rationale,
+          deterministic_metadata: {
+            material_differences: pair.materialDifferences,
+            deterministic_classification: pair.deterministicClassification,
+          },
+          relationship_version: 'duplicate-pair-v2',
+          machine_assessment: 'machine_proposal_only',
+        },
+        {
+          onConflict:
+            'verification_run_id,source_candidate_id,target_candidate_id,relationship_type',
+          ignoreDuplicates: true,
+        },
+      );
+      if (error) throw error;
+    }
+
+    if (budgetExceeded) {
+      await budgetCancel(payload, 'Phase 4 ceiling would be exceeded by verification call');
+      return;
+    }
+    const finalRunStatus = incompletePipeline ? 'failed' : 'completed';
     await admin
       .from('verification_runs')
       .update({
-        status: 'completed',
+        status: finalRunStatus,
         candidate_count: candidates.length,
         finding_count: findingCount,
-        estimated_cost_usd: verifyOut.estimatedCostUsd,
+        estimated_cost_usd: runCost,
         completed_at: new Date().toISOString(),
-        error_category: null,
-        error_detail: verifyOut.notes?.slice(0, 500) ?? null,
+        error_category: incompletePipeline ? 'verification_pass_failed' : null,
+        error_detail: incompletePipeline
+          ? 'At least one candidate pass failed; no failed positive was persisted as supported.'
+          : null,
       })
       .eq('id', run.id);
     await admin
       .from('processing_jobs')
-      .update({ status: 'completed', completed_at: new Date().toISOString() })
+      .update({
+        status: incompletePipeline ? 'failed' : 'completed',
+        completed_at: new Date().toISOString(),
+        error_category: incompletePipeline ? 'verification_pass_failed' : null,
+      })
       .eq('id', payload.processingJobId);
     await admin.from('audit_events').insert({
       workspace_id: payload.workspaceId,
       actor_type: 'system',
       actor_id: null,
-      event_type: 'verification_completed',
+      event_type: incompletePipeline ? 'verification_failed' : 'verification_completed',
       entity_type: 'verification_run',
       entity_id: run.id,
-      payload: { finding_count: findingCount, model: verifyOut.modelId },
+      payload: {
+        finding_count: findingCount,
+        decision_engine_version: DECISION_ENGINE_VERSION,
+        candidate_centered: true,
+      },
     });
   } catch (error) {
+    if (budgetExceeded) {
+      await budgetCancel(payload, 'Phase 4 ceiling would be exceeded by verification call');
+      return;
+    }
     await failVerification(
       payload,
       'verification_failed',
@@ -505,10 +567,45 @@ export async function handleVerifyJob(
   }
 }
 
+async function persistFailedPass(
+  payload: VerifyJobPayload,
+  passType: 'entailment' | 'challenge' | 'duplicate',
+  candidateId: string,
+  modelId: string,
+  detail: string,
+  targetCandidateId?: string,
+) {
+  const versions =
+    passType === 'entailment'
+      ? [ENTAILMENT_PROMPT_VERSION, ENTAILMENT_SCHEMA_VERSION]
+      : passType === 'challenge'
+        ? [CHALLENGE_PROMPT_VERSION, CHALLENGE_SCHEMA_VERSION]
+        : [DUPLICATE_PROMPT_VERSION, DUPLICATE_SCHEMA_VERSION];
+  const { error } = await adminClient()
+    .from('verification_pass_results')
+    .insert({
+      workspace_id: payload.workspaceId,
+      analysis_run_id: payload.analysisRunId,
+      verification_run_id: payload.verificationRunId,
+      candidate_id: candidateId,
+      target_candidate_id: targetCandidateId ?? null,
+      pass_type: passType,
+      status: 'failed',
+      prompt_version: versions[0],
+      schema_version: versions[1],
+      model_id: modelId,
+      error_category: 'provider_or_persistence_error',
+      error_detail: detail.slice(0, 500),
+    });
+  // A callback can fail after its call result was persisted. Preserve the original
+  // immutable record instead of manufacturing a duplicate failure row.
+  if (error && !/duplicate key/i.test(error.message ?? '')) throw error;
+}
+
 export function verificationInputHash(candidateIds: string[], analysisRunId: string): string {
   return createHash('sha256')
     .update(
-      `${analysisRunId}:${[...candidateIds].sort().join(',')}:${VERIFICATION_PROMPT_VERSION}:${VERIFICATION_SCHEMA_VERSION}`,
+      `${analysisRunId}:${[...candidateIds].sort().join(',')}:${ENTAILMENT_PROMPT_VERSION}:${CHALLENGE_PROMPT_VERSION}:${DECISION_ENGINE_VERSION}`,
     )
     .digest('hex');
 }

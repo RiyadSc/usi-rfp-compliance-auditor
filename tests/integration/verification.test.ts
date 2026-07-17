@@ -1,7 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { config as loadEnv } from 'dotenv';
-import { MockProvider } from '../../packages/ai/src/index.js';
+import {
+  MockProvider,
+  type CandidateAssessmentInput,
+  type ChallengeInput,
+} from '../../packages/ai/src/index.js';
 import { handleVerifyJob } from '../../apps/worker/src/verify-requirements.js';
 import { createTestWorkspace, signInUser } from './helpers.js';
 
@@ -29,7 +33,11 @@ afterAll(async () => {
   await userB.auth.signOut();
 });
 
-async function seedVerification() {
+async function seedVerification(options?: {
+  pageText?: string;
+  obligation?: string;
+  evidenceQuote?: string;
+}) {
   const svc = admin();
   const documentId = crypto.randomUUID(),
     parseRunId = crypto.randomUUID(),
@@ -37,7 +45,7 @@ async function seedVerification() {
   const candidateId = crypto.randomUUID(),
     verificationRunId = crypto.randomUUID(),
     processingJobId = crypto.randomUUID();
-  const pageText = 'Offerors must submit Certificate Z-9 by April 22, 2026.';
+  const pageText = options?.pageText ?? 'Offerors must submit Certificate Z-9 by April 22, 2026.';
   const objectKey = `${workspaceA}/verify-test/${documentId}.pdf`;
   await svc.from('documents').insert({
     id: documentId,
@@ -99,10 +107,10 @@ async function seedVerification() {
     document_id: documentId,
     category: 'certification',
     title: 'Certificate Z-9',
-    obligation: 'Offerors must submit Certificate Z-9 by April 22, 2026.',
+    obligation: options?.obligation ?? 'Offerors must submit Certificate Z-9 by April 22, 2026.',
     mandatory_class: 'mandatory',
     preliminary_page: 1,
-    evidence_quote: pageText,
+    evidence_quote: options?.evidenceQuote ?? pageText,
     confidence: 0.8,
     status: 'unverified',
     prompt_version: 'extract-v1',
@@ -431,5 +439,228 @@ describe('Phase 4 verification persistence and isolation', () => {
           .eq('verification_run_id', seed.verificationRunId)
       ).error,
     ).not.toBeNull();
+  });
+
+  it('keeps malformed/refused/incomplete/timeout/rate-limit/unavailable Pass A failures pending', async () => {
+    for (const mode of [
+      'refusal',
+      'incomplete',
+      'timeout',
+      'rate_limit',
+      'unavailable',
+      'repair_failure',
+    ] as const) {
+      const seed = await seedVerification();
+      class PassAFailureProvider extends MockProvider {
+        override async assessEntailment(input: CandidateAssessmentInput) {
+          if (mode === 'timeout') throw new Error('provider timeout');
+          if (mode === 'rate_limit') throw new Error('rate limit exceeded');
+          if (mode === 'unavailable') throw new Error('provider unavailable');
+          if (mode === 'repair_failure')
+            throw new Error('strict schema validation failed after controlled repair');
+          const base = await super.assessEntailment(input);
+          return {
+            ...base,
+            result: null,
+            ...(mode === 'refusal' ? { refused: true } : { incomplete: true }),
+          };
+        }
+      }
+      await handleVerifyJob(
+        {
+          workspaceId: workspaceA,
+          analysisRunId: seed.analysisRunId,
+          verificationRunId: seed.verificationRunId,
+          processingJobId: seed.processingJobId,
+        },
+        new PassAFailureProvider(),
+      );
+      const { data: run } = await admin()
+        .from('verification_runs')
+        .select('status')
+        .eq('id', seed.verificationRunId)
+        .single();
+      expect(run?.status).toBe('failed');
+      const { count } = await admin()
+        .from('verification_findings')
+        .select('id', { count: 'exact', head: true })
+        .eq('verification_run_id', seed.verificationRunId);
+      expect(count).toBe(0);
+      const { data: pass } = await admin()
+        .from('verification_pass_results')
+        .select('pass_type,status')
+        .eq('verification_run_id', seed.verificationRunId)
+        .single();
+      expect(pass).toMatchObject({
+        pass_type: 'entailment',
+        status: mode === 'refusal' ? 'refused' : mode === 'incomplete' ? 'incomplete' : 'failed',
+      });
+    }
+  });
+
+  it('persists one controlled schema repair when the repaired Pass A succeeds', async () => {
+    const seed = await seedVerification();
+    class RepairSuccessProvider extends MockProvider {
+      override async assessEntailment(input: CandidateAssessmentInput) {
+        const base = await super.assessEntailment(input);
+        return { ...base, repairAttempts: 1 };
+      }
+    }
+    await handleVerifyJob(
+      {
+        workspaceId: workspaceA,
+        analysisRunId: seed.analysisRunId,
+        verificationRunId: seed.verificationRunId,
+        processingJobId: seed.processingJobId,
+      },
+      new RepairSuccessProvider(),
+    );
+    const { data: call } = await admin()
+      .from('model_calls')
+      .select('repair_attempts,status')
+      .eq('verification_run_id', seed.verificationRunId)
+      .eq('stage', 'verify_entailment')
+      .single();
+    expect(call).toMatchObject({ repair_attempts: 1, status: 'succeeded' });
+  });
+
+  it('cancels before provider execution when the Phase 4 ledger is over budget', async () => {
+    const seed = await seedVerification();
+    const adjustmentId = crypto.randomUUID();
+    const svc = admin();
+    await svc.from('spend_ledger').insert({
+      id: adjustmentId,
+      phase: 'phase4',
+      kind: 'adjustment',
+      estimated_cost_usd: 10,
+      note: 'temporary integration budget guard',
+    });
+    try {
+      await handleVerifyJob(
+        {
+          workspaceId: workspaceA,
+          analysisRunId: seed.analysisRunId,
+          verificationRunId: seed.verificationRunId,
+          processingJobId: seed.processingJobId,
+        },
+        new MockProvider(),
+      );
+      const { data: run } = await svc
+        .from('verification_runs')
+        .select('status')
+        .eq('id', seed.verificationRunId)
+        .single();
+      expect(run?.status).toBe('budget_exceeded');
+      const { count } = await svc
+        .from('model_calls')
+        .select('id', { count: 'exact', head: true })
+        .eq('verification_run_id', seed.verificationRunId);
+      expect(count).toBe(0);
+    } finally {
+      await svc.from('spend_ledger').delete().eq('id', adjustmentId);
+    }
+  });
+
+  it('rejects stale candidate/run linkage for deterministic envelopes', async () => {
+    const first = await seedVerification();
+    const second = await seedVerification();
+    const result = await admin()
+      .from('verification_fact_envelopes')
+      .insert({
+        workspace_id: workspaceA,
+        analysis_run_id: first.analysisRunId,
+        verification_run_id: first.verificationRunId,
+        candidate_id: second.candidateId,
+        envelope_version: 'verification-facts-v2',
+        context_hash: 'a'.repeat(64),
+        payload: { machineOnly: true },
+      });
+    expect(result.error).not.toBeNull();
+  });
+
+  it('cannot persist supported when Pass B fails after a possible positive', async () => {
+    const seed = await seedVerification();
+    class ChallengeFailureProvider extends MockProvider {
+      override async challengeEntailment(_input: ChallengeInput): Promise<never> {
+        throw new Error('challenge provider unavailable');
+      }
+    }
+    await handleVerifyJob(
+      {
+        workspaceId: workspaceA,
+        analysisRunId: seed.analysisRunId,
+        verificationRunId: seed.verificationRunId,
+        processingJobId: seed.processingJobId,
+      },
+      new ChallengeFailureProvider(),
+    );
+    const { data: finding } = await admin()
+      .from('verification_findings')
+      .select('source_support_status, challenge_status')
+      .eq('verification_run_id', seed.verificationRunId)
+      .single();
+    expect(finding).toMatchObject({
+      source_support_status: 'unsupported',
+      challenge_status: 'failed',
+    });
+    const { data: run } = await admin()
+      .from('verification_runs')
+      .select('status')
+      .eq('id', seed.verificationRunId)
+      .single();
+    expect(run?.status).toBe('failed');
+  });
+
+  it('records deterministic/model disagreement and chooses the conservative value result', async () => {
+    const source = 'The contractor must maintain $3,000,000 per occurrence.';
+    const seed = await seedVerification({
+      pageText: source,
+      obligation: 'The contractor must maintain $4,000,000 per occurrence.',
+      evidenceQuote: source,
+    });
+    class UnsafeAgreementProvider extends MockProvider {
+      override async assessEntailment(input: CandidateAssessmentInput) {
+        const base = await super.assessEntailment(input);
+        return {
+          ...base,
+          result: {
+            ...base.result!,
+            classification: 'entails' as const,
+            supportingEvidence: [
+              { documentId: input.candidate.documentId, pageNumber: 1, quote: source },
+            ],
+            contradictingEvidence: [],
+          },
+        };
+      }
+      override async challengeEntailment(input: ChallengeInput) {
+        const base = await super.challengeEntailment(input);
+        return {
+          ...base,
+          result: {
+            ...base.result!,
+            assessment: 'no_material_objection' as const,
+            objections: [],
+          },
+        };
+      }
+    }
+    await handleVerifyJob(
+      {
+        workspaceId: workspaceA,
+        analysisRunId: seed.analysisRunId,
+        verificationRunId: seed.verificationRunId,
+        processingJobId: seed.processingJobId,
+      },
+      new UnsafeAgreementProvider(),
+    );
+    const { data: finding } = await admin()
+      .from('verification_findings')
+      .select('source_support_status, deterministic_model_disagreement, decision_engine_version')
+      .eq('verification_run_id', seed.verificationRunId)
+      .single();
+    expect(finding?.source_support_status).toBe('contradicted');
+    expect(finding?.deterministic_model_disagreement).not.toEqual([]);
+    expect(finding?.decision_engine_version).toBe('verification-decision-v3');
   });
 });

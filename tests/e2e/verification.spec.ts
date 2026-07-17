@@ -48,6 +48,8 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
       'ADDENDUM 2 supersedes the old amount and replaces it with $3,000,000 per occurrence.',
       '',
       'Required attachments checklist: Proposal Form A-1.',
+      'ADDENDUM 3: North Campus insurance must be $3,000,000.',
+      'ADDENDUM 4: North Campus insurance must be $4,000,000. No ordering rule controls.',
     ];
     await admin.from('documents').insert({
       id: documentId,
@@ -99,10 +101,10 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
       status: 'completed',
       stage: 'complete',
       created_by: user.id,
-      candidate_count: 6,
+      candidate_count: 8,
       completed_at: new Date().toISOString(),
     });
-    const candidates = Array.from({ length: 6 }, () => crypto.randomUUID());
+    const candidates = Array.from({ length: 8 }, () => crypto.randomUUID());
     const candidateRows = [
       [
         candidates[0],
@@ -152,6 +154,22 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
         6,
         pages[5],
       ],
+      [
+        candidates[6],
+        'signature',
+        'Pending challenge candidate',
+        'An authorized representative must sign Proposal Form A-1.',
+        1,
+        pages[0],
+      ],
+      [
+        candidates[7],
+        'insurance',
+        'Unresolved North Campus insurance conflict',
+        'Addendum 3 states North Campus insurance must be $3,000,000.',
+        7,
+        pages[6],
+      ],
     ];
     await admin.from('requirement_candidates').insert(
       candidateRows.map(([id, category, title, obligation, preliminaryPage, evidenceQuote]) => ({
@@ -186,12 +204,12 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
       provider: 'mock',
       model: 'mock-verify-v1',
       reasoning_effort: 'medium',
-      candidate_count: 6,
-      finding_count: 6,
+      candidate_count: 8,
+      finding_count: 7,
       created_by: user.id,
       completed_at: new Date().toISOString(),
     });
-    const findingIds = Array.from({ length: 6 }, () => crypto.randomUUID());
+    const findingIds = Array.from({ length: 7 }, () => crypto.randomUUID());
     const findingAxes = [
       [
         'supported',
@@ -208,20 +226,32 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
       ],
       ['parser_uncertain', 'undetermined', 'undetermined', 'Parser damage prevents assessment.'],
       [
-        'supported',
+        'unsupported',
+        'undetermined',
+        'requires_company_artifact',
+        'Challenge failed, so support cannot be persisted.',
+      ],
+      [
+        'partially_supported',
         'active',
         'requires_company_artifact',
-        'Source-supported and company proof is required.',
+        'Challenge found a material qualification omission.',
       ],
-      ['supported', 'active', 'requires_company_artifact', 'Checklist restates Form A-1.'],
+      [
+        'supported',
+        'conflicting',
+        'requires_company_artifact',
+        'Both addenda are supported, but neither is definitively active.',
+      ],
     ];
+    const findingCandidateIndexes = [0, 1, 2, 3, 4, 5, 7];
     await admin.from('verification_findings').insert(
       findingIds.map((id, index) => ({
         id,
         workspace_id: workspaceId,
         analysis_run_id: analysisRunId,
         verification_run_id: verificationRunId,
-        candidate_id: candidates[index],
+        candidate_id: candidates[findingCandidateIndexes[index]],
         finding_version: 1,
         source_support_status: findingAxes[index][0],
         precedence_status: findingAxes[index][1],
@@ -230,8 +260,139 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
         prompt_version: 'verify-v1',
         schema_version: 'verification-finding-v1',
         model_id: 'mock-verify-v1',
+        decision_engine_version: 'verification-decision-v3',
+        challenge_status: index === 4 ? 'failed' : index === 3 ? 'not_required' : 'completed',
+        deterministic_model_disagreement:
+          index === 4 ? ['Pass A entails but deterministic engine selected unsupported.'] : [],
       })),
     );
+    await admin.from('verification_pass_results').insert([
+      {
+        workspace_id: workspaceId,
+        analysis_run_id: analysisRunId,
+        verification_run_id: verificationRunId,
+        candidate_id: candidates[0],
+        pass_type: 'entailment',
+        status: 'succeeded',
+        prompt_version: 'verify-entailment-v3',
+        schema_version: 'verification-entailment-v1',
+        model_id: 'mock-verify-v3',
+        result: {
+          candidateId: candidates[0],
+          classification: 'entails',
+          machineOnly: true,
+        },
+      },
+      {
+        workspace_id: workspaceId,
+        analysis_run_id: analysisRunId,
+        verification_run_id: verificationRunId,
+        candidate_id: candidates[0],
+        pass_type: 'challenge',
+        status: 'succeeded',
+        prompt_version: 'verify-challenge-v1',
+        schema_version: 'verification-challenge-v1',
+        model_id: 'mock-verify-v3',
+        result: {
+          candidateId: candidates[0],
+          assessment: 'no_material_objection',
+          machineOnly: true,
+        },
+      },
+      {
+        workspace_id: workspaceId,
+        analysis_run_id: analysisRunId,
+        verification_run_id: verificationRunId,
+        candidate_id: candidates[1],
+        pass_type: 'entailment',
+        status: 'succeeded',
+        prompt_version: 'verify-entailment-v3',
+        schema_version: 'verification-entailment-v1',
+        model_id: 'mock-verify-v3',
+        result: { candidateId: candidates[1], classification: 'entails', machineOnly: true },
+      },
+      {
+        workspace_id: workspaceId,
+        analysis_run_id: analysisRunId,
+        verification_run_id: verificationRunId,
+        candidate_id: candidates[1],
+        pass_type: 'challenge',
+        status: 'succeeded',
+        prompt_version: 'verify-challenge-v1',
+        schema_version: 'verification-challenge-v1',
+        model_id: 'mock-verify-v3',
+        result: {
+          candidateId: candidates[1],
+          assessment: 'contradictory_evidence',
+          machineOnly: true,
+        },
+      },
+      {
+        workspace_id: workspaceId,
+        analysis_run_id: analysisRunId,
+        verification_run_id: verificationRunId,
+        candidate_id: candidates[4],
+        pass_type: 'entailment',
+        status: 'succeeded',
+        prompt_version: 'verify-entailment-v3',
+        schema_version: 'verification-entailment-v1',
+        model_id: 'mock-verify-v3',
+        result: { candidateId: candidates[4], classification: 'entails', machineOnly: true },
+      },
+      {
+        workspace_id: workspaceId,
+        analysis_run_id: analysisRunId,
+        verification_run_id: verificationRunId,
+        candidate_id: candidates[4],
+        pass_type: 'challenge',
+        status: 'failed',
+        prompt_version: 'verify-challenge-v1',
+        schema_version: 'verification-challenge-v1',
+        model_id: 'mock-verify-v3',
+        error_category: 'provider_unavailable',
+        error_detail: 'Synthetic failed challenge',
+      },
+      {
+        workspace_id: workspaceId,
+        analysis_run_id: analysisRunId,
+        verification_run_id: verificationRunId,
+        candidate_id: candidates[5],
+        pass_type: 'entailment',
+        status: 'succeeded',
+        prompt_version: 'verify-entailment-v3',
+        schema_version: 'verification-entailment-v1',
+        model_id: 'mock-verify-v3',
+        result: { candidateId: candidates[5], classification: 'entails', machineOnly: true },
+      },
+      {
+        workspace_id: workspaceId,
+        analysis_run_id: analysisRunId,
+        verification_run_id: verificationRunId,
+        candidate_id: candidates[5],
+        pass_type: 'challenge',
+        status: 'succeeded',
+        prompt_version: 'verify-challenge-v1',
+        schema_version: 'verification-challenge-v1',
+        model_id: 'mock-verify-v3',
+        result: {
+          candidateId: candidates[5],
+          assessment: 'material_qualification_missing',
+          machineOnly: true,
+        },
+      },
+      {
+        workspace_id: workspaceId,
+        analysis_run_id: analysisRunId,
+        verification_run_id: verificationRunId,
+        candidate_id: candidates[6],
+        pass_type: 'entailment',
+        status: 'succeeded',
+        prompt_version: 'verify-entailment-v3',
+        schema_version: 'verification-entailment-v1',
+        model_id: 'mock-verify-v3',
+        result: { candidateId: candidates[6], classification: 'entails', machineOnly: true },
+      },
+    ]);
     const pageId = (n: number) => pageRows!.find((row) => row.page_number === n)!.id;
     await admin.from('verification_evidence').insert([
       {
@@ -323,6 +484,31 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
       rationale: 'Checklist restates the same Form A-1 obligation.',
       machine_confidence: 0.9,
     });
+    await admin.from('requirement_relationships').insert([
+      {
+        workspace_id: workspaceId,
+        verification_run_id: verificationRunId,
+        finding_id: findingIds[2],
+        source_candidate_id: candidates[2],
+        target_candidate_id: candidates[4],
+        relationship_type: 'supersedes',
+        rationale: 'Addendum 2 explicitly supersedes the original insurance amount.',
+        original_document_id: documentId,
+        original_page_number: 3,
+        addendum_document_id: documentId,
+        addendum_page_number: 4,
+        precedence_quote: pages[3],
+      },
+      {
+        workspace_id: workspaceId,
+        verification_run_id: verificationRunId,
+        finding_id: findingIds[6],
+        source_candidate_id: candidates[7],
+        target_candidate_id: candidates[4],
+        relationship_type: 'conflicts_with',
+        rationale: 'The addenda state different values without an ordering rule.',
+      },
+    ]);
 
     await page.goto(`/w/${workspaceId}/requirements`);
     await expect(page.getByRole('heading', { name: 'Requirement register' })).toBeVisible();
@@ -340,6 +526,8 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
     await expect(page.getByText(pages[0], { exact: true }).first()).toBeVisible();
     await expect(page.locator('mark')).toContainText('Proposal Form A-1');
     await expect(page.getByRole('link', { name: 'related requirement' })).toBeVisible();
+    await expect(page.getByText('succeeded: entails')).toBeVisible();
+    await expect(page.getByText('succeeded: no material objection')).toBeVisible();
     await expect(page.getByText(/no pixel-level PDF highlight is claimed/i)).toBeVisible();
     const sourceLink = page.getByRole('link', { name: /Open source page/ });
     await expect(sourceLink).toHaveAttribute(
@@ -359,6 +547,24 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
     await page.getByLabel('Reviewer note').fill('Machine scope is wrong');
     await page.getByRole('button', { name: 'Record review' }).click();
     await expect(page.getByText('Machine scope is wrong')).toBeVisible({ timeout: 30_000 });
+    await page.getByRole('link', { name: /Requirement register/ }).click();
+    await page.getByRole('link', { name: 'Pending challenge candidate' }).click();
+    await expect(page.getByText('succeeded: entails')).toBeVisible();
+    await expect(
+      page
+        .getByText('Pass B — challenge', { exact: true })
+        .locator('..')
+        .getByText('pending', { exact: true }),
+    ).toBeVisible();
+    await page.getByRole('link', { name: /Requirement register/ }).click();
+    await page.getByRole('link', { name: 'Certificate proof' }).click();
+    await expect(
+      page.getByText(/Challenge failed; this candidate cannot be source-supported/),
+    ).toBeVisible();
+    await expect(page.getByText('Deterministic/model disagreement')).toBeVisible();
+    await page.getByRole('link', { name: /Requirement register/ }).click();
+    await page.getByRole('link', { name: 'Unresolved North Campus insurance conflict' }).click();
+    await expect(page.getByText('conflicting', { exact: true })).toBeVisible();
     await page.getByRole('link', { name: /Requirement register/ }).click();
     await page.getByRole('link', { name: 'Image-only obligation' }).click();
     await page.getByLabel('Decision').selectOption('needs_follow_up');

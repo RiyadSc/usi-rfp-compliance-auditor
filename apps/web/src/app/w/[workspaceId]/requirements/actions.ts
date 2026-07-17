@@ -4,9 +4,12 @@ import { createHash, randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import {
+  CHALLENGE_PROMPT_VERSION,
+  CHALLENGE_SCHEMA_VERSION,
+  DECISION_ENGINE_VERSION,
+  ENTAILMENT_PROMPT_VERSION,
+  ENTAILMENT_SCHEMA_VERSION,
   humanReviewInputSchema,
-  VERIFICATION_PROMPT_VERSION,
-  VERIFICATION_SCHEMA_VERSION,
   checkBudget,
 } from '@usi/ai';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
@@ -66,7 +69,7 @@ export async function startVerification(input: { workspaceId: string; analysisRu
     }
     const inputHash = createHash('sha256')
       .update(
-        `${analysis.id}:${candidates.map((c) => c.id).join(',')}:${VERIFICATION_PROMPT_VERSION}:${VERIFICATION_SCHEMA_VERSION}`,
+        `${analysis.id}:${candidates.map((c) => c.id).join(',')}:${ENTAILMENT_PROMPT_VERSION}:${CHALLENGE_PROMPT_VERSION}:${DECISION_ENGINE_VERSION}`,
       )
       .digest('hex');
     const { data: active } = await admin
@@ -93,9 +96,9 @@ export async function startVerification(input: { workspaceId: string; analysisRu
       status: 'queued',
       version,
       input_hash: inputHash,
-      prompt_version: VERIFICATION_PROMPT_VERSION,
-      schema_version: VERIFICATION_SCHEMA_VERSION,
-      retrieval_version: 'verify-retrieval-v1',
+      prompt_version: `${ENTAILMENT_PROMPT_VERSION}+${CHALLENGE_PROMPT_VERSION}`,
+      schema_version: `${ENTAILMENT_SCHEMA_VERSION}+${CHALLENGE_SCHEMA_VERSION}`,
+      retrieval_version: 'verify-retrieval-v2-candidate-centered',
       normalization_version: 'evidence-nfkc-v1',
       created_by: user.id,
       candidate_count: candidates.length,

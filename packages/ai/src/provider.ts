@@ -1,5 +1,11 @@
 import type { RequirementCandidate } from './schemas';
 import type { ModelVerificationFinding } from './verification-schemas';
+import type {
+  ChallengeResult,
+  DuplicatePairResult,
+  EntailmentResult,
+} from './verification-v3-schemas';
+import type { DeterministicFactEnvelope } from './verification-decision-engine';
 
 export type PageContext = {
   pageNumber: number;
@@ -86,10 +92,55 @@ export type VerifyOutput = {
   notes?: string | undefined;
 };
 
+export type ModelCallMetadata = {
+  providerRequestId: string | null;
+  modelId: string;
+  promptTokens: number;
+  completionTokens: number;
+  reasoningTokens: number;
+  cachedTokens: number;
+  latencyMs: number;
+  estimatedCostUsd: number;
+  retries: number;
+  repairAttempts: number;
+  schemaAdherent: boolean;
+  refused?: boolean;
+  incomplete?: boolean;
+};
+
+export type CandidateAssessmentInput = {
+  workspaceId: string;
+  analysisRunId: string;
+  verificationRunId: string;
+  candidate: VerificationCandidateInput;
+  contexts: VerificationContext[];
+  factEnvelope: DeterministicFactEnvelope;
+  maxOutputTokens: number;
+};
+
+export type EntailmentOutput = ModelCallMetadata & { result: EntailmentResult | null };
+
+export type ChallengeInput = CandidateAssessmentInput & { entailment: EntailmentResult };
+export type ChallengeOutput = ModelCallMetadata & { result: ChallengeResult | null };
+
+export type DuplicatePairInput = {
+  workspaceId: string;
+  analysisRunId: string;
+  verificationRunId: string;
+  source: VerificationCandidateInput;
+  target: VerificationCandidateInput;
+  deterministicMaterialDifferences: string[];
+  maxOutputTokens: number;
+};
+export type DuplicatePairOutput = ModelCallMetadata & { result: DuplicatePairResult | null };
+
 export interface ModelProvider {
   readonly name: string;
   extractCandidates(input: ExtractInput): Promise<ExtractOutput>;
   verifyCandidates(input: VerifyInput): Promise<VerifyOutput>;
+  assessEntailment(input: CandidateAssessmentInput): Promise<EntailmentOutput>;
+  challengeEntailment(input: ChallengeInput): Promise<ChallengeOutput>;
+  classifyDuplicatePair(input: DuplicatePairInput): Promise<DuplicatePairOutput>;
   embed(texts: string[]): Promise<{
     vectors: number[][];
     modelId: string;

@@ -4,6 +4,13 @@ import { estimateChatCost, estimateEmbedCost } from './cost';
 import type {
   ExtractInput,
   ExtractOutput,
+  CandidateAssessmentInput,
+  ChallengeInput,
+  ChallengeOutput,
+  DuplicatePairInput,
+  DuplicatePairOutput,
+  EntailmentOutput,
+  ModelCallMetadata,
   ModelProvider,
   VerifyInput,
   VerifyOutput,
@@ -12,6 +19,12 @@ import {
   EXTRACTION_PROMPT_VERSION,
   buildExtractionSystemPrompt,
   buildExtractionUserPayload,
+  buildChallengeSystemPrompt,
+  buildChallengeUserPayload,
+  buildDuplicateSystemPrompt,
+  buildDuplicateUserPayload,
+  buildEntailmentSystemPrompt,
+  buildEntailmentUserPayload,
   buildVerificationSystemPrompt,
   buildVerificationUserPayload,
 } from './prompts';
@@ -23,6 +36,17 @@ import {
   type RequirementCandidate,
 } from './schemas';
 import { modelVerificationJsonSchema, modelVerificationOutputSchema } from './verification-schemas';
+import {
+  challengeJsonSchema,
+  challengeResultSchema,
+  duplicatePairJsonSchema,
+  duplicatePairResultSchema,
+  entailmentJsonSchema,
+  entailmentResultSchema,
+  type ChallengeResult,
+  type DuplicatePairResult,
+  type EntailmentResult,
+} from './verification-v3-schemas';
 
 export type OpenAIProviderOptions = {
   apiKey: string;
@@ -78,6 +102,181 @@ export class OpenAIProvider implements ModelProvider {
     this.verifyModel = options.verifyModel ?? 'gpt-5.5-2026-04-23';
     this.reasoningEffort = options.reasoningEffort ?? 'low';
     this.verifyReasoningEffort = options.verifyReasoningEffort ?? 'medium';
+  }
+
+  private async structuredAssessment<T>(input: {
+    schemaName: string;
+    schema: Record<string, unknown>;
+    systemPrompt: string;
+    userPrompt: string;
+    maxOutputTokens: number;
+    parse: (value: unknown) => T | null;
+  }): Promise<ModelCallMetadata & { result: T | null }> {
+    const started = Date.now();
+    let retryCount = 0;
+    let repairAttempts = 0;
+    const create = (repairMessage?: string) =>
+      this.client.responses.create({
+        model: this.verifyModel,
+        store: false,
+        max_output_tokens: input.maxOutputTokens,
+        reasoning: { effort: this.verifyReasoningEffort },
+        input: [
+          { role: 'system', content: input.systemPrompt },
+          { role: 'user', content: input.userPrompt },
+          ...(repairMessage ? [{ role: 'user' as const, content: repairMessage }] : []),
+        ],
+        text: {
+          format: {
+            type: 'json_schema',
+            name: input.schemaName,
+            strict: true,
+            schema: input.schema,
+          },
+        },
+      });
+    const responses: OpenAI.Responses.Response[] = [];
+    const callWithRetries = async (repairMessage?: string) => {
+      let attempts = 0;
+      const response = await withRetries(
+        (attempt) => {
+          attempts = attempt;
+          return create(repairMessage);
+        },
+        { maxAttempts: 3, baseDelayMs: 400 },
+      );
+      retryCount += Math.max(0, attempts - 1);
+      responses.push(response);
+      return response;
+    };
+    const parseResponse = (response: OpenAI.Responses.Response) => {
+      if (response.status === 'incomplete' || hasRefusal(response)) return null;
+      try {
+        return input.parse(JSON.parse(outputTextFromResponse(response)));
+      } catch {
+        return null;
+      }
+    };
+    let response = await callWithRetries();
+    let result = parseResponse(response);
+    if (!result && response.status !== 'incomplete' && !hasRefusal(response)) {
+      repairAttempts = 1;
+      response = await callWithRetries(
+        'The prior response failed strict validation. Return one complete object matching the schema exactly, without prose.',
+      );
+      result = parseResponse(response);
+    }
+    const promptTokens = responses.reduce((sum, item) => sum + (item.usage?.input_tokens ?? 0), 0);
+    const completionTokens = responses.reduce(
+      (sum, item) => sum + (item.usage?.output_tokens ?? 0),
+      0,
+    );
+    const reasoningTokens = responses.reduce(
+      (sum, item) => sum + (item.usage?.output_tokens_details?.reasoning_tokens ?? 0),
+      0,
+    );
+    const cachedTokens = responses.reduce(
+      (sum, item) => sum + (item.usage?.input_tokens_details?.cached_tokens ?? 0),
+      0,
+    );
+    const metadata = {
+      providerRequestId: response.id,
+      modelId: response.model,
+      promptTokens,
+      completionTokens,
+      reasoningTokens,
+      cachedTokens,
+      latencyMs: Date.now() - started,
+      estimatedCostUsd: responses.reduce(
+        (sum, item) =>
+          sum +
+          estimateChatCost(
+            item.usage?.input_tokens ?? 0,
+            item.usage?.output_tokens ?? 0,
+            item.model,
+            item.usage?.input_tokens_details?.cached_tokens ?? 0,
+          ),
+        0,
+      ),
+      retries: retryCount,
+      repairAttempts,
+      schemaAdherent: Boolean(result),
+    };
+    if (response.status === 'incomplete') return { ...metadata, result: null, incomplete: true };
+    if (hasRefusal(response)) return { ...metadata, result: null, refused: true };
+    if (!result)
+      throw new Error(
+        `${input.schemaName} output failed strict validation after controlled repair`,
+      );
+    return { ...metadata, result };
+  }
+
+  async assessEntailment(input: CandidateAssessmentInput): Promise<EntailmentOutput> {
+    const output = await this.structuredAssessment<EntailmentResult>({
+      schemaName: 'requirement_entailment',
+      schema: entailmentJsonSchema as unknown as Record<string, unknown>,
+      systemPrompt: buildEntailmentSystemPrompt(),
+      userPrompt: buildEntailmentUserPayload({
+        candidate: input.candidate,
+        contexts: input.contexts,
+        factEnvelope: input.factEnvelope,
+      }),
+      maxOutputTokens: input.maxOutputTokens,
+      parse: (value) => {
+        const parsed = entailmentResultSchema.safeParse(value);
+        return parsed.success ? parsed.data : null;
+      },
+    });
+    if (output.result && output.result.candidateId !== input.candidate.id)
+      throw new Error('Entailment output candidate ID mismatch');
+    return output;
+  }
+
+  async challengeEntailment(input: ChallengeInput): Promise<ChallengeOutput> {
+    const output = await this.structuredAssessment<ChallengeResult>({
+      schemaName: 'requirement_challenge',
+      schema: challengeJsonSchema as unknown as Record<string, unknown>,
+      systemPrompt: buildChallengeSystemPrompt(),
+      userPrompt: buildChallengeUserPayload({
+        candidate: input.candidate,
+        contexts: input.contexts,
+        factEnvelope: input.factEnvelope,
+        entailment: input.entailment,
+      }),
+      maxOutputTokens: input.maxOutputTokens,
+      parse: (value) => {
+        const parsed = challengeResultSchema.safeParse(value);
+        return parsed.success ? parsed.data : null;
+      },
+    });
+    if (output.result && output.result.candidateId !== input.candidate.id)
+      throw new Error('Challenge output candidate ID mismatch');
+    return output;
+  }
+
+  async classifyDuplicatePair(input: DuplicatePairInput): Promise<DuplicatePairOutput> {
+    const output = await this.structuredAssessment<DuplicatePairResult>({
+      schemaName: 'requirement_duplicate_pair',
+      schema: duplicatePairJsonSchema as unknown as Record<string, unknown>,
+      systemPrompt: buildDuplicateSystemPrompt(),
+      userPrompt: buildDuplicateUserPayload({
+        source: input.source,
+        target: input.target,
+        deterministicMaterialDifferences: input.deterministicMaterialDifferences,
+      }),
+      maxOutputTokens: input.maxOutputTokens,
+      parse: (value) => {
+        const parsed = duplicatePairResultSchema.safeParse(value);
+        return parsed.success ? parsed.data : null;
+      },
+    });
+    if (
+      output.result &&
+      (output.result.sourceCandidateId !== input.source.id ||
+        output.result.targetCandidateId !== input.target.id)
+    )
+      throw new Error('Duplicate classification candidate ID mismatch');
+    return output;
   }
 
   async verifyCandidates(input: VerifyInput): Promise<VerifyOutput> {
