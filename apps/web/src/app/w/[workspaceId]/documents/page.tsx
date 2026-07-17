@@ -45,6 +45,7 @@ export default async function DocumentsPage({
           workspaceId={workspaceId}
           supabaseUrl={env.NEXT_PUBLIC_SUPABASE_URL}
           supabaseAnonKey={env.NEXT_PUBLIC_SUPABASE_ANON_KEY}
+          maxUploadBytes={env.MAX_UPLOAD_BYTES}
         />
       </div>
 

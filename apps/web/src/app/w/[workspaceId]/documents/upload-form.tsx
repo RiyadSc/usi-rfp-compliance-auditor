@@ -8,9 +8,11 @@ type Props = {
   workspaceId: string;
   supabaseUrl: string;
   supabaseAnonKey: string;
+  /** Server-enforced max; also used for early UX feedback (not authoritative). */
+  maxUploadBytes: number;
 };
 
-export function UploadForm({ workspaceId, supabaseUrl, supabaseAnonKey }: Props) {
+export function UploadForm({ workspaceId, supabaseUrl, supabaseAnonKey, maxUploadBytes }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -21,6 +23,14 @@ export function UploadForm({ workspaceId, supabaseUrl, supabaseAnonKey }: Props)
     const file = formData.get('file');
     if (!(file instanceof File) || file.size === 0) {
       setError('Choose a PDF file');
+      return;
+    }
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      setError('Only PDF files are accepted');
+      return;
+    }
+    if (file.size > maxUploadBytes) {
+      setError(`File exceeds maximum size of ${maxUploadBytes} bytes`);
       return;
     }
 
@@ -80,7 +90,8 @@ export function UploadForm({ workspaceId, supabaseUrl, supabaseAnonKey }: Props)
     <form action={onSubmit} className="space-y-3 rounded border border-slate-200 bg-white p-4">
       <h2 className="text-base font-medium">Upload PDF</h2>
       <p className="text-sm text-slate-600">
-        PDF only. Contents are untrusted data. Maximum size is enforced server-side.
+        PDF only. Contents are untrusted data. Maximum size is {maxUploadBytes} bytes (enforced
+        server-side).
       </p>
       {error ? (
         <p
