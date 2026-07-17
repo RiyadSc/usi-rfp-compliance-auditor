@@ -1,6 +1,6 @@
 # Build Status
 
-## Current phase: Phase 4 remediated; requalification FAILED — stop before Phase 5
+## Current phase: Phase 4 zero-live diagnostics passed; live requalification pending — stop before Phase 5
 
 Last updated: 2026-07-17.
 
@@ -9,10 +9,12 @@ Last updated: 2026-07-17.
 ### Gate decision
 
 - The corrected frozen fixture is `verification-cases-v2`: 17 synthetic pages and 24 deterministic candidates, including explicit supersession, a genuine unresolved addendum conflict, materially distinct similar requirements, parser damage, proof needs, and prompt injection.
-- The remediated pipeline assesses one candidate at a time with `verify-entailment-v3`, conditionally challenges positive results with `verify-challenge-v1`, and lets deterministic engine `verification-decision-v3` derive the scored final status.
+- The remediated pipeline assesses one candidate at a time with unchanged `verify-entailment-v3`, conditionally challenges positive results with unchanged `verify-challenge-v1`, and lets deterministic engine `verification-decision-v5` derive and strict-Zod-validate the final machine-only status.
 - Three pinned candidates completed three scored repetitions each at identical `medium` reasoning. **No model qualified.** Across nine runs there were eight critical false-active findings, one critical false-supported finding, and six runs with at least one schema/incomplete failure.
 - Root cause: all eight false-active results were candidate 22. Retrieval and injection detection were correct, but decision v3 used cited-page existence alone to set `active`. The semantic calls did not control that final precedence value. The detailed trace is `artifacts/evaluation/phase4-false-active-root-cause.json`.
-- Provider-neutral `verification-decision-v4` now forces prompt-injection obligations to `undetermined` without changing ordinary descriptive/non-obligation precedence. This fail-closed correction has unit and deterministic-fixture coverage but has **not** been live requalified; no further paid remediation round was authorized.
+- The zero-live audit found that the historical date and number metrics did not measure deterministic fact accuracy: evaluator v1 counted a fact correct only when final source status and precedence both matched. It also mislabeled a conjunction of Pass A, Pass B, and duplicate-call schema adherence as “final schema”; it never validated the decision-engine result.
+- Provider-neutral `verification-facts-v3`, `verification-decision-v5`, `verification-final-assessment-v1`, and `verification-evaluator-v2` now type and compare dates/numbers by semantic role, operator, unit, time/timezone, and material scope; validate the final record; score status axes independently; and reject incompatible resumed artifacts. Frozen fixture answers and both model prompts/schemas remain unchanged.
+- Historical candidate-level Pass A, Pass B, and fact envelopes were not retained. Their exact values remain explicitly unavailable rather than reconstructed. Full traces and limitations are in `artifacts/evaluation/phase4-zero-live-diagnostic-v1.json`.
 - No successful prompt-injection influence or dangerous false merge occurred. All counted supported quotes were exact/normalized-exact.
 - Live verification remains disabled (`PHASE4_LIVE_VERIFICATION_ENABLED=false`). `MockProvider` remains the demo fallback, and every machine finding remains human-review pending.
 - Phase 4 ledger spend: `$6.988201` of `$10`; remediation spend: `$5.305907` of `$6`; cumulative API spend: `$7.396742`.
@@ -21,7 +23,7 @@ Last updated: 2026-07-17.
 ### Implemented Phase 4 scope
 
 - Independent asynchronous `requirements-verify` worker stage with separate run/job/prompt/schema/model-call/retry/UI states.
-- Candidate-centered bounded retrieval, immutable `verification-facts-v2`, separate Pass A/Pass B calls, deterministic final status, explicit addendum relationships, and conservative pairwise duplicate proposals.
+- Candidate-centered bounded retrieval, immutable typed `verification-facts-v3`, separate Pass A/Pass B calls, strict `verification-final-assessment-v1`, deterministic final status, explicit addendum relationships, and conservative pairwise duplicate proposals.
 - Multi-axis model: source support, precedence, proof requirement, and append-only human review decisions remain distinct.
 - Immutable extraction candidate proposals; append-only/versioned machine findings; machine-only status cannot become compliant/approved/ready.
 - Workspace/run/candidate-scoped retrieval including cited/neighbor pages, lexical hybrid retrieval, exact keywords, addenda/amendments, conflicts, dates, numbers, definitions, and repeats; every supplied page is recorded.
@@ -54,16 +56,16 @@ Last updated: 2026-07-17.
 
 ### Remaining gate before Phase 4 can close
 
-Decision v4 requires a newly authorized full fair live requalification before any model may be selected. The evaluator must also persist non-secret per-candidate Pass A/Pass B enum traces so future root-cause review does not depend on inference. No additional paid evaluation is currently authorized; human-only review with deterministic mock findings remains the demo mode.
+Decision v5/evaluator v2 require newly authorized fresh live evidence before any model may be selected. Historical runs cannot be resumed under the new compatibility fingerprint. The proposed sequence is deliberately staged: one GPT-5.5 repetition (maximum `$1.10`), then two more GPT-5.5 repetitions only if the first passes every critical gate (maximum `$2.20` additional), and GPT-5.4 only if GPT-5.5 fails or a qualified lower-cost alternative is still needed (one-run maximum `$0.55`, then `$1.10` for two more only after a passing first run). GPT-5.4 mini is excluded absent a concrete engineering or product reason. Stage 1 would project Phase 4 spend to `$8.088201`, within the total `$10` ceiling, but remediation spend to `$6.405907`, above its current `$6` sub-ceiling; therefore even Stage 1 requires separate approval. At conservative maxima, GPT-5.5 Stages 1–2 would project Phase 4 spend to `$10.288201`, so Stage 2 cannot proceed under the current total ceiling without a new approval. No paid calls are authorized; human-only review with deterministic mock findings remains the demo mode.
 
 ### Phase 4 regression gate
 
-- Lint, formatting verification, type-check, and production build: passed. The build's initial sandbox-only internal-port error passed when rerun with the required process permission.
-- Unit: 63 passed.
-- Integration: 52 passed against the configured Supabase project, including Phase 4 RLS, linkage, immutability, idempotency, audit, failure paths, and isolation.
-- Mock Playwright: 17 passed with `PHASE4_LIVE_VERIFICATION_ENABLED=false` and `E2E_LIVE_OPENAI=0`. One transient Supabase DNS failure passed on targeted and complete rerun; no live model calls occurred.
+- Lint, formatting verification, and type-check: passed on the committed remediation state. The production Next.js build also passed with process binding permitted.
+- Unit: 86 passed, including 18 typed date/number fixtures and 5 evaluator-integrity tests.
+- Integration: 52 passed against the configured Supabase project, including Phase 4 RLS, linkage, immutability, idempotency, audit, failure paths, budget cancellation, and isolation.
+- Mock Playwright: 17 passed with `PHASE4_LIVE_VERIFICATION_ENABLED=false` and `E2E_LIVE_OPENAI=0`; no live model calls occurred.
 - Secret scan: passed across tracked files and the client bundle.
-- Deterministic decision-v4 fixture: perfect Pass A, Pass B, source status, precedence, date, number, evidence, proof, duplicate, schema, and injection metrics. It remains a fallback/regression result, not a live qualification.
+- Deterministic decision-v5/evaluator-v2 fixture: source status, precedence, date, number, quote, citation, proof, duplicate, and every schema layer are 1.0; zero critical false-supported, false-active, false merges, or injection influence. It remains a fallback/regression result, not a live qualification.
 - Invariant checklist above: passed except the explicitly failed live verification-model gate.
 
 ## Phase 3 — Candidate extraction, retrieval, providers (COMPLETE)
