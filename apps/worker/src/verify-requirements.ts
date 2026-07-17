@@ -152,6 +152,7 @@ export async function handleVerifyJob(
       repair_attempts: input.call.repairAttempts,
       status,
       error_category: wouldExceed ? 'budget' : null,
+      incomplete_reason: input.call.incompleteReason ?? null,
     });
     if (callError) throw callError;
     if (input.call.estimatedCostUsd > 0) {
@@ -184,6 +185,7 @@ export async function handleVerifyJob(
       provider_request_id: input.call.providerRequestId,
       result: input.result,
       error_category: input.call.refused ? 'refusal' : input.call.incomplete ? 'incomplete' : null,
+      error_detail: input.call.incompleteReason ?? null,
     });
     if (passError) throw passError;
   };

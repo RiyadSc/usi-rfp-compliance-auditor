@@ -44,6 +44,12 @@ function callTotals(results, key) {
     repairs: calls.reduce((sum, call) => sum + call.repairAttempts, 0),
     costUsd: calls.reduce((sum, call) => sum + call.estimatedCostUsd, 0),
     refusalIncomplete: calls.filter((call) => call.refused || call.incomplete).length,
+    incompleteReasons: Object.fromEntries(
+      [...new Set(calls.map((call) => call.incompleteReason).filter(Boolean))].map((reason) => [
+        reason,
+        calls.filter((call) => call.incompleteReason === reason).length,
+      ]),
+    ),
   };
 }
 

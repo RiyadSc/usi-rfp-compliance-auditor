@@ -106,6 +106,7 @@ export type ModelCallMetadata = {
   schemaAdherent: boolean;
   refused?: boolean;
   incomplete?: boolean;
+  incompleteReason?: string | null;
 };
 
 export type CandidateAssessmentInput = {

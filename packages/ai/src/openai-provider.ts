@@ -202,6 +202,7 @@ export class OpenAIProvider implements ModelProvider {
       retries: retryCount,
       repairAttempts,
       schemaAdherent: Boolean(result),
+      incompleteReason: response.incomplete_details?.reason ?? null,
     };
     if (response.status === 'incomplete') return { ...metadata, result: null, incomplete: true };
     if (hasRefusal(response)) return { ...metadata, result: null, refused: true };

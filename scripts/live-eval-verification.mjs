@@ -57,12 +57,18 @@ const priorRemediationSpend = (spentRows ?? [])
 
 const models = ['gpt-5.5-2026-04-23', 'gpt-5.4-2026-03-05', 'gpt-5.4-mini-2026-03-17'];
 const repetitions = 3;
-const outputLimits = { entailment: 800, challenge: 700, duplicate: 500 };
+const outputLimits = { entailment: 1200, challenge: 1000, duplicate: 600 };
 // Conservative planned estimate: all 24 Pass A contexts, all possible Pass B prompt
 // inputs, the 14 planted positive challenges, and both prequalified duplicate pairs.
 // A runtime reservation stops before any next call that could cross the approved cap.
-const projectedMaximumUsd = 3.4;
-const totalRemediationCeilingUsd = 4;
+const projectedMaximumUsd = 3.45;
+const totalRemediationCeilingUsd = Number(process.env.PHASE4_REMEDIATION_SPEND_CEILING_USD ?? 4);
+if (
+  !Number.isFinite(totalRemediationCeilingUsd) ||
+  totalRemediationCeilingUsd <= 0 ||
+  totalRemediationCeilingUsd > 5
+)
+  throw new Error('PHASE4_REMEDIATION_SPEND_CEILING_USD must be present and no greater than 5');
 const remainingRemediationCeilingUsd = Math.min(
   Math.max(0, totalRemediationCeilingUsd - priorRemediationSpend),
   Math.max(0, ceiling - phase4Spend),
@@ -80,7 +86,7 @@ console.log(
     plannedModels: models.length,
     repetitions,
     reasoning: 'medium',
-    maxContextsPerCandidate: 3,
+    maxContextsPerCandidate: 2,
     outputLimits,
   }),
 );
@@ -117,7 +123,7 @@ for (const model of models) {
       timeoutMs: 90_000,
     });
     const evaluation = await runVerificationEvaluation(provider, {
-      maxContexts: 3,
+      maxContexts: 2,
       entailmentMaxOutputTokens: outputLimits.entailment,
       challengeMaxOutputTokens: outputLimits.challenge,
       duplicateMaxOutputTokens: outputLimits.duplicate,
@@ -194,7 +200,7 @@ const artifact = {
   decisionEngineVersion: DECISION_ENGINE_VERSION,
   reasoning: 'medium',
   repetitions,
-  maxContextsPerCandidate: 3,
+  maxContextsPerCandidate: 2,
   outputLimits,
   projectedMaximumUsd,
   phase4SpendBefore: phase4Spend,

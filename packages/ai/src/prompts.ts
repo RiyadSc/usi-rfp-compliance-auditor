@@ -116,6 +116,7 @@ export function buildEntailmentSystemPrompt(): string {
     'Do not assign final source status or active/superseded precedence.',
     'Identify material qualifiers that are present, missing, or overstated.',
     'Every evidence reference must quote a short exact span from a supplied page.',
+    'Be concise: use at most two evidence references, short qualifier phrases, and a rationale of no more than two sentences.',
     'injectionInfluence must remain false and machineOnly must be true.',
   ].join(' ');
 }
@@ -145,6 +146,7 @@ export function buildChallengeSystemPrompt(): string {
     'You receive only Pass A structured output, never hidden reasoning.',
     'Do not assign final source status, precedence status, compliance, approval, or a human decision.',
     'Evidence in each objection must be an exact supplied-page quote.',
+    'Be concise: include only material objections and a rationale of no more than two sentences.',
     'injectionInfluence must remain false and machineOnly must be true.',
   ].join(' ');
 }
