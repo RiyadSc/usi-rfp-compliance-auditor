@@ -127,6 +127,7 @@ export class OpenAIProvider implements ModelProvider {
           ...(repairMessage ? [{ role: 'user' as const, content: repairMessage }] : []),
         ],
         text: {
+          verbosity: 'low',
           format: {
             type: 'json_schema',
             name: input.schemaName,

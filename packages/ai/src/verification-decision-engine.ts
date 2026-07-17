@@ -147,11 +147,11 @@ function entityTokens(text: string): Set<string> {
 }
 
 function contextRelevance(candidate: VerificationCandidateInput, context: VerificationContext) {
-  if (
+  const cited =
+    context.documentId === candidate.documentId && context.pageNumber === candidate.preliminaryPage;
+  const neighbor =
     context.documentId === candidate.documentId &&
-    Math.abs(context.pageNumber - candidate.preliminaryPage) <= 1
-  )
-    return 100 - Math.abs(context.pageNumber - candidate.preliminaryPage);
+    Math.abs(context.pageNumber - candidate.preliminaryPage) === 1;
   const candidateTokens = entityTokens(`${candidate.title} ${candidate.obligation}`);
   const contextTokens = entityTokens(context.text);
   const overlap = [...candidateTokens].filter((token) => contextTokens.has(token)).length;
@@ -161,7 +161,12 @@ function contextRelevance(candidate: VerificationCandidateInput, context: Verifi
       .map((item) => item.toLowerCase())
       .includes(form.toLowerCase()),
   );
-  return overlap * 5 + (formMatch ? 20 : 0) + (/addendum|amendment/i.test(context.text) ? 2 : 0);
+  return (
+    (cited ? 100 : neighbor ? 15 : 0) +
+    overlap * 5 +
+    (formMatch ? 20 : 0) +
+    (/addendum|amendment/i.test(context.text) ? 2 : 0)
+  );
 }
 
 function contextScopeCompatible(

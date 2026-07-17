@@ -42,7 +42,7 @@ const admin = createClient(
 );
 const { data: spentRows, error: spendError } = await admin
   .from('spend_ledger')
-  .select('estimated_cost_usd, phase');
+  .select('estimated_cost_usd, phase, note');
 if (spendError) throw spendError;
 const cumulativeApiSpend = (spentRows ?? []).reduce(
   (sum, row) => sum + Number(row.estimated_cost_usd ?? 0),
@@ -51,32 +51,40 @@ const cumulativeApiSpend = (spentRows ?? []).reduce(
 const phase4Spend = (spentRows ?? [])
   .filter((row) => row.phase === 'phase4')
   .reduce((sum, row) => sum + Number(row.estimated_cost_usd ?? 0), 0);
+const priorRemediationSpend = (spentRows ?? [])
+  .filter((row) => row.phase === 'phase4' && row.note?.startsWith('phase4-remediation:'))
+  .reduce((sum, row) => sum + Number(row.estimated_cost_usd ?? 0), 0);
 
 const models = ['gpt-5.5-2026-04-23', 'gpt-5.4-2026-03-05', 'gpt-5.4-mini-2026-03-17'];
 const repetitions = 3;
-const outputLimits = { entailment: 400, challenge: 360, duplicate: 240 };
+const outputLimits = { entailment: 800, challenge: 700, duplicate: 500 };
 // Conservative planned estimate: all 24 Pass A contexts, all possible Pass B prompt
 // inputs, the 14 planted positive challenges, and both prequalified duplicate pairs.
 // A runtime reservation stops before any next call that could cross the approved cap.
-const projectedMaximumUsd = 3.96;
-const additionalCeilingUsd = Math.min(4, Math.max(0, ceiling - phase4Spend));
+const projectedMaximumUsd = 3.4;
+const totalRemediationCeilingUsd = 4;
+const remainingRemediationCeilingUsd = Math.min(
+  Math.max(0, totalRemediationCeilingUsd - priorRemediationSpend),
+  Math.max(0, ceiling - phase4Spend),
+);
 console.log(
   JSON.stringify({
     cumulativeApiSpend,
     phase4Spend,
+    priorRemediationSpend,
     projectedMaximumUsd,
     projectedPhase4Cumulative: phase4Spend + projectedMaximumUsd,
     phase4CeilingUsd: ceiling,
-    additionalCeilingUsd,
+    remainingRemediationCeilingUsd,
     candidates: VERIFICATION_CASES.length,
     plannedModels: models.length,
     repetitions,
     reasoning: 'medium',
-    maxContextsPerCandidate: 4,
+    maxContextsPerCandidate: 3,
     outputLimits,
   }),
 );
-if (projectedMaximumUsd > additionalCeilingUsd + 1e-9)
+if (projectedMaximumUsd > remainingRemediationCeilingUsd + 1e-9)
   throw new Error('Refusing live calls: planned remediation evaluation exceeds its approved cap');
 if (phase4Spend + projectedMaximumUsd > ceiling + 1e-9)
   throw new Error('Refusing live calls: projected Phase 4 cumulative spend exceeds $10');
@@ -109,17 +117,20 @@ for (const model of models) {
       timeoutMs: 90_000,
     });
     const evaluation = await runVerificationEvaluation(provider, {
-      maxContexts: 4,
+      maxContexts: 3,
       entailmentMaxOutputTokens: outputLimits.entailment,
       challengeMaxOutputTokens: outputLimits.challenge,
       duplicateMaxOutputTokens: outputLimits.duplicate,
       beforeCall: async () => {
-        if (additionalActualUsd + reservePerCallUsd > additionalCeilingUsd + 1e-9)
+        if (
+          priorRemediationSpend + additionalActualUsd + reservePerCallUsd >
+          totalRemediationCeilingUsd + 1e-9
+        )
           throw new Error('Live evaluation stopped before call: additional Phase 4 cap reserved');
       },
       onCall: async (stage, candidateId, call, targetCandidateId) => {
         additionalActualUsd += call.estimatedCostUsd;
-        if (additionalActualUsd > additionalCeilingUsd + 1e-9)
+        if (priorRemediationSpend + additionalActualUsd > totalRemediationCeilingUsd + 1e-9)
           throw new Error('Live evaluation cost crossed the additional Phase 4 cap');
         if (call.estimatedCostUsd > 0) {
           const { error } = await admin.from('spend_ledger').insert({
@@ -183,11 +194,13 @@ const artifact = {
   decisionEngineVersion: DECISION_ENGINE_VERSION,
   reasoning: 'medium',
   repetitions,
-  maxContextsPerCandidate: 4,
+  maxContextsPerCandidate: 3,
   outputLimits,
   projectedMaximumUsd,
   phase4SpendBefore: phase4Spend,
+  priorRemediationSpend,
   additionalActualUsd,
+  totalRemediationSpend: priorRemediationSpend + additionalActualUsd,
   phase4SpendAfter: finalPhase4Spend,
   models: modelResults,
 };
