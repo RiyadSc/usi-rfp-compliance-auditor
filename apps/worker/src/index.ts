@@ -2,8 +2,10 @@ import { createServer } from 'node:http';
 import { PgBoss } from 'pg-boss';
 import { env } from './env.js';
 import { handleParseJob, type ParseJobPayload } from './parse-document.js';
+import { handleExtractJob, type ExtractJobPayload } from './extract-document.js';
 
-const QUEUE = 'document-parse';
+const PARSE_QUEUE = 'document-parse';
+const EXTRACT_QUEUE = 'document-extract';
 const HEALTH_PORT = Number(process.env.WORKER_HEALTH_PORT ?? 3001);
 
 async function main() {
@@ -14,7 +16,7 @@ async function main() {
     createSchema: true,
     supervise: true,
     schedule: false,
-    useListenNotify: false, // polling + SKIP LOCKED; session/direct DB URL required
+    useListenNotify: false,
   });
 
   boss.on('error', (err) => {
@@ -22,10 +24,11 @@ async function main() {
   });
 
   await boss.start();
-  await boss.createQueue(QUEUE);
+  await boss.createQueue(PARSE_QUEUE);
+  await boss.createQueue(EXTRACT_QUEUE);
 
   await boss.work(
-    QUEUE,
+    PARSE_QUEUE,
     { batchSize: 1, localConcurrency: env.PARSE_CONCURRENCY },
     async (jobs) => {
       for (const job of jobs) {
@@ -39,6 +42,17 @@ async function main() {
     },
   );
 
+  await boss.work(EXTRACT_QUEUE, { batchSize: 1, localConcurrency: 1 }, async (jobs) => {
+    for (const job of jobs) {
+      const payload = job.data as ExtractJobPayload;
+      console.info(
+        `[worker] extract start run=${payload.analysisRunId} document=${payload.documentId}`,
+      );
+      await handleExtractJob(payload);
+      console.info(`[worker] extract done run=${payload.analysisRunId}`);
+    }
+  });
+
   const health = createServer((_req, res) => {
     res.writeHead(200, { 'content-type': 'text/plain' });
     res.end('ok');
@@ -48,7 +62,7 @@ async function main() {
     health.listen(HEALTH_PORT, '127.0.0.1', () => resolve());
   });
 
-  console.info(`[worker] listening on queue ${QUEUE} (schema=pgboss)`);
+  console.info(`[worker] listening on ${PARSE_QUEUE} + ${EXTRACT_QUEUE}`);
   console.info(`[worker] health http://127.0.0.1:${HEALTH_PORT}/`);
 
   const shutdown = async () => {

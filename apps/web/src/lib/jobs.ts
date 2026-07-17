@@ -3,6 +3,7 @@ import { PgBoss } from 'pg-boss';
 import { serverEnv } from '@/lib/env';
 
 export const PARSE_QUEUE = 'document-parse';
+export const EXTRACT_QUEUE = 'document-extract';
 
 export type ParseJobPayload = {
   workspaceId: string;
@@ -12,8 +13,14 @@ export type ParseJobPayload = {
   inputHash: string;
 };
 
-/** Send-only enqueue for document parse jobs (pg-boss schema, no supervise). */
-export async function enqueueParseJob(payload: ParseJobPayload): Promise<string | null> {
+export type ExtractJobPayload = {
+  workspaceId: string;
+  documentId: string;
+  analysisRunId: string;
+  processingJobId: string;
+};
+
+async function withBoss<T>(fn: (boss: PgBoss) => Promise<T>): Promise<T> {
   const env = serverEnv();
   const boss = new PgBoss({
     connectionString: env.DATABASE_URL,
@@ -26,14 +33,31 @@ export async function enqueueParseJob(payload: ParseJobPayload): Promise<string 
   });
   await boss.start();
   try {
+    return await fn(boss);
+  } finally {
+    await boss.stop({ graceful: false, timeout: 5_000 });
+  }
+}
+
+/** Send-only enqueue for document parse jobs (pg-boss schema, no supervise). */
+export async function enqueueParseJob(payload: ParseJobPayload): Promise<string | null> {
+  return withBoss(async (boss) => {
     await boss.createQueue(PARSE_QUEUE);
-    const id = await boss.send(PARSE_QUEUE, payload, {
+    return boss.send(PARSE_QUEUE, payload, {
       retryLimit: 2,
       retryDelay: 30,
       expireInSeconds: 60 * 30,
     });
-    return id;
-  } finally {
-    await boss.stop({ graceful: false, timeout: 5_000 });
-  }
+  });
+}
+
+export async function enqueueExtractJob(payload: ExtractJobPayload): Promise<string | null> {
+  return withBoss(async (boss) => {
+    await boss.createQueue(EXTRACT_QUEUE);
+    return boss.send(EXTRACT_QUEUE, payload, {
+      retryLimit: 2,
+      retryDelay: 30,
+      expireInSeconds: 60 * 60,
+    });
+  });
 }

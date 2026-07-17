@@ -6,6 +6,7 @@ import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { DeleteDocumentButton } from './delete-button';
 import { PageViewer } from './page-viewer';
 import { ParseStatusPoller } from './parse-status-poller';
+import { StartExtractionButton } from './start-extraction-button';
 
 const uuidSchema = z.string().uuid();
 
@@ -87,7 +88,14 @@ export default async function DocumentDetailPage({
             Uploaded {new Date(document.created_at).toLocaleString()}
           </p>
         </div>
-        <DeleteDocumentButton workspaceId={workspaceId} documentId={documentId} />
+        <div className="flex flex-col items-end gap-3">
+          <DeleteDocumentButton workspaceId={workspaceId} documentId={documentId} />
+          <StartExtractionButton
+            workspaceId={workspaceId}
+            documentId={documentId}
+            canStart={document.status === 'parsed'}
+          />
+        </div>
       </div>
 
       {processing ? <ParseStatusPoller /> : null}
