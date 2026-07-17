@@ -1,6 +1,6 @@
 # Build Status
 
-## Current phase: Phase 4 GPT-5.4 Stage 1 failed — stop before Phase 5
+## Current phase: Phase 4 semantic-contract remediation complete offline — live requalification not authorized
 
 Last updated: 2026-07-17.
 
@@ -16,6 +16,9 @@ Last updated: 2026-07-17.
 - Provider-neutral `verification-facts-v3`, `verification-decision-v5`, `verification-final-assessment-v1`, and `verification-evaluator-v2` now type and compare dates/numbers by semantic role, operator, unit, time/timezone, and material scope; validate the final record; score status axes independently; and reject incompatible resumed artifacts. Frozen fixture answers and both model prompts/schemas remain unchanged.
 - One newly authorized, completely fresh `gpt-5.4-2026-03-05` `medium` repetition used those exact versions with one candidate and at most two contexts per assessment. It **did not qualify**: three Pass A calls ended `incomplete/max_output_tokens`, source-status accuracy was `.541667`, precedence and proof accuracy were `.875`, and Pass A/final-decision schema coverage was `.875`. There was no rerun.
 - The run retained zero critical false-supported, zero critical false-active, zero injection influence, supported precision/date/number/quote/citation/parser/duplicate metrics of `1.0`, and zero false merges. Eleven candidate-level failures are traced in `artifacts/evaluation/phase4-stage1-gpt54-v5-20260717a-failure-trace.json`.
+- Zero-live semantic remediation now uses `verify-entailment-v4` / `verification-entailment-v2` and `verify-challenge-v2` / `verification-challenge-v2`. Both outputs are strictly bounded, class-discriminated by Zod refinements, and post-validated against the immutable candidate, supplied exact evidence, and deterministic fact envelope before the decision engine can consume them.
+- The three Stage 1 incompletes were provider-normalized `max_output_tokens`, not timeout, refusal, interruption, or context-window failure. Each used exactly 1,200 completion tokens, of which reasoning consumed 1,034 (meeting consequence), 1,011 (bid bond), and 951 (old liability), leaving only 166, 189, and 249 tokens for the formerly verbose structured object. The replacement schema ordinarily serializes in a few hundred tokens and preserves the exact incomplete reason prospectively.
+- Semantic boundary definitions now distinguish complete material entailment from stylistic/synonymous/additive wording, partial entailment from explicit opposition, and insufficient evidence from contradiction. Pass B objections must be candidate- and evidence-grounded; deterministic guards reject speculative objections and facts inconsistent with the immutable envelope.
 - Historical candidate-level Pass A, Pass B, and fact envelopes were not retained. Their exact values remain explicitly unavailable rather than reconstructed. Full traces and limitations are in `artifacts/evaluation/phase4-zero-live-diagnostic-v1.json`.
 - No successful prompt-injection influence or dangerous false merge occurred. All counted supported quotes were exact/normalized-exact.
 - Live verification remains disabled (`PHASE4_LIVE_VERIFICATION_ENABLED=false`). `MockProvider` remains the demo fallback, and every machine finding remains human-review pending.
@@ -58,16 +61,16 @@ Last updated: 2026-07-17.
 
 ### Remaining gate before Phase 4 can close
 
-The fresh GPT-5.4 Stage 1 repetition failed, so it cannot unlock repetitions two and three. Per the authorization, the run was not repeated, GPT-5.5 was not tested, and no prompt, schema, fixture, retrieval, or decision rule was altered. No further paid calls are authorized. Live application verification and its smoke remain disabled; human-only review with deterministic mock findings remains the demo mode.
+The fresh GPT-5.4 Stage 1 repetition failed, so it cannot unlock repetitions two and three. Its semantic-contract defects have been corrected and proven offline, but no new live qualification is authorized. The frozen fixture, expected answers, facts v3, decision v5, evaluator v2, and final schema v1 remain unchanged. Live application verification and its smoke remain disabled; human-only review with deterministic mock findings remains the demo mode.
 
 ### Phase 4 regression gate
 
-- Lint, formatting verification, and type-check: passed on the committed remediation state. The production Next.js build also passed with process binding permitted.
-- Unit: 86 passed, including 18 typed date/number fixtures and 5 evaluator-integrity tests.
-- Integration: 52 passed against the configured Supabase project, including Phase 4 RLS, linkage, immutability, idempotency, audit, failure paths, budget cancellation, and isolation.
+- Lint, formatting verification, and type-check: passed on the semantic-remediation state. The production Next.js build also passed with process binding permitted.
+- Unit: 107 passed, including 21 semantic-contract fixtures, 18 typed date/number fixtures, and 5 evaluator-integrity tests.
+- Integration: 53 passed against the configured Supabase project, including semantic-contract rejection plus Phase 4 RLS, linkage, immutability, idempotency, audit, failure paths, budget cancellation, and isolation.
 - Mock Playwright: 17 passed with `PHASE4_LIVE_VERIFICATION_ENABLED=false` and `E2E_LIVE_OPENAI=0`; no live model calls occurred.
 - Secret scan: passed across tracked files and the client bundle.
-- Deterministic decision-v5/evaluator-v2 fixture: source status, precedence, date, number, quote, citation, proof, duplicate, and every schema layer are 1.0; zero critical false-supported, false-active, false merges, or injection influence. It remains a fallback/regression result, not a live qualification.
+- Deterministic semantic/facts/decision-v5/evaluator-v2 fixture: Pass A and Pass B metrics, source status, precedence, date, number, quote, citation, proof, duplicate, and every schema layer are 1.0; zero critical false-supported, false-active, false merges, incompletes, repairs, or injection influence. It remains a fallback/regression result, not a live qualification.
 - Invariant checklist above: passed except the explicitly failed live verification-model gate.
 
 ## Phase 3 — Candidate extraction, retrieval, providers (COMPLETE)
