@@ -11,6 +11,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.49.0",
+    "@usi/ai": "*",
     "@usi/config": "*",
     "@usi/documents": "*",
     "@usi/domain": "*",
