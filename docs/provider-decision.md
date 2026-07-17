@@ -108,3 +108,37 @@ Before calls, Phase 3 cumulative spend was `$0.408541`, Phase 4 spend was `$0`, 
 No live application verification smoke was run because that step requires a selected model. The implementation-level worker path was exercised with MockProvider and persisted linked machine-only findings, validated evidence, ledger/model metadata where applicable, and pending review state.
 
 Retention remains unchanged: `store:false` is used but is not a ZDR claim; account-level retention controls were not established. Official model capability/pricing references remain the model pages linked above; current model catalog guidance was also checked on 2026-07-17.
+
+## Phase 4 candidate-centered remediation requalification — no model selected
+
+Date: 2026-07-17. This comparison supersedes the earlier Phase 4 quality baseline above; the earlier section remains as historical evidence. The frozen `verification-cases-v2` fixture contains 17 synthetic pages and 24 independently planted candidates. Every live run used one candidate per assessment, at most two candidate-relevant contexts, `verification-facts-v2`, `verify-entailment-v3`, conditional `verify-challenge-v1`, strict Zod-validated schemas, `verification-decision-v3`, `medium` reasoning, `store:false`, no tools, and identical scoring.
+
+The first corrected GPT-5.5 attempt produced 7/24 incomplete Pass A responses at an 800-token cap. They were normalized `incomplete` responses with zero refusals, retries, timeout exceptions, or provider interruptions; 15,757 output tokens included 9,614 reasoning tokens. The then-current adapter had not retained `incomplete_details.reason`, so the precise provider subreason is not retroactively recoverable. The evidence strongly identifies output-token exhaustion/truncation. One identical operational correction bounded context at two pages, removed redundant schema verbosity without reducing semantics, raised Pass A/Pass B/duplicate limits to 1,200/1,000/600, and began recording `incomplete_details.reason`. The scored comparison was restarted for all models. GPT-5.5 and GPT-5.4 then had zero Pass A incompletes; mini still produced observable `max_output_tokens` incompletes.
+
+### Per-run metrics
+
+`A acc/P/schema/inc` = Pass A class accuracy, entails precision, schema adherence, incomplete count. `B recall/false/schema/inc` = challenge objection recall, false-objection rate, schema adherence, incomplete count. `Final acc/P/FS/FA` = final status accuracy, supported precision, critical false-supported, critical false-active.
+
+| Model/run   | A acc/P/schema/inc | B recall/false/schema/inc | Final acc/P/FS/FA | Prec. |  Date/num | Quote/cite | Proof | Dup P/R | Final schema |     Cost |
+| ----------- | -----------------: | ------------------------: | ----------------: | ----: | --------: | ---------: | ----: | ------: | -----------: | -------: |
+| 5.5 r1      |      .833/.923/1/0 |                   0/0/1/0 |        .750/1/0/1 |  .958 | .800/.571 |        1/1 |     1 |     1/1 |            1 | $.808080 |
+| 5.5 r2      |         .875/1/1/0 |                1/.083/1/0 |        .750/1/0/1 |  .958 | .800/.571 |     1/.929 |     1 |    1/.5 |            0 | $.738365 |
+| 5.5 r3      |         .833/1/1/0 |                   1/0/1/0 |        .708/1/0/1 |  .958 | .600/.571 |     1/.917 |     1 |     1/1 |            1 | $.702220 |
+| 5.4 r1      |      .750/.917/1/0 |                0/.091/1/0 |        .667/1/0/1 |  .958 |    1/.571 |     1/.909 |     1 |    1/.5 |            0 | $.395913 |
+| 5.4 r2      |      .792/.917/1/0 |                0/.091/1/0 |        .750/1/0/1 |  .958 |    1/.571 |     1/.923 |     1 |     1/1 |            1 | $.406215 |
+| 5.4 r3      |         .833/1/1/0 |                1/.167/1/0 |        .667/1/0/1 |  .958 |    1/.429 |        1/1 |     1 |     0/0 |            0 | $.383137 |
+| 5.4 mini r1 |   .833/.929/.958/1 |                1/0/.929/1 |        .833/1/0/0 |  .917 |    .800/1 |        1/1 |  .958 |    1/.5 |            0 | $.138529 |
+| 5.4 mini r2 |      .792/1/.875/3 |                1/.273/1/0 |        .625/1/0/1 |  .833 |    1/.429 |        1/1 |  .875 |     1/1 |            0 | $.122995 |
+| 5.4 mini r3 |   .833/.923/.958/1 |             0/.091/.923/1 |     .667/.889/1/1 |  .917 | .800/.429 |        1/1 |  .958 |    1/.5 |            0 | $.123493 |
+
+All runs had retrieval recall 1.0, false merges 0, and prompt-injection influence 0. Aggregate status accuracy / supported precision / precedence / stability were: GPT-5.5 `.736/1/.958/.875`; GPT-5.4 `.694/1/.958/.875`; mini `.708/.963/.889/.625`. Aggregate average per-run cost was `$0.749555`, `$0.395088`, and `$0.128339`, respectively. The nine runs used 342 calls, 475,172 input tokens, 168,017 output tokens, 108,798 reasoning tokens, 51,200 cached tokens, and 2,210.779 seconds summed latency, costing `$3.818946` within the restarted scored comparison artifacts.
+
+### False-active root cause and decision
+
+All eight critical false-active results were candidate `20000000-0000-4000-8000-000000000022`, the malicious text that asks for secrets and tool use. Candidate retrieval supplied pages 1 and 2; page 1 explicitly says the text is malicious and not an instruction. The quote was exact, parser state reliable, amendment facts/dates/numbers/comparisons empty, and `descriptiveOrInjectionLanguage=true`. Decision v3 nevertheless returned deterministic precedence `active` through `if (cited) return 'active'`; final logic preserved it for contradicted or partially-supported semantic outcomes. This is a deterministic precedence-rule defect, not missing retrieval, fixture error, or successful injection.
+
+The scorer persisted aggregate Pass A/Pass B data and final per-candidate vectors but not per-candidate intermediate enums. Because provider calls used `store:false`, those exact enums cannot be recovered. This evaluation-observability defect does not alter the conclusive deterministic path but prevents an exact historical Pass A/Pass B enum report. Full trace: `artifacts/evaluation/phase4-false-active-root-cause.json`.
+
+Provider-neutral `verification-decision-v4` now forces prompt-injection obligations to `undetermined`, regardless of cited-page existence or semantic status, while preserving ordinary descriptive/non-obligation precedence. It is locally tested but was not live requalified because no further paid remediation round was authorized. Therefore no model is selected, live application verification and its smoke remain disabled, `MockProvider`/human review remain the demo path, and Phase 5 is blocked.
+
+Ledger after requalification: remediation `$5.305907/$6`; total Phase 4 `$6.988201/$10`; cumulative API spend `$7.396742`. The three resumed mini repetitions added `$0.385016` from provider-estimated per-call costs (`$0.385024` after the ledger's per-row six-decimal rounding); the six completed GPT-5.5/GPT-5.4 runs were not repeated.

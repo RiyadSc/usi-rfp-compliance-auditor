@@ -302,6 +302,10 @@ export function scoreVerificationPipelineRun(evaluation) {
       perClass,
       finalStatusVector: VERIFICATION_CASES.map((test) => ({
         candidateId: test.id,
+        passA: resultById.get(test.id)?.entailment?.classification ?? 'missing',
+        passB:
+          resultById.get(test.id)?.challenge?.assessment ??
+          (resultById.get(test.id)?.failedStage === 'challenge' ? 'failed' : 'not_invoked'),
         status: resultById.get(test.id)?.finalAssessment?.sourceSupportStatus ?? 'missing',
         precedence: resultById.get(test.id)?.finalAssessment?.precedenceStatus ?? 'undetermined',
       })),

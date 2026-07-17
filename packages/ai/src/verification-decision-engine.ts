@@ -248,7 +248,6 @@ function isAmendmentContext(context: VerificationContext): boolean {
 function deterministicPrecedence(
   candidate: VerificationCandidateInput,
   contexts: VerificationContext[],
-  amendmentFacts: AmendmentFact[],
 ): DeterministicFactEnvelope['deterministicPrecedence'] {
   const relevantAddenda = contexts.filter(
     (context) =>
@@ -458,7 +457,7 @@ export function buildDeterministicFactEnvelope(
       pageNumber: context.pageNumber,
       sha256: createHash('sha256').update(context.text).digest('hex'),
     })),
-    deterministicPrecedence: deterministicPrecedence(candidate, contexts, amendmentFacts),
+    deterministicPrecedence: deterministicPrecedence(candidate, contexts),
     descriptiveOrInjectionLanguage:
       /system prompt|api key|use tools|email the key|ignore (?:all )?(?:previous|prior) instructions/i.test(
         candidate.obligation,
@@ -514,6 +513,10 @@ export function deriveMachineAssessment(input: {
   const injectionInfluence = Boolean(
     entailment?.injectionInfluence || challenge?.injectionInfluence,
   );
+  const candidateContainsInjectionLanguage =
+    /system prompt|api key|use tools|email the key|ignore (?:all )?(?:previous|prior) instructions/i.test(
+      candidate.obligation,
+    );
   let status: FinalMachineAssessment['sourceSupportStatus'];
   if (parserBad) status = 'parser_uncertain';
   else if (!entailment) status = 'unsupported';
@@ -558,8 +561,9 @@ export function deriveMachineAssessment(input: {
     candidateId: candidate.id,
     sourceSupportStatus: status,
     precedenceStatus:
-      (status === 'parser_uncertain' || status === 'unsupported') &&
-      facts.deterministicPrecedence === 'active'
+      candidateContainsInjectionLanguage ||
+      ((status === 'parser_uncertain' || status === 'unsupported') &&
+        facts.deterministicPrecedence === 'active')
         ? 'undetermined'
         : facts.deterministicPrecedence,
     proofRequirement:

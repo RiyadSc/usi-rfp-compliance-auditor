@@ -6,7 +6,7 @@ export const CHALLENGE_PROMPT_VERSION = 'verify-challenge-v1';
 export const CHALLENGE_SCHEMA_VERSION = 'verification-challenge-v1';
 export const DUPLICATE_PROMPT_VERSION = 'verify-duplicate-v1';
 export const DUPLICATE_SCHEMA_VERSION = 'verification-duplicate-v1';
-export const DECISION_ENGINE_VERSION = 'verification-decision-v3';
+export const DECISION_ENGINE_VERSION = 'verification-decision-v4';
 export const FACT_ENVELOPE_VERSION = 'verification-facts-v2';
 
 export const ENTAILMENT_CLASSES = [

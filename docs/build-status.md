@@ -1,6 +1,6 @@
 # Build Status
 
-## Current phase: Phase 4 implementation complete; live model gate FAILED — stop before Phase 5
+## Current phase: Phase 4 remediated; requalification FAILED — stop before Phase 5
 
 Last updated: 2026-07-17.
 
@@ -8,16 +8,20 @@ Last updated: 2026-07-17.
 
 ### Gate decision
 
-- Three pinned candidates were evaluated three times each at `medium` reasoning on the frozen 15-page/22-case verification fixture.
-- **No model qualified.** GPT-5.5 produced critical false-supported results in 2/3 runs; GPT-5.4 produced a critical false-supported and critical false-active result in run 2; GPT-5.4 mini produced a critical false-supported result and two incomplete responses.
-- No successful prompt-injection influence occurred. Completed responses had strict schema adherence and exact/normalized-exact evidence for every counted supported finding.
-- Live verification is disabled by default (`PHASE4_LIVE_VERIFICATION_ENABLED=false`). The deterministic `MockProvider` remains the demo fallback, and all machine findings remain review-pending.
-- Phase 4 live spend: `$1.682294` of `$10`; cumulative Phase 3 + 4 ledger spend: `$2.090835`.
-- Phase 4 is **not approved as complete** and Phase 5 is blocked until a provider-neutral correction is implemented and the full three-model, three-repetition gate is rerun.
+- The corrected frozen fixture is `verification-cases-v2`: 17 synthetic pages and 24 deterministic candidates, including explicit supersession, a genuine unresolved addendum conflict, materially distinct similar requirements, parser damage, proof needs, and prompt injection.
+- The remediated pipeline assesses one candidate at a time with `verify-entailment-v3`, conditionally challenges positive results with `verify-challenge-v1`, and lets deterministic engine `verification-decision-v3` derive the scored final status.
+- Three pinned candidates completed three scored repetitions each at identical `medium` reasoning. **No model qualified.** Across nine runs there were eight critical false-active findings, one critical false-supported finding, and six runs with at least one schema/incomplete failure.
+- Root cause: all eight false-active results were candidate 22. Retrieval and injection detection were correct, but decision v3 used cited-page existence alone to set `active`. The semantic calls did not control that final precedence value. The detailed trace is `artifacts/evaluation/phase4-false-active-root-cause.json`.
+- Provider-neutral `verification-decision-v4` now forces prompt-injection obligations to `undetermined` without changing ordinary descriptive/non-obligation precedence. This fail-closed correction has unit and deterministic-fixture coverage but has **not** been live requalified; no further paid remediation round was authorized.
+- No successful prompt-injection influence or dangerous false merge occurred. All counted supported quotes were exact/normalized-exact.
+- Live verification remains disabled (`PHASE4_LIVE_VERIFICATION_ENABLED=false`). `MockProvider` remains the demo fallback, and every machine finding remains human-review pending.
+- Phase 4 ledger spend: `$6.988201` of `$10`; remediation spend: `$5.305907` of `$6`; cumulative API spend: `$7.396742`.
+- Phase 4 is **not complete**. No model is selected, no live application verification smoke was run, and Phase 5 remains blocked.
 
 ### Implemented Phase 4 scope
 
 - Independent asynchronous `requirements-verify` worker stage with separate run/job/prompt/schema/model-call/retry/UI states.
+- Candidate-centered bounded retrieval, immutable `verification-facts-v2`, separate Pass A/Pass B calls, deterministic final status, explicit addendum relationships, and conservative pairwise duplicate proposals.
 - Multi-axis model: source support, precedence, proof requirement, and append-only human review decisions remain distinct.
 - Immutable extraction candidate proposals; append-only/versioned machine findings; machine-only status cannot become compliant/approved/ready.
 - Workspace/run/candidate-scoped retrieval including cited/neighbor pages, lexical hybrid retrieval, exact keywords, addenda/amendments, conflicts, dates, numbers, definitions, and repeats; every supplied page is recorded.
@@ -28,10 +32,12 @@ Last updated: 2026-07-17.
 
 ### Phase 4 migrations
 
-| Migration                               | Objects                                                                                                                                                                                                                                          |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `20260717000011_phase4_verification`    | `verification_runs`, `verification_retrieval_chunks`, `verification_findings`, `verification_evidence`, `requirement_relationships`, `human_review_decisions`; Phase 4 ledger/model-call fields; review RPC; RLS and scope/immutability triggers |
-| `20260717000012_phase4_scope_hardening` | Composite verification-run/workspace relationship key; page/document evidence consistency; relationship, human-review revision, and model-call scope triggers                                                                                    |
+| Migration                                         | Objects                                                                                                                                                                                                                                          |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `20260717000011_phase4_verification`              | `verification_runs`, `verification_retrieval_chunks`, `verification_findings`, `verification_evidence`, `requirement_relationships`, `human_review_decisions`; Phase 4 ledger/model-call fields; review RPC; RLS and scope/immutability triggers |
+| `20260717000012_phase4_scope_hardening`           | Composite verification-run/workspace relationship key; page/document evidence consistency; relationship, human-review revision, and model-call scope triggers                                                                                    |
+| `20260717000013_phase4_candidate_verification_v3` | Deterministic fact envelopes, Pass A/Pass B intermediate state, challenge status, versioned final-decision metadata, and relationship evidence hardening                                                                                         |
+| `20260717000014_phase4_incomplete_reason`         | Observable normalized provider incomplete reason on model-call records                                                                                                                                                                           |
 
 ### Phase 4 invariant check
 
@@ -46,19 +52,18 @@ Last updated: 2026-07-17.
 - [x] Deterministic MockProvider fallback remains operational and injection-inert.
 - [ ] Verification model gate passed — **NO; Phase 4 remains incomplete.**
 
-### Required next correction before Phase 4 can close
+### Remaining gate before Phase 4 can close
 
-Split verification into small provider-neutral candidate batches, feed deterministic date/number/precedence comparison results into the final assessment envelope, reduce duplicate-proposal noise, and rerun all three pinned candidates three times under identical revised conditions. Do not weaken the zero-critical-false gates.
+Decision v4 requires a newly authorized full fair live requalification before any model may be selected. The evaluator must also persist non-secret per-candidate Pass A/Pass B enum traces so future root-cause review does not depend on inference. No additional paid evaluation is currently authorized; human-only review with deterministic mock findings remains the demo mode.
 
 ### Phase 4 regression gate
 
-- Lint, formatting verification, and type-check: passed.
-- Unit: 56 passed.
-- Integration: 46 passed against the configured Supabase project, including Phase 4 RLS, linkage, immutability, idempotency, audit, and isolation cases.
-- Mock Playwright: 17 passed; no live model calls were made by Playwright.
-- Production build: passed.
+- Lint, formatting verification, type-check, and production build: passed. The build's initial sandbox-only internal-port error passed when rerun with the required process permission.
+- Unit: 63 passed.
+- Integration: 52 passed against the configured Supabase project, including Phase 4 RLS, linkage, immutability, idempotency, audit, failure paths, and isolation.
+- Mock Playwright: 17 passed with `PHASE4_LIVE_VERIFICATION_ENABLED=false` and `E2E_LIVE_OPENAI=0`. One transient Supabase DNS failure passed on targeted and complete rerun; no live model calls occurred.
 - Secret scan: passed across tracked files and the client bundle.
-- Deterministic mock verification evaluation: completed with strict schema adherence and no injection influence; it remains a demo fallback, not a qualified quality baseline.
+- Deterministic decision-v4 fixture: perfect Pass A, Pass B, source status, precedence, date, number, evidence, proof, duplicate, schema, and injection metrics. It remains a fallback/regression result, not a live qualification.
 - Invariant checklist above: passed except the explicitly failed live verification-model gate.
 
 ## Phase 3 — Candidate extraction, retrieval, providers (COMPLETE)

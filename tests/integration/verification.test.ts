@@ -661,6 +661,6 @@ describe('Phase 4 verification persistence and isolation', () => {
       .single();
     expect(finding?.source_support_status).toBe('contradicted');
     expect(finding?.deterministic_model_disagreement).not.toEqual([]);
-    expect(finding?.decision_engine_version).toBe('verification-decision-v3');
+    expect(finding?.decision_engine_version).toBe('verification-decision-v4');
   });
 });

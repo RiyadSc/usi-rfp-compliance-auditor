@@ -48,7 +48,18 @@ type PageRow = {
 
 type CallStage = 'verify_entailment' | 'verify_challenge' | 'verify_duplicate';
 
-function asCandidate(row: Record<string, any>): VerificationCandidateInput {
+type CandidateRow = {
+  id: string;
+  document_id: string;
+  category: VerificationCandidateInput['category'];
+  title: string;
+  obligation: string;
+  mandatory_class: VerificationCandidateInput['mandatoryClass'];
+  preliminary_page: number;
+  evidence_quote: string;
+};
+
+function asCandidate(row: CandidateRow): VerificationCandidateInput {
   return {
     id: row.id,
     documentId: row.document_id,
