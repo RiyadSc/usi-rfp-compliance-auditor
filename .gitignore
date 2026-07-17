@@ -20,3 +20,7 @@ test-results/
 
 # OS / editor
 .DS_Store
+
+# Local tool folders (not project source)
+.claude/
+.playwright/

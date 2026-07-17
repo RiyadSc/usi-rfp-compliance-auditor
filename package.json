@@ -1,0 +1,35 @@
+{
+  "name": "usi-rfp-compliance-auditor",
+  "private": true,
+  "version": "0.1.0",
+  "description": "USI AI RFP Compliance Auditor - demo build (synthetic/public data only)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:unit": "vitest run --config vitest.config.unit.ts",
+    "test:integration": "vitest run --config vitest.config.integration.ts",
+    "test:e2e": "playwright test",
+    "build": "npm run build --workspace apps/web",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "gates": "npm run lint && npm run format:check && npm run typecheck && npm run test:unit && npm run check:secrets && npm run build"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^22.13.0",
+    "dotenv": "^17.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.4.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.20.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
