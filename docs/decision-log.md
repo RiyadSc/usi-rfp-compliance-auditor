@@ -46,3 +46,20 @@ Append-only. Each entry: date, decision, rationale, reversibility, source.
 - 2026-07-17: `/supabase/ssr` — `createServerClient`/`createBrowserClient` cookie patterns for App Router + middleware/proxy session refresh (adopted in `apps/web/src/lib/supabase/server.ts`, `apps/web/src/proxy.ts`).
 - 2026-07-17: `/supabase/supabase` — RLS best practices: SECURITY DEFINER membership helper to avoid recursive policies; wrap `auth.uid()`/helpers in `(select ...)` for initplan caching (adopted in migrations 0001/0003).
 - 2026-07-17: `/supabase/supabase` — Storage RLS on `storage.objects` with `storage.foldername(name)[1]` path-prefix policies; private buckets require JWT download or signed URLs (adopted in migration 0002).
+
+## Phase 2 decisions (2026-07-17)
+
+- **D-018 — Schema alignment to live `documents_ingestion`.** A prior migration created `upload_intents` / `documents` / `document_pages` / `parse_runs` with column names (`original_filename`, `status`, `size_bytes`, `extraction_status` ∈ ok|empty|error). A parallel draft migration `documents_upload_parse` used `IF NOT EXISTS` and was largely a no-op for table shapes; app code and later policies follow the live ingestion schema. `processing_jobs` remains for pg-boss observability alongside `parse_runs`.
+- **D-019 — pg-boss adopted in schema `pgboss`.** Confirmed PG 13+ (project is 17), Node 22.12+, SKIP LOCKED claim path, `useListenNotify: false`, **direct** `DATABASE_URL` (port 5432, not pooler 6543). Tables revoked from `anon`/`authenticated`; not exposed via PostgREST. Enqueue path uses `migrate: false`.
+- **D-020 — Server-authorized signed upload.** Intent (service-role insert) → `createSignedUploadUrl` → client `uploadToSignedUrl` → finalize downloads/inspects object (magic bytes, size, hash, dedup) before registering `documents` + enqueue. No authenticated Storage INSERT/DELETE policies.
+- **D-021 — Soft delete for demo documents.** `status=deleted` + `deleted_at`; SELECT hides deleted rows; storage object removed via service role; queued jobs cancelled; pages deleted; audit `document_deleted`.
+- **D-022 — Malware scan interface only.** `NoopMalwareScanner` documented as production hardening; not claimed as protection.
+- **D-023 — PDF.js hardening.** `isEvalSupported: false`, `disableAutoFetch`, `disableStream`, `disableFontFace`; encrypted PDFs rejected; empty pages still recorded. Parser imported only from `@usi/documents/parser` so Next does not bundle pdfjs into RSC actions.
+- **D-024 — Worker health port for Playwright.** Worker serves `127.0.0.1:3001` so Playwright does not skip the worker when reusing the web server on :3000.
+
+## External documentation decisions (Phase 2)
+
+- 2026-07-17: `/timgit/pg-boss` (prior) + pg-boss README — schema option, SKIP LOCKED, migrate/createSchema, listen/notify off for poolers.
+- 2026-07-17: `/supabase/supabase-js` — `createSignedUploadUrl` / `uploadToSignedUrl` (token auth; no bucket INSERT RLS required for the signed path).
+- 2026-07-17: `/mozilla/pdf.js` — `getDocument({ data })`, password/encrypted handling; DocumentInitParameters (`disableFontFace`, `isEvalSupported`, fetch/stream flags).
+- 2026-07-17: Node `crypto.createHash('sha256')` for content hashing; Next.js server actions for intent/finalize (request bodies stay small; bytes stay in Storage).
