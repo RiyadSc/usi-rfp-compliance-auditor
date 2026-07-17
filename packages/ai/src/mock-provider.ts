@@ -148,8 +148,13 @@ export class MockProvider implements ModelProvider {
       modelId: 'mock-extract-v1',
       promptTokens,
       completionTokens,
+      reasoningTokens: 0,
+      cachedTokens: 0,
       latencyMs: Date.now() - started,
       estimatedCostUsd: 0,
+      retries: 0,
+      repairAttempts: 0,
+      schemaAdherent: true,
       ...(notes.length ? { notes: notes.join('; ') } : {}),
     };
   }

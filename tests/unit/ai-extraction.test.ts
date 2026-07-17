@@ -47,6 +47,13 @@ describe('candidate schema', () => {
     });
     expect(bad.success).toBe(false);
   });
+
+  it('keeps every strict root JSON Schema property required', async () => {
+    const { modelExtractionJsonSchema } = await import('../../packages/ai/src/index.js');
+    expect(modelExtractionJsonSchema.required).toEqual(
+      Object.keys(modelExtractionJsonSchema.properties),
+    );
+  });
 });
 
 describe('chunking provenance and token budget', () => {

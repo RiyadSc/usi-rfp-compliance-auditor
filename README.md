@@ -40,11 +40,18 @@ npm run test:e2e           # Playwright (web :3000 + worker health :3001)
 npx tsx scripts/eval-extraction.mjs   # Mock known-answer baseline
 ```
 
+Live evaluation is never part of ordinary gates. It requires the command-scoped opt-in shown below and enforces the $10 cumulative ledger ceiling:
+
+```bash
+PHASE3_LIVE_EVAL=1 PHASE3_SPEND_CEILING_USD=10 npm run eval:live:probe
+PHASE3_LIVE_EVAL=1 PHASE3_SPEND_CEILING_USD=10 npm run eval:live
+```
+
 ## Security posture (Phase 3)
 
 - Private `workspace-documents` bucket; uploads only via server-minted signed URLs; deletes via service role.
 - Document/page/job/intent/analysis tables: members SELECT only; writes via service role after membership checks.
 - `OPENAI_API_KEY` never in client bundle, DB, or logs; Playwright clears it unless `E2E_LIVE_OPENAI=1`.
-- Application spend ceiling (`PHASE3_SPEND_CEILING_USD`); also set an OpenAI project budget/alert.
+- Application Phase 3 spend ceiling (`PHASE3_SPEND_CEILING_USD`, maximum/default $10); also set an OpenAI project budget/alert.
 - `store: false` on Responses API ≠ contractual ZDR.
 - PDFs treated as hostile input; model sees delimited page evidence only, not whole files.

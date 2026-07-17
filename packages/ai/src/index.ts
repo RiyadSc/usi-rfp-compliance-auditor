@@ -25,7 +25,7 @@ export function createProvider(env: ProviderEnv = {}): ModelProvider {
     return new OpenAIProvider({
       apiKey: key,
       extractModel:
-        env.OPENAI_EXTRACT_MODEL ?? process.env.OPENAI_EXTRACT_MODEL ?? 'gpt-5.2-2025-12-11',
+        env.OPENAI_EXTRACT_MODEL ?? process.env.OPENAI_EXTRACT_MODEL ?? 'gpt-5.4-mini-2026-03-17',
       embedModel:
         env.OPENAI_EMBED_MODEL ?? process.env.OPENAI_EMBED_MODEL ?? 'text-embedding-3-small',
     });

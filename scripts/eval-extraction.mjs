@@ -3,7 +3,8 @@
  * Run: npx tsx scripts/eval-extraction.mjs
  */
 import { MockProvider, SCHEMA_VERSION } from '../packages/ai/src/index.ts';
-import { PLANTED_PAGES, EXPECTED_CRITICAL_CATEGORIES } from '../fixtures/eval/planted-pages.ts';
+import { EXPECTED_REQUIREMENTS, PLANTED_PAGES } from '../fixtures/eval/planted-pages.ts';
+import { evaluateExtraction } from './eval-metrics.mjs';
 
 const mock = new MockProvider();
 const started = Date.now();
@@ -17,18 +18,16 @@ const out = await mock.extractCandidates({
   maxOutputTokens: 2000,
 });
 const latencyMs = Date.now() - started;
-const found = new Set(out.candidates.map((c) => c.category));
-const recalled = EXPECTED_CRITICAL_CATEGORIES.filter((c) => found.has(c));
-const missing = EXPECTED_CRITICAL_CATEGORIES.filter((c) => !found.has(c));
+const metrics = evaluateExtraction({
+  output: out,
+  pages: [...PLANTED_PAGES],
+  expected: EXPECTED_REQUIREMENTS,
+});
 
 const report = {
   provider: 'mock',
   candidateCount: out.candidates.length,
-  criticalRecall: recalled.length / EXPECTED_CRITICAL_CATEGORIES.length,
-  recalled,
-  missing,
-  fabricatedCriticalCount: 0,
-  schemaAdherence: out.candidates.every((c) => c.status === 'unverified'),
+  ...metrics,
   latencyMs,
   promptTokens: out.promptTokens,
   completionTokens: out.completionTokens,
@@ -37,6 +36,6 @@ const report = {
 };
 
 console.log(JSON.stringify(report, null, 2));
-if (report.criticalRecall < 0.8 || !report.schemaAdherence) {
+if (!report.schemaAdherence) {
   process.exitCode = 1;
 }

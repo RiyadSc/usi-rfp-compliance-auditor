@@ -67,16 +67,18 @@ Append-only. Each entry: date, decision, rationale, reversibility, source.
 ## Phase 3 decisions (2026-07-17)
 
 - **D-025 — Live provider: OpenAI.** First adapter uses Responses API + Embeddings. Key via server-only `OPENAI_API_KEY`; absent → MockProvider. Never `NEXT_PUBLIC_*`, never DB, never logs.
-- **D-026 — Model pins from live account.** Extraction: `gpt-5.2-2025-12-11` (account also exposes `gpt-5.2`). Embeddings: `text-embedding-3-small`. If `gpt-5.2` unavailable, stop rather than silent substitution.
+- **D-026 — Model pins from live account and evaluation.** Extraction: `gpt-5.4-mini-2026-03-17` selected from a four-pin live bake-off. Provisional future verification: `gpt-5.5-2026-04-23` pending Phase 4-specific evaluation. Embeddings: `text-embedding-3-small`.
 - **D-027 — Strict structured output.** Responses API `text.format.json_schema` strict + Zod re-validation; refusals/incomplete captured distinctly; free-form JSON not trusted for critical outputs.
 - **D-028 — `store: false` ≠ ZDR.** Requests set `store: false`; documentation must not claim contractual Zero Data Retention unless org ZDR is separately verified.
-- **D-029 — Phase 3 spend ceiling $25.** App ledger `spend_ledger` + `PHASE3_SPEND_CEILING_USD`; cancel as `budget_exceeded`. Does not replace OpenAI project billing limits/alerts (configure manually).
+- **D-029 — Phase 3 spend ceiling $10.** App ledger `spend_ledger` + `PHASE3_SPEND_CEILING_USD`; config validation rejects a higher value and workers cancel as `budget_exceeded`. Does not replace OpenAI project billing limits/alerts.
 - **D-030 — Candidates always unverified.** DB check constraint + Zod literal; UI labels `candidate / unverified`. Verification is Phase 4.
 - **D-031 — Hybrid retrieval, not vectors alone.** Page-aware chunks + FTS/trgm + keyword/page-window expansion + optional vectors; search RPC requires workspace_id + analysis_run_id.
-- **D-032 — Extraction and verification remain separate.** Even when both use `gpt-5.2` later, separate calls/prompts/schemas/runs/outputs (verification not implemented in Phase 3).
+- **D-032 — Extraction and verification remain separate.** Even when both use the same provider or model family, they require separate calls/prompts/schemas/runs/outputs (verification is not implemented in Phase 3).
+- **D-033 — Live model gate completed.** GPT-5.4 mini tied the best quality result (20/20 planted, zero critical fabrications, perfect evidence/form/date/number/addendum/injection metrics) at the lowest evaluated cost and latency. GPT-5.2 failed the gate.
+- **D-034 — Live evaluation is explicit and standalone.** `PHASE3_LIVE_EVAL=1` is required; live commands are absent from CI, normal gates, Playwright, and application startup.
 
 ## External documentation decisions (Phase 3)
 
 - 2026-07-17: Context7 `/websites/developers_openai_api` — Responses API structured outputs (`json_schema` strict), embeddings create, `store` parameter semantics, rate-limit/retry guidance.
-- 2026-07-17: Live OpenAI account list/models smoke — confirmed `gpt-5.2` / snapshot `gpt-5.2-2025-12-11` and `text-embedding-3-small`.
-- Approximate pricing recorded in `packages/ai/src/cost.ts` for budgeting only (not billing truth).
+- 2026-07-17: Live account enumeration/probes confirmed four evaluated dated pins plus `text-embedding-3-small`; GPT-5.6 variants were visible without dated pins.
+- 2026-07-17: Official model, pricing, retention, caching, batch, and rate-limit references are recorded in `docs/provider-decision.md`.

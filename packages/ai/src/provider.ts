@@ -21,8 +21,13 @@ export type ExtractOutput = {
   modelId: string;
   promptTokens: number;
   completionTokens: number;
+  reasoningTokens: number;
+  cachedTokens: number;
   latencyMs: number;
   estimatedCostUsd: number;
+  retries: number;
+  repairAttempts: number;
+  schemaAdherent: boolean;
   refused?: boolean;
   incomplete?: boolean;
   notes?: string | undefined;

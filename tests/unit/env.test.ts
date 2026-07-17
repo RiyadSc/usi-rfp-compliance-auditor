@@ -15,6 +15,8 @@ describe('parseServerEnv', () => {
     expect(env.DEMO_MODE).toBe(true);
     expect(env.MAX_PAGES_PER_WORKSPACE).toBe(100);
     expect(env.MAX_MODEL_COST_USD_PER_RUN).toBe(10);
+    expect(env.PHASE3_SPEND_CEILING_USD).toBe(10);
+    expect(env.OPENAI_EXTRACT_MODEL).toBe('gpt-5.4-mini-2026-03-17');
   });
 
   it('rejects a missing Supabase URL', () => {
@@ -29,6 +31,10 @@ describe('parseServerEnv', () => {
 
   it('rejects non-numeric page limits', () => {
     expect(() => parseServerEnv({ ...valid, MAX_PAGES_PER_WORKSPACE: 'many' })).toThrow();
+  });
+
+  it('rejects a Phase 3 ceiling above the authoritative $10 limit', () => {
+    expect(() => parseServerEnv({ ...valid, PHASE3_SPEND_CEILING_USD: '10.01' })).toThrow();
   });
 
   it('requires service-role and database URL for Phase 2 privileged paths', () => {

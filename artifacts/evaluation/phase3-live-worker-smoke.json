@@ -1,0 +1,18 @@
+{
+  "artifactVersion": "phase3-live-worker-smoke-v1",
+  "generatedAt": "2026-07-17T03:41:33.131Z",
+  "selectedModel": "gpt-5.4-mini-2026-03-17",
+  "analysisRunCreated": true,
+  "analysisRunStatus": "completed",
+  "workerJobStatus": "completed",
+  "modelCallMetadataPersisted": true,
+  "modelCallCount": 2,
+  "candidateCount": 22,
+  "candidatesPersisted": true,
+  "allCandidatesUnverified": true,
+  "sourcePagesResolvable": true,
+  "sourceNavigationPattern": "/w/{workspaceId}/documents/{documentId}?page={preliminaryPage}",
+  "spendLedgerEntries": 2,
+  "smokeCostUsd": 0.008805,
+  "safeUiPresentation": true
+}

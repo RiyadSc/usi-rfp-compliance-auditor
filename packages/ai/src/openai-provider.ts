@@ -19,6 +19,8 @@ export type OpenAIProviderOptions = {
   apiKey: string;
   extractModel?: string;
   embedModel?: string;
+  reasoningEffort?: 'low' | 'medium' | 'high';
+  timeoutMs?: number;
 };
 
 function outputTextFromResponse(response: OpenAI.Responses.Response): string {
@@ -50,21 +52,30 @@ export class OpenAIProvider implements ModelProvider {
   private readonly client: OpenAI;
   private readonly extractModel: string;
   private readonly embedModel: string;
+  private readonly reasoningEffort: 'low' | 'medium' | 'high';
 
   constructor(options: OpenAIProviderOptions) {
-    this.client = new OpenAI({ apiKey: options.apiKey });
-    this.extractModel = options.extractModel ?? 'gpt-5.2-2025-12-11';
+    this.client = new OpenAI({
+      apiKey: options.apiKey,
+      timeout: options.timeoutMs ?? 60_000,
+      maxRetries: 0,
+    });
+    this.extractModel = options.extractModel ?? 'gpt-5.4-mini-2026-03-17';
     this.embedModel = options.embedModel ?? 'text-embedding-3-small';
+    this.reasoningEffort = options.reasoningEffort ?? 'low';
   }
 
   async extractCandidates(input: ExtractInput): Promise<ExtractOutput> {
     const started = Date.now();
+    let attempts = 0;
     const response = await withRetries(
-      () =>
-        this.client.responses.create({
+      (attempt) => {
+        attempts = attempt;
+        return this.client.responses.create({
           model: this.extractModel,
           store: false,
           max_output_tokens: input.maxOutputTokens,
+          reasoning: { effort: this.reasoningEffort },
           input: [
             { role: 'system', content: buildExtractionSystemPrompt() },
             { role: 'user', content: buildExtractionUserPayload(input.pages) },
@@ -77,20 +88,33 @@ export class OpenAIProvider implements ModelProvider {
               schema: modelExtractionJsonSchema as unknown as Record<string, unknown>,
             },
           },
-        }),
+        });
+      },
       { maxAttempts: 3, baseDelayMs: 400 },
     );
 
     const latencyMs = Date.now() - started;
     const promptTokens = response.usage?.input_tokens ?? 0;
     const completionTokens = response.usage?.output_tokens ?? 0;
+    const reasoningTokens = response.usage?.output_tokens_details?.reasoning_tokens ?? 0;
+    const cachedTokens = response.usage?.input_tokens_details?.cached_tokens ?? 0;
     const base = {
       providerRequestId: response.id,
       modelId: response.model,
       promptTokens,
       completionTokens,
+      reasoningTokens,
+      cachedTokens,
       latencyMs,
-      estimatedCostUsd: estimateChatCost(promptTokens, completionTokens),
+      estimatedCostUsd: estimateChatCost(
+        promptTokens,
+        completionTokens,
+        response.model,
+        cachedTokens,
+      ),
+      retries: Math.max(0, attempts - 1),
+      repairAttempts: 0,
+      schemaAdherent: true,
     };
 
     if (response.status === 'incomplete') {

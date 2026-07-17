@@ -103,5 +103,7 @@ export const modelExtractionJsonSchema = {
     },
     notes: { type: 'string', maxLength: 2000 },
   },
-  required: ['candidates'],
+  // Strict Structured Outputs requires every property to be listed as required.
+  // `notes` may be the empty string when there is nothing to report.
+  required: ['candidates', 'notes'],
 } as const;

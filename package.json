@@ -15,10 +15,15 @@
     "test:unit": "vitest run --config vitest.config.unit.ts",
     "test:integration": "vitest run --config vitest.config.integration.ts",
     "test:e2e": "playwright test",
+    "eval:mock": "npx tsx scripts/eval-extraction.mjs",
+    "eval:live:probe": "npx tsx scripts/live-eval-extraction.mjs --probe",
+    "eval:live": "npx tsx scripts/live-eval-extraction.mjs",
+    "smoke:live:worker": "npx tsx scripts/live-worker-smoke.mjs",
     "worker": "npm run start --workspace apps/worker",
     "worker:dev": "npm run dev --workspace apps/worker",
     "build": "npm run build --workspace apps/web",
     "check:secrets": "node scripts/check-secrets.mjs",
+    "check:live-runtime": "npx tsx scripts/check-live-runtime.mjs",
     "gates": "npm run lint && npm run format:check && npm run typecheck && npm run test:unit && npm run check:secrets && npm run build"
   },
   "devDependencies": {
