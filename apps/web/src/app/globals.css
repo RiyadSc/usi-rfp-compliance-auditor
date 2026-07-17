@@ -1,0 +1,15 @@
+@import 'tailwindcss';
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
+
+/* Visible focus for keyboard users (accessibility requirement). */
+:focus-visible {
+  outline: 2px solid theme('colors.blue.700');
+  outline-offset: 2px;
+}
