@@ -1,0 +1,24 @@
+{
+  "name": "@usi/documents",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./validation": "./src/validation.ts",
+    "./state-machine": "./src/state-machine.ts",
+    "./parser": "./src/parser/index.ts",
+    "./hash": "./src/hash.ts",
+    "./errors": "./src/errors.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pdfjs-dist": "^5.3.31",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}
