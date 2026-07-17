@@ -1,0 +1,120 @@
+# Architecture Summary — AI RFP Compliance Auditor (Demo)
+
+Condensed from `USI_AI_RFP_Compliance_Auditor_Engineering_Design.md` (v1.0, 2026-07-16), plus concrete Phase 0 selections (see `decision-log.md`). Architecture style: modular web app + asynchronous document-analysis jobs, optimized for evidence quality and reproducibility.
+
+## Components (Design §3)
+
+| Component | Responsibility | Failure behavior |
+|---|---|---|
+| Next.js web app | Auth, workspaces, upload UI, register, evidence viewer, checklist, audit, report | Explicit error states; preserve completed server results |
+| Application API | Validate commands, authorize, create jobs, typed resources, state transitions | Structured errors; never infer success from partial model output |
+| Background worker | Parse, model calls, verification, progress, exports | Idempotent stages; retry transient; terminal failure w/ stage detail |
+| Parser adapter | Page text, blocks, tables, coordinates where possible | Store warnings + page assets; page-level fallback |
+| Extraction service | Schema-constrained candidate requirements/checklist items | Reject invalid schema; preserve raw response for debugging |
+| Verification service | Validate evidence, dedupe, addendum compare, classify confidence | Downgrade to unverified if source support missing |
+| Draft audit service | Segment claims; compare to workspace sources | Return "requires human proof" instead of guessing |
+| Postgres (Supabase) | Domain records, evidence, embeddings, jobs, decisions, audit events | Transactional updates; versioned migrations |
+| Object storage (Supabase Storage) | Source files, page artifacts, parsed artifacts, exports | Private buckets; signed URLs; retention controls |
+| Model gateway | Normalize provider calls, prompts, schemas, timeouts, costs, metadata | Optional fallback provider; never mix workspace context |
+
+## Data flow
+
+```mermaid
+flowchart TD
+    U[Reviewer / Demo operator] -->|auth session| W[Next.js app]
+    W -->|signed upload URL| S[(Supabase Storage - private buckets)]
+    W -->|typed API / server actions| A[Application API]
+    A -->|enqueue analysis run| Q[(Job queue - pg-boss on Postgres)]
+    Q --> WK[Worker: staged pipeline]
+    WK -->|validate → parse → normalize → index| P[Parser adapter pdfjs]
+    P -->|page text + anchors + warnings| DB[(Supabase Postgres + pgvector, RLS)]
+    WK -->|extract candidates| MG[Model gateway]
+    MG -->|structured JSON, Zod-validated| WK
+    WK -->|verify: workspace-filtered hybrid retrieval + quote match + deterministic rules| DB
+    WK -->|build_checklist / audit_draft / generate_report| DB
+    DB --> W
+    S -->|short-lived signed URLs| W
+    MG -.->|provider API key server-side only| EXT[External model provider]
+    subgraph Untrusted data
+      DOC[Uploaded RFP / addenda / drafts]
+    end
+    DOC --> S
+    DOC -. "content = data, never instructions" .-> MG
+```
+
+## Selected stack (Design §4 + Phase 0 decisions)
+
+| Layer | Selection | Notes |
+|---|---|---|
+| Language | TypeScript, `strict` | Shared Zod schemas |
+| Web | Next.js App Router (latest stable, verify via Context7 at Phase 1) | Server actions/API routes; long tasks in worker |
+| UI | React + Tailwind CSS + accessible primitives (Radix-based) | Enterprise dashboard patterns |
+| DB | Supabase PostgreSQL 17 — project `RFP demo` (`uxmxkdjschbekkbnweby`, us-east-2) | RLS on all app tables |
+| Storage | Supabase Storage, private buckets, expiring signed URLs | Workspace-scoped object keys |
+| Auth | Supabase Auth (email/password), public signup disabled, seeded demo users | Production SSO out of scope |
+| Queue | pg-boss (Postgres-backed) in a Node worker | No new paid service; stage retries + visibility |
+| PDF parsing | `pdfjs-dist` adapter behind `ParserAdapter` interface (page text + offsets); evidence viewer renders pages via pdf.js from signed URL | OCR out of scope for demo fixture (machine-readable); interface allows swap |
+| Model gateway | Internal `ModelGateway` interface; real provider TBD (open question OQ-1); deterministic `MockProvider` for tests + cached fallback | Record provider, model, version, tokens, latency, cost |
+| Validation | Zod + provider JSON-schema-constrained output | Never free-parse critical fields |
+| Retrieval | Hybrid: Postgres FTS/pg_trgm (lexical) + pgvector (semantic), always workspace-filtered | Citations validated against stored page text before display |
+| Testing | Vitest, Playwright (`playwright-cli` skill available), fixture evaluator | Snapshot structured outputs only after normalization |
+| Deployment | Local-first demo; hosting decision deferred (OQ-2) | Env vars outside repository |
+
+## Repository layout (Design §4.1, npm workspaces)
+
+```text
+apps/web         # Next.js application
+apps/worker      # asynchronous analysis jobs (pg-boss consumer)
+packages/domain  # entities, enums, state transitions
+packages/db      # schema types, repositories (workspace predicate mandatory)
+packages/documents # parser adapters, normalization, page anchors
+packages/ai      # model gateway, prompts (versioned), extraction, verification
+packages/evaluation # known-answer fixtures and scoring
+packages/ui      # shared components
+packages/config  # environment validation (zod) and feature flags
+fixtures/demo-rfp    # synthetic RFP, addenda, expected answers
+fixtures/draft-audit # planted unsupported/contradictory claims
+supabase/migrations  # version-controlled SQL migrations
+docs/            # this documentation set
+```
+
+## Domain model & schema (Design §5)
+
+Core tables (all app tables carry `workspace_id` where applicable; RLS enforced):
+
+`workspaces`, `documents` (type, filename, mime, object_key, sha256, version, parse_status, page_count), `document_pages` (page_number, text, blocks jsonb, image/asset key, parse_confidence, warnings), `analysis_runs` (status, current_stage, progress, prompt_set_version, error, metrics), `model_calls` (stage, provider, model, request_hash, token_usage, latency_ms, cost_estimate, response_object_key, success), `requirements` (canonical_key, category, title, description, mandatory, deadline, severity, confidence, review_status, owner_id, source_status), `evidence_spans` (requirement_id/audit_finding_id, document_page_id, quote, offsets, bbox, support_type, verifier_score), `checklist_items` (category, name, mandatory, status, due_at, owner_id, blocker, artifact_document_id, exception_note), `drafts`, `draft_claims` (section_path, claim_text, claim_type, offsets), `audit_findings` (classification, severity, explanation, resolution_status, confidence), `review_decisions` (target_type/id, decision, note, user_id), `audit_events` (immutable; actor, event_type, entity, payload), `exports` (type, object_key, sha256, created_by).
+
+Key enums (Design §5.3): `document_type` (primary_rfp, addendum, attachment, proposal_draft, reference, expected_answer); `analysis_status` (queued, parsing, extracting, verifying, auditing, generating_report, completed, failed, cancelled); `requirement_category` (form, deadline, submission_instruction, insurance, bond, certification, staffing, training, pricing, technical, legal, meeting, evaluation, other); `review_status` (unreviewed, confirmed, corrected, rejected, exception, not_applicable, superseded); `checklist_status` (missing, identified, in_progress, attached, verified, waived, not_applicable); `claim_classification` (supported, partially_supported, unsupported, contradicted, requires_human_proof, not_applicable); `severity` (info, low, medium, high, critical).
+
+## Pipeline stages (Design §6)
+
+```text
+validate → parse → normalize → index → extract → verify → build_checklist → audit_draft → generate_report
+```
+
+- Each stage records status, timing, retry count, errors, input/output refs, analysis-run identity; completion keyed by `analysis_run_id + stage_name + input_hash` (idempotent, replayable).
+- Chunking: page-primary; secondary 600–1,200-token windows, 10–15% overlap, never crossing documents; chunks carry doc ID, page, section path, addendum precedence, block IDs, parser confidence.
+- Addenda: versioned/ordered; superseded requirements stay visible with links to controlling addendum; unresolvable conflicts flagged for humans; readiness uses latest confirmed controlling requirement.
+- Model stages retry timeouts/rate limits with bounds; schema-invalid logical output is not blind-retried — repair is a controlled, observable step.
+
+## AI design (Design §7)
+
+1. Candidate extractor (strict schema, `RequirementCandidate` with source {documentId, pageNumber, sectionPath, quote} + advisory confidence).
+2. Evidence resolver — workspace-only retrieval.
+3. Verifier — supported / partially supported / contradicted / unsupported (separate prompt/model; no self-certification).
+4. Rule engine — deterministic dates, form references, numeric thresholds, duplicates, superseded items. Models never decide numeric equivalence without explicit tolerance rules.
+5. Only supported candidates become "verified"; everything else enters human review.
+
+Readiness (deterministic, Design §7.6): criticalBlockers>0 → NOT_READY; unreviewed mandatory → NEEDS_REVIEW; unresolved high findings → NEEDS_REVIEW; approvals incomplete → NEEDS_APPROVAL; else READY_FOR_FINAL_HUMAN_REVIEW. Never "compliant" or "safe to submit".
+
+## API surface (Design §8.2) and routes (Design §9.1)
+
+REST-ish routes: workspaces CRUD, signed uploads, document finalize, analysis-runs start/status, requirements list/patch, evidence get, checklist list/patch, drafts + audits + findings, exports. Error contract: `{code, message, stage?, retryable, correlationId, details?}` — never expose secrets or raw provider errors.
+
+Frontend routes: `/` (workspace list), `/w/:id` (overview), `/w/:id/documents`, `/w/:id/requirements`, `/w/:id/requirements/:reqId` (evidence viewer), `/w/:id/checklist`, `/w/:id/drafts/:draftId`, `/w/:id/report`, `/w/:id/audit`.
+
+UI state model: every async view supports empty/loading/progress/success/terminal-error/retryable-error; source status displayed separately from extraction confidence; blockers pinned; protected "Reset fixture" control.
+
+## Environments & CI (Design §13)
+
+local (dev, unit/integration), preview (mock/sandbox model), demo (frozen fixture, stable URL). Env vars per Design §13.2 (`DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `MODEL_PROVIDER`, `MODEL_API_KEY`, `EXTRACTION_MODEL`, `VERIFICATION_MODEL`, `JOB_SIGNING_SECRET`, `DEMO_MODE`, `MAX_PAGES_PER_WORKSPACE=100`, `MAX_MODEL_COST_USD_PER_RUN=10`, …) validated at boot, server-side only. CI gates: typecheck, lint, unit tests, migration validation, secret scan, fixture-evaluation thresholds, Playwright smoke.
