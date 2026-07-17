@@ -4,18 +4,18 @@ Condensed from `USI_AI_RFP_Compliance_Auditor_Engineering_Design.md` (v1.0, 2026
 
 ## Components (Design §3)
 
-| Component | Responsibility | Failure behavior |
-|---|---|---|
-| Next.js web app | Auth, workspaces, upload UI, register, evidence viewer, checklist, audit, report | Explicit error states; preserve completed server results |
-| Application API | Validate commands, authorize, create jobs, typed resources, state transitions | Structured errors; never infer success from partial model output |
-| Background worker | Parse, model calls, verification, progress, exports | Idempotent stages; retry transient; terminal failure w/ stage detail |
-| Parser adapter | Page text, blocks, tables, coordinates where possible | Store warnings + page assets; page-level fallback |
-| Extraction service | Schema-constrained candidate requirements/checklist items | Reject invalid schema; preserve raw response for debugging |
-| Verification service | Validate evidence, dedupe, addendum compare, classify confidence | Downgrade to unverified if source support missing |
-| Draft audit service | Segment claims; compare to workspace sources | Return "requires human proof" instead of guessing |
-| Postgres (Supabase) | Domain records, evidence, embeddings, jobs, decisions, audit events | Transactional updates; versioned migrations |
-| Object storage (Supabase Storage) | Source files, page artifacts, parsed artifacts, exports | Private buckets; signed URLs; retention controls |
-| Model gateway | Normalize provider calls, prompts, schemas, timeouts, costs, metadata | Optional fallback provider; never mix workspace context |
+| Component                         | Responsibility                                                                   | Failure behavior                                                     |
+| --------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Next.js web app                   | Auth, workspaces, upload UI, register, evidence viewer, checklist, audit, report | Explicit error states; preserve completed server results             |
+| Application API                   | Validate commands, authorize, create jobs, typed resources, state transitions    | Structured errors; never infer success from partial model output     |
+| Background worker                 | Parse, model calls, verification, progress, exports                              | Idempotent stages; retry transient; terminal failure w/ stage detail |
+| Parser adapter                    | Page text, blocks, tables, coordinates where possible                            | Store warnings + page assets; page-level fallback                    |
+| Extraction service                | Schema-constrained candidate requirements/checklist items                        | Reject invalid schema; preserve raw response for debugging           |
+| Verification service              | Validate evidence, dedupe, addendum compare, classify confidence                 | Downgrade to unverified if source support missing                    |
+| Draft audit service               | Segment claims; compare to workspace sources                                     | Return "requires human proof" instead of guessing                    |
+| Postgres (Supabase)               | Domain records, evidence, embeddings, jobs, decisions, audit events              | Transactional updates; versioned migrations                          |
+| Object storage (Supabase Storage) | Source files, page artifacts, parsed artifacts, exports                          | Private buckets; signed URLs; retention controls                     |
+| Model gateway                     | Normalize provider calls, prompts, schemas, timeouts, costs, metadata            | Optional fallback provider; never mix workspace context              |
 
 ## Data flow
 
@@ -44,21 +44,21 @@ flowchart TD
 
 ## Selected stack (Design §4 + Phase 0 decisions)
 
-| Layer | Selection | Notes |
-|---|---|---|
-| Language | TypeScript, `strict` | Shared Zod schemas |
-| Web | Next.js App Router (latest stable, verify via Context7 at Phase 1) | Server actions/API routes; long tasks in worker |
-| UI | React + Tailwind CSS + accessible primitives (Radix-based) | Enterprise dashboard patterns |
-| DB | Supabase PostgreSQL 17 — project `RFP demo` (`uxmxkdjschbekkbnweby`, us-east-2) | RLS on all app tables |
-| Storage | Supabase Storage, private buckets, expiring signed URLs | Workspace-scoped object keys |
-| Auth | Supabase Auth (email/password), public signup disabled, seeded demo users | Production SSO out of scope |
-| Queue | pg-boss (Postgres-backed) in a Node worker | No new paid service; stage retries + visibility |
-| PDF parsing | `pdfjs-dist` adapter behind `ParserAdapter` interface (page text + offsets); evidence viewer renders pages via pdf.js from signed URL | OCR out of scope for demo fixture (machine-readable); interface allows swap |
-| Model gateway | Internal `ModelGateway` interface; real provider TBD (open question OQ-1); deterministic `MockProvider` for tests + cached fallback | Record provider, model, version, tokens, latency, cost |
-| Validation | Zod + provider JSON-schema-constrained output | Never free-parse critical fields |
-| Retrieval | Hybrid: Postgres FTS/pg_trgm (lexical) + pgvector (semantic), always workspace-filtered | Citations validated against stored page text before display |
-| Testing | Vitest, Playwright (`playwright-cli` skill available), fixture evaluator | Snapshot structured outputs only after normalization |
-| Deployment | Local-first demo; hosting decision deferred (OQ-2) | Env vars outside repository |
+| Layer         | Selection                                                                                                                             | Notes                                                                       |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Language      | TypeScript, `strict`                                                                                                                  | Shared Zod schemas                                                          |
+| Web           | Next.js App Router (latest stable, verify via Context7 at Phase 1)                                                                    | Server actions/API routes; long tasks in worker                             |
+| UI            | React + Tailwind CSS + accessible primitives (Radix-based)                                                                            | Enterprise dashboard patterns                                               |
+| DB            | Supabase PostgreSQL 17 — project `RFP demo` (`uxmxkdjschbekkbnweby`, us-east-2)                                                       | RLS on all app tables                                                       |
+| Storage       | Supabase Storage, private buckets, expiring signed URLs                                                                               | Workspace-scoped object keys                                                |
+| Auth          | Supabase Auth (email/password), public signup disabled, seeded demo users                                                             | Production SSO out of scope                                                 |
+| Queue         | pg-boss (Postgres-backed) in a Node worker                                                                                            | No new paid service; stage retries + visibility                             |
+| PDF parsing   | `pdfjs-dist` adapter behind `ParserAdapter` interface (page text + offsets); evidence viewer renders pages via pdf.js from signed URL | OCR out of scope for demo fixture (machine-readable); interface allows swap |
+| Model gateway | Internal `ModelGateway` interface; real provider TBD (open question OQ-1); deterministic `MockProvider` for tests + cached fallback   | Record provider, model, version, tokens, latency, cost                      |
+| Validation    | Zod + provider JSON-schema-constrained output                                                                                         | Never free-parse critical fields                                            |
+| Retrieval     | Hybrid: Postgres FTS/pg_trgm (lexical) + pgvector (semantic), always workspace-filtered                                               | Citations validated against stored page text before display                 |
+| Testing       | Vitest, Playwright (`playwright-cli` skill available), fixture evaluator                                                              | Snapshot structured outputs only after normalization                        |
+| Deployment    | Local-first demo; hosting decision deferred (OQ-2)                                                                                    | Env vars outside repository                                                 |
 
 ## Repository layout (Design §4.1, npm workspaces)
 

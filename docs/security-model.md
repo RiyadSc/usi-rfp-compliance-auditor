@@ -11,31 +11,31 @@ Sources: Engineering Design §10, build-brief AI security rules, Phase 0 threat 
 
 ## Threat model (initial)
 
-| # | Threat | Vector | Controls | Phase |
-|---|---|---|---|---|
-| T1 | Unauthorized document access | Guessing storage URLs, IDOR on APIs | Private buckets; short-expiry signed URLs; workspace authorization on every route; RLS | 1–2 |
-| T2 | Cross-workspace leakage | Missing predicate in query/retrieval/prompt assembly | Mandatory workspace predicates in repositories; retrieval filters; isolation tests in CI; per-run document allowlist | 1, 4, 8 |
-| T3 | Prompt injection in documents | Malicious text in PDF/draft ("ignore instructions", fake system messages, key exfil requests) | Content-as-data prompt envelope; fixed system prompts; schema-constrained output; independent verification; injection fixtures in CI | 3–4, 8 |
-| T4 | Malicious file upload | Oversized files, wrong MIME, embedded active content | Type allowlist (PDF first; DOCX only if explicitly approved), extension+MIME+magic-byte checks, size/page limits, hash dedup, parser isolation, malware-scan hook | 2 |
-| T5 | Secret exposure | Keys in client bundle, logs, exports, error responses | Server-only env vars validated at boot; log redaction; error contract hides internals; secret scanning in CI | 1, 8 |
-| T6 | Sensitive content in logs | Raw prompts/responses logged | Store hashes/metadata in logs; raw payloads in protected storage with retention config | 3 |
-| T7 | Export leakage | Long-lived or cross-workspace export URLs | Signed short-lived URLs; export scoped to workspace + run; export audit events; demo watermark | 7 |
-| T8 | Automation bias | Users over-trusting model output | Evidence-gated verified state; explicit uncertainty states; human approval gates; no "compliant"/"safe to submit"; disclaimers | all |
-| T9 | Cost abuse / runaway spend | Unbounded pages, retries, model calls | Page/file limits; per-run cost budget (`MAX_MODEL_COST_USD_PER_RUN`); bounded retries; rate limits; cost surfaced to operator | 3, 8 |
-| T10 | Hallucinated obligations | Model invents requirements | Independent verification; quote-must-exist-on-page check; deterministic numeric/date checks; known-answer eval; zero-critical-false gate | 3–4, 8 |
-| T11 | Unauthenticated access to demo | Public URL discovery | Supabase Auth with signup disabled; seeded demo accounts; no unauthenticated analysis endpoints | 1 |
-| T12 | Model provider data retention | Fixture content sent to provider | Synthetic/public data only (BR-09); provider data controls documented; re-evaluate before any pilot | 3 |
+| #   | Threat                         | Vector                                                                                        | Controls                                                                                                                                                          | Phase   |
+| --- | ------------------------------ | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| T1  | Unauthorized document access   | Guessing storage URLs, IDOR on APIs                                                           | Private buckets; short-expiry signed URLs; workspace authorization on every route; RLS                                                                            | 1–2     |
+| T2  | Cross-workspace leakage        | Missing predicate in query/retrieval/prompt assembly                                          | Mandatory workspace predicates in repositories; retrieval filters; isolation tests in CI; per-run document allowlist                                              | 1, 4, 8 |
+| T3  | Prompt injection in documents  | Malicious text in PDF/draft ("ignore instructions", fake system messages, key exfil requests) | Content-as-data prompt envelope; fixed system prompts; schema-constrained output; independent verification; injection fixtures in CI                              | 3–4, 8  |
+| T4  | Malicious file upload          | Oversized files, wrong MIME, embedded active content                                          | Type allowlist (PDF first; DOCX only if explicitly approved), extension+MIME+magic-byte checks, size/page limits, hash dedup, parser isolation, malware-scan hook | 2       |
+| T5  | Secret exposure                | Keys in client bundle, logs, exports, error responses                                         | Server-only env vars validated at boot; log redaction; error contract hides internals; secret scanning in CI                                                      | 1, 8    |
+| T6  | Sensitive content in logs      | Raw prompts/responses logged                                                                  | Store hashes/metadata in logs; raw payloads in protected storage with retention config                                                                            | 3       |
+| T7  | Export leakage                 | Long-lived or cross-workspace export URLs                                                     | Signed short-lived URLs; export scoped to workspace + run; export audit events; demo watermark                                                                    | 7       |
+| T8  | Automation bias                | Users over-trusting model output                                                              | Evidence-gated verified state; explicit uncertainty states; human approval gates; no "compliant"/"safe to submit"; disclaimers                                    | all     |
+| T9  | Cost abuse / runaway spend     | Unbounded pages, retries, model calls                                                         | Page/file limits; per-run cost budget (`MAX_MODEL_COST_USD_PER_RUN`); bounded retries; rate limits; cost surfaced to operator                                     | 3, 8    |
+| T10 | Hallucinated obligations       | Model invents requirements                                                                    | Independent verification; quote-must-exist-on-page check; deterministic numeric/date checks; known-answer eval; zero-critical-false gate                          | 3–4, 8  |
+| T11 | Unauthenticated access to demo | Public URL discovery                                                                          | Supabase Auth with signup disabled; seeded demo accounts; no unauthenticated analysis endpoints                                                                   | 1       |
+| T12 | Model provider data retention  | Fixture content sent to provider                                                              | Synthetic/public data only (BR-09); provider data controls documented; re-evaluate before any pilot                                                               | 3       |
 
 ## Data classification & retention (Design §10.2)
 
-| Data | Classification | Retention |
-|---|---|---|
-| Public/synthetic source files | Demo-safe | Delete with demo lifecycle / ≤30 days |
-| Parsed text / page assets | Derived demo data | Delete with workspace |
-| Model requests/responses | Derived demo data (may contain source content) | Minimum for debugging; configurable purge |
-| User decisions / audit events | Operational metadata | Retain for demo evaluation |
-| Secrets / API keys | Restricted | Env/secret manager only; never logged |
-| Exports | Demo output | Short-lived signed access; purge on reset |
+| Data                          | Classification                                 | Retention                                 |
+| ----------------------------- | ---------------------------------------------- | ----------------------------------------- |
+| Public/synthetic source files | Demo-safe                                      | Delete with demo lifecycle / ≤30 days     |
+| Parsed text / page assets     | Derived demo data                              | Delete with workspace                     |
+| Model requests/responses      | Derived demo data (may contain source content) | Minimum for debugging; configurable purge |
+| User decisions / audit events | Operational metadata                           | Retain for demo evaluation                |
+| Secrets / API keys            | Restricted                                     | Env/secret manager only; never logged     |
+| Exports                       | Demo output                                    | Short-lived signed access; purge on reset |
 
 ## Supabase-specific rules
 

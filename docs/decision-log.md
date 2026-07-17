@@ -4,15 +4,15 @@ Append-only. Each entry: date, decision, rationale, reversibility, source.
 
 ## Inherited from Engineering Design §17.3 (2026-07-16)
 
-| Decision | Rationale |
-|---|---|
-| Verification-first, not generation-first | Addresses stakeholder failure mode; reduces demo scope |
-| Frozen synthetic/public fixture | Reliable rehearsal; no confidentiality risk |
-| Page-level evidence required for verified findings | Auditable; visibly different from generic chat |
-| Separate extraction, verification, deterministic rules | Reduces self-confirming model errors |
-| Asynchronous jobs | Parsing/analysis exceed safe interactive request durations |
-| Model provider behind interface | Avoid provider lock-in |
-| No "compliant"/"safe to submit" status | Legal judgment stays human |
+| Decision                                               | Rationale                                                  |
+| ------------------------------------------------------ | ---------------------------------------------------------- |
+| Verification-first, not generation-first               | Addresses stakeholder failure mode; reduces demo scope     |
+| Frozen synthetic/public fixture                        | Reliable rehearsal; no confidentiality risk                |
+| Page-level evidence required for verified findings     | Auditable; visibly different from generic chat             |
+| Separate extraction, verification, deterministic rules | Reduces self-confirming model errors                       |
+| Asynchronous jobs                                      | Parsing/analysis exceed safe interactive request durations |
+| Model provider behind interface                        | Avoid provider lock-in                                     |
+| No "compliant"/"safe to submit" status                 | Legal judgment stays human                                 |
 
 ## Phase 0 decisions (2026-07-16)
 
@@ -28,8 +28,21 @@ Append-only. Each entry: date, decision, rationale, reversibility, source.
 - **D-010 — Docs conversions trusted.** The `.md` versions of the PRD and Engineering Design (converted from the PDFs) are treated as authoritative source text; PDFs retained in repo root for reference.
 - **D-011 — Context7 usage.** `find-docs` skill via `npx ctx7@latest` verified working (requires full-network permission in sandbox). Used per-phase, immediately before implementing unfamiliar/security-sensitive functionality; material findings recorded here.
 
+## Phase 1 decisions (2026-07-17)
+
+- **D-012 — OQ resolutions (user-approved).** OQ-1: live model provider deferred until immediately before Phase 3; MockProvider only in Phases 1–2. OQ-2: local development target, deployment-portable; hosted demo decided at hardening. OQ-3: local gates are source of truth + GitHub Actions workflow (install, lint, format check, typecheck, unit tests, build, secret scan — no secret-dependent tests). OQ-4: PDF-only approved; DOCX recorded as post-demo scope behind the parser adapter.
+- **D-013 — Auth session handling via `@supabase/ssr` cookie clients** (browser/server/proxy patterns from official docs). Next.js 16 renamed `middleware.ts` → `proxy.ts`; we use the new convention. Route protection in proxy is UX only; authorization lives in RLS.
+- **D-014 — Audit event writes via `record_audit_event` SECURITY DEFINER RPC** rather than a service-role client (no service-role key is present in the environment, and Phase 1 needs no other privileged path). The function pins `actor_id = auth.uid()`, requires workspace membership, and allowlists event types; the table has no INSERT policy and an UPDATE/DELETE-blocking trigger (immutable even for service role). Residual risk documented in build-status R9. Reversible: yes (server-side system events can move to service role later).
+- **D-015 — Demo users seeded via SQL** (`scripts/seed-demo-users.template.sql`) with locally generated random passwords stored only in gitignored `.env.local` and Supabase's auth store. No Management-API auth-config access via MCP, so "disable public signup" and "leaked password protection" are dashboard settings recorded as runbook prerequisites; the app itself exposes no signup surface.
+- **D-016 — Owner-OR-member SELECT policy on workspaces** (migration 0003): `INSERT ... RETURNING` evaluates SELECT policies before the AFTER-INSERT membership trigger commits its row, so pure membership SELECT broke workspace creation. Owners are always members (trigger), so scope is unchanged.
+- **D-017 — Function grant hardening** (migration 0004) after Supabase security advisors flagged PUBLIC/anon EXECUTE on SECURITY DEFINER functions: trigger functions revoked from all API roles; RPCs restricted to `authenticated`; default function EXECUTE for PUBLIC revoked schema-wide.
+
 ## External documentation decisions
 
 (record per phase: library ID, query, what changed as a result)
 
 - 2026-07-16: Resolved `/vercel/next.js` via Context7 (verification that CLI works). Version selection for Phase 1 to be confirmed against current stable docs at Phase 1 start.
+- 2026-07-17: `/vercel/next.js` — server/client boundaries + `server-only` marker package semantics; also v16 `middleware.ts` → `proxy.ts` migration (adopted, D-013).
+- 2026-07-17: `/supabase/ssr` — `createServerClient`/`createBrowserClient` cookie patterns for App Router + middleware/proxy session refresh (adopted in `apps/web/src/lib/supabase/server.ts`, `apps/web/src/proxy.ts`).
+- 2026-07-17: `/supabase/supabase` — RLS best practices: SECURITY DEFINER membership helper to avoid recursive policies; wrap `auth.uid()`/helpers in `(select ...)` for initplan caching (adopted in migrations 0001/0003).
+- 2026-07-17: `/supabase/supabase` — Storage RLS on `storage.objects` with `storage.foldername(name)[1]` path-prefix policies; private buckets require JWT download or signed URLs (adopted in migration 0002).

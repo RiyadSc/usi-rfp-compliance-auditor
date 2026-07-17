@@ -4,15 +4,15 @@ Sources: Engineering Design §12, PRD §8.1/§11.2, build brief Phase 8.
 
 ## Test pyramid
 
-| Level | Tooling | Coverage |
-|---|---|---|
-| Unit | Vitest | Zod schemas, state transitions, date/number parsing, readiness rules, dedup, addendum precedence, canonical-key logic |
-| Component | Vitest | Parser adapters, repositories (workspace predicates), model gateway (mock provider), evidence resolver, report generator |
-| Integration | Vitest + Supabase | Upload→analysis workflow, queue retries, DB/storage interactions, provider mock responses, RLS behavior with two users |
-| End-to-end | Playwright (`playwright-cli` skill) | Prepared demo flow: workspace → upload → extraction → evidence → checklist → draft audit → report → export |
-| Evaluation | Fixture evaluator (`packages/evaluation`) | Known-answer RFP fixture, planted missing forms, unsupported claims, contradictions, citation validation |
-| Security | Vitest + Playwright | Authorization checks, signed-URL expiry, prompt-injection fixtures, file validation, cross-workspace isolation, secret/dependency scanning |
-| Rehearsal | Playwright `@demo-critical` | Three full demo runs with timing and reset procedure |
+| Level       | Tooling                                   | Coverage                                                                                                                                   |
+| ----------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Unit        | Vitest                                    | Zod schemas, state transitions, date/number parsing, readiness rules, dedup, addendum precedence, canonical-key logic                      |
+| Component   | Vitest                                    | Parser adapters, repositories (workspace predicates), model gateway (mock provider), evidence resolver, report generator                   |
+| Integration | Vitest + Supabase                         | Upload→analysis workflow, queue retries, DB/storage interactions, provider mock responses, RLS behavior with two users                     |
+| End-to-end  | Playwright (`playwright-cli` skill)       | Prepared demo flow: workspace → upload → extraction → evidence → checklist → draft audit → report → export                                 |
+| Evaluation  | Fixture evaluator (`packages/evaluation`) | Known-answer RFP fixture, planted missing forms, unsupported claims, contradictions, citation validation                                   |
+| Security    | Vitest + Playwright                       | Authorization checks, signed-URL expiry, prompt-injection fixtures, file validation, cross-workspace isolation, secret/dependency scanning |
+| Rehearsal   | Playwright `@demo-critical`               | Three full demo runs with timing and reset procedure                                                                                       |
 
 ## Known-answer fixture contract (Design §12.2)
 

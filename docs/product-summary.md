@@ -19,14 +19,14 @@ The product is **decision support**, never an autonomous writer, and must never 
 
 ## Demo scope: Must have (P0) (PRD §5.1)
 
-| Epic | Capability |
-|---|---|
-| Document ingestion | Upload primary RFP + addenda + supporting files; parse pages; preserve source metadata |
-| Requirements register | Structured obligations: category, mandatory status, deadline, source quote, page, section, confidence |
-| Evidence viewer | Open exact source page from any requirement; highlight supporting text |
-| Submission checklist | Forms, signatures, acknowledgments, insurance, attachments, events, unresolved items |
-| Draft compliance audit | Flag unsupported claims, contradictions, missing responses, uncited assertions |
-| Readiness report | Blockers, warnings, human approvals, exportable summary |
+| Epic                   | Capability                                                                                            |
+| ---------------------- | ----------------------------------------------------------------------------------------------------- |
+| Document ingestion     | Upload primary RFP + addenda + supporting files; parse pages; preserve source metadata                |
+| Requirements register  | Structured obligations: category, mandatory status, deadline, source quote, page, section, confidence |
+| Evidence viewer        | Open exact source page from any requirement; highlight supporting text                                |
+| Submission checklist   | Forms, signatures, acknowledgments, insurance, attachments, events, unresolved items                  |
+| Draft compliance audit | Flag unsupported claims, contradictions, missing responses, uncited assertions                        |
+| Readiness report       | Blockers, warnings, human approvals, exportable summary                                               |
 
 P1: audit log, assignment/status. Should-have (§5.2): addendum comparison, bulk filters, dedup/cross-reference, CSV + PDF/Word export, known-answer test mode. Later/pilot (§5.3): content library, integrations, collaboration, copilots, analytics.
 
@@ -59,14 +59,14 @@ FR-001 workspace creation · FR-002 PDF+DOCX upload w/ name, size, hash, page co
 
 ## Reliability targets for demo (PRD §8.1)
 
-| Measure | Target |
-|---|---|
+| Measure                     | Target                                   |
+| --------------------------- | ---------------------------------------- |
 | Known mandatory form recall | 100% on curated fixture (10 known forms) |
-| Citation validity | 100% for displayed verified findings |
-| Unsupported-claim detection | ≥90% on curated draft |
-| False critical requirements | 0 in prepared demo |
-| Analysis completion | < 3 minutes for prepared set |
-| Demo stability | 3 consecutive successful rehearsals |
+| Citation validity           | 100% for displayed verified findings     |
+| Unsupported-claim detection | ≥90% on curated draft                    |
+| False critical requirements | 0 in prepared demo                       |
+| Analysis completion         | < 3 minutes for prepared set             |
+| Demo stability              | 3 consecutive successful rehearsals      |
 
 ## Prepared fixture (PRD §10.1)
 
