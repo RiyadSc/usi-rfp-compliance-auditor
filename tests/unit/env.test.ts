@@ -5,6 +5,8 @@ import { parsePublicEnv } from '../../packages/config/src/public-env.js';
 const valid = {
   NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
   NEXT_PUBLIC_SUPABASE_ANON_KEY: 'a'.repeat(40),
+  SUPABASE_SERVICE_ROLE_KEY: 'b'.repeat(40),
+  DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:5432/postgres',
 };
 
 describe('parseServerEnv', () => {
@@ -29,15 +31,27 @@ describe('parseServerEnv', () => {
     expect(() => parseServerEnv({ ...valid, MAX_PAGES_PER_WORKSPACE: 'many' })).toThrow();
   });
 
-  it('does not require any provider or service-role secret in Phase 1', () => {
-    const env = parseServerEnv(valid);
-    expect(env.SUPABASE_SERVICE_ROLE_KEY).toBeUndefined();
+  it('requires service-role and database URL for Phase 2 privileged paths', () => {
+    expect(() =>
+      parseServerEnv({
+        NEXT_PUBLIC_SUPABASE_URL: valid.NEXT_PUBLIC_SUPABASE_URL,
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: valid.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      }),
+    ).toThrow(/Invalid server environment/);
   });
 });
 
 describe('parsePublicEnv', () => {
   it('accepts the two public values', () => {
-    expect(parsePublicEnv(valid)).toEqual(valid);
+    expect(
+      parsePublicEnv({
+        NEXT_PUBLIC_SUPABASE_URL: valid.NEXT_PUBLIC_SUPABASE_URL,
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: valid.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      }),
+    ).toEqual({
+      NEXT_PUBLIC_SUPABASE_URL: valid.NEXT_PUBLIC_SUPABASE_URL,
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: valid.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    });
   });
 
   it('rejects missing anon key', () => {

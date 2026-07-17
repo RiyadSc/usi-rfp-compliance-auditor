@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { anonClient, createTestWorkspace, signInUser } from './helpers.js';
 
 /**
@@ -167,11 +167,33 @@ describe('audit_events integrity and isolation', () => {
 describe('storage isolation (workspace-documents bucket)', () => {
   const content = new Blob(['synthetic fixture placeholder'], { type: 'text/plain' });
 
-  it('members upload into their own workspace prefix', async () => {
+  function objectPath() {
+    return `${workspaceA}/smoke-test.txt`;
+  }
+
+  function serviceClient() {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+  }
+
+  it('direct authenticated upload is denied (signed-upload-only)', async () => {
     const { error } = await a.storage
       .from('workspace-documents')
-      .upload(`${workspaceA}/smoke-test.txt`, content, { upsert: false });
+      .upload(objectPath(), content, { upsert: false });
+    expect(error).not.toBeNull();
+  });
+
+  it('service role can place an object; member can download', async () => {
+    const svc = serviceClient();
+    const { error: upErr } = await svc.storage
+      .from('workspace-documents')
+      .upload(objectPath(), content, { upsert: true });
+    expect(upErr).toBeNull();
+
+    const { data, error } = await a.storage.from('workspace-documents').download(objectPath());
     expect(error).toBeNull();
+    expect(await data!.text()).toContain('synthetic fixture placeholder');
   });
 
   it('non-members cannot upload into another workspace prefix (negative)', async () => {
@@ -182,9 +204,7 @@ describe('storage isolation (workspace-documents bucket)', () => {
   });
 
   it('non-members cannot download another workspace object (negative)', async () => {
-    const { data, error } = await b.storage
-      .from('workspace-documents')
-      .download(`${workspaceA}/smoke-test.txt`);
+    const { data, error } = await b.storage.from('workspace-documents').download(objectPath());
     expect(data).toBeNull();
     expect(error).not.toBeNull();
   });
@@ -197,33 +217,41 @@ describe('storage isolation (workspace-documents bucket)', () => {
   it('non-members cannot mint signed URLs for another workspace object (negative)', async () => {
     const { data, error } = await b.storage
       .from('workspace-documents')
-      .createSignedUrl(`${workspaceA}/smoke-test.txt`, 60);
+      .createSignedUrl(objectPath(), 60);
     expect(data).toBeNull();
     expect(error).not.toBeNull();
   });
 
   it('unauthenticated clients cannot download (negative)', async () => {
     const anon = anonClient();
-    const { data, error } = await anon.storage
-      .from('workspace-documents')
-      .download(`${workspaceA}/smoke-test.txt`);
+    const { data, error } = await anon.storage.from('workspace-documents').download(objectPath());
     expect(data).toBeNull();
     expect(error).not.toBeNull();
   });
 
-  it('members download their own objects', async () => {
-    const { data, error } = await a.storage
+  it('member delete is a no-op; privileged path removes object', async () => {
+    // Without a DELETE policy, Storage returns success with zero rows deleted.
+    const { data: memberRemoved } = await a.storage
       .from('workspace-documents')
-      .download(`${workspaceA}/smoke-test.txt`);
-    expect(error).toBeNull();
-    expect(await data!.text()).toContain('synthetic fixture placeholder');
-  });
+      .remove([objectPath()]);
+    expect(memberRemoved ?? []).toHaveLength(0);
 
-  it('cleans up test object (member delete allowed)', async () => {
-    const { error } = await a.storage
+    const { data: stillThere, error: stillErr } = await a.storage
       .from('workspace-documents')
-      .remove([`${workspaceA}/smoke-test.txt`]);
+      .download(objectPath());
+    expect(stillErr).toBeNull();
+    expect(stillThere).not.toBeNull();
+
+    const svc = serviceClient();
+    const { data: removed, error } = await svc.storage
+      .from('workspace-documents')
+      .remove([objectPath()]);
     expect(error).toBeNull();
+    expect(removed?.length ?? 0).toBeGreaterThan(0);
+
+    const name = objectPath().split('/').pop()!;
+    const { data: listed } = await a.storage.from('workspace-documents').list(workspaceA);
+    expect((listed ?? []).some((f) => f.name === name)).toBe(false);
   });
 });
 
