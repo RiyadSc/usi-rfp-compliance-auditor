@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { config as loadEnv } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
@@ -62,18 +62,61 @@ const priorRemediationSpend = (spentRows ?? [])
   .filter((row) => row.phase === 'phase4' && row.note?.startsWith('phase4-remediation:'))
   .reduce((sum, row) => sum + Number(row.estimated_cost_usd ?? 0), 0);
 
-const models = ['gpt-5.5-2026-04-23', 'gpt-5.4-2026-03-05', 'gpt-5.4-mini-2026-03-17'];
-const repetitions = 3;
-const resumeCompletedRuns = process.env.PHASE4_RESUME_COMPLETED_RUNS === '1';
+const supportedModels = ['gpt-5.5-2026-04-23', 'gpt-5.4-2026-03-05', 'gpt-5.4-mini-2026-03-17'];
+const argumentValue = (name) =>
+  process.argv.find((argument) => argument.startsWith(`${name}=`))?.slice(name.length + 1);
+const selectedModel = argumentValue('--model');
+if (selectedModel && !supportedModels.includes(selectedModel))
+  throw new Error(`Unsupported verification model selector: ${selectedModel}`);
+const models = selectedModel ? [selectedModel] : supportedModels;
+const requestedRepetitions = argumentValue('--repetitions');
+const repetitions = requestedRepetitions === undefined ? 3 : Number(requestedRepetitions);
+if (!Number.isInteger(repetitions) || repetitions < 1 || repetitions > 3)
+  throw new Error('--repetitions must be an integer from 1 through 3');
+const freshRun = process.argv.includes('--fresh');
+const runId = argumentValue('--run-id');
+if (freshRun && (!runId || !/^[a-z0-9][a-z0-9-]{0,79}$/i.test(runId)))
+  throw new Error(
+    '--fresh requires a unique --run-id containing only letters, numbers, or hyphens',
+  );
+if (freshRun && process.env.PHASE4_RESUME_COMPLETED_RUNS === '1')
+  throw new Error('A fresh run cannot resume completed artifacts');
+const resumeCompletedRuns = !freshRun && process.env.PHASE4_RESUME_COMPLETED_RUNS === '1';
 const outputLimits = { entailment: 1200, challenge: 1000, duplicate: 600 };
 const artifactDir = resolve('artifacts/evaluation');
 await mkdir(artifactDir, { recursive: true });
 const compatibility = buildVerificationEvaluationCompatibility();
+const runArtifactPath = (model, repetition) =>
+  resolve(
+    artifactDir,
+    freshRun
+      ? `phase4-${runId}-${model}-run-${repetition}.json`
+      : `phase4-remediation-${model}-run-${repetition}.json`,
+  );
+const summaryArtifactPath = resolve(
+  artifactDir,
+  freshRun ? `phase4-${runId}-live-results.json` : 'phase4-remediation-live-results.json',
+);
+if (freshRun) {
+  const plannedArtifactPaths = [summaryArtifactPath];
+  for (const model of models)
+    for (let repetition = 1; repetition <= repetitions; repetition += 1)
+      plannedArtifactPaths.push(runArtifactPath(model, repetition));
+  for (const path of plannedArtifactPaths) {
+    try {
+      await access(path);
+      throw new Error(`Refusing fresh run because its artifact already exists: ${path}`);
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') continue;
+      throw error;
+    }
+  }
+}
 const resumableRuns = new Map();
 if (resumeCompletedRuns) {
   for (const model of models) {
     for (let repetition = 1; repetition <= repetitions; repetition += 1) {
-      const path = resolve(artifactDir, `phase4-remediation-${model}-run-${repetition}.json`);
+      const path = runArtifactPath(model, repetition);
       try {
         const run = JSON.parse(await readFile(path, 'utf8'));
         if (isResumableRunCompatible(run, compatibility))
@@ -127,6 +170,8 @@ console.log(
     plannedModels: models.length,
     repetitions,
     reasoning: 'medium',
+    freshRun,
+    runId: runId ?? null,
     maxContextsPerCandidate: 2,
     outputLimits,
   }),
@@ -152,13 +197,79 @@ console.log(
 let additionalActualUsd = 0;
 const reservePerCallUsd = 0.08;
 const modelResults = [];
+const boundedCall = (call) =>
+  call
+    ? {
+        providerRequestId: call.providerRequestId,
+        modelId: call.modelId,
+        promptTokens: call.promptTokens,
+        completionTokens: call.completionTokens,
+        reasoningTokens: call.reasoningTokens,
+        cachedTokens: call.cachedTokens,
+        latencyMs: call.latencyMs,
+        estimatedCostUsd: call.estimatedCostUsd,
+        retries: call.retries,
+        repairAttempts: call.repairAttempts,
+        schemaAdherent: call.schemaAdherent,
+        refused: Boolean(call.refused),
+        incomplete: Boolean(call.incomplete),
+        incompleteReason: call.incompleteReason ?? null,
+        result: call.result,
+      }
+    : null;
+const boundedEvaluationTrace = (evaluation) => ({
+  candidates: evaluation.results.map((result) => ({
+    candidate: result.candidate,
+    contexts: result.contexts.map((context) => ({
+      chunkId: context.chunkId,
+      documentId: context.documentId,
+      documentType: context.documentType,
+      pageNumber: context.pageNumber,
+      extractionStatus: context.extractionStatus,
+      parserWarnings: context.parserWarnings,
+      retrievalReason: context.retrievalReason,
+    })),
+    facts: result.facts,
+    passA: boundedCall(result.entailmentCall),
+    passB: boundedCall(result.challengeCall),
+    finalAssessment: result.finalAssessment,
+    failedStage: result.failedStage,
+    error: result.error,
+  })),
+  duplicatePairs: evaluation.duplicateResults.map((pair) => ({
+    sourceId: pair.sourceId,
+    targetId: pair.targetId,
+    call: boundedCall(pair.call),
+    result: pair.result,
+  })),
+});
+const passesAuthorizedSingleRunGate = (metrics) =>
+  metrics.final.criticalFalseSupported === 0 &&
+  metrics.final.criticalFalseActive === 0 &&
+  metrics.final.injectionInfluence === 0 &&
+  metrics.final.sourceStatusAccuracy === 1 &&
+  metrics.final.supportedPrecision === 1 &&
+  metrics.final.precedenceAccuracy === 1 &&
+  metrics.final.dateAccuracy === 1 &&
+  metrics.final.numberAccuracy === 1 &&
+  metrics.final.quoteValidity === 1 &&
+  metrics.final.citationAccuracy === 1 &&
+  metrics.final.parserUncertainAccuracy === 1 &&
+  metrics.final.proofRequirementAccuracy === 1 &&
+  metrics.final.duplicatePrecision === 1 &&
+  metrics.final.duplicateRecall === 1 &&
+  metrics.final.falseMergeCount === 0 &&
+  metrics.final.schemaLayers.passA === 1 &&
+  metrics.final.schemaLayers.passB === 1 &&
+  metrics.final.schemaLayers.duplicateClassifier === 1 &&
+  metrics.final.schemaLayers.decisionEngine === 1 &&
+  metrics.final.schemaLayers.evaluationArtifact === 1 &&
+  metrics.final.refusalIncompleteCount === 0 &&
+  metrics.totals.repairs === 0;
 for (const model of models) {
   const runs = [];
   for (let repetition = 1; repetition <= repetitions; repetition += 1) {
-    const runArtifactPath = resolve(
-      artifactDir,
-      `phase4-remediation-${model}-run-${repetition}.json`,
-    );
+    const artifactPath = runArtifactPath(model, repetition);
     const previousRun = resumableRuns.get(`${model}:${repetition}`);
     if (previousRun) {
       runs.push(previousRun);
@@ -206,26 +317,23 @@ for (const model of models) {
         'Live evaluation stopped before completing the scored run: remediation budget reserved',
       );
     const metrics = scoreVerificationPipelineRun(evaluation);
-    const run = { repetition, compatibility, metrics };
+    const run = {
+      repetition,
+      compatibility,
+      metrics,
+      qualifiesAuthorizedSingleRunGate: passesAuthorizedSingleRunGate(metrics),
+      boundedTrace: boundedEvaluationTrace(evaluation),
+    };
     runs.push(run);
-    await writeFile(runArtifactPath, `${JSON.stringify(run, null, 2)}\n`);
+    await writeFile(
+      artifactPath,
+      `${JSON.stringify(run, null, 2)}\n`,
+      freshRun ? { flag: 'wx' } : undefined,
+    );
     console.log(JSON.stringify({ model, repetition, metrics }));
   }
   const aggregate = aggregateVerificationPipelineRuns(runs);
-  const qualifies =
-    !aggregate.anyCriticalFalseSupported &&
-    !aggregate.anyCriticalFalseActive &&
-    !aggregate.anyIncorrectDate &&
-    !aggregate.anyIncorrectNumber &&
-    !aggregate.anyInvalidQuote &&
-    !aggregate.anyInvalidCitation &&
-    !aggregate.anyFalseMerge &&
-    !aggregate.anyInjectionInfluence &&
-    !aggregate.anySchemaFailure &&
-    aggregate.averages.supportedPrecision === 1 &&
-    aggregate.averages.precedenceAccuracy === 1 &&
-    aggregate.averages.proofRequirementAccuracy === 1 &&
-    aggregate.stabilityRate >= 0.95;
+  const qualifies = runs.every((run) => passesAuthorizedSingleRunGate(run.metrics));
   modelResults.push({ model, reasoning: 'medium', runs, aggregate, qualifies });
 }
 
@@ -238,6 +346,8 @@ const finalPhase4Spend = (finalSpendRows ?? [])
   .reduce((sum, row) => sum + Number(row.estimated_cost_usd ?? 0), 0);
 const artifact = {
   phase: 'phase4-remediation',
+  freshRun,
+  runId: runId ?? null,
   fixtureVersion: VERIFICATION_FIXTURE_VERSION,
   candidateCount: VERIFICATION_CASES.length,
   prompts: {
@@ -268,8 +378,9 @@ const artifact = {
   models: modelResults,
 };
 await writeFile(
-  resolve(artifactDir, 'phase4-remediation-live-results.json'),
+  summaryArtifactPath,
   `${JSON.stringify(artifact, null, 2)}\n`,
+  freshRun ? { flag: 'wx' } : undefined,
 );
 console.log(
   JSON.stringify({
