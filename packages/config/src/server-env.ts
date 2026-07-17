@@ -2,22 +2,29 @@
  * Server-only environment validation. Never import from client components:
  * apps/web wraps this behind `server-only` (see apps/web/src/lib/env.ts).
  *
- * Secrets (service-role key, provider keys) are intentionally OPTIONAL in
- * Phase 1: none are required yet, and none may ever reach the client bundle.
+ * Service-role and DATABASE_URL are required for Phase 2 upload finalize /
+ * worker paths. They must never reach the client bundle.
  */
 import { z } from 'zod';
 
 export const serverEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(20),
-  // Optional until a server-privileged path needs it (never client-visible).
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(20).optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(20),
+  DATABASE_URL: z.string().min(20),
   DEMO_MODE: z
     .enum(['true', 'false'])
     .default('true')
     .transform((v) => v === 'true'),
   MAX_PAGES_PER_WORKSPACE: z.coerce.number().int().positive().default(100),
+  MAX_UPLOAD_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(25 * 1024 * 1024),
   MAX_MODEL_COST_USD_PER_RUN: z.coerce.number().positive().default(10),
+  PARSE_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
+  PARSE_CONCURRENCY: z.coerce.number().int().positive().default(1),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

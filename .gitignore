@@ -13,10 +13,14 @@ build/
 out/
 *.tsbuildinfo
 
-# Test artifacts
+# Test artifacts and parser temp
 coverage/
 playwright-report/
 test-results/
+.tmp/
+tmp/
+**/tmp/parser/
+**/tmp/uploads/
 
 # OS / editor
 .DS_Store
@@ -24,3 +28,6 @@ test-results/
 # Local tool folders (not project source)
 .claude/
 .playwright/
+
+# Workspace-local env symlinks
+apps/*/.env*

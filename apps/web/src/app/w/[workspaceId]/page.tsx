@@ -56,12 +56,18 @@ export default async function WorkspaceOverviewPage({
         className="mb-10 rounded border border-slate-200 bg-white p-4"
       >
         <h2 id="pipeline-heading" className="text-base font-medium mb-2">
-          Analysis
+          Documents
         </h2>
-        <p className="text-sm text-slate-600">
-          Document upload and analysis arrive in the next build phase. Nothing has been analyzed in
-          this workspace.
+        <p className="text-sm text-slate-600 mb-3">
+          Upload the primary RFP (PDF). Parsing runs asynchronously; AI extraction is not enabled in
+          this phase.
         </p>
+        <Link
+          href={`/w/${workspaceId}/documents`}
+          className="text-sm font-medium text-blue-700 hover:underline"
+        >
+          Open documents →
+        </Link>
       </section>
 
       <section aria-labelledby="audit-heading">
