@@ -4,6 +4,7 @@ import { serverEnv } from '@/lib/env';
 
 export const PARSE_QUEUE = 'document-parse';
 export const EXTRACT_QUEUE = 'document-extract';
+export const VERIFY_QUEUE = 'requirements-verify';
 
 export type ParseJobPayload = {
   workspaceId: string;
@@ -17,6 +18,13 @@ export type ExtractJobPayload = {
   workspaceId: string;
   documentId: string;
   analysisRunId: string;
+  processingJobId: string;
+};
+
+export type VerifyJobPayload = {
+  workspaceId: string;
+  analysisRunId: string;
+  verificationRunId: string;
   processingJobId: string;
 };
 
@@ -55,6 +63,17 @@ export async function enqueueExtractJob(payload: ExtractJobPayload): Promise<str
   return withBoss(async (boss) => {
     await boss.createQueue(EXTRACT_QUEUE);
     return boss.send(EXTRACT_QUEUE, payload, {
+      retryLimit: 2,
+      retryDelay: 30,
+      expireInSeconds: 60 * 60,
+    });
+  });
+}
+
+export async function enqueueVerifyJob(payload: VerifyJobPayload): Promise<string | null> {
+  return withBoss(async (boss) => {
+    await boss.createQueue(VERIFY_QUEUE);
+    return boss.send(VERIFY_QUEUE, payload, {
       retryLimit: 2,
       retryDelay: 30,
       expireInSeconds: 60 * 60,

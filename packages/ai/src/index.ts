@@ -9,6 +9,8 @@ export * from './prompts';
 export * from './chunking';
 export * from './retrieval';
 export * from './retry';
+export * from './verification-schemas';
+export * from './deterministic-verification';
 export { MockProvider } from './mock-provider';
 export { OpenAIProvider } from './openai-provider';
 
@@ -16,6 +18,8 @@ export type ProviderEnv = {
   OPENAI_API_KEY?: string | undefined;
   OPENAI_EXTRACT_MODEL?: string | undefined;
   OPENAI_EMBED_MODEL?: string | undefined;
+  OPENAI_VERIFY_MODEL?: string | undefined;
+  OPENAI_REASONING_EFFORT?: 'low' | 'medium' | 'high' | undefined;
 };
 
 /** Prefer OpenAI when a server-only key is present; otherwise MockProvider. */
@@ -28,6 +32,13 @@ export function createProvider(env: ProviderEnv = {}): ModelProvider {
         env.OPENAI_EXTRACT_MODEL ?? process.env.OPENAI_EXTRACT_MODEL ?? 'gpt-5.4-mini-2026-03-17',
       embedModel:
         env.OPENAI_EMBED_MODEL ?? process.env.OPENAI_EMBED_MODEL ?? 'text-embedding-3-small',
+      verifyModel:
+        env.OPENAI_VERIFY_MODEL ?? process.env.OPENAI_VERIFY_MODEL ?? 'gpt-5.5-2026-04-23',
+      reasoningEffort: 'low',
+      verifyReasoningEffort:
+        env.OPENAI_REASONING_EFFORT ??
+        (process.env.OPENAI_REASONING_EFFORT as 'low' | 'medium' | 'high' | undefined) ??
+        'medium',
     });
   }
   return new MockProvider();

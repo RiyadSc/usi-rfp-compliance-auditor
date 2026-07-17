@@ -38,8 +38,8 @@ export function StartExtractionButton({ workspaceId, documentId, canStart }: Pro
         {pending ? 'Starting…' : 'Start candidate extraction'}
       </button>
       <p className="text-xs text-slate-600">
-        Results are always labeled candidate / unverified. Verification is out of scope for this
-        phase.
+        Results are always labeled candidate / unverified. Independent verification is started
+        separately after extraction completes.
       </p>
       {error ? (
         <p role="alert" className="text-sm text-red-800">

@@ -1,6 +1,12 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { estimateEmbedCost } from './cost';
-import type { ExtractInput, ExtractOutput, ModelProvider } from './provider';
+import type {
+  ExtractInput,
+  ExtractOutput,
+  ModelProvider,
+  VerifyInput,
+  VerifyOutput,
+} from './provider';
 import { EXTRACTION_PROMPT_VERSION } from './prompts';
 import {
   REQUIREMENT_CATEGORIES,
@@ -8,6 +14,12 @@ import {
   type RequirementCandidate,
   type RequirementCategory,
 } from './schemas';
+import {
+  classifyDuplicateRelationship,
+  classifyProofRequirement,
+  parseDeterministicDate,
+  parseDeterministicNumbers,
+} from './deterministic-verification';
 
 type Rule = {
   category: RequirementCategory;
@@ -156,6 +168,155 @@ export class MockProvider implements ModelProvider {
       repairAttempts: 0,
       schemaAdherent: true,
       ...(notes.length ? { notes: notes.join('; ') } : {}),
+    };
+  }
+
+  async verifyCandidates(input: VerifyInput): Promise<VerifyOutput> {
+    const started = Date.now();
+    const findings = input.candidates.map((candidate) => {
+      const context = input.contexts.find(
+        (c) => c.documentId === candidate.documentId && c.pageNumber === candidate.preliminaryPage,
+      );
+      const quoteFound = Boolean(
+        context && candidate.evidenceQuote && context.text.includes(candidate.evidenceQuote),
+      );
+      const parserBad =
+        !context || context.extractionStatus === 'empty' || context.extractionStatus === 'error';
+      const injectionCandidate =
+        /system prompt|api key|use tools|email the key|ignore .*instructions/i.test(
+          candidate.obligation,
+        );
+      const explicitConflict = Boolean(
+        context &&
+        ((/may .*email/i.test(candidate.obligation) &&
+          /email .*not accepted/i.test(context.text)) ||
+          (/mandatory|must|required/i.test(candidate.obligation) &&
+            /not required|creates no .*obligation/i.test(context.text))),
+      );
+      const candidateDate = parseDeterministicDate(candidate.obligation);
+      const sourceDate = context ? parseDeterministicDate(context.text) : null;
+      const dateMismatch = Boolean(
+        candidateDate.normalized &&
+        sourceDate?.normalized &&
+        candidateDate.normalized !== sourceDate.normalized,
+      );
+      const candidateNumbers = parseDeterministicNumbers(candidate.obligation).filter(
+        (item) => item.unit,
+      );
+      const sourceNumbers = context
+        ? parseDeterministicNumbers(context.text).filter((item) => item.unit)
+        : [];
+      const numberMismatch = candidateNumbers.some((item) =>
+        sourceNumbers.some(
+          (source) => source.unit === item.unit && source.normalizedValue !== item.normalizedValue,
+        ),
+      );
+      const partial = Boolean(
+        context &&
+        ((/every .*employee/i.test(candidate.obligation) &&
+          /site supervisor/i.test(context.text)) ||
+          (/meeting/i.test(candidate.obligation) &&
+            /disqualif/i.test(context.text) &&
+            !/disqualif/i.test(candidate.obligation))),
+      );
+      const superseded = input.contexts.some(
+        (item) =>
+          /supersed|replace/i.test(item.text) &&
+          candidateNumbers.some((number) => item.text.includes(number.original)),
+      );
+      const sourceSupportStatus = parserBad
+        ? ('parser_uncertain' as const)
+        : injectionCandidate
+          ? ('unsupported' as const)
+          : explicitConflict || dateMismatch || numberMismatch
+            ? ('contradicted' as const)
+            : partial
+              ? ('partially_supported' as const)
+              : quoteFound
+                ? ('supported' as const)
+                : ('unsupported' as const);
+      const duplicateProposals = input.candidates
+        .filter((other) => other.id !== candidate.id)
+        .map((other) => ({
+          other,
+          relationshipType: classifyDuplicateRelationship(candidate, other),
+        }))
+        .filter((item) =>
+          ['exact_duplicate', 'semantic_duplicate', 'restatement'].includes(item.relationshipType),
+        )
+        .map((item) => ({
+          candidateId: item.other.id,
+          relationshipType: item.relationshipType,
+          rationale: 'Deterministic mock duplicate signal.',
+        }));
+      return {
+        candidateId: candidate.id,
+        sourceSupportStatus,
+        precedenceStatus:
+          parserBad || injectionCandidate || sourceSupportStatus === 'unsupported'
+            ? ('undetermined' as const)
+            : superseded || /old requirement/i.test(candidate.obligation)
+              ? ('superseded' as const)
+              : ('active' as const),
+        proofRequirement: parserBad
+          ? ('undetermined' as const)
+          : classifyProofRequirement(candidate.obligation),
+        rationale: parserBad
+          ? 'Parser state prevents reliable assessment.'
+          : injectionCandidate
+            ? 'Document prompt-injection language is not a procurement obligation.'
+            : explicitConflict || dateMismatch || numberMismatch
+              ? 'The cited source conflicts with a material candidate statement.'
+              : partial
+                ? 'The source supports only part of the candidate scope or conditions.'
+                : quoteFound
+                  ? 'Candidate quote occurs on the cited page.'
+                  : 'No validated supporting quote was found.',
+        supportingEvidence:
+          quoteFound &&
+          context &&
+          ['supported', 'partially_supported'].includes(sourceSupportStatus)
+            ? [
+                {
+                  documentId: context.documentId,
+                  pageNumber: context.pageNumber,
+                  quote: candidate.evidenceQuote,
+                },
+              ]
+            : [],
+        contradictingEvidence:
+          quoteFound && context && sourceSupportStatus === 'contradicted'
+            ? [
+                {
+                  documentId: context.documentId,
+                  pageNumber: context.pageNumber,
+                  quote: candidate.evidenceQuote,
+                },
+              ]
+            : [],
+        addendumEvidence: [],
+        materialMismatches: [],
+        deterministicFacts: [],
+        duplicateProposals,
+        parserConcerns: parserBad ? ['Missing or damaged parser output'] : [],
+        ambiguityNotes: [],
+        machineOnly: true as const,
+      };
+    });
+    const promptTokens = input.contexts.reduce((n, c) => n + Math.ceil(c.text.length / 4), 0);
+    return {
+      findings,
+      providerRequestId: `mock-verify-${randomUUID()}`,
+      modelId: 'mock-verify-v1',
+      promptTokens,
+      completionTokens: findings.length * 80,
+      reasoningTokens: 0,
+      cachedTokens: 0,
+      latencyMs: Date.now() - started,
+      estimatedCostUsd: 0,
+      retries: 0,
+      repairAttempts: 0,
+      schemaAdherent: true,
     };
   }
 

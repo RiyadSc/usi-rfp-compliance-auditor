@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { z } from 'zod';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { AnalysisStatusPoller } from './analysis-status-poller';
+import { StartVerificationButton } from '../../requirements/start-verification-button';
 
 const uuidSchema = z.string().uuid();
 
@@ -122,6 +123,13 @@ export default async function AnalysisRunPage({
           </p>
         )}
       </section>
+
+      {run.status === 'completed' && (candidates?.length ?? 0) > 0 ? (
+        <section className="mb-8 rounded border border-blue-200 bg-blue-50 p-4">
+          <h2 className="mb-2 text-base font-medium">Independent source verification</h2>
+          <StartVerificationButton workspaceId={workspaceId} analysisRunId={runId} />
+        </section>
+      ) : null}
     </main>
   );
 }

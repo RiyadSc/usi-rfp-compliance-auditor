@@ -24,6 +24,7 @@ export const serverEnvSchema = z.object({
     .default(25 * 1024 * 1024),
   MAX_MODEL_COST_USD_PER_RUN: z.coerce.number().positive().default(10),
   PHASE3_SPEND_CEILING_USD: z.coerce.number().positive().max(10).default(10),
+  PHASE4_SPEND_CEILING_USD: z.coerce.number().positive().max(10).default(10),
   MAX_EXTRACT_PAGES_PER_RUN: z.coerce.number().int().positive().default(40),
   MAX_MODEL_CALLS_PER_RUN: z.coerce.number().int().positive().default(20),
   MAX_INPUT_TOKENS_PER_CALL: z.coerce.number().int().positive().default(12000),
@@ -36,6 +37,12 @@ export const serverEnvSchema = z.object({
     .transform((v) => (v && v.trim().length >= 20 ? v.trim() : undefined)),
   OPENAI_EXTRACT_MODEL: z.string().default('gpt-5.4-mini-2026-03-17'),
   OPENAI_EMBED_MODEL: z.string().default('text-embedding-3-small'),
+  OPENAI_VERIFY_MODEL: z.string().default('gpt-5.5-2026-04-23'),
+  OPENAI_REASONING_EFFORT: z.enum(['low', 'medium', 'high']).default('medium'),
+  PHASE4_LIVE_VERIFICATION_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

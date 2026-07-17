@@ -1,11 +1,19 @@
 import OpenAI from 'openai';
 import { randomUUID } from 'node:crypto';
 import { estimateChatCost, estimateEmbedCost } from './cost';
-import type { ExtractInput, ExtractOutput, ModelProvider } from './provider';
+import type {
+  ExtractInput,
+  ExtractOutput,
+  ModelProvider,
+  VerifyInput,
+  VerifyOutput,
+} from './provider';
 import {
   EXTRACTION_PROMPT_VERSION,
   buildExtractionSystemPrompt,
   buildExtractionUserPayload,
+  buildVerificationSystemPrompt,
+  buildVerificationUserPayload,
 } from './prompts';
 import { withRetries } from './retry';
 import {
@@ -14,12 +22,15 @@ import {
   modelExtractionSchema,
   type RequirementCandidate,
 } from './schemas';
+import { modelVerificationJsonSchema, modelVerificationOutputSchema } from './verification-schemas';
 
 export type OpenAIProviderOptions = {
   apiKey: string;
   extractModel?: string;
+  verifyModel?: string;
   embedModel?: string;
   reasoningEffort?: 'low' | 'medium' | 'high';
+  verifyReasoningEffort?: 'low' | 'medium' | 'high';
   timeoutMs?: number;
 };
 
@@ -52,7 +63,9 @@ export class OpenAIProvider implements ModelProvider {
   private readonly client: OpenAI;
   private readonly extractModel: string;
   private readonly embedModel: string;
+  private readonly verifyModel: string;
   private readonly reasoningEffort: 'low' | 'medium' | 'high';
+  private readonly verifyReasoningEffort: 'low' | 'medium' | 'high';
 
   constructor(options: OpenAIProviderOptions) {
     this.client = new OpenAI({
@@ -62,7 +75,115 @@ export class OpenAIProvider implements ModelProvider {
     });
     this.extractModel = options.extractModel ?? 'gpt-5.4-mini-2026-03-17';
     this.embedModel = options.embedModel ?? 'text-embedding-3-small';
+    this.verifyModel = options.verifyModel ?? 'gpt-5.5-2026-04-23';
     this.reasoningEffort = options.reasoningEffort ?? 'low';
+    this.verifyReasoningEffort = options.verifyReasoningEffort ?? 'medium';
+  }
+
+  async verifyCandidates(input: VerifyInput): Promise<VerifyOutput> {
+    const started = Date.now();
+    let attempts = 0;
+    let repairAttempts = 0;
+    const create = async (repairMessage?: string) =>
+      this.client.responses.create({
+        model: this.verifyModel,
+        store: false,
+        max_output_tokens: input.maxOutputTokens,
+        reasoning: { effort: this.verifyReasoningEffort },
+        input: [
+          { role: 'system', content: buildVerificationSystemPrompt() },
+          { role: 'user', content: buildVerificationUserPayload(input) },
+          ...(repairMessage ? [{ role: 'user' as const, content: repairMessage }] : []),
+        ],
+        text: {
+          format: {
+            type: 'json_schema',
+            name: 'requirement_verification',
+            strict: true,
+            schema: modelVerificationJsonSchema as unknown as Record<string, unknown>,
+          },
+        },
+      });
+    let response = await withRetries(
+      (attempt) => {
+        attempts = attempt;
+        return create();
+      },
+      { maxAttempts: 3, baseDelayMs: 400 },
+    );
+    const billableResponses = [response];
+
+    const parse = (res: OpenAI.Responses.Response) => {
+      if (res.status === 'incomplete' || hasRefusal(res)) return null;
+      const raw = outputTextFromResponse(res);
+      let json: unknown;
+      try {
+        json = JSON.parse(raw);
+      } catch {
+        return null;
+      }
+      const validated = modelVerificationOutputSchema.safeParse(json);
+      return validated.success ? validated.data : null;
+    };
+    let parsed = parse(response);
+    if (!parsed && response.status !== 'incomplete' && !hasRefusal(response)) {
+      repairAttempts = 1;
+      response = await create(
+        'The previous output failed strict validation. Return the complete result matching the schema exactly; do not add prose.',
+      );
+      billableResponses.push(response);
+      parsed = parse(response);
+    }
+
+    const promptTokens = billableResponses.reduce(
+      (sum, item) => sum + (item.usage?.input_tokens ?? 0),
+      0,
+    );
+    const completionTokens = billableResponses.reduce(
+      (sum, item) => sum + (item.usage?.output_tokens ?? 0),
+      0,
+    );
+    const reasoningTokens = billableResponses.reduce(
+      (sum, item) => sum + (item.usage?.output_tokens_details?.reasoning_tokens ?? 0),
+      0,
+    );
+    const cachedTokens = billableResponses.reduce(
+      (sum, item) => sum + (item.usage?.input_tokens_details?.cached_tokens ?? 0),
+      0,
+    );
+    const base = {
+      providerRequestId: response.id,
+      modelId: response.model,
+      promptTokens,
+      completionTokens,
+      reasoningTokens,
+      cachedTokens,
+      latencyMs: Date.now() - started,
+      estimatedCostUsd: billableResponses.reduce(
+        (sum, item) =>
+          sum +
+          estimateChatCost(
+            item.usage?.input_tokens ?? 0,
+            item.usage?.output_tokens ?? 0,
+            item.model,
+            item.usage?.input_tokens_details?.cached_tokens ?? 0,
+          ),
+        0,
+      ),
+      retries: Math.max(0, attempts - 1),
+      repairAttempts,
+      schemaAdherent: Boolean(parsed),
+    };
+    if (response.status === 'incomplete') return { ...base, findings: [], incomplete: true };
+    if (hasRefusal(response)) return { ...base, findings: [], refused: true };
+    if (!parsed)
+      throw new Error('Verification output failed strict Zod validation after controlled repair');
+    const expected = new Set(input.candidates.map((c) => c.id));
+    const actual = new Set(parsed.findings.map((f) => f.candidateId));
+    if (expected.size !== actual.size || [...expected].some((id) => !actual.has(id))) {
+      throw new Error('Verification output did not contain exactly one finding per candidate');
+    }
+    return { ...base, findings: parsed.findings, notes: parsed.notes };
   }
 
   async extractCandidates(input: ExtractInput): Promise<ExtractOutput> {

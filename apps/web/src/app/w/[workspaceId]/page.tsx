@@ -59,14 +59,21 @@ export default async function WorkspaceOverviewPage({
           Documents
         </h2>
         <p className="text-sm text-slate-600 mb-3">
-          Upload the primary RFP (PDF). Parsing runs asynchronously; AI extraction is not enabled in
-          this phase.
+          Upload the primary RFP (PDF). Parsing, candidate extraction, and independent source
+          verification run as separate asynchronous stages.
         </p>
         <Link
           href={`/w/${workspaceId}/documents`}
           className="text-sm font-medium text-blue-700 hover:underline"
         >
           Open documents →
+        </Link>
+        <span className="mx-3 text-slate-300">|</span>
+        <Link
+          href={`/w/${workspaceId}/requirements`}
+          className="text-sm font-medium text-blue-700 hover:underline"
+        >
+          Open requirement register →
         </Link>
       </section>
 
