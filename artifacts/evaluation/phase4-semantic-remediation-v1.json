@@ -1,0 +1,113 @@
+{
+  "artifactVersion": "phase4-semantic-remediation-v1",
+  "generatedAt": "2026-07-17T18:18:36.000Z",
+  "liveCalls": 0,
+  "liveApplicationSmoke": false,
+  "modelSelected": false,
+  "phase5Started": false,
+  "preservedCompatibility": {
+    "fixtureVersion": "verification-cases-v2",
+    "factEnvelopeVersion": "verification-facts-v3",
+    "decisionEngineVersion": "verification-decision-v5",
+    "evaluatorVersion": "verification-evaluator-v2",
+    "finalAssessmentSchemaVersion": "verification-final-assessment-v1"
+  },
+  "revisedSemanticContracts": {
+    "entailmentPromptVersion": "verify-entailment-v4",
+    "entailmentSchemaVersion": "verification-entailment-v2",
+    "challengePromptVersion": "verify-challenge-v2",
+    "challengeSchemaVersion": "verification-challenge-v2",
+    "controlledRepairLimit": 1,
+    "invalidResultPolicy": "reject_and_fail_closed"
+  },
+  "stage1IncompleteCauses": [
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000004",
+      "title": "Meeting requirement missing consequence",
+      "providerReason": "max_output_tokens",
+      "inputTokens": 1595,
+      "outputTokens": 1200,
+      "reasoningTokens": 1034,
+      "estimatedStructuredTokensAvailable": 166,
+      "latencyMs": 15252,
+      "timeout": false,
+      "refusal": false,
+      "providerInterruption": false
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000006",
+      "title": "Bid bond",
+      "providerReason": "max_output_tokens",
+      "inputTokens": 1371,
+      "outputTokens": 1200,
+      "reasoningTokens": 1011,
+      "estimatedStructuredTokensAvailable": 189,
+      "latencyMs": 14606,
+      "timeout": false,
+      "refusal": false,
+      "providerInterruption": false
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000012",
+      "title": "Old liability limit",
+      "providerReason": "max_output_tokens",
+      "inputTokens": 1713,
+      "outputTokens": 1200,
+      "reasoningTokens": 951,
+      "estimatedStructuredTokensAvailable": 249,
+      "latencyMs": 14962,
+      "timeout": false,
+      "refusal": false,
+      "providerInterruption": false
+    }
+  ],
+  "offlineGate": {
+    "unit": { "passed": 107, "failed": 0 },
+    "integration": { "passed": 53, "failed": 0 },
+    "mockPlaywright": { "passed": 17, "failed": 0 },
+    "semanticContractFixtures": { "passed": 21, "failed": 0 },
+    "evaluatorIntegrity": { "passed": 5, "failed": 0 },
+    "deterministicFixture": {
+      "sourceStatusAccuracy": 1,
+      "supportedPrecision": 1,
+      "criticalFalseSupported": 0,
+      "precedenceAccuracy": 1,
+      "criticalFalseActive": 0,
+      "dateAccuracy": 1,
+      "numberAccuracy": 1,
+      "quoteValidity": 1,
+      "citationAccuracy": 1,
+      "parserUncertainAccuracy": 1,
+      "proofRequirementAccuracy": 1,
+      "duplicatePrecision": 1,
+      "duplicateRecall": 1,
+      "falseMergeCount": 0,
+      "passASchemaAdherence": 1,
+      "passBSchemaAdherence": 1,
+      "decisionSchemaAdherence": 1,
+      "evaluationArtifactSchemaAdherence": 1,
+      "injectionInfluence": 0,
+      "incompleteCount": 0,
+      "repairCount": 0
+    },
+    "lint": "passed",
+    "format": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "secretScan": "passed",
+    "invariantChecklist": "passed_except_live_model_gate"
+  },
+  "ledger": {
+    "phase4ActualUsd": 7.398322,
+    "phase4CeilingUsd": 10,
+    "remediationActualUsd": 5.716028,
+    "remediationCeilingUsd": 6,
+    "cumulativeApiActualUsd": 7.806863,
+    "projectedFreshGpt55MaximumUsd": 1.1,
+    "projectedPhase4Usd": 8.498322,
+    "projectedRemediationUsd": 6.816028,
+    "projectedCumulativeApiUsd": 8.906863,
+    "phase4CeilingChangeRequired": false,
+    "remediationCeilingChangeRequired": true
+  }
+}

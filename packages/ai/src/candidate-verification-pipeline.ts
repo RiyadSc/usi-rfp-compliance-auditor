@@ -7,6 +7,10 @@ import {
 } from './verification-decision-engine';
 import type { ChallengeResult, EntailmentResult } from './verification-v3-schemas';
 import type { ChallengeOutput, EntailmentOutput } from './provider';
+import {
+  validateChallengeSemanticContract,
+  validateEntailmentSemanticContract,
+} from './verification-semantic-contract';
 
 export type CandidateVerificationPipelineResult = {
   candidate: VerificationCandidateInput;
@@ -72,6 +76,26 @@ export async function runCandidateVerificationPipeline(input: {
       factEnvelope: facts,
       maxOutputTokens: input.entailmentMaxOutputTokens ?? input.maxOutputTokens ?? 1800,
     });
+    const contract = validateEntailmentSemanticContract({
+      candidate: input.candidate,
+      contexts,
+      result: entailmentCall.result,
+    });
+    if (entailmentCall.result && !contract.success) {
+      entailmentCall = {
+        ...entailmentCall,
+        result: null,
+        schemaAdherent: false,
+        normalizedError: contract.normalizedError,
+      };
+      await input.onEntailmentCall?.(entailmentCall);
+      return {
+        ...base,
+        entailmentCall,
+        failedStage: 'entailment',
+        error: contract.normalizedError,
+      };
+    }
     await input.onEntailmentCall?.(entailmentCall);
   } catch (error) {
     return {
@@ -89,7 +113,7 @@ export async function runCandidateVerificationPipeline(input: {
         ? 'Entailment pass refused'
         : entailmentCall.incomplete
           ? 'Entailment pass incomplete'
-          : 'Entailment pass returned no result',
+          : (entailmentCall.normalizedError ?? 'Entailment pass returned no result'),
     };
   }
   const entailment = entailmentCall.result;
@@ -121,6 +145,37 @@ export async function runCandidateVerificationPipeline(input: {
       entailment,
       maxOutputTokens: input.challengeMaxOutputTokens ?? input.maxOutputTokens ?? 1800,
     });
+    const contract = validateChallengeSemanticContract({
+      candidate: input.candidate,
+      contexts,
+      facts,
+      result: challengeCall.result,
+    });
+    if (challengeCall.result && !contract.success) {
+      challengeCall = {
+        ...challengeCall,
+        result: null,
+        schemaAdherent: false,
+        normalizedError: contract.normalizedError,
+      };
+      await input.onChallengeCall?.(challengeCall);
+      return {
+        ...base,
+        entailmentCall,
+        entailment,
+        challengeCall,
+        failedStage: 'challenge',
+        error: contract.normalizedError,
+        finalAssessment: deriveMachineAssessment({
+          candidate: input.candidate,
+          contexts,
+          facts,
+          entailment,
+          challenge: null,
+          challengeFailed: true,
+        }),
+      };
+    }
     await input.onChallengeCall?.(challengeCall);
   } catch (error) {
     return {
@@ -155,7 +210,7 @@ export async function runCandidateVerificationPipeline(input: {
         ? 'Challenge pass refused'
         : challengeCall.incomplete
           ? 'Challenge pass incomplete'
-          : 'Challenge pass returned no result'
+          : (challengeCall.normalizedError ?? 'Challenge pass returned no result')
       : null,
     finalAssessment: deriveMachineAssessment({
       candidate: input.candidate,

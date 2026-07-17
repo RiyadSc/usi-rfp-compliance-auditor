@@ -73,7 +73,13 @@ function asCandidate(row: CandidateRow): VerificationCandidateInput {
 }
 
 function passStatus(call: ModelCallMetadata) {
-  return call.refused ? 'refused' : call.incomplete ? 'incomplete' : 'succeeded';
+  return call.refused
+    ? 'refused'
+    : call.incomplete
+      ? 'incomplete'
+      : call.schemaAdherent
+        ? 'succeeded'
+        : 'failed';
 }
 
 export async function handleVerifyJob(
@@ -162,7 +168,13 @@ export async function handleVerifyJob(
       retries: input.call.retries,
       repair_attempts: input.call.repairAttempts,
       status,
-      error_category: wouldExceed ? 'budget' : null,
+      error_category: wouldExceed
+        ? 'budget'
+        : !input.call.schemaAdherent
+          ? 'schema'
+          : input.call.repairAttempts > 0
+            ? 'schema_repair'
+            : null,
       incomplete_reason: input.call.incompleteReason ?? null,
     });
     if (callError) throw callError;
@@ -195,8 +207,19 @@ export async function handleVerifyJob(
       model_id: input.call.modelId,
       provider_request_id: input.call.providerRequestId,
       result: input.result,
-      error_category: input.call.refused ? 'refusal' : input.call.incomplete ? 'incomplete' : null,
-      error_detail: input.call.incompleteReason ?? null,
+      error_category: input.call.refused
+        ? 'refusal'
+        : input.call.incomplete
+          ? 'incomplete'
+          : !input.call.schemaAdherent
+            ? 'semantic_contract'
+            : input.call.repairAttempts > 0
+              ? 'schema_repair'
+              : null,
+      error_detail:
+        input.call.incompleteReason ??
+        input.call.normalizedError ??
+        (!input.call.schemaAdherent ? 'semantic_contract_invalid' : null),
     });
     if (passError) throw passError;
   };

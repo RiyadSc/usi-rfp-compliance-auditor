@@ -112,11 +112,18 @@ export function buildEntailmentSystemPrompt(): string {
   return [
     'Perform a constrained semantic entailment assessment for exactly one immutable RFP candidate.',
     VERIFICATION_SECURITY_RULES,
-    'Answer only whether supplied source evidence entails, partially entails, contradicts, is insufficient, or is parser-uncertain.',
+    'Classification contract: entails means the evidence supports the complete material meaning; exact wording is not required.',
+    'Do not mark a qualifier missing when it is synonymous, implied by the bounded obligation, merely additive, or its omission does not change party, scope, site, role, form, deliverable, date, amount, threshold, condition, exception, obligation, or legal effect.',
+    'Use partially_entails only when the central obligation is supported but the candidate materially broadens or narrows scope, omits a condition or exception, assigns a wrong party, or changes a material site, role, form, deliverable, date, amount, threshold, or obligation.',
+    'A stylistic wording difference, procurement-subject restatement, or independent child requirement is not partial support.',
+    'Use contradicts only when active evidence explicitly supports the opposite proposition or makes the candidate impossible. Broader wording, missing qualifiers, incomplete evidence, descriptive text, and invalid non-obligations are not contradiction.',
+    'Use insufficient when bounded evidence establishes neither the candidate nor its opposite. A malicious or descriptive sentence disclaimed as non-authoritative is insufficient, not contradicted.',
+    'Use parser_uncertain only when a named parser limitation prevents assessment.',
     'Do not assign final source status or active/superseded precedence.',
-    'Identify material qualifiers that are present, missing, or overstated.',
-    'Every evidence reference must quote a short exact span from a supplied page.',
-    'Be concise: use at most two evidence references, short qualifier phrases, and a rationale of no more than two sentences.',
+    'Internal invariants: entails has one supporting reference and no mismatch; partially_entails has one supporting reference and at least one material mismatch; contradicts has one explicit opposing reference; insufficient has no evidence claim; parser_uncertain names a parser concern.',
+    'Every evidence reference must quote one short exact span from a supplied page. Use the minimum sufficient reference only.',
+    'Output only the strict object. Use one short rationale sentence, at most three normalized qualifier phrases, at most three normalized mismatch phrases, and at most two parser concerns.',
+    'Do not repeat the candidate, repeat evidence, narrate deterministic dates/numbers, or include explanations outside structured fields.',
     'injectionInfluence must remain false and machineOnly must be true.',
   ].join(' ');
 }
@@ -141,12 +148,15 @@ export function buildChallengeSystemPrompt(): string {
   return [
     'Adversarially challenge a possible positive semantic entailment for exactly one RFP candidate.',
     VERIFICATION_SECURITY_RULES,
-    'Do not simply agree with Pass A. Actively search the supplied evidence for missing conditions, overstated scope, wrong party, wrong deadline, wrong amount or unit, wrong form, omitted exceptions, supersession, unresolved conflicts, descriptive language, parser problems, or partial-only support.',
+    'Search for genuine missing conditions, overstated scope, wrong party, wrong deadline, wrong amount or unit, wrong form, omitted exceptions, supersession, unresolved conflicts, descriptive language, parser problems, or partial-only support.',
+    'Do not invent an objection merely to disagree with Pass A. Stylistic differences, synonymous wording, additive words such as “also,” procurement-subject restatements, and independent child requirements are not material objections.',
+    'Assess the candidate at its stated semantic granularity. Additional source details do not make a narrower true parent obligation partial unless the candidate claims to be a complete restatement or the detail changes the asserted obligation.',
     'A precedence issue is a material objection only when the candidate claims that a value is active, final, controlling, or otherwise applicable. A candidate that accurately reports what a particular historical document or addendum states can remain semantically entailed while precedence is decided separately.',
     'You receive only Pass A structured output, never hidden reasoning.',
     'Do not assign final source status, precedence status, compliance, approval, or a human decision.',
-    'Evidence in each objection must be an exact supplied-page quote.',
-    'Be concise: include only material objections and a rationale of no more than two sentences.',
+    'Each objection must quote the exact affected candidate proposition, name one normalized qualifier or conflict, cite one exact supplied-page span, and state briefly how the issue changes material meaning.',
+    'If no grounded material objection satisfies every field, return no_material_objection with an empty objections array.',
+    'Output only the strict object. Use one short rationale sentence and at most two objections. Do not repeat evidence or add prose outside the schema.',
     'injectionInfluence must remain false and machineOnly must be true.',
   ].join(' ');
 }

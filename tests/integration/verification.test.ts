@@ -524,6 +524,47 @@ describe('Phase 4 verification persistence and isolation', () => {
     expect(call).toMatchObject({ repair_attempts: 1, status: 'succeeded' });
   });
 
+  it('rejects an internally inconsistent Pass A with a visible semantic-contract failure', async () => {
+    const seed = await seedVerification();
+    class InconsistentPassAProvider extends MockProvider {
+      override async assessEntailment(input: CandidateAssessmentInput) {
+        const base = await super.assessEntailment(input);
+        return {
+          ...base,
+          result: {
+            ...base.result!,
+            classification: 'entails' as const,
+            missingOrOverstatedQualifiers: ['additive source word also'],
+          },
+        };
+      }
+    }
+    await handleVerifyJob(
+      {
+        workspaceId: workspaceA,
+        analysisRunId: seed.analysisRunId,
+        verificationRunId: seed.verificationRunId,
+        processingJobId: seed.processingJobId,
+      },
+      new InconsistentPassAProvider(),
+    );
+    const { data: pass } = await admin()
+      .from('verification_pass_results')
+      .select('status,error_category,error_detail')
+      .eq('verification_run_id', seed.verificationRunId)
+      .single();
+    expect(pass).toMatchObject({
+      status: 'failed',
+      error_category: 'semantic_contract',
+    });
+    expect(pass?.error_detail).toMatch(/^semantic_contract_invalid:pass_a:/);
+    const { count } = await admin()
+      .from('verification_findings')
+      .select('id', { count: 'exact', head: true })
+      .eq('verification_run_id', seed.verificationRunId);
+    expect(count).toBe(0);
+  });
+
   it('cancels before provider execution when the Phase 4 ledger is over budget', async () => {
     const seed = await seedVerification();
     const adjustmentId = crypto.randomUUID();

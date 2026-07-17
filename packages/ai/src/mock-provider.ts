@@ -278,6 +278,11 @@ export class MockProvider implements ModelProvider {
     );
     const parserBad = !input.factEnvelope.parserReliable;
     const descriptive = input.factEnvelope.descriptiveOrInjectionLanguage;
+    const cited = input.contexts.find(
+      (context) =>
+        context.documentId === input.candidate.documentId &&
+        context.pageNumber === input.candidate.preliminaryPage,
+    );
     const assessment = parserBad
       ? ('parser_uncertain' as const)
       : descriptive
@@ -305,10 +310,24 @@ export class MockProvider implements ModelProvider {
                     : parserBad
                       ? ('parser_quality' as const)
                       : ('insufficient_evidence' as const),
-                  detail: mismatch
+                  candidateProposition: input.candidate.obligation.slice(0, 120),
+                  qualifierOrConflict: String(
+                    mismatch?.sourceOriginal ?? mismatch?.candidateOriginal ?? 'bounded evidence',
+                  ).slice(0, 100),
+                  materialEffect: (mismatch
                     ? 'Deterministic candidate/source values disagree.'
-                    : 'The proposed positive finding cannot safely stand.',
-                  evidence: [],
+                    : 'The proposed positive finding cannot safely stand.'
+                  ).slice(0, 140),
+                  evidence:
+                    cited?.text && cited.text.length
+                      ? [
+                          {
+                            documentId: cited.documentId,
+                            pageNumber: cited.pageNumber,
+                            quote: cited.text.slice(0, 240),
+                          },
+                        ]
+                      : [],
                 },
               ],
         injectionInfluence: false,

@@ -107,6 +107,7 @@ export type ModelCallMetadata = {
   refused?: boolean;
   incomplete?: boolean;
   incompleteReason?: string | null;
+  normalizedError?: string | null;
 };
 
 export type CandidateAssessmentInput = {

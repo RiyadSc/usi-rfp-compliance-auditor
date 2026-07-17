@@ -38,15 +38,19 @@ import {
 import { modelVerificationJsonSchema, modelVerificationOutputSchema } from './verification-schemas';
 import {
   challengeJsonSchema,
-  challengeResultSchema,
   duplicatePairJsonSchema,
   duplicatePairResultSchema,
   entailmentJsonSchema,
-  entailmentResultSchema,
   type ChallengeResult,
   type DuplicatePairResult,
   type EntailmentResult,
 } from './verification-v3-schemas';
+import {
+  asChallengeResult,
+  asEntailmentResult,
+  validateChallengeSemanticContract,
+  validateEntailmentSemanticContract,
+} from './verification-semantic-contract';
 
 export type OpenAIProviderOptions = {
   apiKey: string;
@@ -111,6 +115,7 @@ export class OpenAIProvider implements ModelProvider {
     userPrompt: string;
     maxOutputTokens: number;
     parse: (value: unknown) => T | null;
+    validationError?: () => string | null;
   }): Promise<ModelCallMetadata & { result: T | null }> {
     const started = Date.now();
     let retryCount = 0;
@@ -162,8 +167,15 @@ export class OpenAIProvider implements ModelProvider {
     let result = parseResponse(response);
     if (!result && response.status !== 'incomplete' && !hasRefusal(response)) {
       repairAttempts = 1;
+      const normalizedError = input.validationError?.();
       response = await callWithRetries(
-        'The prior response failed strict validation. Return one complete object matching the schema exactly, without prose.',
+        [
+          'The prior response failed strict validation.',
+          normalizedError ? `Normalized validation error: ${normalizedError}.` : '',
+          'Return one complete, concise object satisfying the semantic contract and schema exactly, without prose.',
+        ]
+          .filter(Boolean)
+          .join(' '),
       );
       result = parseResponse(response);
     }
@@ -203,17 +215,16 @@ export class OpenAIProvider implements ModelProvider {
       repairAttempts,
       schemaAdherent: Boolean(result),
       incompleteReason: response.incomplete_details?.reason ?? null,
+      normalizedError: repairAttempts ? (input.validationError?.() ?? null) : null,
     };
     if (response.status === 'incomplete') return { ...metadata, result: null, incomplete: true };
     if (hasRefusal(response)) return { ...metadata, result: null, refused: true };
-    if (!result)
-      throw new Error(
-        `${input.schemaName} output failed strict validation after controlled repair`,
-      );
+    if (!result) return { ...metadata, result: null };
     return { ...metadata, result };
   }
 
   async assessEntailment(input: CandidateAssessmentInput): Promise<EntailmentOutput> {
+    let contractError: string | null = null;
     const output = await this.structuredAssessment<EntailmentResult>({
       schemaName: 'requirement_entailment',
       schema: entailmentJsonSchema as unknown as Record<string, unknown>,
@@ -225,9 +236,18 @@ export class OpenAIProvider implements ModelProvider {
       }),
       maxOutputTokens: input.maxOutputTokens,
       parse: (value) => {
-        const parsed = entailmentResultSchema.safeParse(value);
-        return parsed.success ? parsed.data : null;
+        const validation = validateEntailmentSemanticContract({
+          candidate: input.candidate,
+          contexts: input.contexts,
+          result: value,
+        });
+        if (!validation.success) {
+          contractError = validation.normalizedError;
+          return null;
+        }
+        return asEntailmentResult(value);
       },
+      validationError: () => contractError,
     });
     if (output.result && output.result.candidateId !== input.candidate.id)
       throw new Error('Entailment output candidate ID mismatch');
@@ -235,6 +255,7 @@ export class OpenAIProvider implements ModelProvider {
   }
 
   async challengeEntailment(input: ChallengeInput): Promise<ChallengeOutput> {
+    let contractError: string | null = null;
     const output = await this.structuredAssessment<ChallengeResult>({
       schemaName: 'requirement_challenge',
       schema: challengeJsonSchema as unknown as Record<string, unknown>,
@@ -247,9 +268,19 @@ export class OpenAIProvider implements ModelProvider {
       }),
       maxOutputTokens: input.maxOutputTokens,
       parse: (value) => {
-        const parsed = challengeResultSchema.safeParse(value);
-        return parsed.success ? parsed.data : null;
+        const validation = validateChallengeSemanticContract({
+          candidate: input.candidate,
+          contexts: input.contexts,
+          facts: input.factEnvelope,
+          result: value,
+        });
+        if (!validation.success) {
+          contractError = validation.normalizedError;
+          return null;
+        }
+        return asChallengeResult(value);
       },
+      validationError: () => contractError,
     });
     if (output.result && output.result.candidateId !== input.candidate.id)
       throw new Error('Challenge output candidate ID mismatch');

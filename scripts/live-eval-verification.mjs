@@ -214,6 +214,7 @@ const boundedCall = (call) =>
         refused: Boolean(call.refused),
         incomplete: Boolean(call.incomplete),
         incompleteReason: call.incompleteReason ?? null,
+        normalizedError: call.normalizedError ?? null,
         result: call.result,
       }
     : null;

@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-export const ENTAILMENT_PROMPT_VERSION = 'verify-entailment-v3';
-export const ENTAILMENT_SCHEMA_VERSION = 'verification-entailment-v1';
-export const CHALLENGE_PROMPT_VERSION = 'verify-challenge-v1';
-export const CHALLENGE_SCHEMA_VERSION = 'verification-challenge-v1';
+export const ENTAILMENT_PROMPT_VERSION = 'verify-entailment-v4';
+export const ENTAILMENT_SCHEMA_VERSION = 'verification-entailment-v2';
+export const CHALLENGE_PROMPT_VERSION = 'verify-challenge-v2';
+export const CHALLENGE_SCHEMA_VERSION = 'verification-challenge-v2';
 export const DUPLICATE_PROMPT_VERSION = 'verify-duplicate-v1';
 export const DUPLICATE_SCHEMA_VERSION = 'verification-duplicate-v1';
 export const DECISION_ENGINE_VERSION = 'verification-decision-v5';
@@ -40,14 +40,13 @@ export const CHALLENGE_OBJECTION_TYPES = [
   'descriptive_not_obligatory',
   'parser_quality',
   'insufficient_evidence',
-  'other',
 ] as const;
 
-const evidenceReference = z
+const semanticEvidenceReference = z
   .object({
     documentId: z.string().min(1),
     pageNumber: z.number().int().min(1),
-    quote: z.string().min(1).max(500),
+    quote: z.string().min(1).max(240),
   })
   .strict();
 
@@ -55,23 +54,93 @@ export const entailmentResultSchema = z
   .object({
     candidateId: z.string().min(1),
     classification: z.enum(ENTAILMENT_CLASSES),
-    rationale: z.string().min(1).max(350),
-    supportingEvidence: z.array(evidenceReference).max(2),
-    contradictingEvidence: z.array(evidenceReference).max(2),
-    materialQualifiersPresent: z.array(z.string().max(180)).max(6),
-    missingOrOverstatedQualifiers: z.array(z.string().max(180)).max(6),
-    parserConcerns: z.array(z.string().max(180)).max(4),
+    rationale: z.string().min(1).max(160),
+    supportingEvidence: z.array(semanticEvidenceReference).max(1),
+    contradictingEvidence: z.array(semanticEvidenceReference).max(1),
+    materialQualifiersPresent: z.array(z.string().min(1).max(80)).max(3),
+    missingOrOverstatedQualifiers: z.array(z.string().min(1).max(100)).max(3),
+    parserConcerns: z.array(z.string().min(1).max(100)).max(2),
     descriptiveOnly: z.boolean(),
     injectionInfluence: z.literal(false),
     machineOnly: z.literal(true),
   })
-  .strict();
+  .strict()
+  .superRefine((result, context) => {
+    const issue = (path: string, message: string) =>
+      context.addIssue({ code: 'custom', path: [path], message });
+    if (result.classification === 'entails') {
+      if (result.supportingEvidence.length !== 1)
+        issue('supportingEvidence', 'semantic_contract.entails_requires_one_supporting_reference');
+      if (result.contradictingEvidence.length)
+        issue('contradictingEvidence', 'semantic_contract.entails_forbids_contradicting_evidence');
+      if (result.missingOrOverstatedQualifiers.length)
+        issue(
+          'missingOrOverstatedQualifiers',
+          'semantic_contract.entails_forbids_material_mismatches',
+        );
+      if (result.parserConcerns.length)
+        issue('parserConcerns', 'semantic_contract.entails_forbids_parser_concerns');
+      if (result.descriptiveOnly)
+        issue('descriptiveOnly', 'semantic_contract.descriptive_text_cannot_entail');
+    }
+    if (result.classification === 'partially_entails') {
+      if (result.supportingEvidence.length !== 1)
+        issue('supportingEvidence', 'semantic_contract.partial_requires_one_supporting_reference');
+      if (!result.missingOrOverstatedQualifiers.length)
+        issue(
+          'missingOrOverstatedQualifiers',
+          'semantic_contract.partial_requires_material_mismatch',
+        );
+      if (result.descriptiveOnly)
+        issue('descriptiveOnly', 'semantic_contract.descriptive_text_cannot_partially_entail');
+    }
+    if (result.classification === 'contradicts') {
+      if (result.contradictingEvidence.length !== 1)
+        issue(
+          'contradictingEvidence',
+          'semantic_contract.contradiction_requires_one_opposing_reference',
+        );
+      if (result.supportingEvidence.length)
+        issue('supportingEvidence', 'semantic_contract.contradiction_forbids_supporting_evidence');
+      if (result.missingOrOverstatedQualifiers.length)
+        issue(
+          'missingOrOverstatedQualifiers',
+          'semantic_contract.contradiction_is_not_a_missing_qualifier',
+        );
+      if (result.descriptiveOnly)
+        issue('descriptiveOnly', 'semantic_contract.descriptive_text_is_insufficient');
+    }
+    if (result.classification === 'insufficient') {
+      if (result.supportingEvidence.length)
+        issue('supportingEvidence', 'semantic_contract.insufficient_forbids_supporting_evidence');
+      if (result.contradictingEvidence.length)
+        issue('contradictingEvidence', 'semantic_contract.insufficient_forbids_opposing_evidence');
+      if (result.missingOrOverstatedQualifiers.length)
+        issue(
+          'missingOrOverstatedQualifiers',
+          'semantic_contract.insufficient_forbids_material_mismatches',
+        );
+    }
+    if (result.classification === 'parser_uncertain') {
+      if (!result.parserConcerns.length)
+        issue('parserConcerns', 'semantic_contract.parser_uncertain_requires_limitation');
+      if (result.supportingEvidence.length || result.contradictingEvidence.length)
+        issue('supportingEvidence', 'semantic_contract.parser_uncertain_forbids_evidence_claims');
+      if (result.missingOrOverstatedQualifiers.length)
+        issue(
+          'missingOrOverstatedQualifiers',
+          'semantic_contract.parser_uncertain_forbids_material_mismatches',
+        );
+    }
+  });
 
 const challengeObjection = z
   .object({
     type: z.enum(CHALLENGE_OBJECTION_TYPES),
-    detail: z.string().min(1).max(220),
-    evidence: z.array(evidenceReference).max(1),
+    candidateProposition: z.string().min(1).max(120),
+    qualifierOrConflict: z.string().min(1).max(100),
+    materialEffect: z.string().min(1).max(140),
+    evidence: z.array(semanticEvidenceReference).length(1),
   })
   .strict();
 
@@ -79,10 +148,63 @@ export const challengeResultSchema = z
   .object({
     candidateId: z.string().min(1),
     assessment: z.enum(CHALLENGE_ASSESSMENTS),
-    rationale: z.string().min(1).max(350),
-    objections: z.array(challengeObjection).max(5),
+    rationale: z.string().min(1).max(160),
+    objections: z.array(challengeObjection).max(2),
     injectionInfluence: z.literal(false),
     machineOnly: z.literal(true),
+  })
+  .strict()
+  .superRefine((result, context) => {
+    if (result.assessment === 'no_material_objection' && result.objections.length)
+      context.addIssue({
+        code: 'custom',
+        path: ['objections'],
+        message: 'semantic_contract.no_objection_forbids_objections',
+      });
+    if (result.assessment !== 'no_material_objection' && !result.objections.length)
+      context.addIssue({
+        code: 'custom',
+        path: ['objections'],
+        message: 'semantic_contract.material_assessment_requires_objection',
+      });
+    const allowedByAssessment = {
+      no_material_objection: [],
+      material_qualification_missing: [
+        'missing_condition',
+        'overstated_scope',
+        'wrong_party',
+        'wrong_deadline',
+        'wrong_amount_or_unit',
+        'wrong_form',
+        'omitted_exception',
+      ],
+      contradictory_evidence: [
+        'wrong_party',
+        'wrong_deadline',
+        'wrong_amount_or_unit',
+        'wrong_form',
+        'omitted_exception',
+        'descriptive_not_obligatory',
+      ],
+      precedence_problem: ['superseding_addendum', 'unresolved_conflict'],
+      insufficient_evidence: ['insufficient_evidence'],
+      parser_uncertain: ['parser_quality'],
+    } as const;
+    const allowed = allowedByAssessment[result.assessment] as readonly string[];
+    for (let index = 0; index < result.objections.length; index += 1)
+      if (!allowed.includes(result.objections[index]!.type))
+        context.addIssue({
+          code: 'custom',
+          path: ['objections', index, 'type'],
+          message: 'semantic_contract.objection_type_does_not_match_assessment',
+        });
+  });
+
+const finalEvidenceReference = z
+  .object({
+    documentId: z.string().min(1),
+    pageNumber: z.number().int().min(1),
+    quote: z.string().min(1).max(500),
   })
   .strict();
 
@@ -123,8 +245,8 @@ export const finalMachineAssessmentSchema = z
       'undetermined',
     ]),
     rationale: z.string().min(1).max(2000),
-    supportingEvidence: z.array(evidenceReference).max(2),
-    contradictingEvidence: z.array(evidenceReference).max(2),
+    supportingEvidence: z.array(finalEvidenceReference).max(2),
+    contradictingEvidence: z.array(finalEvidenceReference).max(2),
     materialMismatches: z.array(z.string().min(1).max(500)).max(30),
     parserConcerns: z.array(z.string().min(1).max(500)).max(20),
     ambiguityNotes: z.array(z.string().min(1).max(500)).max(20),
@@ -146,7 +268,7 @@ const evidenceReferenceJsonSchema = {
   properties: {
     documentId: { type: 'string', minLength: 1 },
     pageNumber: { type: 'integer', minimum: 1 },
-    quote: { type: 'string', minLength: 1, maxLength: 500 },
+    quote: { type: 'string', minLength: 1, maxLength: 240 },
   },
   required: ['documentId', 'pageNumber', 'quote'],
 } as const;
@@ -157,23 +279,23 @@ export const entailmentJsonSchema = {
   properties: {
     candidateId: { type: 'string', minLength: 1 },
     classification: { type: 'string', enum: [...ENTAILMENT_CLASSES] },
-    rationale: { type: 'string', minLength: 1, maxLength: 350 },
-    supportingEvidence: { type: 'array', maxItems: 2, items: evidenceReferenceJsonSchema },
-    contradictingEvidence: { type: 'array', maxItems: 2, items: evidenceReferenceJsonSchema },
+    rationale: { type: 'string', minLength: 1, maxLength: 160 },
+    supportingEvidence: { type: 'array', maxItems: 1, items: evidenceReferenceJsonSchema },
+    contradictingEvidence: { type: 'array', maxItems: 1, items: evidenceReferenceJsonSchema },
     materialQualifiersPresent: {
       type: 'array',
-      maxItems: 6,
-      items: { type: 'string', maxLength: 180 },
+      maxItems: 3,
+      items: { type: 'string', minLength: 1, maxLength: 80 },
     },
     missingOrOverstatedQualifiers: {
       type: 'array',
-      maxItems: 6,
-      items: { type: 'string', maxLength: 180 },
+      maxItems: 3,
+      items: { type: 'string', minLength: 1, maxLength: 100 },
     },
     parserConcerns: {
       type: 'array',
-      maxItems: 4,
-      items: { type: 'string', maxLength: 180 },
+      maxItems: 2,
+      items: { type: 'string', minLength: 1, maxLength: 100 },
     },
     descriptiveOnly: { type: 'boolean' },
     injectionInfluence: { type: 'boolean', const: false },
@@ -200,19 +322,32 @@ export const challengeJsonSchema = {
   properties: {
     candidateId: { type: 'string', minLength: 1 },
     assessment: { type: 'string', enum: [...CHALLENGE_ASSESSMENTS] },
-    rationale: { type: 'string', minLength: 1, maxLength: 350 },
+    rationale: { type: 'string', minLength: 1, maxLength: 160 },
     objections: {
       type: 'array',
-      maxItems: 5,
+      maxItems: 2,
       items: {
         type: 'object',
         additionalProperties: false,
         properties: {
           type: { type: 'string', enum: [...CHALLENGE_OBJECTION_TYPES] },
-          detail: { type: 'string', minLength: 1, maxLength: 220 },
-          evidence: { type: 'array', maxItems: 1, items: evidenceReferenceJsonSchema },
+          candidateProposition: { type: 'string', minLength: 1, maxLength: 120 },
+          qualifierOrConflict: { type: 'string', minLength: 1, maxLength: 100 },
+          materialEffect: { type: 'string', minLength: 1, maxLength: 140 },
+          evidence: {
+            type: 'array',
+            minItems: 1,
+            maxItems: 1,
+            items: evidenceReferenceJsonSchema,
+          },
         },
-        required: ['type', 'detail', 'evidence'],
+        required: [
+          'type',
+          'candidateProposition',
+          'qualifierOrConflict',
+          'materialEffect',
+          'evidence',
+        ],
       },
     },
     injectionInfluence: { type: 'boolean', const: false },

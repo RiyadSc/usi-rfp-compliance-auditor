@@ -592,7 +592,9 @@ export function deriveMachineAssessment(input: {
     contradictingEvidence,
     materialMismatches: [
       ...(entailment?.missingOrOverstatedQualifiers ?? []),
-      ...(challenge?.objections.map((objection) => objection.detail) ?? []),
+      ...(challenge?.objections.map(
+        (objection) => `${objection.type}: ${objection.materialEffect}`,
+      ) ?? []),
       ...facts.comparisons
         .filter((comparison) => comparison.comparison === 'mismatch')
         .map(
