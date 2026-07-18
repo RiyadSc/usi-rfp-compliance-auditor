@@ -1,0 +1,156 @@
+{
+  "reportVersion": "phase4-output-budget-remediation-v1",
+  "generatedWithoutProviderCalls": true,
+  "generatedAt": "2026-07-18",
+  "fixtureVersion": "verification-cases-v2",
+  "frozenExpectedAnswersChanged": false,
+  "authoritativeLedgers": {
+    "phase4SpendUsd": 9.127362,
+    "phase4CeilingUsd": 15,
+    "remediationSpendUsd": 7.445068,
+    "remediationCeilingUsd": 12,
+    "cumulativeApiSpendUsd": 9.535903
+  },
+  "outputBudgetDiagnosis": {
+    "condition": "Responses output allowance is shared by reasoning and the structured answer, so medium reasoning can consume the allowance before JSON is emitted.",
+    "reasoningSetting": "low",
+    "reasoningRationale": "Low reduces reasoning-token and latency pressure for bounded single-candidate classification. Deterministic facts and decision rules continue to own exact comparisons and final status.",
+    "outputLimits": {
+      "passA": 1800,
+      "passB": 1600,
+      "duplicate": 600
+    },
+    "maximumValidSerializedBytes": {
+      "passA": 1350,
+      "passB": 1925
+    },
+    "expectedMaximumStructuredAnswerTokens": {
+      "passA": 500,
+      "passB": 650,
+      "method": "Conservative maximum-valid-schema serialization at three bytes per token, rounded upward."
+    },
+    "reasoningHeadroomTokens": {
+      "passA": 1300,
+      "passB": 950
+    },
+    "timeoutMs": 90000
+  },
+  "semanticContractRemediation": {
+    "observedInvalidCombination": "classification=contradicts with descriptiveOnly=true",
+    "structuralCorrection": "descriptiveOnly is a JSON Schema and Zod const false; descriptive or disclaimed non-obligations resolve to insufficient unless supplied active evidence explicitly establishes the opposite proposition.",
+    "topLevelDiscriminatedUnionUsed": false,
+    "reason": "The strict Structured Outputs root must be an object and cannot be a root anyOf. Existing class-dependent Zod refinements remain the fail-closed consistency validator.",
+    "repairPolicyChanged": false,
+    "qualificationStillRequiresZeroRepairs": true
+  },
+  "versions": {
+    "factEnvelope": "verification-facts-v4",
+    "decisionEngine": "verification-decision-v6",
+    "entailmentPrompt": "verify-entailment-v6",
+    "entailmentSchema": "verification-entailment-v4",
+    "challengePrompt": "verify-challenge-v4",
+    "challengeSchema": "verification-challenge-v4",
+    "duplicatePrompt": "verify-duplicate-v1",
+    "duplicateSchema": "verification-duplicate-v1",
+    "finalAssessmentSchema": "verification-final-assessment-v1",
+    "evaluator": "verification-evaluator-v3",
+    "parentChildRelationship": "atomic-parent-child-v1"
+  },
+  "compatibility": {
+    "fullFingerprint": "d0bcc149b74c284e9b67f29d66d89598c31babbe718a15fc7a2292f92f824299",
+    "targetedFingerprint": "9b6ed1ac483d3c3b7882374ea7fb96f780b1e931dff9bf0890f8ff4edeac1c2c",
+    "reasoning": "low",
+    "maxContextsPerCandidate": 2,
+    "api": "responses",
+    "store": false,
+    "tools": false,
+    "maxRepairAttempts": 1
+  },
+  "targetedPrequalification": {
+    "fixtureVersion": "verification-output-budget-prequalification-v1",
+    "evaluatorVersion": "verification-output-budget-evaluator-v1",
+    "candidateIds": [
+      "20000000-0000-4000-8000-000000000003",
+      "20000000-0000-4000-8000-000000000004",
+      "20000000-0000-4000-8000-000000000011",
+      "20000000-0000-4000-8000-000000000014",
+      "20000000-0000-4000-8000-000000000022"
+    ],
+    "coverage": [
+      "previous Pass B output exhaustion",
+      "previous Pass A output exhaustion",
+      "exact deterministic numerical contradiction",
+      "contradicts/descriptiveOnly contract failure",
+      "prompt-injection and disclaimed non-obligation handling"
+    ],
+    "duplicateCalls": false,
+    "qualificationEffect": "Operational output/schema prequalification only. Passing cannot qualify or select a model and cannot replace the full frozen evaluation.",
+    "offlineMock": {
+      "passed": true,
+      "candidates": 5,
+      "calls": 6,
+      "repairs": 0,
+      "passAFirstPassClean": true,
+      "passBFirstPassClean": true,
+      "statusesCorrect": true,
+      "injectionInfluence": 0
+    }
+  },
+  "costProjection": {
+    "model": "gpt-5.5-2026-04-23",
+    "fullFreshExpectedUsd": 0.8,
+    "fullFreshMaximumReservationUsd": 1.35,
+    "targetedExpectedUsd": 0.15,
+    "targetedMaximumReservationUsd": 0.35,
+    "basis": "Prior observed GPT-5.5 full-run usage adjusted for low reasoning and zero repair; conservative reservations account for the larger bounded output caps.",
+    "completeStagedMaximumUsd": 4.4,
+    "projectedPhase4AfterAllStagesUsd": 13.527362,
+    "projectedRemediationAfterAllStagesUsd": 11.845068,
+    "fitsCurrentCeilings": true
+  },
+  "offlineRegression": {
+    "unit": "132 passed",
+    "supabaseIntegration": "54 passed",
+    "mockPlaywright": "17 passed with PHASE4_LIVE_VERIFICATION_ENABLED=false and E2E_LIVE_OPENAI=0",
+    "mockDeterministicVerification": "24/24; all required metrics and schema layers 1.0; zero critical false-supported, false-active, false merges, repairs, incompletes, or injection influence",
+    "targetedMockPrequalification": "5/5; 6 calls; zero repairs",
+    "lint": "passed",
+    "formatCheck": "passed",
+    "typeCheck": "passed for all workspaces",
+    "productionBuild": "passed",
+    "secretScan": "passed",
+    "invariantChecklist": "passed for this remediation; live model qualification remains intentionally incomplete"
+  },
+  "stagedProposalNotAuthorized": [
+    {
+      "stage": 0,
+      "action": "One fresh GPT-5.5 output-budget prequalification on the five frozen candidates",
+      "maximumUsd": 0.35,
+      "gate": "All five exact expected axes, clean first-pass Pass A/Pass B, zero repair/incomplete/refusal/timeout, final schemas valid, and zero injection influence"
+    },
+    {
+      "stage": 1,
+      "action": "Only after Stage 0 passes, one fresh full 24-candidate/40-assessment GPT-5.5 repetition",
+      "maximumUsd": 1.35,
+      "gate": "Every existing full qualification threshold; target prequalification does not waive any metric"
+    },
+    {
+      "stage": 2,
+      "action": "Only after Stage 1 passes, two additional identical full GPT-5.5 repetitions",
+      "maximumUsd": 2.7,
+      "gate": "Every full gate in each repetition and acceptable stability across all three"
+    }
+  ],
+  "externalDocumentation": [
+    "https://developers.openai.com/api/reference/resources/responses/methods/create",
+    "https://developers.openai.com/api/docs/guides/structured-outputs#root-objects-must-not-be-anyof-and-must-be-an-object"
+  ],
+  "authorizationState": {
+    "providerCallAuthorized": false,
+    "applicationSmokeAuthorized": false,
+    "modelSelectionAuthorized": false,
+    "phase5Authorized": false,
+    "liveVerificationEnabled": false,
+    "mockFallbackRetained": true
+  }
+}

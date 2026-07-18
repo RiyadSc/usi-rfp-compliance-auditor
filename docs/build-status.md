@@ -1,12 +1,19 @@
 # Build Status
 
-## Current phase: Phase 4 targeted remediation complete offline — live requalification not authorized
+## Current phase: Phase 4 output-budget remediation complete offline — live requalification not authorized
 
 Last updated: 2026-07-18.
 
 ## Phase 4 — Independent source verification and human review (GATE NOT COMPLETE)
 
 ### Gate decision
+
+- The user increased the authoritative Phase 4 ceiling to `$15.00` and the remediation sub-ceiling to `$12.00`. The authoritative ledgers remain Phase 4 `$9.127362`, remediation `$7.445068`, and cumulative API `$9.535903`; this remediation made no provider call.
+- Output-budget compatibility is now `low` reasoning with separate Pass A/Pass B limits of `1,800`/`1,600` tokens. The strict bounded schemas have conservative maximum structured-answer budgets of 500/650 tokens, leaving approximately 1,300/950 tokens for provider reasoning while avoiding the prior 1,200/1,000 shared-budget exhaustion.
+- `verify-entailment-v6` / `verification-entailment-v4` structurally fixes `descriptiveOnly` to `false`. Descriptive/disclaimed non-obligations resolve to `insufficient` unless active evidence explicitly establishes the opposite proposition, so the invalid `contradicts + descriptiveOnly=true` first-pass combination is no longer representable by the strict schema.
+- `verify-challenge-v4` / `verification-challenge-v4` directs a grounded, immediate decision and forbids speculative re-deliberation. Existing evidence grounding, deterministic overrides, fail-closed handling, zero-repair qualification, and frozen answers remain unchanged.
+- A five-candidate `verification-output-budget-prequalification-v1` operational probe is available for a separately authorized live call. It tests prior Pass A/Pass B exhaustion, the invalid semantic combination, deterministic numerical contradiction, and injection/non-obligation handling. Passing it cannot qualify a model or replace the full 24-candidate/40-assessment repetition.
+- Full and targeted compatibility fingerprints are `d0bcc149b74c284e9b67f29d66d89598c31babbe718a15fc7a2292f92f824299` and `9b6ed1ac483d3c3b7882374ea7fb96f780b1e931dff9bf0890f8ff4edeac1c2c`, respectively.
 
 - The corrected frozen fixture is `verification-cases-v2`: 17 synthetic pages and 24 deterministic candidates, including explicit supersession, a genuine unresolved addendum conflict, materially distinct similar requirements, parser damage, proof needs, and prompt injection.
 - The remediated pipeline assesses one candidate at a time with unchanged `verify-entailment-v3`, conditionally challenges positive results with unchanged `verify-challenge-v1`, and lets deterministic engine `verification-decision-v5` derive and strict-Zod-validate the final machine-only status.
@@ -28,7 +35,7 @@ Last updated: 2026-07-18.
 - Historical candidate-level Pass A, Pass B, and fact envelopes were not retained. Their exact values remain explicitly unavailable rather than reconstructed. Full traces and limitations are in `artifacts/evaluation/phase4-zero-live-diagnostic-v1.json`.
 - No successful prompt-injection influence or dangerous false merge occurred. All counted supported quotes were exact/normalized-exact.
 - Live verification remains disabled (`PHASE4_LIVE_VERIFICATION_ENABLED=false`). `MockProvider` remains the demo fallback, and every machine finding remains human-review pending.
-- Phase 4 ledger spend: `$8.273600` of `$10`; remediation spend: `$6.591306` of the authorized `$7`; cumulative API spend: `$8.682141`. The fresh GPT-5.5 repetition cost `$0.875278`, below its authorized `$1.10` maximum.
+- Phase 4 ledger spend: `$9.127362` of `$15`; remediation spend: `$7.445068` of the authorized `$12`; cumulative API spend: `$9.535903`. No live call occurred during the output-budget remediation.
 - Phase 4 is **not complete**. No model is selected, no live application verification smoke was run, and Phase 5 remains blocked.
 
 ### Implemented Phase 4 scope
@@ -67,15 +74,16 @@ Last updated: 2026-07-18.
 
 ### Remaining gate before Phase 4 can close
 
-The fresh GPT-5.5 semantic-contract repetition failed and was not rerun. The authorized zero-live remediation corrected only the demonstrated provider-neutral fact, rule-order, parent/child, challenge-validation, prompt/schema, and evaluator defects. No live requalification, other model, application smoke, selection, or Phase 5 work is authorized. Live verification remains disabled; human-only review with deterministic mock findings remains the demo mode.
+The most recent fresh GPT-5.5 repetition failed and was not rerun. The authorized zero-live output-budget remediation changed reasoning effort, split output budgets, prompt concision, and a forbidden schema combination without changing the frozen fixture, expected answers, retrieval, deterministic facts, decision rules, or qualification thresholds. No targeted probe, full live requalification, other model, application smoke, selection, or Phase 5 work is authorized. Live verification remains disabled; human-only review with deterministic mock findings remains the demo mode.
 
 ### Phase 4 regression gate
 
-- Lint, formatting verification, and type-check: passed on the semantic-remediation state. The production Next.js build also passed with process binding permitted.
-- Unit: 128 passed, including 20 targeted-remediation, 21 semantic-contract, 19 typed date/number, and 5 evaluator-integrity tests.
+- Lint, formatting verification, and type-check: passed on the output-budget-remediation state. The production Next.js build also passed with process binding permitted.
+- Unit: 132 passed, including 20 targeted-remediation, 23 semantic-contract, 19 typed date/number, and 6 evaluator-integrity tests.
 - Integration: 54 passed against the configured Supabase project, including semantic-contract rejection, atomic parent/child persistence, plus Phase 4 RLS, linkage, immutability, idempotency, audit, failure paths, budget cancellation, and isolation.
 - Mock Playwright: 17 passed with `PHASE4_LIVE_VERIFICATION_ENABLED=false` and `E2E_LIVE_OPENAI=0`; no live model calls occurred.
 - Secret scan: passed across tracked files and the client bundle.
+- Targeted five-candidate mock probe: 5/5 candidates and six calls passed with clean first-pass Pass A/Pass B, zero repairs, exact expected statuses, and no injection influence.
 - Deterministic semantic/facts-v4/decision-v6/evaluator-v3 fixture: Pass A and Pass B metrics, source status, precedence, date, number, quote, citation, proof, duplicate, and every schema layer are 1.0; zero critical false-supported, false-active, false merges, incompletes, repairs, or injection influence. It remains a fallback/regression result, not a live qualification.
 - Invariant checklist above: passed except the explicitly failed live verification-model gate.
 
