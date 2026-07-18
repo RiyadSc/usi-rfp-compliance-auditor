@@ -1,6 +1,6 @@
 # Build Status
 
-## Current phase: Phase 4 meeting-consequence remediated offline — live requalification not authorized
+## Current phase: Phase 4 targeted meeting-remediation probe passed — full qualification not authorized
 
 Last updated: 2026-07-18.
 
@@ -8,6 +8,10 @@ Last updated: 2026-07-18.
 
 ### Gate decision
 
+- One separately authorized fresh `gpt-5.5-2026-04-23` five-candidate probe passed under targeted fingerprint `c9976dc1127fe21900dacf0b5980a7a49dbbb8c349aa9eba347a1b1f22cab416`. All five expected source/precedence/proof axes were correct; Pass A, Pass B, and final-decision schema adherence were `1.0`; there were zero repairs, incompletes, refusals, timeouts, retries, critical false-supported/false-active findings, false merges, or injection influence.
+- The meeting candidate returned `partially_entails` on its first pass, final `partially_supported/active`, and exactly one mismatch: `Failure to attend disqualifies an offeror`. Its date matched, party scope remained `unknown`, and material scope differences remained empty.
+- Usage was 14,371 input, 896 output, zero reasoning, and zero cached tokens across six calls; summed latency was 16.367 seconds. Actual cost was `$0.098735`, below the authorized `$0.35`. Authoritative ledgers are Phase 4 `$9.336904/$15`, remediation `$7.654610/$12`, and cumulative API `$9.745445`.
+- Passing this targeted operational probe does not qualify or select the model. No full repetition, additional probe, other model, application smoke, or Phase 5 work is authorized. Live verification remains disabled.
 - The failed meeting-consequence path has been remediated offline without a provider call. `verify-entailment-v7` / `verification-entailment-v5` explicitly maps reliable exact `parent_missing_material_condition` evidence with no deterministic mismatch to `partially_entails`, requires the exact consequence once as the sole mismatch, and forbids opposing evidence or parser concerns.
 - The original first-pass and repaired raw objects were not retained and were not reconstructed. The retained validator path proves the first response was structurally valid `entails` with one exact supporting reference and no missing/opposing/parser fields; exact rationale, supporting object, material-present fields, repaired fields, and field-level fingerprint differences remain unavailable.
 - Root cause was prompt ambiguity and field/instruction priority, not retrieval, facts, schema expressiveness, decision logic, evaluator logic, or output exhaustion. The prompt distinguished additive children but did not explicitly state that `parent_missing_material_condition` is a material omission. Facts v4, decision v6, low reasoning, 1,800/1,600/600 limits, zero-repair qualification, semantic-fingerprint rejection, and frozen expected answers are unchanged.
@@ -46,7 +50,7 @@ Last updated: 2026-07-18.
 - Historical candidate-level Pass A, Pass B, and fact envelopes were not retained. Their exact values remain explicitly unavailable rather than reconstructed. Full traces and limitations are in `artifacts/evaluation/phase4-zero-live-diagnostic-v1.json`.
 - No successful prompt-injection influence or dangerous false merge occurred. All counted supported quotes were exact/normalized-exact.
 - Live verification remains disabled (`PHASE4_LIVE_VERIFICATION_ENABLED=false`). `MockProvider` remains the demo fallback, and every machine finding remains human-review pending.
-- Phase 4 ledger spend: `$9.238169` of `$15`; remediation spend: `$7.555875` of the authorized `$12`; cumulative API spend: `$9.646710`. The targeted probe added `$0.110807`.
+- Phase 4 ledger spend: `$9.336904` of `$15`; remediation spend: `$7.654610` of the authorized `$12`; cumulative API spend: `$9.745445`. The passing remediated targeted probe added `$0.098735`.
 - Phase 4 is **not complete**. No model is selected, no live application verification smoke was run, and Phase 5 remains blocked.
 
 ### Implemented Phase 4 scope
@@ -85,7 +89,7 @@ Last updated: 2026-07-18.
 
 ### Remaining gate before Phase 4 can close
 
-The targeted output-budget probe failed and was not rerun. Its meeting-consequence semantic-contract failure is now corrected and fully regressed offline, but the revised v7/v5 contract has not been live requalified. No targeted probe, full live requalification, other model, application smoke, selection, or Phase 5 work is authorized. Live verification remains disabled; human-only review with deterministic mock findings remains the demo mode.
+The remediated five-candidate targeted probe passed, but an operational subset cannot qualify a model. No full live qualification, additional targeted probe, other model, application smoke, selection, or Phase 5 work is authorized. Live verification remains disabled; human-only review with deterministic mock findings remains the demo mode.
 
 ### Phase 4 regression gate
 

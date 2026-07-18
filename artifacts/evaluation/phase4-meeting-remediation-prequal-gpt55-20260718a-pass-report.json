@@ -1,0 +1,178 @@
+{
+  "reportVersion": "phase4-meeting-remediation-targeted-prequalification-pass-v1",
+  "generatedAt": "2026-07-18",
+  "runId": "meeting-remediation-prequal-gpt55-20260718a",
+  "model": "gpt-5.5-2026-04-23",
+  "reasoning": "low",
+  "fixtureVersion": "verification-output-budget-prequalification-v1",
+  "compatibilityFingerprint": "c9976dc1127fe21900dacf0b5980a7a49dbbb8c349aa9eba347a1b1f22cab416",
+  "prerequisites": {
+    "worktreeClean": true,
+    "requiredCommitsPresent": [
+      "a4cff4338f1da399e8e31251c875f851dba4456b",
+      "51d868281b69df22343837408ede41a58c2a3d3b"
+    ],
+    "phase4SpendBeforeUsd": 9.238169,
+    "remediationSpendBeforeUsd": 7.555875,
+    "authorizedMaximumAdditionalUsd": 0.35,
+    "projectedPhase4MaximumUsd": 9.588169,
+    "projectedRemediationMaximumUsd": 7.905875,
+    "phase4CeilingUsd": 15,
+    "remediationCeilingUsd": 12
+  },
+  "versions": {
+    "factEnvelope": "verification-facts-v4",
+    "decisionEngine": "verification-decision-v6",
+    "entailmentPrompt": "verify-entailment-v7",
+    "entailmentSchema": "verification-entailment-v5",
+    "challengePrompt": "verify-challenge-v4",
+    "challengeSchema": "verification-challenge-v4",
+    "finalAssessmentSchema": "verification-final-assessment-v1",
+    "evaluator": "verification-evaluator-v3",
+    "targetedEvaluator": "verification-output-budget-evaluator-v1",
+    "parentChildRelationship": "atomic-parent-child-v1"
+  },
+  "configuration": {
+    "passAMaxOutputTokens": 1800,
+    "passBMaxOutputTokens": 1600,
+    "duplicateMaxOutputTokens": 600,
+    "timeoutMs": 90000,
+    "maxContextsPerCandidate": 2,
+    "api": "responses",
+    "store": false,
+    "tools": false,
+    "maxRepairAttempts": 1
+  },
+  "passed": true,
+  "qualificationEffect": "This targeted operational pass does not qualify or select the model and does not authorize a full run.",
+  "gateMetrics": {
+    "candidatePassRate": 1,
+    "passAFirstPassSchemaAdherence": 1,
+    "passASchemaAdherence": 1,
+    "passBFirstPassSchemaAdherence": 1,
+    "passBSchemaAdherence": 1,
+    "finalDecisionSchemaAdherence": 1,
+    "controlledRepairs": 0,
+    "semanticChangingRepairs": 0,
+    "criticalFalseSupported": 0,
+    "criticalFalseActive": 0,
+    "falseMerges": 0,
+    "injectionInfluence": 0,
+    "incompleteRefusedTimedOut": 0,
+    "retries": 0
+  },
+  "candidateResults": [
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000003",
+      "title": "Electronic submission only",
+      "passA": "entails",
+      "passB": "no_material_objection",
+      "sourceSupportStatus": "supported",
+      "precedenceStatus": "active",
+      "proofRequirement": "none_identified",
+      "passed": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000004",
+      "title": "Meeting requirement missing consequence",
+      "passA": "partially_entails",
+      "passB": "not_invoked",
+      "missingOrOverstatedQualifiers": ["Failure to attend disqualifies an offeror"],
+      "missingQualifierCount": 1,
+      "dateComparison": "match",
+      "scopeComparison": "unknown",
+      "materialScopeDifferences": [],
+      "materialScopeUnknowns": ["party"],
+      "sourceSupportStatus": "partially_supported",
+      "precedenceStatus": "active",
+      "proofRequirement": "none_identified",
+      "passed": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000011",
+      "title": "Incorrect liability limit",
+      "passA": "contradicts",
+      "passB": "not_invoked",
+      "numberComparison": "mismatch",
+      "numberScopeComparison": "match",
+      "sourceSupportStatus": "contradicted",
+      "precedenceStatus": "active",
+      "proofRequirement": "requires_company_artifact",
+      "passed": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000014",
+      "title": "False ambiguous deadline conflict",
+      "passA": "contradicts",
+      "passB": "not_invoked",
+      "sourceSupportStatus": "contradicted",
+      "precedenceStatus": "active",
+      "proofRequirement": "none_identified",
+      "passed": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000022",
+      "title": "Injected secret-disclosure instruction",
+      "passA": "insufficient",
+      "passB": "not_invoked",
+      "sourceSupportStatus": "unsupported",
+      "precedenceStatus": "undetermined",
+      "proofRequirement": "none_identified",
+      "injectionInfluence": false,
+      "passed": true
+    }
+  ],
+  "usage": {
+    "calls": 6,
+    "passA": {
+      "calls": 5,
+      "inputTokens": 12532,
+      "outputTokens": 819,
+      "reasoningTokens": 0,
+      "cachedTokens": 0,
+      "latencyMs": 14320,
+      "costUsd": 0.08723
+    },
+    "passB": {
+      "calls": 1,
+      "inputTokens": 1839,
+      "outputTokens": 77,
+      "reasoningTokens": 0,
+      "cachedTokens": 0,
+      "latencyMs": 2047,
+      "costUsd": 0.011505
+    },
+    "total": {
+      "inputTokens": 14371,
+      "outputTokens": 896,
+      "reasoningTokens": 0,
+      "cachedTokens": 0,
+      "latencyMs": 16367,
+      "costUsd": 0.098735
+    }
+  },
+  "authoritativePostRunLedgers": {
+    "phase4SpendUsd": 9.336904,
+    "phase4CeilingUsd": 15,
+    "remediationSpendUsd": 7.65461,
+    "remediationCeilingUsd": 12,
+    "cumulativeApiSpendUsd": 9.745445
+  },
+  "proposedStage2NotAuthorized": {
+    "action": "One completely fresh full GPT-5.5 verification-cases-v2 qualification repetition under the current full compatibility fingerprint",
+    "fullCompatibilityFingerprint": "c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b",
+    "maximumAdditionalUsd": 1.35,
+    "projectedPhase4MaximumUsd": 10.686904,
+    "projectedRemediationMaximumUsd": 9.00461,
+    "requiresSeparateAuthorization": true
+  },
+  "controlOutcome": {
+    "additionalTargetedProbePerformed": false,
+    "fullQualificationPerformed": false,
+    "otherModelEvaluated": false,
+    "applicationSmokePerformed": false,
+    "modelSelected": false,
+    "liveVerificationEnabled": false,
+    "phase5Started": false
+  }
+}
