@@ -1,0 +1,49 @@
+{
+  "reportVersion": "phase4-production-worker-smoke-v1",
+  "generatedAt": "2026-07-18T19:00:44.512Z",
+  "syntheticScope": {
+    "smokeScopeId": "40000000-0000-4000-8000-000000000001",
+    "workspaceId": "10000000-0000-4000-8000-000000000001",
+    "authenticatedUserId": "922727a8-727b-4b9e-a0ff-6e7f7f43d82c",
+    "documentIds": ["10000000-0000-4000-8000-000000000002"],
+    "analysisRunId": "10000000-0000-4000-8000-000000000003",
+    "fixtureVersion": "verification-cases-v2",
+    "candidateSetHash": "531c03afbabe79adb9a490dc0f7e9657ff0f85013bbf0aabe64b505a94a8ac6b",
+    "documentSetHash": "46127bbb348db9374370921876e9adf0a1ca98971e970367e5e142188b04a44b",
+    "expectedAnswersHash": "c67a347cf0c9dccabb8cb50336bd00f72b66bda9ee602e51fd98256cfbe3ba0a"
+  },
+  "verificationRunId": "56dc341b-71f0-4e03-b5fb-e25586ccb5b7",
+  "processingJobId": "d9b4d184-e3e4-4f23-a43b-171f203bdac9",
+  "model": "gpt-5.5-2026-04-23",
+  "compatibilityFingerprint": "c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b",
+  "checks": {
+    "runCompleted": true,
+    "jobCompleted": true,
+    "expectedFindingsMatch": true,
+    "findingCount": 24,
+    "candidateCount": 24,
+    "modelMetadataComplete": true,
+    "noRepairRetryOrIncomplete": true,
+    "contextsBounded": true,
+    "factsComplete": true,
+    "passesPersisted": true,
+    "evidenceValidated": true,
+    "pagesResolve": true,
+    "parentChildPersisted": true,
+    "machineOnly": true,
+    "humanReviewStatusPending": true,
+    "auditEventPersisted": true,
+    "spendLedgerPersisted": true,
+    "unsupportedNeverVerified": true,
+    "sourceNavigationPattern": "/w/{workspaceId}/documents/{documentId}?page={pageNumber}"
+  },
+  "usage": {
+    "calls": 40,
+    "inputTokens": 89863,
+    "outputTokens": 5575,
+    "reasoningTokens": 350,
+    "cachedTokens": 20736,
+    "latencyMs": 97669,
+    "costUsd": 0.523253
+  }
+}

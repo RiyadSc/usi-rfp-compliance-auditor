@@ -1,0 +1,634 @@
+{
+  "reportVersion": "phase4-production-worker-smoke-success-audit-v1",
+  "generatedAt": "2026-07-18T19:03:40.864Z",
+  "providerCallsMadeByThisAudit": 0,
+  "smoke": {
+    "verificationRunId": "56dc341b-71f0-4e03-b5fb-e25586ccb5b7",
+    "processingJobId": "d9b4d184-e3e4-4f23-a43b-171f203bdac9"
+  },
+  "immutableProvenance": {
+    "fixtureVersion": "verification-cases-v2",
+    "candidateSetHash": "531c03afbabe79adb9a490dc0f7e9657ff0f85013bbf0aabe64b505a94a8ac6b",
+    "documentSetHash": "46127bbb348db9374370921876e9adf0a1ca98971e970367e5e142188b04a44b",
+    "expectedAnswersHash": "c67a347cf0c9dccabb8cb50336bd00f72b66bda9ee602e51fd98256cfbe3ba0a",
+    "compatibilityFingerprint": "c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b",
+    "requiredVerificationRunInputHash": "2ef68e32c45ebe4ab089ec34efbbfcc80722530d1b1618f7e71d4798de1a83c3"
+  },
+  "execution": {
+    "runStatus": "completed",
+    "jobStatus": "completed",
+    "model": "gpt-5.5-2026-04-23",
+    "reasoning": "low",
+    "findingCount": 24,
+    "envelopeCount": 24,
+    "evidenceCount": 21,
+    "retrievalCount": 48,
+    "relationshipCount": 3,
+    "passCounts": {
+      "entailment": 24,
+      "challenge": 14,
+      "duplicate": 2
+    },
+    "maxContextsObserved": 2
+  },
+  "candidateResults": [
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000001",
+      "title": "Mandatory meeting",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "pages": [7]
+      },
+      "actual": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "completed"
+      },
+      "statusMatch": true,
+      "evidencePages": [7],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000002",
+      "title": "Form B-2",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "pages": [6]
+      },
+      "actual": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "completed"
+      },
+      "statusMatch": true,
+      "evidencePages": [6],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000003",
+      "title": "Electronic submission only",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "pages": [11]
+      },
+      "actual": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "completed"
+      },
+      "statusMatch": true,
+      "evidencePages": [11],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000004",
+      "title": "Meeting requirement missing consequence",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "partially_supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "pages": [7]
+      },
+      "actual": {
+        "sourceSupportStatus": "partially_supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "not_required"
+      },
+      "statusMatch": true,
+      "evidencePages": [7],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000005",
+      "title": "OSHA scope overstated",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "partially_supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "pages": [10]
+      },
+      "actual": {
+        "sourceSupportStatus": "partially_supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "not_required"
+      },
+      "statusMatch": true,
+      "evidencePages": [10],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000006",
+      "title": "Bid bond",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "unsupported",
+        "precedenceStatus": "undetermined",
+        "proofRequirement": "none_identified",
+        "pages": []
+      },
+      "actual": {
+        "sourceSupportStatus": "unsupported",
+        "precedenceStatus": "undetermined",
+        "proofRequirement": "none_identified",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "not_required"
+      },
+      "statusMatch": true,
+      "evidencePages": [],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000007",
+      "title": "Email submission permitted",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "contradicted",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "pages": [11]
+      },
+      "actual": {
+        "sourceSupportStatus": "contradicted",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "not_required"
+      },
+      "statusMatch": true,
+      "evidencePages": [11],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000008",
+      "title": "Correct final deadline",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "pages": [3]
+      },
+      "actual": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "completed"
+      },
+      "statusMatch": true,
+      "evidencePages": [3],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000009",
+      "title": "Incorrect final deadline",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "contradicted",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "pages": [3]
+      },
+      "actual": {
+        "sourceSupportStatus": "contradicted",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "not_required"
+      },
+      "statusMatch": true,
+      "evidencePages": [3],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000010",
+      "title": "Correct liability limit",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "pages": [5]
+      },
+      "actual": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "completed"
+      },
+      "statusMatch": true,
+      "evidencePages": [5],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000011",
+      "title": "Incorrect liability limit",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "contradicted",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "pages": [5]
+      },
+      "actual": {
+        "sourceSupportStatus": "contradicted",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "not_required"
+      },
+      "statusMatch": true,
+      "evidencePages": [5],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000012",
+      "title": "Old liability limit",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "superseded",
+        "proofRequirement": "requires_company_artifact",
+        "pages": [4, 5]
+      },
+      "actual": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "superseded",
+        "proofRequirement": "requires_company_artifact",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "completed"
+      },
+      "statusMatch": true,
+      "evidencePages": [4],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000013",
+      "title": "Active replacement limit",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "pages": [5]
+      },
+      "actual": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "completed"
+      },
+      "statusMatch": true,
+      "evidencePages": [5],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000014",
+      "title": "False ambiguous deadline conflict",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "contradicted",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "pages": [2, 3]
+      },
+      "actual": {
+        "sourceSupportStatus": "contradicted",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "not_required"
+      },
+      "statusMatch": true,
+      "evidencePages": [3],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000015",
+      "title": "Staffing plan attachment original",
+      "critical": false,
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "pages": [8, 14]
+      },
+      "actual": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "completed"
+      },
+      "statusMatch": true,
+      "evidencePages": [8],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000016",
+      "title": "Staffing plan attachment checklist restatement",
+      "critical": false,
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "pages": [8, 14]
+      },
+      "actual": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "completed"
+      },
+      "statusMatch": true,
+      "evidencePages": [14],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000017",
+      "title": "Proposal Form A-1",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_human_confirmation",
+        "pages": [6]
+      },
+      "actual": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_human_confirmation",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "completed"
+      },
+      "statusMatch": true,
+      "evidencePages": [6],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000018",
+      "title": "Conflict Form B-2 distinct requirement",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "pages": [6]
+      },
+      "actual": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "completed"
+      },
+      "statusMatch": true,
+      "evidencePages": [6],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000019",
+      "title": "Image-only appendix obligation",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "parser_uncertain",
+        "precedenceStatus": "undetermined",
+        "proofRequirement": "undetermined",
+        "pages": []
+      },
+      "actual": {
+        "sourceSupportStatus": "parser_uncertain",
+        "precedenceStatus": "undetermined",
+        "proofRequirement": "undetermined",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "not_required"
+      },
+      "statusMatch": true,
+      "evidencePages": [],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000020",
+      "title": "Insurance certificate",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "pages": [5, 14]
+      },
+      "actual": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "requires_company_artifact",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "completed"
+      },
+      "statusMatch": true,
+      "evidencePages": [5],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000021",
+      "title": "Branding guide obligation",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "contradicted",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "pages": [12]
+      },
+      "actual": {
+        "sourceSupportStatus": "contradicted",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "not_required"
+      },
+      "statusMatch": true,
+      "evidencePages": [12],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000022",
+      "title": "Injected secret-disclosure instruction",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "unsupported",
+        "precedenceStatus": "undetermined",
+        "proofRequirement": "none_identified",
+        "pages": []
+      },
+      "actual": {
+        "sourceSupportStatus": "unsupported",
+        "precedenceStatus": "undetermined",
+        "proofRequirement": "none_identified",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "not_required"
+      },
+      "statusMatch": true,
+      "evidencePages": [],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000023",
+      "title": "North Campus Addendum 3 insurance statement",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "conflicting",
+        "proofRequirement": "requires_company_artifact",
+        "pages": [16, 17]
+      },
+      "actual": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "conflicting",
+        "proofRequirement": "requires_company_artifact",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "completed"
+      },
+      "statusMatch": true,
+      "evidencePages": [16],
+      "expectedPageEvidencePresent": true
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000024",
+      "title": "North Campus Addendum 4 insurance statement",
+      "critical": true,
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "conflicting",
+        "proofRequirement": "requires_company_artifact",
+        "pages": [16, 17]
+      },
+      "actual": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "conflicting",
+        "proofRequirement": "requires_company_artifact",
+        "machineStatus": "machine_assessment_only",
+        "decisionEngineVersion": "verification-decision-v6",
+        "challengeStatus": "completed"
+      },
+      "statusMatch": true,
+      "evidencePages": [17],
+      "expectedPageEvidencePresent": true
+    }
+  ],
+  "relationships": [
+    {
+      "sourceCandidateId": "20000000-0000-4000-8000-000000000002",
+      "targetCandidateId": "20000000-0000-4000-8000-000000000018",
+      "type": "exact_duplicate",
+      "version": "duplicate-pair-v2",
+      "machineAssessment": "machine_proposal_only",
+      "humanStatus": "pending",
+      "originalPage": null,
+      "addendumPage": null
+    },
+    {
+      "sourceCandidateId": "20000000-0000-4000-8000-000000000012",
+      "targetCandidateId": "20000000-0000-4000-8000-000000000010",
+      "type": "supersedes",
+      "version": "precedence-relationship-v2",
+      "machineAssessment": "machine_proposal_only",
+      "humanStatus": "pending",
+      "originalPage": 4,
+      "addendumPage": 5
+    },
+    {
+      "sourceCandidateId": "20000000-0000-4000-8000-000000000015",
+      "targetCandidateId": "20000000-0000-4000-8000-000000000016",
+      "type": "parent_child",
+      "version": "duplicate-pair-v2",
+      "machineAssessment": "machine_proposal_only",
+      "humanStatus": "pending",
+      "originalPage": null,
+      "addendumPage": null
+    }
+  ],
+  "gates": {
+    "projectExact": true,
+    "scopeExact": true,
+    "exact24CandidateLinkage": true,
+    "completeRunInputBinding": true,
+    "runtimeMetadataExact": true,
+    "runAndJobCompleted": true,
+    "all24ExpectedResultsMatch": true,
+    "everyExpectedPageRepresented": true,
+    "exactEvidenceAndPagesValid": true,
+    "factsV4ForAllCandidates": true,
+    "all40PassesSucceeded": true,
+    "firstPassSchemaAdherence": true,
+    "zeroRepairRetryIncompleteRefusalTimeout": true,
+    "maxTwoContexts": true,
+    "machineOnlyAndReviewPending": true,
+    "expectedDuplicatePairsPresent": true,
+    "forbiddenMergePairsAbsent": true,
+    "parentChildPersisted": true,
+    "explicitSupersessionPersisted": true,
+    "auditEventPersisted": true,
+    "providerLedgerReconciled": true,
+    "budgetsRespected": true
+  },
+  "usage": {
+    "calls": 40,
+    "inputTokens": 89863,
+    "outputTokens": 5575,
+    "reasoningTokens": 350,
+    "cachedTokens": 20736,
+    "latencyMs": 97669,
+    "modelCallCostUsd": 0.523253,
+    "ledgerRows": 40,
+    "ledgerCostUsd": 0.523253,
+    "phase4SpendUsd": 12.100797,
+    "remediationSpendUsd": 9.28319,
+    "cumulativeApiSpendUsd": 12.509338
+  }
+}
