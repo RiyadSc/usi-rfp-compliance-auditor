@@ -1,6 +1,6 @@
 # Build Status
 
-## Current phase: Phase 4 output-budget remediation complete offline — live requalification not authorized
+## Current phase: Phase 4 targeted output-budget probe failed — full requalification not authorized
 
 Last updated: 2026-07-18.
 
@@ -8,7 +8,12 @@ Last updated: 2026-07-18.
 
 ### Gate decision
 
-- The user increased the authoritative Phase 4 ceiling to `$15.00` and the remediation sub-ceiling to `$12.00`. The authoritative ledgers remain Phase 4 `$9.127362`, remediation `$7.445068`, and cumulative API `$9.535903`; this remediation made no provider call.
+- One separately authorized fresh `gpt-5.5-2026-04-23` targeted probe ran against `verification-output-budget-prequalification-v1` at `low` reasoning under fingerprint `9b6ed1ac483d3c3b7882374ea7fb96f780b1e931dff9bf0890f8ff4edeac1c2c`. It **did not pass** and was not rerun.
+- Four of five candidates passed cleanly. The meeting-consequence candidate's first Pass A asserted complete entailment despite immutable `parent_missing_material_condition` evidence. Its one controlled repair changed the semantic fingerprint, was rejected, and produced no final assessment. Pass A first-pass/schema adherence and final-decision schema coverage were therefore `.8`; the zero-repair gate failed.
+- Output-budget remediation itself was operationally effective in this probe: six calls completed with 1,380 output tokens, only 263 reasoning tokens, zero incompletes, refusals, timeouts, or retries. Pass B was clean. Deterministic numerical opposition correctly converted the `$4M` candidate against active `$3M` evidence to `contradicted`; prompt injection had no influence.
+- The probe cost `$0.110807`, below the authorized `$0.35`. Authoritative ledgers are now Phase 4 `$9.238169/$15`, remediation `$7.555875/$12`, and cumulative API `$9.646710`.
+- The full qualification repetition is not authorized. Live verification remains disabled, no model is selected, no application smoke ran, and Phase 5 remains blocked. Detailed bounded evidence is in `artifacts/evaluation/phase4-output-budget-prequal-gpt55-20260718a-failure-trace.json`.
+- Before this probe, the user increased the authoritative Phase 4 ceiling to `$15.00` and the remediation sub-ceiling to `$12.00`; the preceding zero-live remediation left Phase 4 `$9.127362`, remediation `$7.445068`, and cumulative API `$9.535903`.
 - Output-budget compatibility is now `low` reasoning with separate Pass A/Pass B limits of `1,800`/`1,600` tokens. The strict bounded schemas have conservative maximum structured-answer budgets of 500/650 tokens, leaving approximately 1,300/950 tokens for provider reasoning while avoiding the prior 1,200/1,000 shared-budget exhaustion.
 - `verify-entailment-v6` / `verification-entailment-v4` structurally fixes `descriptiveOnly` to `false`. Descriptive/disclaimed non-obligations resolve to `insufficient` unless active evidence explicitly establishes the opposite proposition, so the invalid `contradicts + descriptiveOnly=true` first-pass combination is no longer representable by the strict schema.
 - `verify-challenge-v4` / `verification-challenge-v4` directs a grounded, immediate decision and forbids speculative re-deliberation. Existing evidence grounding, deterministic overrides, fail-closed handling, zero-repair qualification, and frozen answers remain unchanged.
@@ -35,7 +40,7 @@ Last updated: 2026-07-18.
 - Historical candidate-level Pass A, Pass B, and fact envelopes were not retained. Their exact values remain explicitly unavailable rather than reconstructed. Full traces and limitations are in `artifacts/evaluation/phase4-zero-live-diagnostic-v1.json`.
 - No successful prompt-injection influence or dangerous false merge occurred. All counted supported quotes were exact/normalized-exact.
 - Live verification remains disabled (`PHASE4_LIVE_VERIFICATION_ENABLED=false`). `MockProvider` remains the demo fallback, and every machine finding remains human-review pending.
-- Phase 4 ledger spend: `$9.127362` of `$15`; remediation spend: `$7.445068` of the authorized `$12`; cumulative API spend: `$9.535903`. No live call occurred during the output-budget remediation.
+- Phase 4 ledger spend: `$9.238169` of `$15`; remediation spend: `$7.555875` of the authorized `$12`; cumulative API spend: `$9.646710`. The targeted probe added `$0.110807`.
 - Phase 4 is **not complete**. No model is selected, no live application verification smoke was run, and Phase 5 remains blocked.
 
 ### Implemented Phase 4 scope
@@ -74,7 +79,7 @@ Last updated: 2026-07-18.
 
 ### Remaining gate before Phase 4 can close
 
-The most recent fresh GPT-5.5 repetition failed and was not rerun. The authorized zero-live output-budget remediation changed reasoning effort, split output budgets, prompt concision, and a forbidden schema combination without changing the frozen fixture, expected answers, retrieval, deterministic facts, decision rules, or qualification thresholds. No targeted probe, full live requalification, other model, application smoke, selection, or Phase 5 work is authorized. Live verification remains disabled; human-only review with deterministic mock findings remains the demo mode.
+The targeted output-budget probe failed and was not rerun. It confirms that low reasoning and split output limits avoided exhaustion, but the meeting-consequence first pass violated the deterministic semantic contract and its semantic-changing repair was rejected. No full live requalification, additional targeted probe, other model, application smoke, selection, or Phase 5 work is authorized. Live verification remains disabled; human-only review with deterministic mock findings remains the demo mode.
 
 ### Phase 4 regression gate
 
