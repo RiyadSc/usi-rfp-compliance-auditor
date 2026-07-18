@@ -1,6 +1,6 @@
 # Build Status
 
-## Current phase: Phase 4 production path aligned — live smoke reauthorization pending
+## Current phase: Phase 4 complete synthetic scope provisioned — live smoke reauthorization pending
 
 Last updated: 2026-07-18.
 
@@ -8,6 +8,9 @@ Last updated: 2026-07-18.
 
 ### Gate decision
 
+- Exactly one complete immutable scope now binds the source-controlled `verification-cases-v2` workspace, synthetic identity, 17-page PDF/document set, analysis run, all 24 frozen candidates, expected-answer mapping, candidate/document/answer hashes, and approved compatibility fingerprint. One-candidate test scopes remain immutable legacy records and cannot pass the complete-scope harness.
+- Provisioning is repository-owned and idempotent. Migration `20260718000016_phase4_complete_synthetic_scope` adds complete-scope/hash constraints while preserving legacy rows; `scripts/provision-phase4-synthetic-scope.mts` verifies project `uxmxkdjschbekkbnweby`, generates and uploads the deterministic synthetic PDF, validates every row/hash, and inserts the marker last. A second run returned the identical scope without writes or spend.
+- The smoke harness dry run accepted only scope `40000000-0000-4000-8000-000000000001`, reached `final_provider_access_boundary`, and stopped with `providerConstructed=false` and `providerCalled=false`. No OpenAI call or spend occurred; live verification remains disabled.
 - Zero-live production alignment is complete. The worker now uses the exact approved GPT-5.5/low configuration with 2 contexts, 1,800/1,600/600 limits, 90-second timeout, and fingerprint `c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b`; any model or material configuration drift fails before provider construction.
 - The fingerprint persists on `analysis_runs`, `verification_runs`, and `model_calls`. An immutable, RLS-enabled, service-only `phase4_synthetic_smoke_scopes` marker binds exact workspace, user, documents, analysis run, candidates, fixture, hash, and fingerprint. The dedicated harness has no arbitrary workspace or fallback path and sets its process-local live flag only after every preflight passes.
 - Offline gates pass: 166 unit, 56 Supabase integration, 17 mock Playwright, perfect 24-candidate deterministic evaluation, lint, formatting, type-check, production build, secret scan, and invariant checklist. No provider call occurred.
@@ -87,6 +90,7 @@ Last updated: 2026-07-18.
 | `20260717000013_phase4_candidate_verification_v3` | Deterministic fact envelopes, Pass A/Pass B intermediate state, challenge status, versioned final-decision metadata, and relationship evidence hardening                                                                                         |
 | `20260717000014_phase4_incomplete_reason`         | Observable normalized provider incomplete reason on model-call records                                                                                                                                                                           |
 | `20260718000015_phase4_production_alignment`      | Qualified compatibility fingerprints on analysis/verification/model-call records; immutable service-only synthetic smoke scopes; workspace/identity/document/candidate validation                                                                |
+| `20260718000016_phase4_complete_synthetic_scope`  | Complete-scope version, document-set and expected-answer hashes, exact 24-candidate/one-document constraints, and legacy-scope exclusion                                                                                                         |
 
 ### Phase 4 invariant check
 
@@ -109,8 +113,8 @@ The selected verification configuration passed three fresh full repetitions and 
 ### Phase 4 regression gate
 
 - Lint, formatting verification, type-check, production Next.js build, and secret scan: passed on the production-alignment state.
-- Unit: 166 passed, including 28 production-fingerprint and synthetic-preflight cases.
-- Integration: 56 passed against the confirmed Supabase project, including exact worker limits, fingerprint persistence, immutable service-only synthetic scopes, ownership, and cross-workspace rejection.
+- Unit: 178 passed, including complete 24-candidate, document-hash, expected-answer-hash, exact/extra/missing scope, and provider-boundary controls.
+- Integration: 57 passed against the confirmed Supabase project, including exact complete-scope binding, RLS no-op denial, privileged append-only enforcement, worker limits, fingerprint persistence, ownership, and cross-workspace rejection.
 - Mock Playwright: 17 passed with `PHASE4_LIVE_VERIFICATION_ENABLED=false` and `E2E_LIVE_OPENAI=0`; no live model calls occurred.
 - Secret scan: passed across tracked files and the client bundle.
 - Targeted five-candidate mock probe: 5/5 candidates and six calls passed with clean first-pass Pass A/Pass B, zero repairs, exact expected statuses, and no injection influence.

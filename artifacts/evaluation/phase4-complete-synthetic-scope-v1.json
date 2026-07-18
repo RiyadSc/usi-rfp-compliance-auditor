@@ -1,0 +1,53 @@
+{
+  "reportVersion": "phase4-complete-synthetic-scope-v1",
+  "generatedAt": "2026-07-18",
+  "projectRef": "uxmxkdjschbekkbnweby",
+  "scopeId": "40000000-0000-4000-8000-000000000001",
+  "scopeVersion": "phase4-complete-scope-v1",
+  "workspaceId": "10000000-0000-4000-8000-000000000001",
+  "syntheticIdentityId": "922727a8-727b-4b9e-a0ff-6e7f7f43d82c",
+  "analysisRunId": "10000000-0000-4000-8000-000000000003",
+  "documentIds": ["10000000-0000-4000-8000-000000000002"],
+  "candidateCount": 24,
+  "fixtureVersion": "verification-cases-v2",
+  "candidateSetHash": "531c03afbabe79adb9a490dc0f7e9657ff0f85013bbf0aabe64b505a94a8ac6b",
+  "documentSetHash": "46127bbb348db9374370921876e9adf0a1ca98971e970367e5e142188b04a44b",
+  "expectedAnswersHash": "c67a347cf0c9dccabb8cb50336bd00f72b66bda9ee602e51fd98256cfbe3ba0a",
+  "compatibilityFingerprint": "c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b",
+  "syntheticMarker": "phase4-synthetic-test-only",
+  "provisioning": {
+    "migration": "20260718000016_phase4_complete_synthetic_scope",
+    "script": "scripts/provision-phase4-synthetic-scope.mts",
+    "idempotentRerun": true,
+    "existingLegacyScopesReused": false,
+    "existingLegacyScopesMutated": false
+  },
+  "dryRun": {
+    "passed": true,
+    "stoppedAt": "final_provider_access_boundary",
+    "providerConstructed": false,
+    "providerCalled": false
+  },
+  "regressions": {
+    "unit": { "passed": 178, "failed": 0 },
+    "integration": { "passed": 57, "failed": 0 },
+    "mockPlaywright": { "passed": 17, "failed": 0 },
+    "deterministicFixture": "passed_all_metrics_1.0",
+    "lint": "passed",
+    "format": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "secretScan": "passed",
+    "invariantChecklist": "passed_live_smoke_still_pending"
+  },
+  "spend": {
+    "providerCalls": 0,
+    "additionalUsd": 0,
+    "phase4Usd": 10.965484,
+    "phase4CeilingUsd": 15,
+    "remediationUsd": 9.28319,
+    "remediationCeilingUsd": 12,
+    "cumulativeApiUsd": 11.374025,
+    "proposedSingleSmokeMaximumUsd": 0.75
+  }
+}
