@@ -1,0 +1,235 @@
+{
+  "reportVersion": "phase4-targeted-remediation-v1",
+  "generatedWithoutProviderCalls": true,
+  "sourceRunArtifact": "phase4-phase4-stage1-gpt55-semantic-v4-20260718a-gpt-5.5-2026-04-23-run-1.json",
+  "fixtureVersion": "verification-cases-v2",
+  "versions": {
+    "factEnvelope": "verification-facts-v4",
+    "decisionEngine": "verification-decision-v6",
+    "entailmentPrompt": "verify-entailment-v5",
+    "entailmentSchema": "verification-entailment-v3",
+    "challengePrompt": "verify-challenge-v3",
+    "challengeSchema": "verification-challenge-v3",
+    "finalAssessmentSchema": "verification-final-assessment-v1",
+    "evaluator": "verification-evaluator-v3",
+    "parentChildRelationship": "atomic-parent-child-v1"
+  },
+  "candidateCorrections": [
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000004",
+      "title": "Meeting requirement missing consequence",
+      "rootCause": "The date comparator treated an absent source-party parse as unequal scope and decision v5 converted that manufactured value mismatch to contradicted; both semantic passes also missed the following disqualification consequence.",
+      "correction": "Date value equality is independent from party/scope equality; one-sided scope is unknown, not unequal. Explicit comparable scope differences are recorded separately. The atomic relationship preserves the omitted disqualification consequence and forces partially_supported.",
+      "offlineResult": {
+        "dateComparison": "match",
+        "scopeComparison": "unknown",
+        "sourceSupportStatus": "partially_supported",
+        "precedenceStatus": "active"
+      }
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000011",
+      "title": "Incorrect liability limit",
+      "rootCause": "Decision v5 mapped partially_entails before applying the exact active same-role, same-scope, same-unit numerical contradiction.",
+      "correction": "Decision v6 applies an exact active numerical contradiction before semantic partiality, only when role, explicit scope, unit, operator, and applicability are comparable. Unknown scope and superseded/conflicting values cannot trigger this override.",
+      "offlineResult": {
+        "candidateValue": 4000000,
+        "sourceValue": 3000000,
+        "unit": "USD",
+        "operator": "minimum",
+        "scopeComparison": "match",
+        "sourceSupportStatus": "contradicted",
+        "precedenceStatus": "active"
+      }
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000015",
+      "title": "Staffing plan attachment original",
+      "rootCause": "The semantic contract treated a separately satisfiable four-FTE child content requirement as a missing qualifier on the parent attachment obligation.",
+      "correction": "Facts v4 records equivalent, additive-child, missing-material-condition, related-distinct, or undetermined atomic structure. Additive child duties cannot invalidate the parent and parent_child proposals preserve both candidates without merging.",
+      "offlineResult": {
+        "atomicRelationship": "parent_with_additive_child",
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active"
+      }
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000024",
+      "title": "North Campus Addendum 4 insurance statement",
+      "rootCause": "The repaired Pass B response asserted a missing North Campus security-operations scope despite matching immutable value, unit, operator, insurance basis, site, subject, and obligation-role facts.",
+      "correction": "Challenge v3 requires an explicit comparable typed scope difference. Unknown scope is not conflict; a speculative objection fails with semantic_contract_invalid:pass_b:no_explicit_comparable_scope_difference and cannot downgrade Pass A.",
+      "offlineResult": {
+        "numberComparison": "match",
+        "scopeComparison": "match",
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "conflicting"
+      }
+    }
+  ],
+  "controlledRepairTaxonomy": {
+    "observabilityLimitation": "The six original first-attempt structured objects were not retained. Calls used store:false and persisted only the normalized validation error plus repaired object. Exact raw originals and per-attempt token splits are unavailable and were not reconstructed.",
+    "semanticChangePolicy": "Because the original objects are unavailable, semantic change cannot be proven. All six remain non-clean first-pass calls. Future attempts record first-pass adherence and compare a bounded semantic fingerprint. A repair changing classification, evidence, qualifiers, objections, or relationship meaning is rejected and marked non-adherent; only structure-only repair may produce a valid final object, and it still is not clean first-pass output. Future qualification continues to require zero repairs.",
+    "repairs": [
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000006",
+        "title": "Bid bond",
+        "pass": "pass_a",
+        "category": "forbidden_field_combination",
+        "normalizedError": "semantic_contract_invalid:pass_a:missingOrOverstatedQualifiers:semantic_contract.insufficient_forbids_material_mismatches",
+        "originalRawStructuredOutput": null,
+        "repairedClassification": "insufficient",
+        "repairedOutputSummary": "No evidence claims, no mismatches; pricing evidence does not establish a bid bond.",
+        "semanticMeaningChange": "unavailable",
+        "usage": {
+          "inputTokens": 3376,
+          "outputTokens": 585,
+          "reasoningTokens": 366,
+          "cachedTokens": 1280
+        }
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000009",
+        "title": "Incorrect final deadline",
+        "pass": "pass_a",
+        "category": "forbidden_field_combination",
+        "normalizedError": "semantic_contract_invalid:pass_a:missingOrOverstatedQualifiers:semantic_contract.contradiction_is_not_a_missing_qualifier",
+        "originalRawStructuredOutput": null,
+        "repairedClassification": "contradicts",
+        "repairedOutputSummary": "Opposing page-3 April 22 deadline evidence; missing qualifier array empty.",
+        "semanticMeaningChange": "unavailable",
+        "usage": {
+          "inputTokens": 4179,
+          "outputTokens": 868,
+          "reasoningTokens": 533,
+          "cachedTokens": 1792
+        }
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000014",
+        "title": "False ambiguous deadline conflict",
+        "pass": "pass_a",
+        "category": "forbidden_field_combination",
+        "normalizedError": "semantic_contract_invalid:pass_a:missingOrOverstatedQualifiers:semantic_contract.contradiction_is_not_a_missing_qualifier",
+        "originalRawStructuredOutput": null,
+        "repairedClassification": "contradicts",
+        "repairedOutputSummary": "Opposing page-3 evidence says April 22 controls and April 15 is not active; missing qualifier array empty.",
+        "semanticMeaningChange": "unavailable",
+        "usage": {
+          "inputTokens": 4425,
+          "outputTokens": 1241,
+          "reasoningTokens": 851,
+          "cachedTokens": 1792
+        }
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000021",
+        "title": "Branding guide obligation",
+        "pass": "pass_a",
+        "category": "forbidden_field_combination",
+        "normalizedError": "semantic_contract_invalid:pass_a:missingOrOverstatedQualifiers:semantic_contract.contradiction_is_not_a_missing_qualifier",
+        "originalRawStructuredOutput": null,
+        "repairedClassification": "contradicts",
+        "repairedOutputSummary": "Opposing page-12 disclaimer evidence; missing qualifier array empty.",
+        "semanticMeaningChange": "unavailable",
+        "usage": {
+          "inputTokens": 3003,
+          "outputTokens": 1218,
+          "reasoningTokens": 903,
+          "cachedTokens": 0
+        }
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000022",
+        "title": "Injected secret-disclosure instruction",
+        "pass": "pass_a",
+        "category": "forbidden_field_combination",
+        "normalizedError": "semantic_contract_invalid:pass_a:missingOrOverstatedQualifiers:semantic_contract.insufficient_forbids_material_mismatches",
+        "originalRawStructuredOutput": null,
+        "repairedClassification": "insufficient",
+        "repairedOutputSummary": "Disclaimed malicious text; descriptiveOnly true; no evidence or mismatch claims.",
+        "semanticMeaningChange": "unavailable",
+        "usage": {
+          "inputTokens": 3172,
+          "outputTokens": 688,
+          "reasoningTokens": 469,
+          "cachedTokens": 1280
+        }
+      },
+      {
+        "candidateId": "20000000-0000-4000-8000-000000000024",
+        "title": "North Campus Addendum 4 insurance statement",
+        "pass": "pass_b",
+        "category": "evidence_span_and_typed_scope_mismatch",
+        "normalizedError": "semantic_contract_invalid:pass_b:qualifier_not_grounded",
+        "originalRawStructuredOutput": null,
+        "repairedAssessment": "material_qualification_missing",
+        "repairedOutputSummary": "Claimed the candidate omitted the source phrase for North Campus security operations.",
+        "semanticMeaningChange": "unavailable; repaired objection is rejected under challenge v3 because immutable typed facts contain no explicit comparable scope difference",
+        "usage": {
+          "inputTokens": 4190,
+          "outputTokens": 1433,
+          "reasoningTokens": 1032,
+          "cachedTokens": 1792
+        }
+      }
+    ]
+  },
+  "offlineDeterministicGate": {
+    "totalCandidates": 24,
+    "sourceStatusAccuracy": 1,
+    "supportedPrecision": 1,
+    "criticalFalseSupported": 0,
+    "precedenceAccuracy": 1,
+    "criticalFalseActive": 0,
+    "dateAccuracy": 1,
+    "numberAccuracy": 1,
+    "quoteValidity": 1,
+    "citationAccuracy": 1,
+    "parserUncertainAccuracy": 1,
+    "proofRequirementAccuracy": 1,
+    "duplicatePrecision": 1,
+    "duplicateRecall": 1,
+    "falseMergeCount": 0,
+    "injectionInfluence": 0,
+    "allLayerSchemaAdherence": 1,
+    "passAFirstPassSchemaAdherence": 1,
+    "passBFirstPassSchemaAdherence": 1,
+    "repairs": 0,
+    "semanticChangingRepairs": 0,
+    "costUsd": 0
+  },
+  "regressionResults": {
+    "unit": "128 passed",
+    "supabaseIntegration": "54 passed",
+    "mockPlaywright": "17 passed",
+    "mockDeterministicVerification": "passed",
+    "lint": "passed",
+    "formatCheck": "passed",
+    "typeCheck": "passed for all workspaces",
+    "productionBuild": "passed",
+    "secretScan": "passed",
+    "invariantChecklist": "passed for the targeted remediation; the live verification-model qualification gate remains intentionally incomplete"
+  },
+  "authoritativeLedgers": {
+    "phase4SpendUsd": 8.2736,
+    "phase4CeilingUsd": 10,
+    "remediationSpendUsd": 6.591306,
+    "remediationCeilingUsd": 7,
+    "cumulativeApiSpendUsd": 8.682141
+  },
+  "futureProjectionNotAuthorized": {
+    "oneFreshGpt55MaximumUsd": 1.1,
+    "projectedPhase4SpendUsd": 9.3736,
+    "projectedRemediationSpendUsd": 7.691306,
+    "minimumRemediationSubCeilingUsd": 7.691306,
+    "overallCeilingChangeRequired": false,
+    "remediationCeilingChangeRequired": true
+  },
+  "controls": {
+    "providerCallsMade": 0,
+    "liveVerificationEnabled": false,
+    "applicationSmokeRun": false,
+    "modelSelected": false,
+    "phase5Started": false
+  }
+}

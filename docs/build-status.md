@@ -1,6 +1,6 @@
 # Build Status
 
-## Current phase: Phase 4 GPT-5.5 semantic requalification failed — no rerun authorized
+## Current phase: Phase 4 targeted remediation complete offline — live requalification not authorized
 
 Last updated: 2026-07-18.
 
@@ -22,6 +22,9 @@ Last updated: 2026-07-18.
 - One authorized fresh `gpt-5.5-2026-04-23` `medium` repetition then used the exact v4/v2 semantic contracts and unchanged frozen v2/v3/v5/v2/v1 compatibility fingerprint. It **did not qualify**: source-status accuracy was `.833333`, and five Pass A calls plus one Pass B call required controlled repair. It was not rerun.
 - Four candidates missed source status: meeting consequence (`partially_supported` expected, `contradicted` actual), incorrect liability limit (`contradicted` expected, `partially_supported` actual), staffing-plan parent attachment (`supported` expected, `partially_supported` actual), and Addendum 4 insurance statement (`supported` expected, `partially_supported` actual). The bounded trace and mixed semantic/deterministic causes are in `artifacts/evaluation/phase4-stage1-gpt55-semantic-v4-20260718a-failure-trace.json`.
 - Safety and deterministic gates held: zero critical false-supported/false-active, zero injection influence, precedence/date/number/quote/citation/parser/proof/duplicate accuracy `1.0`, zero false merges, zero incomplete/refused/timed-out results, and every post-repair schema layer valid. Six observable repairs nonetheless fail the clean structured-output qualification requirement.
+- Zero-live targeted remediation now uses `verification-facts-v4`, `verification-decision-v6`, `verify-entailment-v5` / `verification-entailment-v3`, `verify-challenge-v3` / `verification-challenge-v3`, and `verification-evaluator-v3`. Date equality is independent from unknown party/scope; explicit comparable scope differences remain separately material. Exact active same-role/scope/unit numerical opposition now controls before semantic partiality. Additive parent/child obligations remain separate atomic records, while omitted material consequences force partial support. Speculative Pass B scope objections are rejected and cannot downgrade Pass A.
+- The six historical first-attempt repair objects are not recoverable: `store:false` was used and only normalized validation errors plus repaired objects were retained. Five failures were forbidden Pass A field combinations; the sixth was an ungrounded Pass B evidence/scope objection. They remain non-clean calls and are not reclassified as first-pass schema-adherent. Full taxonomy and token totals are in `artifacts/evaluation/phase4-targeted-remediation-v1.json`.
+- The offline frozen evaluation is 24/24 with source status, supported precision, precedence, date, number, quote, citation, parser, proof, duplicate precision/recall, and every schema layer at `1.0`; zero critical false-supported/false-active, false merges, repairs, incompletes, or injection influence.
 - Historical candidate-level Pass A, Pass B, and fact envelopes were not retained. Their exact values remain explicitly unavailable rather than reconstructed. Full traces and limitations are in `artifacts/evaluation/phase4-zero-live-diagnostic-v1.json`.
 - No successful prompt-injection influence or dangerous false merge occurred. All counted supported quotes were exact/normalized-exact.
 - Live verification remains disabled (`PHASE4_LIVE_VERIFICATION_ENABLED=false`). `MockProvider` remains the demo fallback, and every machine finding remains human-review pending.
@@ -31,7 +34,7 @@ Last updated: 2026-07-18.
 ### Implemented Phase 4 scope
 
 - Independent asynchronous `requirements-verify` worker stage with separate run/job/prompt/schema/model-call/retry/UI states.
-- Candidate-centered bounded retrieval, immutable typed `verification-facts-v3`, separate Pass A/Pass B calls, strict `verification-final-assessment-v1`, deterministic final status, explicit addendum relationships, and conservative pairwise duplicate proposals.
+- Candidate-centered bounded retrieval, immutable typed `verification-facts-v4`, separate Pass A/Pass B calls, strict `verification-final-assessment-v1`, deterministic final status, explicit addendum and atomic parent/child relationships, and conservative pairwise duplicate proposals.
 - Multi-axis model: source support, precedence, proof requirement, and append-only human review decisions remain distinct.
 - Immutable extraction candidate proposals; append-only/versioned machine findings; machine-only status cannot become compliant/approved/ready.
 - Workspace/run/candidate-scoped retrieval including cited/neighbor pages, lexical hybrid retrieval, exact keywords, addenda/amendments, conflicts, dates, numbers, definitions, and repeats; every supplied page is recorded.
@@ -64,16 +67,16 @@ Last updated: 2026-07-18.
 
 ### Remaining gate before Phase 4 can close
 
-The fresh GPT-5.5 semantic-contract repetition failed, so it cannot unlock additional repetitions or model selection. Per authorization, it was not rerun, no other model was called, and no fixture, expected answer, prompt, schema, retrieval, fact, decision, or evaluator change was made after the result. Live application verification and its smoke remain disabled; human-only review with deterministic mock findings remains the demo mode.
+The fresh GPT-5.5 semantic-contract repetition failed and was not rerun. The authorized zero-live remediation corrected only the demonstrated provider-neutral fact, rule-order, parent/child, challenge-validation, prompt/schema, and evaluator defects. No live requalification, other model, application smoke, selection, or Phase 5 work is authorized. Live verification remains disabled; human-only review with deterministic mock findings remains the demo mode.
 
 ### Phase 4 regression gate
 
 - Lint, formatting verification, and type-check: passed on the semantic-remediation state. The production Next.js build also passed with process binding permitted.
-- Unit: 107 passed, including 21 semantic-contract fixtures, 18 typed date/number fixtures, and 5 evaluator-integrity tests.
-- Integration: 53 passed against the configured Supabase project, including semantic-contract rejection plus Phase 4 RLS, linkage, immutability, idempotency, audit, failure paths, budget cancellation, and isolation.
+- Unit: 128 passed, including 20 targeted-remediation, 21 semantic-contract, 19 typed date/number, and 5 evaluator-integrity tests.
+- Integration: 54 passed against the configured Supabase project, including semantic-contract rejection, atomic parent/child persistence, plus Phase 4 RLS, linkage, immutability, idempotency, audit, failure paths, budget cancellation, and isolation.
 - Mock Playwright: 17 passed with `PHASE4_LIVE_VERIFICATION_ENABLED=false` and `E2E_LIVE_OPENAI=0`; no live model calls occurred.
 - Secret scan: passed across tracked files and the client bundle.
-- Deterministic semantic/facts/decision-v5/evaluator-v2 fixture: Pass A and Pass B metrics, source status, precedence, date, number, quote, citation, proof, duplicate, and every schema layer are 1.0; zero critical false-supported, false-active, false merges, incompletes, repairs, or injection influence. It remains a fallback/regression result, not a live qualification.
+- Deterministic semantic/facts-v4/decision-v6/evaluator-v3 fixture: Pass A and Pass B metrics, source status, precedence, date, number, quote, citation, proof, duplicate, and every schema layer are 1.0; zero critical false-supported, false-active, false merges, incompletes, repairs, or injection influence. It remains a fallback/regression result, not a live qualification.
 - Invariant checklist above: passed except the explicitly failed live verification-model gate.
 
 ## Phase 3 — Candidate extraction, retrieval, providers (COMPLETE)
