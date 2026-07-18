@@ -22,6 +22,8 @@ import {
 import type { MaterialScope } from './deterministic-verification';
 import type { AtomicRequirementRelationship } from './deterministic-verification';
 
+export const PARENT_CHILD_RELATIONSHIP_VERSION = 'atomic-parent-child-v1' as const;
+
 export type DeterministicComparison = {
   kind: 'date' | 'number';
   candidateOriginal: string;
@@ -769,7 +771,7 @@ export type DeterministicParentChildRelationship = {
   targetCandidateId: string;
   relationshipType: 'parent_child';
   deterministicMetadata: {
-    version: 'atomic-parent-child-v1';
+    version: typeof PARENT_CHILD_RELATIONSHIP_VERSION;
     sharedAnchor: string;
     preservesAtomicRecords: true;
   };
@@ -808,7 +810,7 @@ export function findDeterministicParentChildRelationships(
         targetCandidateId: child.id,
         relationshipType: 'parent_child',
         deterministicMetadata: {
-          version: 'atomic-parent-child-v1',
+          version: PARENT_CHILD_RELATIONSHIP_VERSION,
           sharedAnchor,
           preservesAtomicRecords: true,
         },

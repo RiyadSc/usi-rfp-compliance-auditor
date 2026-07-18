@@ -26,7 +26,10 @@ import {
 } from './verification-metrics.mjs';
 import {
   buildVerificationEvaluationCompatibility,
+  fingerprintVerificationEvaluationCompatibility,
   isResumableRunCompatible,
+  VERIFICATION_EVALUATION_OUTPUT_LIMITS,
+  VERIFICATION_EVALUATION_TIMEOUT_MS,
 } from './verification-evaluator-compatibility.mjs';
 
 loadEnv({ path: resolve('.env.local'), quiet: true });
@@ -82,10 +85,11 @@ if (freshRun && (!runId || !/^[a-z0-9][a-z0-9-]{0,79}$/i.test(runId)))
 if (freshRun && process.env.PHASE4_RESUME_COMPLETED_RUNS === '1')
   throw new Error('A fresh run cannot resume completed artifacts');
 const resumeCompletedRuns = !freshRun && process.env.PHASE4_RESUME_COMPLETED_RUNS === '1';
-const outputLimits = { entailment: 1200, challenge: 1000, duplicate: 600 };
+const outputLimits = VERIFICATION_EVALUATION_OUTPUT_LIMITS;
 const artifactDir = resolve('artifacts/evaluation');
 await mkdir(artifactDir, { recursive: true });
 const compatibility = buildVerificationEvaluationCompatibility();
+const compatibilityFingerprint = fingerprintVerificationEvaluationCompatibility(compatibility);
 const runArtifactPath = (model, repetition) =>
   resolve(
     artifactDir,
@@ -150,9 +154,9 @@ const totalRemediationCeilingUsd = Number(process.env.PHASE4_REMEDIATION_SPEND_C
 if (
   !Number.isFinite(totalRemediationCeilingUsd) ||
   totalRemediationCeilingUsd <= 0 ||
-  totalRemediationCeilingUsd > 7
+  totalRemediationCeilingUsd > 7.75
 )
-  throw new Error('PHASE4_REMEDIATION_SPEND_CEILING_USD must be present and no greater than 7');
+  throw new Error('PHASE4_REMEDIATION_SPEND_CEILING_USD must be present and no greater than 7.75');
 const remainingRemediationCeilingUsd = Math.min(
   Math.max(0, totalRemediationCeilingUsd - priorRemediationSpend),
   Math.max(0, ceiling - phase4Spend),
@@ -174,6 +178,8 @@ console.log(
     runId: runId ?? null,
     maxContextsPerCandidate: 2,
     outputLimits,
+    compatibility,
+    compatibilityFingerprint,
   }),
 );
 if (projectedMaximumUsd > remainingRemediationCeilingUsd + 1e-9)
@@ -268,6 +274,9 @@ const passesAuthorizedSingleRunGate = (metrics) =>
   metrics.final.schemaLayers.duplicateClassifier === 1 &&
   metrics.final.schemaLayers.decisionEngine === 1 &&
   metrics.final.schemaLayers.evaluationArtifact === 1 &&
+  metrics.final.firstPassSchemaLayers.passA === 1 &&
+  metrics.final.firstPassSchemaLayers.passB === 1 &&
+  metrics.final.firstPassSchemaLayers.duplicateClassifier === 1 &&
   metrics.final.refusalIncompleteCount === 0 &&
   metrics.totals.repairs === 0;
 for (const model of models) {
@@ -284,7 +293,7 @@ for (const model of models) {
       apiKey,
       verifyModel: model,
       verifyReasoningEffort: 'medium',
-      timeoutMs: 90_000,
+      timeoutMs: VERIFICATION_EVALUATION_TIMEOUT_MS,
     });
     let budgetBlocked = false;
     const evaluation = await runVerificationEvaluation(provider, {
@@ -369,6 +378,7 @@ const artifact = {
   finalAssessmentSchemaVersion: FINAL_ASSESSMENT_SCHEMA_VERSION,
   evaluatorVersion: VERIFICATION_EVALUATOR_VERSION,
   compatibility,
+  compatibilityFingerprint,
   reasoning: 'medium',
   repetitions,
   maxContextsPerCandidate: 2,

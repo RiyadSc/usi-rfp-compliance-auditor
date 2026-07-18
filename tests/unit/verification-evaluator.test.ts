@@ -12,6 +12,7 @@ import {
 // @ts-expect-error Compatibility is tested at the same JavaScript boundary used by the live CLI.
 import {
   buildVerificationEvaluationCompatibility,
+  fingerprintVerificationEvaluationCompatibility,
   isResumableRunCompatible,
 } from '../../scripts/verification-evaluator-compatibility.mjs';
 
@@ -32,6 +33,11 @@ describe('verification evaluator v3 integrity', () => {
       numberAccuracy: 1,
       schemaAdherence: 1,
       allLayerSchemaAdherence: 1,
+      firstPassSchemaLayers: {
+        passA: 1,
+        passB: 1,
+        duplicateClassifier: 1,
+      },
     });
   });
 
@@ -70,6 +76,15 @@ describe('verification evaluator v3 integrity', () => {
 
   it('rejects resumed artifacts from incompatible evaluator semantics', () => {
     const compatibility = buildVerificationEvaluationCompatibility();
+    expect(compatibility).toMatchObject({
+      parentChildRelationshipVersion: 'atomic-parent-child-v1',
+      reasoning: 'medium',
+      maxContextsPerCandidate: 2,
+      outputLimits: { entailment: 1200, challenge: 1000, duplicate: 600 },
+      timeoutMs: 90_000,
+      providerContract: { api: 'responses', store: false, tools: false, maxRepairAttempts: 1 },
+    });
+    expect(fingerprintVerificationEvaluationCompatibility(compatibility)).toMatch(/^[a-f0-9]{64}$/);
     expect(
       isResumableRunCompatible({ metrics: { totals: { calls: 1 } }, compatibility }, compatibility),
     ).toBe(true);

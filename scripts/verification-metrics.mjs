@@ -362,6 +362,11 @@ export function scoreVerificationPipelineRun(evaluation) {
         decisionEngine: decisionSchemaAdherence,
         evaluationArtifact: evaluationArtifactSchemaAdherence,
       },
+      firstPassSchemaLayers: {
+        passA: passATotals.firstPassSchemaAdherence,
+        passB: passBTotals.firstPassSchemaAdherence,
+        duplicateClassifier: duplicateCalls.firstPassSchemaAdherence,
+      },
       refusalIncompleteCount:
         passATotals.refusalIncomplete +
         passBTotals.refusalIncomplete +
