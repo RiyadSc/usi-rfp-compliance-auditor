@@ -262,3 +262,15 @@ The probe passed. Electronic submission was `supported/active`; meeting conseque
 Usage was 14,371 input, 896 output, zero reasoning, and zero cached tokens across six calls; summed latency was 16.367 seconds. Actual cost was `$0.098735`. Post-run ledgers are Phase 4 `$9.336904/$15`, remediation `$7.654610/$12`, and cumulative API `$9.745445`.
 
 This targeted subset does not qualify or select the model. A separately authorized fresh full repetition retains a conservative `$1.35` maximum, projecting Phase 4 `$10.686904/$15` and remediation `$9.004610/$12`. No full run, additional probe, other model, application smoke, selection, or Phase 5 work occurred; live verification remains disabled.
+
+## Phase 4 Stage 2 full GPT-5.5 repetition — passed, repeatability pending
+
+Date: 2026-07-18. Pre-call checks confirmed authoritative spend of Phase 4 `$9.336904/$15` and remediation `$7.654610/$12`, a clean worktree, required remediation/probe commits, and exact full compatibility fingerprint `c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b`. The authorized `$1.35` maximum projected `$10.686904` and `$9.004610`, respectively.
+
+Exactly one completely fresh `gpt-5.5-2026-04-23` full repetition ran over all 24 frozen `verification-cases-v2` candidates. It used `low` reasoning, v7/v5 Pass A, v4/v4 Pass B, facts v4, decision v6, evaluator v3, final schema v1, atomic parent/child v1, one candidate per semantic assessment, at most two contexts, Responses, `store:false`, no tools, strict Structured Outputs plus Zod, output limits 1,800/1,600/600, and a 90-second timeout.
+
+The repetition passed every gate. Source-status accuracy, supported precision, precedence/date/number/quote/citation/retrieval/parser/proof accuracy, duplicate precision/recall, Pass A/Pass B/duplicate first-pass adherence, decision schema, and evaluation-artifact schema were all 1.0. All five source-status classes had precision, recall, and F1 of 1.0. There were zero repairs, semantic-changing repairs, retries, incompletes, refusals, timeouts, critical false-supported/false-active findings, false merges, or injection influence.
+
+The run made 40 calls: 24 Pass A, 14 Pass B, and two bounded duplicate-pair classifications. Usage was 89,625 input, 5,676 output, 455 reported reasoning, and zero cached tokens; summed latency was 91.805 seconds. Actual cost was `$0.618405`. Post-run authoritative ledgers are Phase 4 `$9.955309/$15`, remediation `$8.273015/$12`, and cumulative API `$10.363850`.
+
+A single passing full repetition does not establish repeatability or select the model. Two additional identical repetitions retain a conservative combined maximum of `$2.70`, projecting Phase 4 `$12.655309/$15` and remediation `$10.973015/$12`; they fit both ceilings but are not authorized. Live application verification remains disabled, no smoke ran, no model was selected, and Phase 5 remains blocked.
