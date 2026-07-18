@@ -86,6 +86,45 @@ function hasRefusal(response: OpenAI.Responses.Response): boolean {
   return false;
 }
 
+const REPAIR_SEMANTIC_KEYS = new Set([
+  'candidateId',
+  'sourceCandidateId',
+  'targetCandidateId',
+  'classification',
+  'assessment',
+  'relationshipType',
+  'supportingEvidence',
+  'contradictingEvidence',
+  'materialQualifiersPresent',
+  'missingOrOverstatedQualifiers',
+  'parserConcerns',
+  'descriptiveOnly',
+  'objections',
+  'materialDifferences',
+]);
+
+function repairSemanticFingerprint(value: unknown): string | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const source = value as Record<string, unknown>;
+  const canonicalize = (item: unknown): unknown => {
+    if (Array.isArray(item)) return item.map(canonicalize);
+    if (!item || typeof item !== 'object') return item;
+    return Object.fromEntries(
+      Object.entries(item as Record<string, unknown>)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, nested]) => [key, canonicalize(nested)]),
+    );
+  };
+  const semantic = canonicalize(
+    Object.fromEntries(Object.entries(source).filter(([key]) => REPAIR_SEMANTIC_KEYS.has(key))),
+  );
+  return JSON.stringify(semantic);
+}
+
+export function didRepairChangeSemanticMeaning(initial: unknown, repaired: unknown): boolean {
+  return repairSemanticFingerprint(initial) !== repairSemanticFingerprint(repaired);
+}
+
 export class OpenAIProvider implements ModelProvider {
   readonly name = 'openai';
   private readonly client: OpenAI;
@@ -156,15 +195,19 @@ export class OpenAIProvider implements ModelProvider {
       return response;
     };
     const parseResponse = (response: OpenAI.Responses.Response) => {
-      if (response.status === 'incomplete' || hasRefusal(response)) return null;
+      if (response.status === 'incomplete' || hasRefusal(response))
+        return { raw: null, result: null };
       try {
-        return input.parse(JSON.parse(outputTextFromResponse(response)));
+        const raw: unknown = JSON.parse(outputTextFromResponse(response));
+        return { raw, result: input.parse(raw) };
       } catch {
-        return null;
+        return { raw: null, result: null };
       }
     };
     let response = await callWithRetries();
-    let result = parseResponse(response);
+    const firstAttempt = parseResponse(response);
+    let result = firstAttempt.result;
+    let repairedRaw: unknown = null;
     if (!result && response.status !== 'incomplete' && !hasRefusal(response)) {
       repairAttempts = 1;
       const normalizedError = input.validationError?.();
@@ -177,8 +220,14 @@ export class OpenAIProvider implements ModelProvider {
           .filter(Boolean)
           .join(' '),
       );
-      result = parseResponse(response);
+      const repairedAttempt = parseResponse(response);
+      repairedRaw = repairedAttempt.raw;
+      result = repairedAttempt.result;
     }
+    const repairChangedSemanticMeaning = repairAttempts
+      ? didRepairChangeSemanticMeaning(firstAttempt.raw, repairedRaw)
+      : null;
+    if (repairChangedSemanticMeaning) result = null;
     const promptTokens = responses.reduce((sum, item) => sum + (item.usage?.input_tokens ?? 0), 0);
     const completionTokens = responses.reduce(
       (sum, item) => sum + (item.usage?.output_tokens ?? 0),
@@ -214,8 +263,19 @@ export class OpenAIProvider implements ModelProvider {
       retries: retryCount,
       repairAttempts,
       schemaAdherent: Boolean(result),
+      firstPassSchemaAdherent: Boolean(firstAttempt.result),
+      repairChangedSemanticMeaning,
       incompleteReason: response.incomplete_details?.reason ?? null,
-      normalizedError: repairAttempts ? (input.validationError?.() ?? null) : null,
+      normalizedError: repairAttempts
+        ? [
+            input.validationError?.() ?? null,
+            repairChangedSemanticMeaning
+              ? 'semantic_contract_invalid:repair_changed_semantic_meaning'
+              : null,
+          ]
+            .filter(Boolean)
+            .join('|') || null
+        : null,
     };
     if (response.status === 'incomplete') return { ...metadata, result: null, incomplete: true };
     if (hasRefusal(response)) return { ...metadata, result: null, refused: true };
@@ -239,6 +299,7 @@ export class OpenAIProvider implements ModelProvider {
         const validation = validateEntailmentSemanticContract({
           candidate: input.candidate,
           contexts: input.contexts,
+          facts: input.factEnvelope,
           result: value,
         });
         if (!validation.success) {

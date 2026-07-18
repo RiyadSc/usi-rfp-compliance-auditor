@@ -9,6 +9,7 @@ import type { VerificationCandidateInput, VerificationContext } from './provider
 import {
   classifyDuplicateRelationship,
   classifyProofRequirement,
+  classifyAtomicRequirementRelationship,
   compareTypedDateFact,
   compareTypedNumberFact,
   extractTypedDateFacts,
@@ -19,6 +20,7 @@ import {
   validateEvidenceQuote,
 } from './deterministic-verification';
 import type { MaterialScope } from './deterministic-verification';
+import type { AtomicRequirementRelationship } from './deterministic-verification';
 
 export type DeterministicComparison = {
   kind: 'date' | 'number';
@@ -31,6 +33,10 @@ export type DeterministicComparison = {
   semanticRole: string;
   comparisonOperator: string;
   materialScope: MaterialScope;
+  sourceMaterialScope: MaterialScope | null;
+  scopeComparison: 'match' | 'mismatch' | 'unknown';
+  materialScopeDifferences: string[];
+  materialScopeUnknowns: string[];
   reason: string;
 };
 
@@ -44,7 +50,7 @@ export type AmendmentFact = {
 };
 
 export type DeterministicFactEnvelope = {
-  version: 'verification-facts-v3';
+  version: 'verification-facts-v4';
   candidateId: string;
   citedPageExists: boolean;
   candidateQuoteMatch: ReturnType<typeof validateEvidenceQuote>;
@@ -75,6 +81,7 @@ export type DeterministicFactEnvelope = {
   }>;
   deterministicPrecedence: 'active' | 'superseded' | 'conflicting' | 'undetermined';
   descriptiveOrInjectionLanguage: boolean;
+  atomicRelationship: AtomicRequirementRelationship;
 };
 
 export type FinalMachineAssessment = {
@@ -387,6 +394,10 @@ export function buildDeterministicFactEnvelope(
       semanticRole: candidateDate.role,
       comparisonOperator: candidateDate.comparisonOperator,
       materialScope: candidateDate.scope,
+      sourceMaterialScope: sourceDate?.scope ?? null,
+      scopeComparison: result.scopeComparison,
+      materialScopeDifferences: result.materialScopeDifferences,
+      materialScopeUnknowns: result.materialScopeUnknowns,
       reason: result.reason,
     });
   }
@@ -405,6 +416,10 @@ export function buildDeterministicFactEnvelope(
       semanticRole: candidateNumber.role,
       comparisonOperator: candidateNumber.operator,
       materialScope: candidateNumber.scope,
+      sourceMaterialScope: sourceNumber?.scope ?? null,
+      scopeComparison: result.scopeComparison,
+      materialScopeDifferences: result.materialScopeDifferences,
+      materialScopeUnknowns: result.materialScopeUnknowns,
       reason: result.reason,
     });
   }
@@ -435,7 +450,7 @@ export function buildDeterministicFactEnvelope(
   const parserReliable =
     Boolean(cited) && cited?.extractionStatus === 'ok' && !parserWarnings.length;
   return {
-    version: 'verification-facts-v3',
+    version: 'verification-facts-v4',
     candidateId: candidate.id,
     citedPageExists: Boolean(cited),
     candidateQuoteMatch: quoteMatch,
@@ -476,6 +491,10 @@ export function buildDeterministicFactEnvelope(
         cited &&
         /not an instruction|not procurement requirements|creates no .*obligation/i.test(cited.text),
       ),
+    atomicRelationship: classifyAtomicRequirementRelationship(
+      candidate.obligation,
+      cited?.text ?? sourceForComparison,
+    ),
   };
 }
 
@@ -516,6 +535,23 @@ export function deriveMachineAssessment(input: {
   const valueMismatch = facts.comparisons.some(
     (comparison) => comparison.comparison === 'mismatch',
   );
+  const explicitMaterialScopeMismatch = facts.comparisons.some(
+    (comparison) => comparison.scopeComparison === 'mismatch',
+  );
+  const exactActiveNumericalContradiction =
+    facts.deterministicPrecedence === 'active' &&
+    facts.comparisons.some(
+      (comparison) =>
+        comparison.kind === 'number' &&
+        comparison.comparison === 'mismatch' &&
+        comparison.scopeComparison === 'match' &&
+        [
+          'normalized_value_mismatch',
+          'unit_mismatch',
+          'operator_mismatch',
+          'range_mismatch',
+        ].includes(comparison.reason),
+    );
   const ambiguousFact = facts.comparisons.some(
     (comparison) => comparison.comparison === 'uncertain',
   );
@@ -533,6 +569,7 @@ export function deriveMachineAssessment(input: {
   else if (entailment.classification === 'parser_uncertain') status = 'parser_uncertain';
   else if (entailment.classification === 'contradicts') status = 'contradicted';
   else if (entailment.classification === 'insufficient') status = 'unsupported';
+  else if (exactActiveNumericalContradiction) status = 'contradicted';
   else if (entailment.classification === 'partially_entails') status = 'partially_supported';
   else if (input.challengeFailed || !challenge) status = 'unsupported';
   else if (challenge.assessment === 'parser_uncertain') status = 'parser_uncertain';
@@ -550,10 +587,20 @@ export function deriveMachineAssessment(input: {
     !entailment.missingOrOverstatedQualifiers.length &&
     !entailment.descriptiveOnly &&
     !facts.descriptiveOrInjectionLanguage &&
+    !explicitMaterialScopeMismatch &&
+    facts.atomicRelationship.kind !== 'parent_missing_material_condition' &&
     !injectionInfluence
   )
     status = 'supported';
-  else status = valueMismatch ? 'contradicted' : 'partially_supported';
+  else
+    status =
+      facts.atomicRelationship.kind === 'parent_missing_material_condition'
+        ? 'partially_supported'
+        : explicitMaterialScopeMismatch
+          ? 'partially_supported'
+          : valueMismatch
+            ? 'contradicted'
+            : 'partially_supported';
 
   if (entailment?.classification === 'entails' && status !== 'supported')
     disagreements.push(`Pass A entails but deterministic engine selected ${status}.`);
@@ -600,6 +647,12 @@ export function deriveMachineAssessment(input: {
         .map(
           (comparison) =>
             `${comparison.kind} mismatch (${comparison.reason}, role ${comparison.semanticRole}): candidate ${comparison.candidateOriginal}; source ${comparison.sourceOriginal ?? 'none'}`,
+        ),
+      ...facts.comparisons
+        .filter((comparison) => comparison.scopeComparison === 'mismatch')
+        .map(
+          (comparison) =>
+            `${comparison.kind} material scope mismatch (${comparison.materialScopeDifferences.join(', ')}).`,
         ),
     ],
     parserConcerns: [...facts.parserWarnings, ...(entailment?.parserConcerns ?? [])],
@@ -709,6 +762,60 @@ export function applyDuplicateSafetyBlock(
       rationale: `Deterministic material-difference block: ${pair.materialDifferences.join(', ')}.`,
     };
   return { ...model, materialDifferences: pair.materialDifferences };
+}
+
+export type DeterministicParentChildRelationship = {
+  sourceCandidateId: string;
+  targetCandidateId: string;
+  relationshipType: 'parent_child';
+  deterministicMetadata: {
+    version: 'atomic-parent-child-v1';
+    sharedAnchor: string;
+    preservesAtomicRecords: true;
+  };
+};
+
+function atomicAnchor(candidate: VerificationCandidateInput): string | null {
+  const form = identifiers(candidate.obligation, 'form')[0];
+  if (form) return form.toLowerCase();
+  if (/staffing plan/i.test(candidate.obligation)) return 'staffing_plan';
+  if (/meeting|conference|site visit/i.test(candidate.obligation)) return 'meeting';
+  if (/commercial general liability|\bCGL\b/i.test(candidate.obligation)) return 'cgl';
+  if (/proposal|submission/i.test(candidate.obligation)) return 'submission';
+  return null;
+}
+
+/** Proposes only explicit, reviewable parent/child pairs; it never merges candidates. */
+export function findDeterministicParentChildRelationships(
+  candidates: VerificationCandidateInput[],
+): DeterministicParentChildRelationship[] {
+  const relationships: DeterministicParentChildRelationship[] = [];
+  for (const parent of candidates) {
+    if (!/\b(?:attach|submit|complete|attend|maintain|provide)\b/i.test(parent.obligation))
+      continue;
+    const sharedAnchor = atomicAnchor(parent);
+    if (!sharedAnchor) continue;
+    for (const child of candidates) {
+      if (child.id === parent.id || atomicAnchor(child) !== sharedAnchor) continue;
+      if (
+        !/\b(?:include|show|contain|sign|signature|FTE|full-time|failure to|disqualif|nonresponsive|sublimit|packag|sealed|copies)\b/i.test(
+          child.obligation,
+        )
+      )
+        continue;
+      relationships.push({
+        sourceCandidateId: parent.id,
+        targetCandidateId: child.id,
+        relationshipType: 'parent_child',
+        deterministicMetadata: {
+          version: 'atomic-parent-child-v1',
+          sharedAnchor,
+          preservesAtomicRecords: true,
+        },
+      });
+    }
+  }
+  return relationships;
 }
 
 export type ExplicitPrecedenceRelationship = {

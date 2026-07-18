@@ -79,6 +79,7 @@ export async function runCandidateVerificationPipeline(input: {
     const contract = validateEntailmentSemanticContract({
       candidate: input.candidate,
       contexts,
+      facts,
       result: entailmentCall.result,
     });
     if (entailmentCall.result && !contract.success) {
@@ -166,14 +167,7 @@ export async function runCandidateVerificationPipeline(input: {
         challengeCall,
         failedStage: 'challenge',
         error: contract.normalizedError,
-        finalAssessment: deriveMachineAssessment({
-          candidate: input.candidate,
-          contexts,
-          facts,
-          entailment,
-          challenge: null,
-          challengeFailed: true,
-        }),
+        finalAssessment: null,
       };
     }
     await input.onChallengeCall?.(challengeCall);

@@ -14,12 +14,12 @@ const SOURCE_STATUSES = [
   'contradicted',
   'parser_uncertain',
 ];
-export const VERIFICATION_EVALUATOR_VERSION = 'verification-evaluator-v2';
+export const VERIFICATION_EVALUATOR_VERSION = 'verification-evaluator-v3';
 
 const fixtureId = (n) => `20000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const EXPECTED_DATE_COMPARISONS = new Map([
   [fixtureId(1), 'match'],
-  [fixtureId(4), 'mismatch'],
+  [fixtureId(4), 'match'],
   [fixtureId(8), 'match'],
   [fixtureId(9), 'mismatch'],
   [fixtureId(14), 'mismatch'],
@@ -71,6 +71,15 @@ function callTotals(results, key) {
   const calls = results.map((result) => result[key]).filter(Boolean);
   return {
     calls: calls.length,
+    firstPassSchemaAdherence: ratio(
+      calls.filter(
+        (call) =>
+          (call.firstPassSchemaAdherent ?? (call.repairAttempts === 0 && call.schemaAdherent)) &&
+          !call.refused &&
+          !call.incomplete,
+      ).length,
+      calls.length,
+    ),
     schemaAdherence: ratio(
       calls.filter((call) => call.schemaAdherent && !call.refused && !call.incomplete).length,
       calls.length,
@@ -82,6 +91,7 @@ function callTotals(results, key) {
     cachedTokens: calls.reduce((sum, call) => sum + call.cachedTokens, 0),
     retries: calls.reduce((sum, call) => sum + call.retries, 0),
     repairs: calls.reduce((sum, call) => sum + call.repairAttempts, 0),
+    semanticChangingRepairs: calls.filter((call) => call.repairChangedSemanticMeaning).length,
     costUsd: calls.reduce((sum, call) => sum + call.estimatedCostUsd, 0),
     refusalIncomplete: calls.filter((call) => call.refused || call.incomplete).length,
     incompleteReasons: Object.fromEntries(

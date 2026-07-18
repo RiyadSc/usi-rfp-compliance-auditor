@@ -197,9 +197,7 @@ export class MockProvider implements ModelProvider {
     const partial = Boolean(
       cited &&
       ((/every .*employee/i.test(candidate.obligation) && /site supervisor/i.test(cited.text)) ||
-        (/meeting/i.test(candidate.obligation) &&
-          /\d{1,2}:\d{2}\s*(?:AM|PM)/i.test(cited.text) &&
-          !/\d{1,2}:\d{2}\s*(?:AM|PM)/i.test(candidate.obligation))),
+        factEnvelope.atomicRelationship.kind === 'parent_missing_material_condition'),
     );
     const injection = /system prompt|api key|use tools|email the key|ignore .*instructions/i.test(
       candidate.obligation,
@@ -248,7 +246,13 @@ export class MockProvider implements ModelProvider {
       supportingEvidence: ['entails', 'partially_entails'].includes(classification) ? evidence : [],
       contradictingEvidence: classification === 'contradicts' ? evidence : [],
       materialQualifiersPresent: [],
-      missingOrOverstatedQualifiers: partial ? ['Material scope or consequence is missing.'] : [],
+      missingOrOverstatedQualifiers: partial
+        ? [
+            factEnvelope.atomicRelationship.kind === 'parent_missing_material_condition'
+              ? 'attendance consequence omitted'
+              : 'employee scope exceeds supervisor scope',
+          ]
+        : [],
       parserConcerns: classification === 'parser_uncertain' ? factEnvelope.parserWarnings : [],
       descriptiveOnly: injection,
       injectionInfluence: false as const,

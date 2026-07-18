@@ -211,6 +211,9 @@ const boundedCall = (call) =>
         retries: call.retries,
         repairAttempts: call.repairAttempts,
         schemaAdherent: call.schemaAdherent,
+        firstPassSchemaAdherent:
+          call.firstPassSchemaAdherent ?? (call.repairAttempts === 0 && call.schemaAdherent),
+        repairChangedSemanticMeaning: call.repairChangedSemanticMeaning ?? null,
         refused: Boolean(call.refused),
         incomplete: Boolean(call.incomplete),
         incompleteReason: call.incompleteReason ?? null,

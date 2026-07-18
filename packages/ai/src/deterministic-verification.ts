@@ -108,6 +108,8 @@ export type MaterialScope = {
   section: string | null;
   deliverable: string | null;
   insuranceBasis: 'per_occurrence' | 'aggregate' | null;
+  subject: string | null;
+  obligationRole: string | null;
 };
 
 export type TypedDateFact = ParsedDate & {
@@ -190,7 +192,41 @@ function materialScope(text: string): MaterialScope {
     : /aggregate/i.test(text)
       ? 'aggregate'
       : null;
-  return { site, role, party, form, section, deliverable, insuranceBasis };
+  const subject = /commercial general liability|\bCGL\b/i.test(text)
+    ? 'commercial_general_liability'
+    : /automobile liability/i.test(text)
+      ? 'automobile_liability'
+      : /staffing plan/i.test(text)
+        ? 'staffing_plan'
+        : /pre-proposal meeting|site visit|conference/i.test(text)
+          ? 'pre_proposal_meeting'
+          : /proposal form/i.test(text)
+            ? 'proposal_form'
+            : null;
+  const obligationRole = /insurance|liability|coverage/i.test(text)
+    ? 'insurance_requirement'
+    : /meeting|conference|site visit/i.test(text)
+      ? 'meeting_attendance'
+      : /attach|attachment/i.test(text)
+        ? 'attachment_submission'
+        : /sign(?:ed|ature)?/i.test(text)
+          ? 'signature_requirement'
+          : /submit|delivery|portal|email|hard cop/i.test(text)
+            ? 'submission_method'
+            : /staff|FTE|full-time/i.test(text)
+              ? 'staffing_requirement'
+              : null;
+  return {
+    site,
+    role,
+    party,
+    form,
+    section,
+    deliverable,
+    insuranceBasis,
+    subject,
+    obligationRole,
+  };
 }
 
 function dateRole(text: string): DateSemanticRole {
@@ -445,17 +481,54 @@ export function materialScopeDifferences(
   source: MaterialScope,
 ): string[] {
   const differences: string[] = [];
-  for (const key of ['site', 'role', 'party', 'form', 'section', 'deliverable'] as const) {
+  for (const key of [
+    'site',
+    'role',
+    'party',
+    'form',
+    'section',
+    'deliverable',
+    'subject',
+    'obligationRole',
+  ] as const) {
     const candidateValue = normalizedScopeValue(candidate[key]);
     const sourceValue = normalizedScopeValue(source[key]);
-    if ((candidateValue || sourceValue) && candidateValue !== sourceValue) differences.push(key);
+    if (candidateValue && sourceValue && candidateValue !== sourceValue) differences.push(key);
   }
   if (
-    (candidate.insuranceBasis || source.insuranceBasis) &&
+    candidate.insuranceBasis &&
+    source.insuranceBasis &&
     candidate.insuranceBasis !== source.insuranceBasis
   )
     differences.push('insurance_basis');
   return differences;
+}
+
+export function materialScopeUnknowns(candidate: MaterialScope, source: MaterialScope): string[] {
+  const unknowns: string[] = [];
+  for (const key of [
+    'site',
+    'role',
+    'party',
+    'form',
+    'section',
+    'deliverable',
+    'subject',
+    'obligationRole',
+  ] as const) {
+    if (Boolean(candidate[key]) !== Boolean(source[key])) unknowns.push(key);
+  }
+  if (Boolean(candidate.insuranceBasis) !== Boolean(source.insuranceBasis))
+    unknowns.push('insurance_basis');
+  return unknowns;
+}
+
+export function compareMaterialScope(
+  candidate: MaterialScope,
+  source: MaterialScope,
+): 'match' | 'mismatch' | 'unknown' {
+  if (materialScopeDifferences(candidate, source).length) return 'mismatch';
+  return materialScopeUnknowns(candidate, source).length ? 'unknown' : 'match';
 }
 
 export type TypedFactComparison = {
@@ -473,17 +546,16 @@ export type TypedFactComparison = {
     | 'unit_mismatch'
     | 'operator_mismatch'
     | 'range_mismatch'
-    | 'material_scope_mismatch';
+    | 'material_scope_mismatch'
+    | 'value_match_scope_mismatch';
   sourceFactIndex: number | null;
   materialScopeDifferences: string[];
+  materialScopeUnknowns: string[];
+  scopeComparison: 'match' | 'mismatch' | 'unknown';
 };
 
 function compatibleRole(candidateRole: string, sourceRole: string): boolean {
   return candidateRole === sourceRole || candidateRole === 'unknown' || sourceRole === 'unknown';
-}
-
-function compatibleScope(candidate: MaterialScope, source: MaterialScope): boolean {
-  return materialScopeDifferences(candidate, source).length === 0;
 }
 
 export function compareTypedDateFact(
@@ -496,6 +568,8 @@ export function compareTypedDateFact(
       reason: 'relative_date_without_anchor',
       sourceFactIndex: null,
       materialScopeDifferences: [],
+      materialScopeUnknowns: [],
+      scopeComparison: 'unknown',
     };
   if (candidate.ambiguous || !candidate.normalized)
     return {
@@ -503,6 +577,8 @@ export function compareTypedDateFact(
       reason: 'ambiguous_candidate',
       sourceFactIndex: null,
       materialScopeDifferences: [],
+      materialScopeUnknowns: [],
+      scopeComparison: 'unknown',
     };
   const roleMatches = sources
     .map((source, index) => ({ source, index }))
@@ -513,25 +589,25 @@ export function compareTypedDateFact(
       reason: 'semantic_role_mismatch',
       sourceFactIndex: null,
       materialScopeDifferences: [],
+      materialScopeUnknowns: [],
+      scopeComparison: 'unknown',
     };
-  const scoped = roleMatches.filter(({ source }) => compatibleScope(candidate.scope, source.scope));
-  if (!scoped.length) {
-    const differences = materialScopeDifferences(candidate.scope, roleMatches[0]!.source.scope);
-    return {
-      comparison: 'mismatch',
-      reason: 'material_scope_mismatch',
-      sourceFactIndex: roleMatches[0]!.index,
-      materialScopeDifferences: differences,
-    };
-  }
-  const exactValue = scoped.find(({ source }) => source.normalized === candidate.normalized);
-  const selected = exactValue ?? scoped[0]!;
+  const scoped = roleMatches.filter(
+    ({ source }) => compareMaterialScope(candidate.scope, source.scope) !== 'mismatch',
+  );
+  const exactScoped = scoped.find(({ source }) => source.normalized === candidate.normalized);
+  const exactAny = roleMatches.find(({ source }) => source.normalized === candidate.normalized);
+  const selected = exactScoped ?? exactAny ?? scoped[0] ?? roleMatches[0]!;
+  const scopeComparison = compareMaterialScope(candidate.scope, selected.source.scope);
+  const scopeUnknowns = materialScopeUnknowns(candidate.scope, selected.source.scope);
   if (selected.source.ambiguous || !selected.source.normalized)
     return {
       comparison: 'uncertain',
       reason: 'ambiguous_source',
       sourceFactIndex: selected.index,
       materialScopeDifferences: [],
+      materialScopeUnknowns: scopeUnknowns,
+      scopeComparison,
     };
   if (selected.source.normalized !== candidate.normalized)
     return {
@@ -539,24 +615,35 @@ export function compareTypedDateFact(
       reason: 'normalized_value_mismatch',
       sourceFactIndex: selected.index,
       materialScopeDifferences: [],
+      materialScopeUnknowns: scopeUnknowns,
+      scopeComparison,
     };
-  if (selected.source.time && candidate.time?.toLowerCase() !== selected.source.time.toLowerCase())
+  if (
+    selected.source.time &&
+    candidate.time &&
+    candidate.time.toLowerCase() !== selected.source.time.toLowerCase()
+  )
     return {
       comparison: 'mismatch',
       reason: 'time_mismatch',
       sourceFactIndex: selected.index,
       materialScopeDifferences: [],
+      materialScopeUnknowns: scopeUnknowns,
+      scopeComparison,
     };
   if (
     selected.source.time &&
     selected.source.timezone &&
-    candidate.timezone?.toLowerCase() !== selected.source.timezone.toLowerCase()
+    candidate.timezone &&
+    candidate.timezone.toLowerCase() !== selected.source.timezone.toLowerCase()
   )
     return {
       comparison: 'mismatch',
       reason: 'timezone_mismatch',
       sourceFactIndex: selected.index,
       materialScopeDifferences: [],
+      materialScopeUnknowns: scopeUnknowns,
+      scopeComparison,
     };
   if (candidate.comparisonOperator !== selected.source.comparisonOperator)
     return {
@@ -564,12 +651,17 @@ export function compareTypedDateFact(
       reason: 'operator_mismatch',
       sourceFactIndex: selected.index,
       materialScopeDifferences: [],
+      materialScopeUnknowns: scopeUnknowns,
+      scopeComparison,
     };
   return {
     comparison: 'match',
-    reason: 'all_material_fields_match',
+    reason:
+      scopeComparison === 'mismatch' ? 'value_match_scope_mismatch' : 'all_material_fields_match',
     sourceFactIndex: selected.index,
-    materialScopeDifferences: [],
+    materialScopeDifferences: materialScopeDifferences(candidate.scope, selected.source.scope),
+    materialScopeUnknowns: scopeUnknowns,
+    scopeComparison,
   };
 }
 
@@ -583,6 +675,8 @@ export function compareTypedNumberFact(
       reason: 'ambiguous_candidate',
       sourceFactIndex: null,
       materialScopeDifferences: [],
+      materialScopeUnknowns: [],
+      scopeComparison: 'unknown',
     };
   const roleMatches = sources
     .map((source, index) => ({ source, index }))
@@ -593,8 +687,12 @@ export function compareTypedNumberFact(
       reason: 'semantic_role_mismatch',
       sourceFactIndex: null,
       materialScopeDifferences: [],
+      materialScopeUnknowns: [],
+      scopeComparison: 'unknown',
     };
-  const scoped = roleMatches.filter(({ source }) => compatibleScope(candidate.scope, source.scope));
+  const scoped = roleMatches.filter(
+    ({ source }) => compareMaterialScope(candidate.scope, source.scope) !== 'mismatch',
+  );
   if (!scoped.length) {
     const differences = materialScopeDifferences(candidate.scope, roleMatches[0]!.source.scope);
     return {
@@ -602,6 +700,8 @@ export function compareTypedNumberFact(
       reason: 'material_scope_mismatch',
       sourceFactIndex: roleMatches[0]!.index,
       materialScopeDifferences: differences,
+      materialScopeUnknowns: materialScopeUnknowns(candidate.scope, roleMatches[0]!.source.scope),
+      scopeComparison: 'mismatch',
     };
   }
   const exactValue = scoped.find(
@@ -609,12 +709,16 @@ export function compareTypedNumberFact(
       source.normalizedValue === candidate.normalizedValue && source.unit === candidate.unit,
   );
   const selected = exactValue ?? scoped[0]!;
+  const scopeComparison = compareMaterialScope(candidate.scope, selected.source.scope);
+  const scopeUnknowns = materialScopeUnknowns(candidate.scope, selected.source.scope);
   if (selected.source.normalizedValue == null)
     return {
       comparison: 'uncertain',
       reason: 'ambiguous_source',
       sourceFactIndex: selected.index,
       materialScopeDifferences: [],
+      materialScopeUnknowns: scopeUnknowns,
+      scopeComparison,
     };
   if (selected.source.unit !== candidate.unit)
     return {
@@ -622,6 +726,8 @@ export function compareTypedNumberFact(
       reason: 'unit_mismatch',
       sourceFactIndex: selected.index,
       materialScopeDifferences: [],
+      materialScopeUnknowns: scopeUnknowns,
+      scopeComparison,
     };
   if (selected.source.normalizedValue !== candidate.normalizedValue)
     return {
@@ -629,6 +735,8 @@ export function compareTypedNumberFact(
       reason: 'normalized_value_mismatch',
       sourceFactIndex: selected.index,
       materialScopeDifferences: [],
+      materialScopeUnknowns: scopeUnknowns,
+      scopeComparison,
     };
   if (selected.source.operator !== candidate.operator)
     return {
@@ -636,6 +744,8 @@ export function compareTypedNumberFact(
       reason: 'operator_mismatch',
       sourceFactIndex: selected.index,
       materialScopeDifferences: [],
+      materialScopeUnknowns: scopeUnknowns,
+      scopeComparison,
     };
   if (selected.source.rangeEndValue !== candidate.rangeEndValue)
     return {
@@ -643,12 +753,16 @@ export function compareTypedNumberFact(
       reason: 'range_mismatch',
       sourceFactIndex: selected.index,
       materialScopeDifferences: [],
+      materialScopeUnknowns: scopeUnknowns,
+      scopeComparison,
     };
   return {
     comparison: 'match',
     reason: 'all_material_fields_match',
     sourceFactIndex: selected.index,
     materialScopeDifferences: [],
+    materialScopeUnknowns: scopeUnknowns,
+    scopeComparison,
   };
 }
 
@@ -659,6 +773,85 @@ export function compareDeterministicValues(
   if (candidate.value == null || source.value == null) return 'uncertain';
   if (candidate.unit && source.unit && candidate.unit !== source.unit) return 'mismatch';
   return candidate.value === source.value ? 'match' : 'mismatch';
+}
+
+export type AtomicRequirementRelationship = {
+  kind:
+    | 'equivalent'
+    | 'parent_with_additive_child'
+    | 'parent_missing_material_condition'
+    | 'related_distinct'
+    | 'undetermined';
+  parentObligation: string;
+  childObligation: string | null;
+  evidence: string | null;
+};
+
+function normalizedObligation(value: string): string {
+  return normalizeEvidenceText(value)
+    .toLowerCase()
+    .replace(/\b(?:must|shall|is required to|are required to)\b/g, '')
+    .replace(/[^a-z0-9$%]+/g, ' ')
+    .trim();
+}
+
+/**
+ * Classifies atomic parent/child structure without merging either obligation.
+ * This is deliberately conservative: a consequence changes the parent meaning,
+ * while separately satisfiable content, signature, sublimit, or packaging duties
+ * remain additive child obligations.
+ */
+export function classifyAtomicRequirementRelationship(
+  candidateObligation: string,
+  sourceText: string,
+): AtomicRequirementRelationship {
+  const candidate = normalizedObligation(candidateObligation);
+  const source = normalizedObligation(sourceText);
+  const additivePatterns = [
+    /(?:staffing plan|attachment|exhibit)[^.]{0,120}(?:showing|including|containing|with)\b[^.]*/i,
+    /(?:form|schedule|attachment|exhibit)\s+[A-Z0-9-]+[^.]{0,120}\b(?:sign(?:ed|ature)|initial(?:ed)?)\b[^.]*/i,
+    /(?:insurance|liability|coverage)[\s\S]{0,220}\b(?:site-specific|sublimit|for (?:the )?(?:North|South|East|West) Campus)\b[^.]*/i,
+    /(?:packag(?:e|ing)|sealed envelope|copies)[^.]{0,140}/i,
+  ];
+  const additive = additivePatterns
+    .map((pattern) => sourceText.match(pattern)?.[0] ?? null)
+    .find((value) => value && !candidate.includes(normalizedObligation(value)));
+  const parentSignals =
+    /attach|submit|complete|provide|insurance|liability|proposal|meeting|attend/i.test(
+      candidateObligation,
+    );
+  if (additive && parentSignals)
+    return {
+      kind: 'parent_with_additive_child',
+      parentObligation: candidateObligation,
+      childObligation: normalizeEvidenceText(additive),
+      evidence: normalizeEvidenceText(additive),
+    };
+
+  if (candidate && source.includes(candidate))
+    return {
+      kind: 'equivalent',
+      parentObligation: candidateObligation,
+      childObligation: null,
+      evidence: null,
+    };
+  const consequence = sourceText.match(
+    /(?:failure to|if .*?does not|otherwise)[^.]{0,180}(?:disqualif(?:y|ies)|nonresponsive|reject(?:ed|ion)|ineligible)[^.]*/i,
+  )?.[0];
+  if (consequence && !/disqualif|nonresponsive|reject|ineligible/i.test(candidateObligation))
+    return {
+      kind: 'parent_missing_material_condition',
+      parentObligation: candidateObligation,
+      childObligation: null,
+      evidence: normalizeEvidenceText(consequence),
+    };
+
+  return {
+    kind: 'undetermined',
+    parentObligation: candidateObligation,
+    childObligation: null,
+    evidence: null,
+  };
 }
 
 export function classifyProofRequirement(

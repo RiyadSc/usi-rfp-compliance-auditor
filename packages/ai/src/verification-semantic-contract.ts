@@ -53,6 +53,7 @@ function validateEvidenceReferences(
 export function validateEntailmentSemanticContract(input: {
   candidate: VerificationCandidateInput;
   contexts: VerificationContext[];
+  facts: DeterministicFactEnvelope;
   result: unknown;
 }): SemanticContractValidation {
   const parsed = entailmentResultSchema.safeParse(input.result);
@@ -85,6 +86,22 @@ export function validateEntailmentSemanticContract(input: {
     return {
       success: false,
       normalizedError: 'semantic_contract_invalid:pass_a:non_material_wording_mismatch',
+    };
+  if (
+    parsed.data.classification === 'entails' &&
+    input.facts.atomicRelationship.kind === 'parent_missing_material_condition'
+  )
+    return {
+      success: false,
+      normalizedError: 'semantic_contract_invalid:pass_a:missing_material_parent_condition',
+    };
+  if (
+    parsed.data.classification === 'partially_entails' &&
+    input.facts.atomicRelationship.kind === 'parent_with_additive_child'
+  )
+    return {
+      success: false,
+      normalizedError: 'semantic_contract_invalid:pass_a:additive_child_is_not_parent_mismatch',
     };
   return { success: true };
 }
@@ -143,6 +160,36 @@ export function validateChallengeSemanticContract(input: {
         success: false,
         normalizedError: 'semantic_contract_invalid:pass_b:qualifier_not_grounded',
       };
+    if (
+      [
+        'missing_condition',
+        'overstated_scope',
+        'wrong_party',
+        'wrong_form',
+        'omitted_exception',
+      ].includes(objection.type)
+    ) {
+      const explicitScopeDifferences = input.facts.comparisons.flatMap(
+        (comparison) => comparison.materialScopeDifferences,
+      );
+      const requiredDifference =
+        objection.type === 'wrong_party'
+          ? 'party'
+          : objection.type === 'wrong_form'
+            ? 'form'
+            : null;
+      const hasTypedDifference = requiredDifference
+        ? explicitScopeDifferences.includes(requiredDifference)
+        : explicitScopeDifferences.length > 0;
+      const hasMaterialParentCondition =
+        input.facts.atomicRelationship.kind === 'parent_missing_material_condition';
+      if (!hasTypedDifference && !hasMaterialParentCondition)
+        return {
+          success: false,
+          normalizedError:
+            'semantic_contract_invalid:pass_b:no_explicit_comparable_scope_difference',
+        };
+    }
     if (
       objection.type === 'wrong_deadline' &&
       !input.facts.comparisons.some(

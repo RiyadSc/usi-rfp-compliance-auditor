@@ -11,6 +11,7 @@ import {
   applyDuplicateSafetyBlock,
   checkBudget,
   createProvider,
+  findDeterministicParentChildRelationships,
   findExplicitPrecedenceRelationships,
   generateDuplicatePairCandidates,
   normalizeEvidenceText,
@@ -474,6 +475,32 @@ export async function handleVerifyJob(
           precedence_quote: relationship.precedenceQuote,
           deterministic_metadata: relationship.deterministicMetadata,
           relationship_version: 'precedence-relationship-v2',
+          machine_assessment: 'machine_proposal_only',
+        },
+        {
+          onConflict:
+            'verification_run_id,source_candidate_id,target_candidate_id,relationship_type',
+          ignoreDuplicates: true,
+        },
+      );
+      if (error) throw error;
+    }
+
+    for (const relationship of findDeterministicParentChildRelationships(candidates)) {
+      const findingId = findings.get(relationship.sourceCandidateId);
+      if (!findingId || !findings.has(relationship.targetCandidateId)) continue;
+      const { error } = await admin.from('requirement_relationships').upsert(
+        {
+          workspace_id: payload.workspaceId,
+          verification_run_id: run.id,
+          finding_id: findingId,
+          source_candidate_id: relationship.sourceCandidateId,
+          target_candidate_id: relationship.targetCandidateId,
+          relationship_type: relationship.relationshipType,
+          rationale:
+            'Deterministic atomic parent/child proposal; both requirements remain separate records.',
+          deterministic_metadata: relationship.deterministicMetadata,
+          relationship_version: 'atomic-parent-child-v1',
           machine_assessment: 'machine_proposal_only',
         },
         {

@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
-export const ENTAILMENT_PROMPT_VERSION = 'verify-entailment-v4';
-export const ENTAILMENT_SCHEMA_VERSION = 'verification-entailment-v2';
-export const CHALLENGE_PROMPT_VERSION = 'verify-challenge-v2';
-export const CHALLENGE_SCHEMA_VERSION = 'verification-challenge-v2';
+export const ENTAILMENT_PROMPT_VERSION = 'verify-entailment-v5';
+export const ENTAILMENT_SCHEMA_VERSION = 'verification-entailment-v3';
+export const CHALLENGE_PROMPT_VERSION = 'verify-challenge-v3';
+export const CHALLENGE_SCHEMA_VERSION = 'verification-challenge-v3';
 export const DUPLICATE_PROMPT_VERSION = 'verify-duplicate-v1';
 export const DUPLICATE_SCHEMA_VERSION = 'verification-duplicate-v1';
-export const DECISION_ENGINE_VERSION = 'verification-decision-v5';
-export const FACT_ENVELOPE_VERSION = 'verification-facts-v3';
+export const DECISION_ENGINE_VERSION = 'verification-decision-v6';
+export const FACT_ENVELOPE_VERSION = 'verification-facts-v4';
 export const FINAL_ASSESSMENT_SCHEMA_VERSION = 'verification-final-assessment-v1';
 
 export const ENTAILMENT_CLASSES = [
@@ -278,23 +278,48 @@ export const entailmentJsonSchema = {
   additionalProperties: false,
   properties: {
     candidateId: { type: 'string', minLength: 1 },
-    classification: { type: 'string', enum: [...ENTAILMENT_CLASSES] },
-    rationale: { type: 'string', minLength: 1, maxLength: 160 },
-    supportingEvidence: { type: 'array', maxItems: 1, items: evidenceReferenceJsonSchema },
-    contradictingEvidence: { type: 'array', maxItems: 1, items: evidenceReferenceJsonSchema },
+    classification: {
+      type: 'string',
+      enum: [...ENTAILMENT_CLASSES],
+      description:
+        'entails=complete material meaning; partially_entails=central obligation plus a material mismatch; contradicts=explicit opposite; insufficient=neither proposition established; parser_uncertain=parser limitation blocks assessment.',
+    },
+    rationale: {
+      type: 'string',
+      minLength: 1,
+      maxLength: 160,
+      description: 'One concise sentence. Do not repeat the candidate or evidence quote.',
+    },
+    supportingEvidence: {
+      type: 'array',
+      maxItems: 1,
+      description:
+        'Exactly one item only for entails or partially_entails; otherwise an empty array.',
+      items: evidenceReferenceJsonSchema,
+    },
+    contradictingEvidence: {
+      type: 'array',
+      maxItems: 1,
+      description: 'Exactly one item only for contradicts; otherwise an empty array.',
+      items: evidenceReferenceJsonSchema,
+    },
     materialQualifiersPresent: {
       type: 'array',
       maxItems: 3,
+      description: 'Short present qualifiers only; never repeat full candidate or evidence text.',
       items: { type: 'string', minLength: 1, maxLength: 80 },
     },
     missingOrOverstatedQualifiers: {
       type: 'array',
       maxItems: 3,
+      description:
+        'Required and non-empty only for partially_entails. MUST be [] for entails, contradicts, insufficient, and parser_uncertain.',
       items: { type: 'string', minLength: 1, maxLength: 100 },
     },
     parserConcerns: {
       type: 'array',
       maxItems: 2,
+      description: 'Required only for parser_uncertain; otherwise use [].',
       items: { type: 'string', minLength: 1, maxLength: 100 },
     },
     descriptiveOnly: { type: 'boolean' },
@@ -321,11 +346,23 @@ export const challengeJsonSchema = {
   additionalProperties: false,
   properties: {
     candidateId: { type: 'string', minLength: 1 },
-    assessment: { type: 'string', enum: [...CHALLENGE_ASSESSMENTS] },
-    rationale: { type: 'string', minLength: 1, maxLength: 160 },
+    assessment: {
+      type: 'string',
+      enum: [...CHALLENGE_ASSESSMENTS],
+      description:
+        'Use no_material_objection unless at least one grounded objection has an exact candidate proposition, exact evidence, and an explicit material difference.',
+    },
+    rationale: {
+      type: 'string',
+      minLength: 1,
+      maxLength: 160,
+      description: 'One concise sentence; do not repeat candidate or evidence.',
+    },
     objections: {
       type: 'array',
       maxItems: 2,
+      description:
+        'MUST be [] for no_material_objection. Every objection must be grounded in an explicit comparable difference; unknown scope is not a difference.',
       items: {
         type: 'object',
         additionalProperties: false,

@@ -108,6 +108,8 @@ export type ModelCallMetadata = {
   incomplete?: boolean;
   incompleteReason?: string | null;
   normalizedError?: string | null;
+  firstPassSchemaAdherent?: boolean;
+  repairChangedSemanticMeaning?: boolean | null;
 };
 
 export type CandidateAssessmentInput = {
