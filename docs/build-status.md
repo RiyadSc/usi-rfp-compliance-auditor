@@ -1,6 +1,6 @@
 # Build Status
 
-## Current phase: Phase 4 targeted output-budget probe failed — full requalification not authorized
+## Current phase: Phase 4 meeting-consequence remediated offline — live requalification not authorized
 
 Last updated: 2026-07-18.
 
@@ -8,6 +8,12 @@ Last updated: 2026-07-18.
 
 ### Gate decision
 
+- The failed meeting-consequence path has been remediated offline without a provider call. `verify-entailment-v7` / `verification-entailment-v5` explicitly maps reliable exact `parent_missing_material_condition` evidence with no deterministic mismatch to `partially_entails`, requires the exact consequence once as the sole mismatch, and forbids opposing evidence or parser concerns.
+- The original first-pass and repaired raw objects were not retained and were not reconstructed. The retained validator path proves the first response was structurally valid `entails` with one exact supporting reference and no missing/opposing/parser fields; exact rationale, supporting object, material-present fields, repaired fields, and field-level fingerprint differences remain unavailable.
+- Root cause was prompt ambiguity and field/instruction priority, not retrieval, facts, schema expressiveness, decision logic, evaluator logic, or output exhaustion. The prompt distinguished additive children but did not explicitly state that `parent_missing_material_condition` is a material omission. Facts v4, decision v6, low reasoning, 1,800/1,600/600 limits, zero-repair qualification, semantic-fingerprint rejection, and frozen expected answers are unchanged.
+- Six focused cases now pass: omitted consequence, consequence included, date mismatch, meeting not established, explicit no-meeting evidence, and matching date with unknown party scope. The frozen 24-candidate deterministic fixture and five-candidate targeted mock probe are also perfect with zero repairs.
+- Current compatibility fingerprints are full `c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b` and targeted `c9976dc1127fe21900dacf0b5980a7a49dbbb8c349aa9eba347a1b1f22cab416`.
+- No live test is authorized. A proposed single fresh targeted GPT-5.5 probe would retain a `$0.35` maximum and project Phase 4 `$9.588169/$15` and remediation `$7.905875/$12`, subject to a new ledger/fingerprint/clean-tree preflight and separate approval.
 - One separately authorized fresh `gpt-5.5-2026-04-23` targeted probe ran against `verification-output-budget-prequalification-v1` at `low` reasoning under fingerprint `9b6ed1ac483d3c3b7882374ea7fb96f780b1e931dff9bf0890f8ff4edeac1c2c`. It **did not pass** and was not rerun.
 - Four of five candidates passed cleanly. The meeting-consequence candidate's first Pass A asserted complete entailment despite immutable `parent_missing_material_condition` evidence. Its one controlled repair changed the semantic fingerprint, was rejected, and produced no final assessment. Pass A first-pass/schema adherence and final-decision schema coverage were therefore `.8`; the zero-repair gate failed.
 - Output-budget remediation itself was operationally effective in this probe: six calls completed with 1,380 output tokens, only 263 reasoning tokens, zero incompletes, refusals, timeouts, or retries. Pass B was clean. Deterministic numerical opposition correctly converted the `$4M` candidate against active `$3M` evidence to `contradicted`; prompt injection had no influence.
@@ -79,12 +85,12 @@ Last updated: 2026-07-18.
 
 ### Remaining gate before Phase 4 can close
 
-The targeted output-budget probe failed and was not rerun. It confirms that low reasoning and split output limits avoided exhaustion, but the meeting-consequence first pass violated the deterministic semantic contract and its semantic-changing repair was rejected. No full live requalification, additional targeted probe, other model, application smoke, selection, or Phase 5 work is authorized. Live verification remains disabled; human-only review with deterministic mock findings remains the demo mode.
+The targeted output-budget probe failed and was not rerun. Its meeting-consequence semantic-contract failure is now corrected and fully regressed offline, but the revised v7/v5 contract has not been live requalified. No targeted probe, full live requalification, other model, application smoke, selection, or Phase 5 work is authorized. Live verification remains disabled; human-only review with deterministic mock findings remains the demo mode.
 
 ### Phase 4 regression gate
 
 - Lint, formatting verification, and type-check: passed on the output-budget-remediation state. The production Next.js build also passed with process binding permitted.
-- Unit: 132 passed, including 20 targeted-remediation, 23 semantic-contract, 19 typed date/number, and 6 evaluator-integrity tests.
+- Unit: 138 passed, including six dedicated meeting-consequence cases, 20 targeted-remediation, 23 semantic-contract, 19 typed date/number, and 6 evaluator-integrity tests.
 - Integration: 54 passed against the configured Supabase project, including semantic-contract rejection, atomic parent/child persistence, plus Phase 4 RLS, linkage, immutability, idempotency, audit, failure paths, budget cancellation, and isolation.
 - Mock Playwright: 17 passed with `PHASE4_LIVE_VERIFICATION_ENABLED=false` and `E2E_LIVE_OPENAI=0`; no live model calls occurred.
 - Secret scan: passed across tracked files and the client bundle.

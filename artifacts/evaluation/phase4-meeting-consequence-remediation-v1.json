@@ -1,0 +1,186 @@
+{
+  "reportVersion": "phase4-meeting-consequence-remediation-v1",
+  "generatedAt": "2026-07-18",
+  "generatedWithoutProviderCalls": true,
+  "sourceFailureCommit": "3705c7460a3338f869d8ac1abc056c9530ce6564",
+  "sourceRunArtifact": "phase4-output-budget-prequal-gpt55-20260718a-gpt-5.5-2026-04-23-run-1.json",
+  "candidateId": "20000000-0000-4000-8000-000000000004",
+  "candidateTitle": "Meeting requirement missing consequence",
+  "retainedFailureTrace": {
+    "candidateObligation": "Offerors must attend the March 1, 2026 pre-proposal meeting.",
+    "boundedRetrievedPages": [7, 6],
+    "citedEvidenceMatch": "exact",
+    "parserReliable": true,
+    "factEnvelopeVersion": "verification-facts-v4",
+    "dateComparison": {
+      "candidate": "2026-03-01",
+      "source": "2026-03-01",
+      "comparison": "match",
+      "scopeComparison": "unknown",
+      "materialScopeDifferences": [],
+      "materialScopeUnknowns": ["party"]
+    },
+    "atomicRelationship": {
+      "kind": "parent_missing_material_condition",
+      "evidence": "Failure to attend disqualifies an offeror"
+    },
+    "firstPass": {
+      "strictJsonAndZodShapePassed": true,
+      "candidateIdCheckPassed": true,
+      "exactEvidenceReferenceCheckPassed": true,
+      "classificationProvenByValidatorPath": "entails",
+      "provenFieldInvariants": {
+        "supportingEvidenceCount": 1,
+        "contradictingEvidence": [],
+        "missingOrOverstatedQualifiers": [],
+        "parserConcerns": [],
+        "descriptiveOnly": false,
+        "injectionInfluence": false,
+        "machineOnly": true
+      },
+      "exactRationale": null,
+      "exactSupportingEvidenceObject": null,
+      "exactMaterialQualifiersPresent": null,
+      "unavailableReason": "The bounded run artifact persisted validation metadata and the accepted result only. Because this first result was rejected, its raw object was not retained; store:false prevents provider recovery.",
+      "normalizedViolation": "semantic_contract_invalid:pass_a:missing_material_parent_condition"
+    },
+    "repairAttempt": {
+      "attempted": true,
+      "repairAttempts": 1,
+      "semanticFingerprintChanged": true,
+      "accepted": false,
+      "exactRepairedObject": null,
+      "exactChangedFields": null,
+      "otherwiseSchemaAdherent": null,
+      "unavailableReason": "The repaired raw object was not retained after semantic-fingerprint rejection. No field-level reconstruction is possible or attempted.",
+      "normalizedFinalError": "semantic_contract_invalid:pass_a:missing_material_parent_condition|semantic_contract_invalid:repair_changed_semantic_meaning"
+    },
+    "evaluator": {
+      "candidatePassed": false,
+      "passAFirstPassSchemaAdherent": false,
+      "passASchemaAdherent": false,
+      "finalDecisionSchemaAdherent": false
+    },
+    "finalFailedClosedResult": {
+      "passA": null,
+      "passB": null,
+      "finalAssessment": null,
+      "failedStage": "entailment"
+    }
+  },
+  "rootCause": {
+    "primary": "prompt_ambiguity",
+    "secondary": ["field_naming", "conflicting_instruction_priority"],
+    "schemaCouldRepresentCorrectAnswer": true,
+    "factEnvelopeCorrect": true,
+    "retrievalCorrect": true,
+    "decisionEngineReached": false,
+    "evaluatorCorrect": true,
+    "explanation": "The prompt distinguished independent additive child requirements from material omissions but did not explicitly map immutable parent_missing_material_condition to partially_entails. The generic missingOrOverstatedQualifiers name and absence of an atomic-condition field rule allowed the model to treat the disqualification consequence as additive and return entails. The validator correctly rejected it."
+  },
+  "correction": {
+    "scope": "provider-neutral Pass A prompt, schema descriptions/refinements, semantic validator, MockProvider fixture behavior, and tests only",
+    "promptRule": "When parent_missing_material_condition applies and deterministic comparisons do not mismatch, require partially_entails, one supporting reference, the exact atomic evidence once as the sole mismatch, no opposing evidence, and no scope mismatch from unknown fields.",
+    "schemaChanges": [
+      "Partial entailment now forbids contradicting evidence.",
+      "Partial entailment now forbids parser concerns.",
+      "The classification and mismatch descriptions state the atomic parent-condition mapping."
+    ],
+    "semanticValidatorChanges": [
+      "Requires partially_entails for reliable exact evidence plus parent_missing_material_condition when no deterministic mismatch exists.",
+      "Requires atomicRelationship.evidence exactly once as the sole missing-or-overstated item.",
+      "Preserves deterministic date/number mismatch priority and existing fail-closed rejection."
+    ],
+    "typeShapeChanged": false,
+    "repairPolicyChanged": false,
+    "semanticFingerprintProtectionChanged": false,
+    "factEnvelopeChanged": false,
+    "decisionEngineChanged": false,
+    "reasoningChanged": false,
+    "outputLimitsChanged": false,
+    "fixtureAnswersChanged": false
+  },
+  "versions": {
+    "entailmentPrompt": "verify-entailment-v7",
+    "entailmentSchema": "verification-entailment-v5",
+    "challengePrompt": "verify-challenge-v4",
+    "challengeSchema": "verification-challenge-v4",
+    "factEnvelope": "verification-facts-v4",
+    "decisionEngine": "verification-decision-v6",
+    "evaluator": "verification-evaluator-v3",
+    "finalAssessmentSchema": "verification-final-assessment-v1",
+    "parentChildRelationship": "atomic-parent-child-v1",
+    "reasoning": "low",
+    "outputLimits": {
+      "passA": 1800,
+      "passB": 1600,
+      "duplicate": 600
+    },
+    "compatibilityFingerprints": {
+      "full": "c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b",
+      "targeted": "c9976dc1127fe21900dacf0b5980a7a49dbbb8c349aa9eba347a1b1f22cab416"
+    }
+  },
+  "focusedRegressions": {
+    "tests": 6,
+    "passed": 6,
+    "cases": [
+      "required meeting with omitted disqualification consequence",
+      "required meeting with consequence included",
+      "meeting date mismatch",
+      "meeting not established by evidence",
+      "explicit evidence that no meeting is required",
+      "unknown party scope with matching date"
+    ],
+    "meetingMissingConsequenceResult": {
+      "passA": "partially_entails",
+      "supportingEvidenceCount": 1,
+      "contradictingEvidenceCount": 0,
+      "missingOrOverstatedQualifiers": ["Failure to attend disqualifies an offeror"],
+      "descriptiveOnly": false,
+      "repairAttempts": 0,
+      "finalSourceSupportStatus": "partially_supported",
+      "precedenceStatus": "active"
+    }
+  },
+  "repositoryRegression": {
+    "unit": "138 passed",
+    "semanticContractFocused": "49 passed across meeting, semantic-contract, and targeted-remediation suites",
+    "supabaseIntegration": "54 passed",
+    "mockPlaywright": "17 passed with PHASE4_LIVE_VERIFICATION_ENABLED=false and E2E_LIVE_OPENAI=0",
+    "deterministicVerificationFixture": "24/24; every required metric and schema layer 1.0; zero repairs, incompletes, critical false-supported, critical false-active, false merges, or injection influence",
+    "targetedMockPrequalification": "5/5 candidates; six calls; zero repairs; meeting candidate partially_entails with exact condition once",
+    "lint": "passed",
+    "formatCheck": "passed",
+    "typeCheck": "passed for all workspaces",
+    "productionBuild": "passed",
+    "secretScan": "passed",
+    "invariantChecklist": "passed for the meeting remediation; live verification-model qualification remains incomplete"
+  },
+  "commits": {
+    "implementation": "a4cff4338f1da399e8e31251c875f851dba4456b"
+  },
+  "authoritativeLedgers": {
+    "phase4SpendUsd": 9.238169,
+    "phase4CeilingUsd": 15,
+    "remediationSpendUsd": 7.555875,
+    "remediationCeilingUsd": 12,
+    "cumulativeApiSpendUsd": 9.64671,
+    "additionalSpendThisRemediationUsd": 0
+  },
+  "proposedLiveTestNotAuthorized": {
+    "action": "One completely fresh GPT-5.5 targeted verification-output-budget-prequalification-v1 probe under targeted fingerprint c9976dc1127fe21900dacf0b5980a7a49dbbb8c349aa9eba347a1b1f22cab416",
+    "maximumAdditionalUsd": 0.35,
+    "projectedPhase4MaximumUsd": 9.588169,
+    "projectedRemediationMaximumUsd": 7.905875,
+    "requiresSeparateAuthorization": true
+  },
+  "authorizationState": {
+    "providerCallMadeDuringRemediation": false,
+    "liveTestAuthorized": false,
+    "applicationSmokeAuthorized": false,
+    "modelSelectionAuthorized": false,
+    "phase5Authorized": false,
+    "liveVerificationEnabled": false
+  }
+}
