@@ -171,11 +171,26 @@ describe('synthetic-only smoke preflight', () => {
         compatibilityFingerprint: validated.assertedCompatibilityFingerprint,
       }),
     ).toBe('2ef68e32c45ebe4ab089ec34efbbfcc80722530d1b1618f7e71d4798de1a83c3');
+    expect(
+      computePhase4SmokeRunInputHash({
+        analysisRunId: request.analysisRunId,
+        candidateSetHash: validated.candidateSetHash,
+        compatibilityFingerprint: validated.assertedCompatibilityFingerprint,
+      }),
+    ).not.toBe('9c1f1750beb0bfcf6fb33e60cef24d468f889cd9105beabbf45fd4a9ae030806');
+  });
+
+  it.each([
+    ['missing candidate-set hash', undefined, request.expectedCompatibilityFingerprint],
+    ['missing compatibility fingerprint', request.expectedCandidateSetHash, undefined],
+    ['malformed candidate-set hash', 'not-a-hash', request.expectedCompatibilityFingerprint],
+    ['malformed compatibility fingerprint', request.expectedCandidateSetHash, 'not-a-hash'],
+  ])('rejects %s before a smoke run can be created', (_label, candidateSetHash, fingerprint) => {
     expect(() =>
       computePhase4SmokeRunInputHash({
         analysisRunId: request.analysisRunId,
-        candidateSetHash: undefined as unknown as string,
-        compatibilityFingerprint: undefined as unknown as string,
+        candidateSetHash: candidateSetHash as string,
+        compatibilityFingerprint: fingerprint as string,
       }),
     ).toThrow(/invalid_run_input_hash_material/);
   });
