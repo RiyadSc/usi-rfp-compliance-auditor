@@ -10,7 +10,7 @@ Last updated: 2026-07-18.
 
 - Zero-live production alignment is complete. The worker now uses the exact approved GPT-5.5/low configuration with 2 contexts, 1,800/1,600/600 limits, 90-second timeout, and fingerprint `c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b`; any model or material configuration drift fails before provider construction.
 - The fingerprint persists on `analysis_runs`, `verification_runs`, and `model_calls`. An immutable, RLS-enabled, service-only `phase4_synthetic_smoke_scopes` marker binds exact workspace, user, documents, analysis run, candidates, fixture, hash, and fingerprint. The dedicated harness has no arbitrary workspace or fallback path and sets its process-local live flag only after every preflight passes.
-- Offline gates pass: 165 unit, 56 Supabase integration, 17 mock Playwright, perfect 24-candidate deterministic evaluation, lint, formatting, type-check, production build, secret scan, and invariant checklist. No provider call occurred.
+- Offline gates pass: 166 unit, 56 Supabase integration, 17 mock Playwright, perfect 24-candidate deterministic evaluation, lint, formatting, type-check, production build, secret scan, and invariant checklist. No provider call occurred.
 - The first mock Playwright attempt exposed Phase 3 budget reads that included Phase 4 ledger rows. Phase 3 web/worker reads now explicitly filter `phase3`; the full 17-test rerun passed and both phase ceilings remain independent.
 - Ledgers remain Phase 4 `$10.965484/$15`, remediation `$9.283190/$12`, and cumulative API `$11.374025`. A renewed `$0.75` controlled smoke would project `$11.715484` and `$10.033190`, but is not authorized. General live verification remains disabled and Phase 5 remains blocked.
 - Two additional authorized fresh full GPT-5.5 repetitions ran sequentially after the first full pass. Each independently passed every gate under the identical full fingerprint. Across all three full repetitions, candidate status/precedence vectors were identical; every required accuracy and schema metric was `1.0`; and there were zero repairs, retries, incompletes, critical false findings, false merges, semantic changes, or injection influence.
@@ -109,7 +109,7 @@ The selected verification configuration passed three fresh full repetitions and 
 ### Phase 4 regression gate
 
 - Lint, formatting verification, type-check, production Next.js build, and secret scan: passed on the production-alignment state.
-- Unit: 165 passed, including 27 production-fingerprint and synthetic-preflight cases.
+- Unit: 166 passed, including 28 production-fingerprint and synthetic-preflight cases.
 - Integration: 56 passed against the confirmed Supabase project, including exact worker limits, fingerprint persistence, immutable service-only synthetic scopes, ownership, and cross-workspace rejection.
 - Mock Playwright: 17 passed with `PHASE4_LIVE_VERIFICATION_ENABLED=false` and `E2E_LIVE_OPENAI=0`; no live model calls occurred.
 - Secret scan: passed across tracked files and the client bundle.

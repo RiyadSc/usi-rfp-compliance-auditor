@@ -86,7 +86,8 @@ const [markerResult, memberResult, analysisResult, documentsResult, candidatesRe
     admin
       .from('documents')
       .select('id,workspace_id,parser_name,deleted_at')
-      .in('id', request.documentIds),
+      .eq('workspace_id', request.workspaceId)
+      .is('deleted_at', null),
     admin
       .from('requirement_candidates')
       .select(

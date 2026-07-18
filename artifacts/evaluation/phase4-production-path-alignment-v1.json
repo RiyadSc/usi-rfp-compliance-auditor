@@ -72,7 +72,7 @@
     "arbitraryWorkspaceFallback": false
   },
   "tests": {
-    "unit": { "passed": 165, "failed": 0 },
+    "unit": { "passed": 166, "failed": 0 },
     "integration": { "passed": 56, "failed": 0 },
     "playwrightMock": { "passed": 17, "failed": 0, "liveCalls": 0 },
     "deterministicFixture": {

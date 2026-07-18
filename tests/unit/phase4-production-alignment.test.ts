@@ -175,6 +175,23 @@ describe('synthetic-only smoke preflight', () => {
       },
     ],
     [
+      'extra arbitrary workspace document',
+      {
+        snapshot: {
+          ...validSnapshot(),
+          documents: [
+            ...validSnapshot().documents,
+            {
+              id: crypto.randomUUID(),
+              workspaceId: request.workspaceId,
+              parserName: 'synthetic-fixture',
+              deletedAt: null,
+            },
+          ],
+        },
+      },
+    ],
+    [
       'unapproved candidate set',
       {
         snapshot: {
