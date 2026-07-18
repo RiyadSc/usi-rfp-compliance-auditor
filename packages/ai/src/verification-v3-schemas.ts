@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-export const ENTAILMENT_PROMPT_VERSION = 'verify-entailment-v6';
-export const ENTAILMENT_SCHEMA_VERSION = 'verification-entailment-v4';
+export const ENTAILMENT_PROMPT_VERSION = 'verify-entailment-v7';
+export const ENTAILMENT_SCHEMA_VERSION = 'verification-entailment-v5';
 export const CHALLENGE_PROMPT_VERSION = 'verify-challenge-v4';
 export const CHALLENGE_SCHEMA_VERSION = 'verification-challenge-v4';
 export const DUPLICATE_PROMPT_VERSION = 'verify-duplicate-v1';
@@ -84,11 +84,15 @@ export const entailmentResultSchema = z
     if (result.classification === 'partially_entails') {
       if (result.supportingEvidence.length !== 1)
         issue('supportingEvidence', 'semantic_contract.partial_requires_one_supporting_reference');
+      if (result.contradictingEvidence.length)
+        issue('contradictingEvidence', 'semantic_contract.partial_forbids_contradicting_evidence');
       if (!result.missingOrOverstatedQualifiers.length)
         issue(
           'missingOrOverstatedQualifiers',
           'semantic_contract.partial_requires_material_mismatch',
         );
+      if (result.parserConcerns.length)
+        issue('parserConcerns', 'semantic_contract.partial_forbids_parser_concerns');
     }
     if (result.classification === 'contradicts') {
       if (result.contradictingEvidence.length !== 1)
@@ -276,7 +280,7 @@ export const entailmentJsonSchema = {
       type: 'string',
       enum: [...ENTAILMENT_CLASSES],
       description:
-        'entails=complete material meaning; partially_entails=central obligation plus a material mismatch; contradicts=explicit opposite; insufficient=neither proposition established; parser_uncertain=parser limitation blocks assessment.',
+        'entails=complete material meaning; partially_entails=central obligation plus a material mismatch; contradicts=explicit opposite; insufficient=neither proposition established; parser_uncertain=parser limitation blocks assessment. When immutable atomicRelationship.kind is parent_missing_material_condition and deterministic values do not mismatch, use partially_entails; that condition is not an additive child.',
     },
     rationale: {
       type: 'string',
@@ -307,7 +311,7 @@ export const entailmentJsonSchema = {
       type: 'array',
       maxItems: 3,
       description:
-        'Required and non-empty only for partially_entails. MUST be [] for entails, contradicts, insufficient, and parser_uncertain.',
+        'Required and non-empty only for partially_entails. For parent_missing_material_condition with no deterministic mismatch, use exactly one item equal to immutable atomicRelationship.evidence. MUST be [] for entails, contradicts, insufficient, and parser_uncertain.',
       items: { type: 'string', minLength: 1, maxLength: 100 },
     },
     parserConcerns: {

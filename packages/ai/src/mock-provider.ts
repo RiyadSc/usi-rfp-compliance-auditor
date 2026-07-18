@@ -192,7 +192,7 @@ export class MockProvider implements ModelProvider {
       cited &&
       ((/may .*email/i.test(candidate.obligation) && /email .*not accepted/i.test(cited.text)) ||
         (/mandatory|must|required/i.test(candidate.obligation) &&
-          /not required|creates no .*obligation/i.test(cited.text))),
+          /not required|no .*meeting .*required|creates no .*obligation/i.test(cited.text))),
     );
     const partial = Boolean(
       cited &&
@@ -211,10 +211,10 @@ export class MockProvider implements ModelProvider {
       ? ('parser_uncertain' as const)
       : injection
         ? ('insufficient' as const)
-        : partial
-          ? ('partially_entails' as const)
-          : explicitConflict || valueMismatch || falseConflict
-            ? ('contradicts' as const)
+        : explicitConflict || valueMismatch || falseConflict
+          ? ('contradicts' as const)
+          : partial
+            ? ('partially_entails' as const)
             : unsupported
               ? ('insufficient' as const)
               : ['exact', 'normalized_exact'].includes(factEnvelope.candidateQuoteMatch.matchType)
@@ -246,13 +246,14 @@ export class MockProvider implements ModelProvider {
       supportingEvidence: ['entails', 'partially_entails'].includes(classification) ? evidence : [],
       contradictingEvidence: classification === 'contradicts' ? evidence : [],
       materialQualifiersPresent: [],
-      missingOrOverstatedQualifiers: partial
-        ? [
-            factEnvelope.atomicRelationship.kind === 'parent_missing_material_condition'
-              ? 'attendance consequence omitted'
-              : 'employee scope exceeds supervisor scope',
-          ]
-        : [],
+      missingOrOverstatedQualifiers:
+        classification === 'partially_entails'
+          ? [
+              factEnvelope.atomicRelationship.kind === 'parent_missing_material_condition'
+                ? factEnvelope.atomicRelationship.evidence!
+                : 'employee scope exceeds supervisor scope',
+            ]
+          : [],
       parserConcerns: classification === 'parser_uncertain' ? factEnvelope.parserWarnings : [],
       descriptiveOnly: false as const,
       injectionInfluence: false as const,

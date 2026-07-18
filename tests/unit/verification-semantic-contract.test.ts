@@ -52,7 +52,7 @@ const expectedContract = new Map<
       passB: null,
       final: 'partially_supported',
       precedence: 'active',
-      mismatchPattern: /scope|consequence|time/i,
+      mismatchPattern: /failure to attend|disqualif/i,
     },
   ],
   [

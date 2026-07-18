@@ -95,6 +95,33 @@ export function validateEntailmentSemanticContract(input: {
       success: false,
       normalizedError: 'semantic_contract_invalid:pass_a:missing_material_parent_condition',
     };
+  const materialParentConditionApplies =
+    input.facts.atomicRelationship.kind === 'parent_missing_material_condition' &&
+    input.facts.parserReliable &&
+    ['exact', 'normalized_exact'].includes(input.facts.candidateQuoteMatch.matchType) &&
+    !input.facts.comparisons.some((comparison) => comparison.comparison === 'mismatch');
+  if (materialParentConditionApplies) {
+    if (parsed.data.classification !== 'partially_entails')
+      return {
+        success: false,
+        normalizedError:
+          'semantic_contract_invalid:pass_a:material_parent_condition_requires_partial',
+      };
+    const expectedCondition = normalized(input.facts.atomicRelationship.evidence ?? '');
+    const conditionMatches = parsed.data.missingOrOverstatedQualifiers.filter(
+      (item) => normalized(item) === expectedCondition,
+    );
+    if (
+      !expectedCondition ||
+      parsed.data.missingOrOverstatedQualifiers.length !== 1 ||
+      conditionMatches.length !== 1
+    )
+      return {
+        success: false,
+        normalizedError:
+          'semantic_contract_invalid:pass_a:material_parent_condition_requires_exactly_one_mismatch',
+      };
+  }
   if (
     parsed.data.classification === 'partially_entails' &&
     input.facts.atomicRelationship.kind === 'parent_with_additive_child'
