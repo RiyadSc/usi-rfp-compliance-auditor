@@ -7,33 +7,31 @@ import {
 } from '../../packages/ai/src/phase4-qualified-config';
 import {
   PHASE4_SYNTHETIC_MARKER,
+  PHASE4_COMPLETE_SYNTHETIC_SCOPE_VERSION,
   computeSyntheticCandidateSetHash,
+  computeSyntheticDocumentSetHash,
   runAfterPhase4SyntheticSmokePreflight,
   validatePhase4SyntheticSmokePreflight,
   type Phase4SyntheticSmokeInput,
   type Phase4SyntheticSmokeSnapshot,
 } from '../../apps/worker/src/phase4-smoke-preflight';
+import { phase4SyntheticManifest } from '../../scripts/lib/phase4-complete-synthetic-scope';
+
+const manifest = phase4SyntheticManifest();
 
 const request: Phase4SyntheticSmokeInput = {
-  smokeScopeId: '30000000-0000-4000-8000-000000000001',
-  workspaceId: '30000000-0000-4000-8000-000000000002',
+  smokeScopeId: manifest.scopeId,
+  workspaceId: manifest.workspaceId,
   authenticatedUserId: '30000000-0000-4000-8000-000000000003',
-  documentIds: ['30000000-0000-4000-8000-000000000004'],
-  analysisRunId: '30000000-0000-4000-8000-000000000005',
+  documentIds: manifest.documentIds,
+  analysisRunId: manifest.analysisRunId,
   expectedCompatibilityFingerprint: PHASE4_APPROVED_COMPATIBILITY_FINGERPRINT,
+  expectedCandidateSetHash: manifest.candidateSetHash,
+  expectedDocumentSetHash: manifest.documentSetHash,
+  expectedAnswersHash: manifest.expectedAnswersHash,
   fixtureVersion: 'verification-cases-v2',
 };
-const candidate = {
-  id: '30000000-0000-4000-8000-000000000006',
-  workspaceId: request.workspaceId,
-  analysisRunId: request.analysisRunId,
-  documentId: request.documentIds[0],
-  category: 'mandatory_meeting',
-  title: 'Synthetic meeting',
-  obligation: 'Attend the synthetic meeting.',
-  preliminaryPage: 1,
-  evidenceQuote: 'Attend the synthetic meeting.',
-};
+const candidates = manifest.candidates;
 
 function validSnapshot(): Phase4SyntheticSmokeSnapshot {
   return {
@@ -45,8 +43,11 @@ function validSnapshot(): Phase4SyntheticSmokeSnapshot {
       fixtureVersion: request.fixtureVersion,
       compatibilityFingerprint: request.expectedCompatibilityFingerprint,
       approvedDocumentIds: request.documentIds,
-      approvedCandidateIds: [candidate.id],
-      candidateSetHash: computeSyntheticCandidateSetHash([candidate]),
+      approvedCandidateIds: manifest.candidateIds,
+      candidateSetHash: computeSyntheticCandidateSetHash(candidates),
+      documentSetHash: computeSyntheticDocumentSetHash([manifest.document]),
+      expectedAnswersHash: manifest.expectedAnswersHash,
+      scopeVersion: PHASE4_COMPLETE_SYNTHETIC_SCOPE_VERSION,
       syntheticMarker: PHASE4_SYNTHETIC_MARKER,
     },
     membershipPresent: true,
@@ -59,11 +60,15 @@ function validSnapshot(): Phase4SyntheticSmokeSnapshot {
       {
         id: request.documentIds[0],
         workspaceId: request.workspaceId,
+        objectKey: manifest.document.objectKey,
+        sha256: manifest.document.sha256,
+        pageCount: manifest.document.pageCount,
         parserName: 'synthetic-fixture',
+        parserVersion: manifest.document.parserVersion,
         deletedAt: null,
       },
     ],
-    candidates: [candidate],
+    candidates,
   };
 }
 
@@ -147,7 +152,7 @@ describe('synthetic-only smoke preflight', () => {
       ),
     ).toMatchObject({
       assertedCompatibilityFingerprint: PHASE4_APPROVED_COMPATIBILITY_FINGERPRINT,
-      candidateIds: [candidate.id],
+      candidateIds: manifest.candidateIds,
       documentIds: request.documentIds,
     });
   });
@@ -165,6 +170,7 @@ describe('synthetic-only smoke preflight', () => {
       },
     ],
     ['unauthorized identity', { snapshot: { ...validSnapshot(), membershipPresent: false } }],
+    ['missing document', { snapshot: { ...validSnapshot(), documents: [] } }],
     [
       'cross-workspace document',
       {
@@ -198,10 +204,59 @@ describe('synthetic-only smoke preflight', () => {
           ...validSnapshot(),
           marker: {
             ...validSnapshot().marker!,
-            approvedCandidateIds: [crypto.randomUUID()],
+            approvedCandidateIds: [crypto.randomUUID(), ...manifest.candidateIds.slice(1)],
           },
         },
       },
+    ],
+    [
+      'legacy one-candidate scope',
+      {
+        snapshot: {
+          ...validSnapshot(),
+          marker: { ...validSnapshot().marker!, scopeVersion: 'phase4-legacy-scope-v0' },
+        },
+      },
+    ],
+    [
+      'missing candidate',
+      { snapshot: { ...validSnapshot(), candidates: candidates.slice(0, -1) } },
+    ],
+    [
+      'extra candidate',
+      {
+        snapshot: {
+          ...validSnapshot(),
+          candidates: [{ ...candidates[0], id: crypto.randomUUID() }, ...candidates],
+        },
+      },
+    ],
+    [
+      'candidate hash drift',
+      {
+        snapshot: {
+          ...validSnapshot(),
+          candidates: [{ ...candidates[0], obligation: 'drifted' }, ...candidates.slice(1)],
+        },
+      },
+    ],
+    [
+      'document hash drift',
+      {
+        snapshot: {
+          ...validSnapshot(),
+          documents: [{ ...validSnapshot().documents[0], sha256: 'f'.repeat(64) }],
+        },
+      },
+    ],
+    [
+      'wrong expected-answer hash',
+      { request: { ...request, expectedAnswersHash: 'f'.repeat(64) } },
+    ],
+    ['wrong fixture version', { request: { ...request, fixtureVersion: 'verification-cases-v1' } }],
+    [
+      'wrong fingerprint',
+      { request: { ...request, expectedCompatibilityFingerprint: 'f'.repeat(64) } },
     ],
   ])('stops %s before provider execution', async (_label, mutation) => {
     const execute = vi.fn(async () => 'provider-called');

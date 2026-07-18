@@ -6,6 +6,8 @@ import {
 } from '@usi/ai';
 
 export const PHASE4_SYNTHETIC_MARKER = 'phase4-synthetic-test-only';
+export const PHASE4_COMPLETE_SYNTHETIC_SCOPE_VERSION = 'phase4-complete-scope-v1';
+export const PHASE4_COMPLETE_SYNTHETIC_CANDIDATE_COUNT = 24;
 
 export type SyntheticSmokeCandidate = {
   id: string;
@@ -26,7 +28,21 @@ export type Phase4SyntheticSmokeInput = {
   documentIds: string[];
   analysisRunId: string;
   expectedCompatibilityFingerprint: string;
+  expectedCandidateSetHash: string;
+  expectedDocumentSetHash: string;
+  expectedAnswersHash: string;
   fixtureVersion: string;
+};
+
+export type SyntheticSmokeDocument = {
+  id: string;
+  workspaceId: string;
+  objectKey: string;
+  sha256: string;
+  pageCount: number;
+  parserName: string | null;
+  parserVersion: string | null;
+  deletedAt: string | null;
 };
 
 export type Phase4SyntheticSmokeSnapshot = {
@@ -40,16 +56,14 @@ export type Phase4SyntheticSmokeSnapshot = {
     approvedDocumentIds: string[];
     approvedCandidateIds: string[];
     candidateSetHash: string;
+    documentSetHash: string | null;
+    expectedAnswersHash: string | null;
+    scopeVersion: string;
     syntheticMarker: string;
   } | null;
   membershipPresent: boolean;
   analysisRun: { id: string; workspaceId: string; documentId: string } | null;
-  documents: Array<{
-    id: string;
-    workspaceId: string;
-    parserName: string | null;
-    deletedAt: string | null;
-  }>;
+  documents: SyntheticSmokeDocument[];
   candidates: SyntheticSmokeCandidate[];
 };
 
@@ -78,6 +92,42 @@ export function computeSyntheticCandidateSetHash(candidates: SyntheticSmokeCandi
   return createHash('sha256').update(JSON.stringify(normalized)).digest('hex');
 }
 
+export function computeSyntheticDocumentSetHash(documents: SyntheticSmokeDocument[]): string {
+  const normalized = [...documents]
+    .sort((left, right) => left.id.localeCompare(right.id))
+    .map((document) => ({
+      id: document.id,
+      workspaceId: document.workspaceId,
+      objectKey: document.objectKey,
+      sha256: document.sha256,
+      pageCount: document.pageCount,
+      parserName: document.parserName,
+      parserVersion: document.parserVersion,
+    }));
+  return createHash('sha256').update(JSON.stringify(normalized)).digest('hex');
+}
+
+export function computeSyntheticExpectedAnswersHash(
+  expectedAnswers: Array<{
+    id: string;
+    expected: {
+      sourceSupportStatus: string;
+      precedenceStatus: string;
+      proofRequirement: string;
+      pages: readonly number[];
+      critical?: boolean;
+      dateCase?: boolean;
+      numberCase?: boolean;
+      addendumCase?: boolean;
+    };
+  }>,
+): string {
+  const normalized = [...expectedAnswers]
+    .sort((left, right) => left.id.localeCompare(right.id))
+    .map((item) => ({ id: item.id, expected: item.expected }));
+  return createHash('sha256').update(JSON.stringify(normalized)).digest('hex');
+}
+
 function stop(reason: string): never {
   throw new Error(`phase4_synthetic_smoke_preflight_failed:${reason}`);
 }
@@ -94,6 +144,9 @@ export function validatePhase4SyntheticSmokePreflight(
     !input.analysisRunId ||
     !input.documentIds.length ||
     !input.expectedCompatibilityFingerprint ||
+    !input.expectedCandidateSetHash ||
+    !input.expectedDocumentSetHash ||
+    !input.expectedAnswersHash ||
     !input.fixtureVersion
   ) {
     stop('missing_explicit_identifier');
@@ -107,6 +160,8 @@ export function validatePhase4SyntheticSmokePreflight(
   }
   const marker = snapshot.marker;
   if (!marker || marker.id !== input.smokeScopeId) stop('synthetic_marker_missing');
+  if (marker.scopeVersion !== PHASE4_COMPLETE_SYNTHETIC_SCOPE_VERSION)
+    stop('scope_not_complete_fixture');
   if (marker.syntheticMarker !== PHASE4_SYNTHETIC_MARKER) stop('workspace_not_synthetic');
   if (marker.workspaceId !== input.workspaceId) stop('marker_workspace_mismatch');
   if (marker.authenticatedUserId !== input.authenticatedUserId) stop('marker_identity_mismatch');
@@ -114,6 +169,12 @@ export function validatePhase4SyntheticSmokePreflight(
   if (marker.fixtureVersion !== input.fixtureVersion) stop('fixture_version_mismatch');
   if (marker.compatibilityFingerprint !== input.expectedCompatibilityFingerprint)
     stop('marker_fingerprint_mismatch');
+  if (marker.candidateSetHash !== input.expectedCandidateSetHash)
+    stop('marker_candidate_set_hash_mismatch');
+  if (marker.documentSetHash !== input.expectedDocumentSetHash)
+    stop('marker_document_set_hash_mismatch');
+  if (marker.expectedAnswersHash !== input.expectedAnswersHash)
+    stop('marker_expected_answers_hash_mismatch');
   if (!snapshot.membershipPresent) stop('identity_not_authorized');
   if (!snapshot.analysisRun) stop('analysis_run_missing');
   if (
@@ -140,6 +201,11 @@ export function validatePhase4SyntheticSmokePreflight(
     )
   )
     stop('candidate_set_not_approved');
+  if (
+    snapshot.candidates.length !== PHASE4_COMPLETE_SYNTHETIC_CANDIDATE_COUNT ||
+    marker.approvedCandidateIds.length !== PHASE4_COMPLETE_SYNTHETIC_CANDIDATE_COUNT
+  )
+    stop('candidate_count_not_24');
   for (const candidate of snapshot.candidates) {
     if (
       candidate.workspaceId !== input.workspaceId ||
@@ -151,9 +217,13 @@ export function validatePhase4SyntheticSmokePreflight(
   }
   const candidateSetHash = computeSyntheticCandidateSetHash(snapshot.candidates);
   if (candidateSetHash !== marker.candidateSetHash) stop('candidate_set_hash_mismatch');
+  const documentSetHash = computeSyntheticDocumentSetHash(snapshot.documents);
+  if (documentSetHash !== marker.documentSetHash) stop('document_set_hash_mismatch');
   return {
     assertedCompatibilityFingerprint: asserted.compatibilityFingerprint,
     candidateSetHash,
+    documentSetHash,
+    expectedAnswersHash: marker.expectedAnswersHash,
     candidateIds: sortedUnique(snapshot.candidates.map((candidate) => candidate.id)),
     documentIds: sortedUnique(input.documentIds),
   };

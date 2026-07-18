@@ -22,6 +22,7 @@
     "eval:live": "npx tsx scripts/live-eval-extraction.mjs",
     "smoke:live:worker": "npx tsx scripts/live-worker-smoke.mjs",
     "smoke:live:verification": "npx tsx scripts/live-smoke-phase4-verification.mts",
+    "scope:provision:phase4": "npx tsx scripts/provision-phase4-synthetic-scope.mts",
     "eval:live:verification": "npx tsx scripts/live-eval-verification.mjs",
     "worker": "npm run start --workspace apps/worker",
     "worker:dev": "npm run dev --workspace apps/worker",

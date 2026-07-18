@@ -10,6 +10,8 @@ import {
 } from '../packages/ai/src/index.ts';
 import {
   computeSyntheticCandidateSetHash,
+  computeSyntheticDocumentSetHash,
+  computeSyntheticExpectedAnswersHash,
   runAfterPhase4SyntheticSmokePreflight,
   type Phase4SyntheticSmokeSnapshot,
   type SyntheticSmokeCandidate,
@@ -30,14 +32,19 @@ const required = (name: string) => {
   return value;
 };
 
-if (process.env.PHASE4_LIVE_SMOKE !== '1')
+const dryRunProviderBoundary = process.argv.includes('--dry-run-provider-boundary');
+if (dryRunProviderBoundary) {
+  if (process.env.PHASE4_SMOKE_DRY_RUN !== '1' || process.env.PHASE4_LIVE_SMOKE === '1')
+    throw new Error('phase4_synthetic_smoke_preflight_failed:invalid_dry_run_mode');
+} else if (process.env.PHASE4_LIVE_SMOKE !== '1') {
   throw new Error('Refusing Phase 4 live smoke: PHASE4_LIVE_SMOKE=1 is required');
+}
 const phase4Ceiling = Number(process.env.PHASE4_SPEND_CEILING_USD);
 const remediationCeiling = Number(process.env.PHASE4_REMEDIATION_SPEND_CEILING_USD);
 const smokeMaximum = Number(process.env.PHASE4_SMOKE_MAX_USD);
 if (phase4Ceiling !== 15 || remediationCeiling !== 12 || smokeMaximum <= 0 || smokeMaximum > 0.75)
   throw new Error('phase4_synthetic_smoke_preflight_failed:invalid_budget_configuration');
-if (!process.env.OPENAI_API_KEY)
+if (!dryRunProviderBoundary && !process.env.OPENAI_API_KEY)
   throw new Error('phase4_synthetic_smoke_preflight_failed:openai_api_key_missing');
 
 const request = {
@@ -50,6 +57,9 @@ const request = {
     .filter(Boolean),
   analysisRunId: required('--analysis-run-id'),
   expectedCompatibilityFingerprint: required('--expected-fingerprint'),
+  expectedCandidateSetHash: required('--expected-candidate-set-hash'),
+  expectedDocumentSetHash: required('--expected-document-set-hash'),
+  expectedAnswersHash: required('--expected-answers-hash'),
   fixtureVersion: required('--fixture-version'),
 };
 if (request.expectedCompatibilityFingerprint !== PHASE4_APPROVED_COMPATIBILITY_FINGERPRINT)
@@ -85,7 +95,7 @@ const [markerResult, memberResult, analysisResult, documentsResult, candidatesRe
       .maybeSingle(),
     admin
       .from('documents')
-      .select('id,workspace_id,parser_name,deleted_at')
+      .select('id,workspace_id,object_key,sha256,page_count,parser_name,parser_version,deleted_at')
       .eq('workspace_id', request.workspaceId)
       .is('deleted_at', null),
     admin
@@ -131,6 +141,9 @@ const snapshot: Phase4SyntheticSmokeSnapshot = {
         approvedDocumentIds: marker.approved_document_ids,
         approvedCandidateIds: marker.approved_candidate_ids,
         candidateSetHash: marker.candidate_set_hash,
+        documentSetHash: marker.document_set_hash,
+        expectedAnswersHash: marker.expected_answers_hash,
+        scopeVersion: marker.scope_version,
         syntheticMarker: marker.synthetic_marker,
       }
     : null,
@@ -145,7 +158,11 @@ const snapshot: Phase4SyntheticSmokeSnapshot = {
   documents: (documentsResult.data ?? []).map((document) => ({
     id: document.id,
     workspaceId: document.workspace_id,
+    objectKey: document.object_key,
+    sha256: document.sha256,
+    pageCount: document.page_count,
     parserName: document.parser_name,
+    parserVersion: document.parser_version,
     deletedAt: document.deleted_at,
   })),
   candidates,
@@ -171,6 +188,10 @@ if (
   throw new Error('phase4_synthetic_smoke_preflight_failed:frozen_candidate_ids');
 if (marker?.candidate_set_hash !== computeSyntheticCandidateSetHash(candidates))
   throw new Error('phase4_synthetic_smoke_preflight_failed:frozen_candidate_hash');
+if (marker?.document_set_hash !== computeSyntheticDocumentSetHash(snapshot.documents))
+  throw new Error('phase4_synthetic_smoke_preflight_failed:frozen_document_hash');
+if (marker?.expected_answers_hash !== computeSyntheticExpectedAnswersHash([...VERIFICATION_CASES]))
+  throw new Error('phase4_synthetic_smoke_preflight_failed:frozen_expected_answers_hash');
 
 const preflight = await runAfterPhase4SyntheticSmokePreflight({
   request,
@@ -178,6 +199,25 @@ const preflight = await runAfterPhase4SyntheticSmokePreflight({
   runtime: PHASE4_QUALIFIED_PRODUCTION_CONFIG,
   execute: async () => ({ passed: true as const }),
 });
+
+if (dryRunProviderBoundary) {
+  console.info(
+    JSON.stringify({
+      reportVersion: 'phase4-production-worker-smoke-dry-run-v1',
+      providerConstructed: false,
+      providerCalled: false,
+      stoppedAt: 'final_provider_access_boundary',
+      syntheticScope: {
+        ...request,
+        candidateCount: candidates.length,
+        assertedCandidateSetHash: preflight.candidateSetHash,
+        assertedDocumentSetHash: preflight.documentSetHash,
+        assertedExpectedAnswersHash: preflight.expectedAnswersHash,
+      },
+    }),
+  );
+  process.exit(0);
+}
 
 // The live worker flag is process-local and is set only after every synthetic preflight passes.
 process.env.PHASE4_LIVE_VERIFICATION_ENABLED = 'true';
@@ -308,6 +348,8 @@ const report = {
     analysisRunId: request.analysisRunId,
     fixtureVersion: request.fixtureVersion,
     candidateSetHash: preflight.candidateSetHash,
+    documentSetHash: preflight.documentSetHash,
+    expectedAnswersHash: preflight.expectedAnswersHash,
   },
   verificationRunId,
   processingJobId,

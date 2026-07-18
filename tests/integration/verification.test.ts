@@ -171,6 +171,60 @@ async function seedVerification(options?: {
 }
 
 describe('Phase 4 verification persistence and isolation', () => {
+  it('binds the provisioned complete synthetic scope and denies ordinary-user mutation', async () => {
+    const scopeId = '40000000-0000-4000-8000-000000000001';
+    const svc = admin();
+    const { data: scope, error } = await svc
+      .from('phase4_synthetic_smoke_scopes')
+      .select('*')
+      .eq('id', scopeId)
+      .single();
+    expect(error).toBeNull();
+    expect(scope).toMatchObject({
+      workspace_id: '10000000-0000-4000-8000-000000000001',
+      authenticated_user_id: '922727a8-727b-4b9e-a0ff-6e7f7f43d82c',
+      analysis_run_id: '10000000-0000-4000-8000-000000000003',
+      fixture_version: 'verification-cases-v2',
+      scope_version: 'phase4-complete-scope-v1',
+      compatibility_fingerprint: 'c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b',
+      synthetic_marker: 'phase4-synthetic-test-only',
+    });
+    expect(scope.approved_candidate_ids).toHaveLength(24);
+    expect(scope.approved_document_ids).toEqual(['10000000-0000-4000-8000-000000000002']);
+    expect(scope.candidate_set_hash).toMatch(/^[a-f0-9]{64}$/);
+    expect(scope.document_set_hash).toMatch(/^[a-f0-9]{64}$/);
+    expect(scope.expected_answers_hash).toMatch(/^[a-f0-9]{64}$/);
+
+    expect(
+      (await userA.from('phase4_synthetic_smoke_scopes').select('id').eq('id', scopeId)).data,
+    ).toEqual([]);
+    const ordinaryUpdate = await userA
+      .from('phase4_synthetic_smoke_scopes')
+      .update({ fixture_version: 'changed' })
+      .eq('id', scopeId)
+      .select('id');
+    expect(ordinaryUpdate.error).toBeNull();
+    expect(ordinaryUpdate.data).toEqual([]);
+    const ordinaryDelete = await userA
+      .from('phase4_synthetic_smoke_scopes')
+      .delete()
+      .eq('id', scopeId)
+      .select('id');
+    expect(ordinaryDelete.error).toBeNull();
+    expect(ordinaryDelete.data).toEqual([]);
+    expect(
+      (
+        await svc
+          .from('phase4_synthetic_smoke_scopes')
+          .update({ document_set_hash: 'f'.repeat(64) })
+          .eq('id', scopeId)
+      ).error?.message,
+    ).toMatch(/immutable|append-only/i);
+    expect(
+      (await svc.from('phase4_synthetic_smoke_scopes').delete().eq('id', scopeId)).error?.message,
+    ).toMatch(/immutable|append-only/i);
+  });
+
   it('enforces immutable service-only synthetic smoke scopes and workspace ownership', async () => {
     const seed = await seedVerification();
     const svc = admin();
