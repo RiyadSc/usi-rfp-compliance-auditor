@@ -1,8 +1,8 @@
 # Build Status
 
-## Current phase: Phase 4 semantic-contract remediation complete offline — live requalification not authorized
+## Current phase: Phase 4 GPT-5.5 semantic requalification failed — no rerun authorized
 
-Last updated: 2026-07-17.
+Last updated: 2026-07-18.
 
 ## Phase 4 — Independent source verification and human review (GATE NOT COMPLETE)
 
@@ -19,10 +19,13 @@ Last updated: 2026-07-17.
 - Zero-live semantic remediation now uses `verify-entailment-v4` / `verification-entailment-v2` and `verify-challenge-v2` / `verification-challenge-v2`. Both outputs are strictly bounded, class-discriminated by Zod refinements, and post-validated against the immutable candidate, supplied exact evidence, and deterministic fact envelope before the decision engine can consume them.
 - The three Stage 1 incompletes were provider-normalized `max_output_tokens`, not timeout, refusal, interruption, or context-window failure. Each used exactly 1,200 completion tokens, of which reasoning consumed 1,034 (meeting consequence), 1,011 (bid bond), and 951 (old liability), leaving only 166, 189, and 249 tokens for the formerly verbose structured object. The replacement schema ordinarily serializes in a few hundred tokens and preserves the exact incomplete reason prospectively.
 - Semantic boundary definitions now distinguish complete material entailment from stylistic/synonymous/additive wording, partial entailment from explicit opposition, and insufficient evidence from contradiction. Pass B objections must be candidate- and evidence-grounded; deterministic guards reject speculative objections and facts inconsistent with the immutable envelope.
+- One authorized fresh `gpt-5.5-2026-04-23` `medium` repetition then used the exact v4/v2 semantic contracts and unchanged frozen v2/v3/v5/v2/v1 compatibility fingerprint. It **did not qualify**: source-status accuracy was `.833333`, and five Pass A calls plus one Pass B call required controlled repair. It was not rerun.
+- Four candidates missed source status: meeting consequence (`partially_supported` expected, `contradicted` actual), incorrect liability limit (`contradicted` expected, `partially_supported` actual), staffing-plan parent attachment (`supported` expected, `partially_supported` actual), and Addendum 4 insurance statement (`supported` expected, `partially_supported` actual). The bounded trace and mixed semantic/deterministic causes are in `artifacts/evaluation/phase4-stage1-gpt55-semantic-v4-20260718a-failure-trace.json`.
+- Safety and deterministic gates held: zero critical false-supported/false-active, zero injection influence, precedence/date/number/quote/citation/parser/proof/duplicate accuracy `1.0`, zero false merges, zero incomplete/refused/timed-out results, and every post-repair schema layer valid. Six observable repairs nonetheless fail the clean structured-output qualification requirement.
 - Historical candidate-level Pass A, Pass B, and fact envelopes were not retained. Their exact values remain explicitly unavailable rather than reconstructed. Full traces and limitations are in `artifacts/evaluation/phase4-zero-live-diagnostic-v1.json`.
 - No successful prompt-injection influence or dangerous false merge occurred. All counted supported quotes were exact/normalized-exact.
 - Live verification remains disabled (`PHASE4_LIVE_VERIFICATION_ENABLED=false`). `MockProvider` remains the demo fallback, and every machine finding remains human-review pending.
-- Phase 4 ledger spend: `$7.398322` of `$10`; remediation spend: `$5.716028` of `$6`; cumulative API spend: `$7.806863`. The fresh Stage 1 repetition cost `$0.410115`, below its authorized `$0.55` maximum.
+- Phase 4 ledger spend: `$8.273600` of `$10`; remediation spend: `$6.591306` of the authorized `$7`; cumulative API spend: `$8.682141`. The fresh GPT-5.5 repetition cost `$0.875278`, below its authorized `$1.10` maximum.
 - Phase 4 is **not complete**. No model is selected, no live application verification smoke was run, and Phase 5 remains blocked.
 
 ### Implemented Phase 4 scope
@@ -61,7 +64,7 @@ Last updated: 2026-07-17.
 
 ### Remaining gate before Phase 4 can close
 
-The fresh GPT-5.4 Stage 1 repetition failed, so it cannot unlock repetitions two and three. Its semantic-contract defects have been corrected and proven offline, but no new live qualification is authorized. The frozen fixture, expected answers, facts v3, decision v5, evaluator v2, and final schema v1 remain unchanged. Live application verification and its smoke remain disabled; human-only review with deterministic mock findings remains the demo mode.
+The fresh GPT-5.5 semantic-contract repetition failed, so it cannot unlock additional repetitions or model selection. Per authorization, it was not rerun, no other model was called, and no fixture, expected answer, prompt, schema, retrieval, fact, decision, or evaluator change was made after the result. Live application verification and its smoke remain disabled; human-only review with deterministic mock findings remains the demo mode.
 
 ### Phase 4 regression gate
 
