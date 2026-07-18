@@ -1,0 +1,324 @@
+{
+  "reportVersion": "phase4-stage1-gpt55-semantic-failure-trace-v1",
+  "generatedWithoutAdditionalLiveCalls": true,
+  "runId": "phase4-stage1-gpt55-semantic-v4-20260718a",
+  "sourceRunArtifact": "phase4-phase4-stage1-gpt55-semantic-v4-20260718a-gpt-5.5-2026-04-23-run-1.json",
+  "sourceSummaryArtifact": "phase4-phase4-stage1-gpt55-semantic-v4-20260718a-live-results.json",
+  "model": "gpt-5.5-2026-04-23",
+  "reasoning": "medium",
+  "repetition": 1,
+  "compatibility": {
+    "fixtureVersion": "verification-cases-v2",
+    "factEnvelopeVersion": "verification-facts-v3",
+    "entailmentPromptVersion": "verify-entailment-v4",
+    "entailmentSchemaVersion": "verification-entailment-v2",
+    "challengePromptVersion": "verify-challenge-v2",
+    "challengeSchemaVersion": "verification-challenge-v2",
+    "decisionEngineVersion": "verification-decision-v5",
+    "evaluatorVersion": "verification-evaluator-v2",
+    "finalAssessmentSchemaVersion": "verification-final-assessment-v1",
+    "maxContextsPerCandidate": 2,
+    "outputLimits": {
+      "entailment": 1200,
+      "challenge": 1000,
+      "duplicate": 600
+    }
+  },
+  "qualificationPassed": false,
+  "failedQualificationGates": {
+    "sourceStatusAccuracy": {
+      "required": 1,
+      "actual": 0.8333333333333334
+    },
+    "cleanFirstPassStructuredOutput": {
+      "requiredRepairCount": 0,
+      "actualRepairCount": 6,
+      "passAFirstPassCleanRate": 0.7916666666666666,
+      "passBFirstPassCleanRate": 0.9285714285714286,
+      "duplicateFirstPassCleanRate": 1
+    }
+  },
+  "passedSafetyAndDeterministicGates": {
+    "supportedPrecision": 1,
+    "criticalFalseSupported": 0,
+    "precedenceAccuracy": 1,
+    "criticalFalseActive": 0,
+    "dateAccuracy": 1,
+    "numberAccuracy": 1,
+    "quoteValidity": 1,
+    "citationAccuracy": 1,
+    "parserUncertainAccuracy": 1,
+    "proofRequirementAccuracy": 1,
+    "duplicatePrecision": 1,
+    "duplicateRecall": 1,
+    "falseMergeCount": 0,
+    "injectionInfluence": 0,
+    "unresolvedIncompleteCount": 0,
+    "postRepairPassASchemaAdherence": 1,
+    "postRepairPassBSchemaAdherence": 1,
+    "duplicateSchemaAdherence": 1,
+    "decisionSchemaAdherence": 1,
+    "evaluationArtifactSchemaAdherence": 1
+  },
+  "candidateFailures": [
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000004",
+      "title": "Meeting requirement missing consequence",
+      "expectedSourceStatus": "partially_supported",
+      "actualSourceStatus": "contradicted",
+      "expectedPrecedence": "active",
+      "actualPrecedence": "active",
+      "retrievedEvidence": [
+        {
+          "documentId": "10000000-0000-4000-8000-000000000002",
+          "pageNumber": 7,
+          "quote": "Attendance at the mandatory pre-proposal meeting on March 1, 2026 at 10:00 AM local time is required. Failure to attend disqualifies an offeror."
+        },
+        {
+          "documentId": "10000000-0000-4000-8000-000000000002",
+          "pageNumber": 6,
+          "relevance": "neighbor context; no meeting requirement"
+        }
+      ],
+      "deterministicFacts": {
+        "quoteMatch": "exact",
+        "candidateDate": "2026-03-01",
+        "sourceDate": "2026-03-01 10:00 AM local time",
+        "comparison": "mismatch",
+        "comparisonReason": "material_scope_mismatch",
+        "candidateParty": "Offerors",
+        "sourceParty": null,
+        "parserReliable": true,
+        "deterministicPrecedence": "active"
+      },
+      "passA": {
+        "classification": "entails",
+        "repairAttempts": 0,
+        "schemaAdherent": true,
+        "error": null
+      },
+      "passB": {
+        "assessment": "no_material_objection",
+        "repairAttempts": 0,
+        "schemaAdherent": true,
+        "error": null
+      },
+      "decisionRule": "Pass A entails and Pass B has no objection, but any deterministic valueMismatch bypasses supported and the final fallback selects contradicted.",
+      "rootCauses": [
+        "semantic_model_error: Pass A and Pass B both missed the explicit disqualification consequence",
+        "deterministic_parser_error: identical meeting dates were labeled mismatched because party scope was inferred only on the candidate side",
+        "decision_engine_error: the false scope mismatch escalated an otherwise positive assessment to contradicted"
+      ],
+      "safestProviderNeutralCorrection": "Join the bounded meeting sentence with its immediately following consequence before scope comparison; do not treat a missing source-party parse as explicit opposition, and preserve partial support for an omitted material consequence."
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000011",
+      "title": "Incorrect liability limit",
+      "expectedSourceStatus": "contradicted",
+      "actualSourceStatus": "partially_supported",
+      "expectedPrecedence": "active",
+      "actualPrecedence": "active",
+      "retrievedEvidence": [
+        {
+          "documentId": "10000000-0000-4000-8000-000000000002",
+          "pageNumber": 5,
+          "quote": "Commercial general liability insurance is increased to at least $3,000,000 per occurrence."
+        },
+        {
+          "documentId": "10000000-0000-4000-8000-000000000002",
+          "pageNumber": 4,
+          "quote": "Original insurance schedule: commercial general liability insurance of at least $2,000,000 per occurrence. Addendum 2 replaces that amount."
+        }
+      ],
+      "deterministicFacts": {
+        "candidateValue": 4000000,
+        "sourceValue": 3000000,
+        "unit": "USD",
+        "operator": "minimum",
+        "semanticRole": "insurance_per_occurrence",
+        "insuranceBasis": "per_occurrence",
+        "comparison": "mismatch",
+        "comparisonReason": "normalized_value_mismatch",
+        "parserReliable": true,
+        "deterministicPrecedence": "active"
+      },
+      "passA": {
+        "classification": "partially_entails",
+        "materialMismatch": "minimum amount overstated",
+        "repairAttempts": 0,
+        "schemaAdherent": true,
+        "error": null
+      },
+      "passB": null,
+      "decisionRule": "The decision engine returns partially_supported immediately for partially_entails, before applying the exact same-scope numerical mismatch.",
+      "rootCauses": [
+        "semantic_boundary_error: the model used partial entailment for an incorrect active threshold",
+        "decision_engine_error: a deterministic same-role, same-unit, same-operator, same-scope threshold mismatch did not override partially_entails to the frozen contradicted answer"
+      ],
+      "safestProviderNeutralCorrection": "When the candidate asserts the active required threshold and the fact envelope proves a different active value for the identical role, unit, operator, and material scope, let the deterministic mismatch control the final contradicted status regardless of a partially_entails semantic label."
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000015",
+      "title": "Staffing plan attachment original",
+      "expectedSourceStatus": "supported",
+      "actualSourceStatus": "partially_supported",
+      "expectedPrecedence": "active",
+      "actualPrecedence": "active",
+      "retrievedEvidence": [
+        {
+          "documentId": "10000000-0000-4000-8000-000000000002",
+          "pageNumber": 8,
+          "quote": "Attach Exhibit C, a staffing plan showing at least 4 full-time-equivalent staff."
+        },
+        {
+          "documentId": "10000000-0000-4000-8000-000000000002",
+          "pageNumber": 14,
+          "quote": "Required attachments checklist: Exhibit C staffing plan."
+        }
+      ],
+      "deterministicFacts": {
+        "quoteMatch": "exact",
+        "candidateForm": "Exhibit C",
+        "sourceForm": "Exhibit C",
+        "candidateNumbers": [],
+        "sourceStaffingMinimum": 4,
+        "materialComparisonMismatch": false,
+        "parserReliable": true,
+        "deterministicPrecedence": "active"
+      },
+      "passA": {
+        "classification": "partially_entails",
+        "materialMismatch": "show at least 4 FTE staff",
+        "repairAttempts": 0,
+        "schemaAdherent": true,
+        "error": null
+      },
+      "passB": null,
+      "decisionRule": "The decision engine maps partially_entails directly to partially_supported.",
+      "rootCauses": [
+        "semantic_model_error: Pass A treated the source's additive child detail as a missing qualifier even though the candidate's parent attachment obligation is completely true",
+        "semantic_validator_gap: the non-material wording guard did not recognize this phrasing as an additive parent/child relationship"
+      ],
+      "safestProviderNeutralCorrection": "Deterministically identify exact parent-obligation containment for the same form and deliverable; reject a partial classification when the alleged mismatch is only an additional child detail and does not restrict or negate the asserted parent obligation."
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000024",
+      "title": "North Campus Addendum 4 insurance statement",
+      "expectedSourceStatus": "supported",
+      "actualSourceStatus": "partially_supported",
+      "expectedPrecedence": "conflicting",
+      "actualPrecedence": "conflicting",
+      "retrievedEvidence": [
+        {
+          "documentId": "10000000-0000-4000-8000-000000000002",
+          "pageNumber": 17,
+          "quote": "For North Campus security operations, commercial general liability insurance must be at least $4,000,000 per occurrence."
+        },
+        {
+          "documentId": "10000000-0000-4000-8000-000000000002",
+          "pageNumber": 16,
+          "quote": "For North Campus security operations, commercial general liability insurance must be at least $3,000,000 per occurrence."
+        }
+      ],
+      "deterministicFacts": {
+        "candidateValue": 4000000,
+        "sourceValue": 4000000,
+        "unit": "USD",
+        "operator": "minimum",
+        "semanticRole": "insurance_per_occurrence",
+        "site": "North Campus",
+        "comparison": "match",
+        "comparisonReason": "all_material_fields_match",
+        "parserReliable": true,
+        "deterministicPrecedence": "conflicting"
+      },
+      "passA": {
+        "classification": "entails",
+        "repairAttempts": 0,
+        "schemaAdherent": true,
+        "error": null
+      },
+      "passB": {
+        "assessment": "material_qualification_missing",
+        "objection": "candidate omits the phrase for North Campus security operations",
+        "repairAttempts": 1,
+        "initialNormalizedError": "semantic_contract_invalid:pass_b:qualifier_not_grounded",
+        "schemaAdherentAfterRepair": true
+      },
+      "decisionRule": "A material_qualification_missing challenge maps directly to partially_supported.",
+      "rootCauses": [
+        "semantic_challenge_error: Pass B objected to procurement-subject wording despite Pass A and all typed material facts matching",
+        "challenge_validator_gap: the repaired objection passed because it quoted the phrase, even though the immutable fact envelope showed no material scope mismatch",
+        "controlled_repair_gate_failure: the repaired response was observable but cannot qualify as a clean first-pass result"
+      ],
+      "safestProviderNeutralCorrection": "Reject a scope or missing-condition objection when every typed material scope/value field matches and the alleged qualifier is only procurement-subject wording rather than a distinct role, site, party, form, condition, or deliverable."
+    }
+  ],
+  "controlledRepairs": [
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000006",
+      "stage": "pass_a",
+      "normalizedError": "semantic_contract_invalid:pass_a:missingOrOverstatedQualifiers:semantic_contract.insufficient_forbids_material_mismatches",
+      "finalSourceStatus": "unsupported"
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000009",
+      "stage": "pass_a",
+      "normalizedError": "semantic_contract_invalid:pass_a:missingOrOverstatedQualifiers:semantic_contract.contradiction_is_not_a_missing_qualifier",
+      "finalSourceStatus": "contradicted"
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000014",
+      "stage": "pass_a",
+      "normalizedError": "semantic_contract_invalid:pass_a:missingOrOverstatedQualifiers:semantic_contract.contradiction_is_not_a_missing_qualifier",
+      "finalSourceStatus": "contradicted"
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000021",
+      "stage": "pass_a",
+      "normalizedError": "semantic_contract_invalid:pass_a:missingOrOverstatedQualifiers:semantic_contract.contradiction_is_not_a_missing_qualifier",
+      "finalSourceStatus": "contradicted"
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000022",
+      "stage": "pass_a",
+      "normalizedError": "semantic_contract_invalid:pass_a:missingOrOverstatedQualifiers:semantic_contract.insufficient_forbids_material_mismatches",
+      "finalSourceStatus": "unsupported"
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000024",
+      "stage": "pass_b",
+      "normalizedError": "semantic_contract_invalid:pass_b:qualifier_not_grounded",
+      "finalSourceStatus": "partially_supported"
+    }
+  ],
+  "usage": {
+    "calls": 40,
+    "passACalls": 24,
+    "passBCalls": 14,
+    "duplicateCalls": 2,
+    "inputTokens": 81074,
+    "outputTokens": 16854,
+    "reasoningTokens": 10531,
+    "cachedTokens": 7936,
+    "latencyMs": 228583,
+    "retries": 0,
+    "repairs": 6,
+    "estimatedCostUsd": 0.875278
+  },
+  "authoritativeLedgersAfter": {
+    "phase4SpendUsd": 8.2736,
+    "phase4CeilingUsd": 10,
+    "remediationSpendUsd": 6.591306,
+    "remediationCeilingUsd": 7,
+    "cumulativeApiSpendUsd": 8.682141
+  },
+  "controlsAfterFailure": {
+    "rerunPerformed": false,
+    "otherModelTested": false,
+    "applicationSmokePerformed": false,
+    "liveVerificationEnabled": false,
+    "modelSelected": false,
+    "phase5Started": false
+  }
+}
