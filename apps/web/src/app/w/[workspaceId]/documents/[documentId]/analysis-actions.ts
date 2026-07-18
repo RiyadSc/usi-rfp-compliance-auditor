@@ -44,7 +44,10 @@ export async function startExtraction(input: {
       return { ok: false, error: 'Document must be parsed before extraction' };
     }
 
-    const { data: spentRows } = await admin.from('spend_ledger').select('estimated_cost_usd');
+    const { data: spentRows } = await admin
+      .from('spend_ledger')
+      .select('estimated_cost_usd')
+      .eq('phase', 'phase3');
     const spent = (spentRows ?? []).reduce((n, r) => n + Number(r.estimated_cost_usd ?? 0), 0);
     if (checkBudget(spent, 0.05, env.PHASE3_SPEND_CEILING_USD) === 'exceeded') {
       return {
