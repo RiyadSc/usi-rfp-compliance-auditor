@@ -1,22 +1,25 @@
 # Build Status
 
-## Current phase: Phase 4 operational smoke failed provenance binding — reauthorization required
+## Current phase: Phase 4 complete — Phase 5 ready for separate kickoff authorization
 
 Last updated: 2026-07-18.
 
 ## Latest Phase 4 operational result
 
-- One and only one authorized production application/worker smoke ran against complete synthetic scope `40000000-0000-4000-8000-000000000001`. It used the approved GPT-5.5/low fingerprint and cost `$0.612060`, below the `$0.75` authorization.
-- Provider execution itself was clean: 24 findings matched all frozen source-support, precedence, and proof answers; 40 model calls (24 entailment, 14 challenge, 2 duplicate) completed with zero repair, retry, incomplete, refusal, timeout, critical false-supported, critical false-active, false merge, or injection-influence event. All call fingerprints and prompt/schema versions were exact.
-- The smoke nevertheless **failed**. The harness assigned the callback result of `runAfterPhase4SyntheticSmokePreflight` to its `preflight` variable. That callback returned only `{passed:true}`, so the run input hash was built from `analysisRunId:undefined:undefined`. Persisted hash `9c1f1750beb0bfcf6fb33e60cef24d468f889cd9105beabbf45fd4a9ae030806` therefore does not equal required complete-scope hash `2ef68e32c45ebe4ab089ec34efbbfcc80722530d1b1618f7e71d4798de1a83c3`.
-- A zero-live fail-closed correction now validates preflight metadata directly and computes the run hash through a helper that rejects missing or malformed hash material. Unit coverage proves the exact required hash and rejects undefined inputs. The failed persisted run was not mutated or presented as passing.
-- A read-only audit verified all 24 expected results, exact/normalized-exact evidence, resolvable pages, facts v4, successful intermediate passes, duplicate/parent-child relationships, machine-only status, review-pending state, audit event, and model-call/ledger reconciliation. The application UI audit verified 24 register rows, evidence anchoring, PDF page 7 navigation, provenance, review controls, and cross-workspace denial.
-- Derived post-smoke ledgers are Phase 4 `$11.577544/$15`, remediation `$9.283190/$12`, and cumulative API `$11.986085`; the 40 smoke ledger rows reconcile exactly to model-call estimated cost within `$0.000001`.
-- General live verification remains disabled. The model is not operationally selected, Phase 4 is not complete, no application smoke rerun is authorized, and Phase 5 remains blocked. A new provider authorization is required after the corrected provenance path passes all offline gates.
+- The fresh production application/worker smoke passed against immutable synthetic scope `40000000-0000-4000-8000-000000000001`. Verification run `56dc341b-71f0-4e03-b5fb-e25586ccb5b7` used the selected GPT-5.5/low fingerprint and the exact required input hash `2ef68e32c45ebe4ab089ec34efbbfcc80722530d1b1618f7e71d4798de1a83c3`.
+- All 24 frozen findings matched source-support, precedence, and proof answers. Forty model calls (24 entailment, 14 challenge, two duplicate) completed with first-pass adherence `1.0` and zero repairs, retries, incompletes, refusals, timeouts, critical false-supported, critical false-active, false merge, or injection-influence event.
+- The independent database audit passed every provenance, persistence, evidence, relationship, schema, safety, and budget gate. The UI audit rendered all 24 rows, anchored exact source text, opened PDF page 7, exposed machine/run provenance and review controls, and denied the unauthorized workspace.
+- Smoke usage was 89,863 input, 5,575 output, 350 reasoning, and 20,736 cached tokens; summed model-call latency was 97.669 seconds and actual cost was `$0.523253`. Forty spend rows reconcile to model-call cost within `$0.000001`.
+- Final authoritative ledgers are Phase 4 `$12.100797/$15`, remediation `$9.283190/$12`, and cumulative API `$12.509338`.
+- Post-smoke gates pass: 183 unit, 57 sequential Supabase integration, 17 isolated-session mock Playwright, one read-only live-smoke UI assertion, perfect 24-candidate deterministic evaluation, lint, formatting, type-check, production build, offline dependency audit, secret scan, and the invariant checklist.
+- `gpt-5.5-2026-04-23` with `low` reasoning and fingerprint `c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b` is selected and pinned for Phase 4 verification. Unrestricted live verification remains disabled; only the explicit synthetic/demo harness may invoke it pending a separate rollout decision.
 
-## Phase 4 — Independent source verification and human review (GATE NOT COMPLETE)
+## Phase 4 — Independent source verification and human review (COMPLETE)
 
 ### Gate decision
+
+- **Approved 2026-07-18.** The corrected production-path smoke, independent persistence audit, live UI audit, three-run frozen-fixture repeatability evidence, all offline regressions, and final invariant review pass. Detailed closure evidence is in `docs/phase4-completion-report.md` and the non-secret smoke artifacts under `artifacts/evaluation/phase4-production-worker-smoke-56dc341b-71f0-4e03-b5fb-e25586ccb5b7*`.
+- The selected Phase 4 verification configuration is pinned, but ordinary/confidential-workspace live use remains disabled. This is a rollout constraint, not an incomplete Phase 4 engineering gate.
 
 - Exactly one complete immutable scope now binds the source-controlled `verification-cases-v2` workspace, synthetic identity, 17-page PDF/document set, analysis run, all 24 frozen candidates, expected-answer mapping, candidate/document/answer hashes, and approved compatibility fingerprint. One-candidate test scopes remain immutable legacy records and cannot pass the complete-scope harness.
 - Provisioning is repository-owned and idempotent. Migration `20260718000016_phase4_complete_synthetic_scope` adds complete-scope/hash constraints while preserving legacy rows; `scripts/provision-phase4-synthetic-scope.mts` verifies project `uxmxkdjschbekkbnweby`, generates and uploads the deterministic synthetic PDF, validates every row/hash, and inserts the marker last. A second run returned the identical scope without writes or spend.
@@ -114,26 +117,22 @@ Last updated: 2026-07-18.
 - [x] Fixtures are synthetic only; live calls used `store:false` and no real USI documents.
 - [x] Deterministic MockProvider fallback remains operational and injection-inert.
 - [x] Verification model qualification gate passed across three fresh full GPT-5.5 repetitions; production path now matches the approved fingerprint.
-- [ ] Controlled synthetic application/worker smoke passed — **the one authorized smoke failed complete-scope run-hash provenance; Phase 4 remains incomplete.**
+- [x] Corrected controlled synthetic application/worker smoke passed with the exact complete-scope input hash, 24/24 findings, persisted provenance, UI/source navigation, ledger reconciliation, and zero safety/reliability failures.
 
-### Remaining gate before Phase 4 can close
+### Phase 4 closure
 
-The proposed verification configuration passed three fresh full repetitions and production is fingerprint-aligned. The one authorized smoke produced correct findings but failed the required verification-run input binding. The harness is corrected offline, but one newly authorized controlled synthetic-only application/worker smoke and a fully unrestricted final regression rerun are required before sign-off. Live verification remains disabled; human-only review with deterministic mock findings remains the demo mode.
+All verification-specific live qualification, repeatability, production-path, immutable provenance, persistence, UI, security/isolation, financial, regression, documentation, and invariant gates pass. Detailed evidence is in `docs/phase4-completion-report.md`. General live verification remains rollout-disabled; controlled synthetic/demo verification and deterministic mock/human review remain available.
 
 ### Phase 4 regression gate
 
-- Latest failure-path rerun: 179 unit tests, deterministic 24-candidate fixture, targeted smoke UI audit, lint, formatting, type-check, production build, offline dependency audit (0 vulnerabilities), secret scan, and invariant review passed.
-- Supabase integration reached 56/57. The sole failure was Demo B `getUser()` returning null after two integration processes accidentally overlapped and shared the persisted auth session; the same test and all 57 tests passed on the prior clean alignment state. A clean rerun could not be started because the execution environment exhausted its unrestricted-tool quota. This is an unresolved final gate, not waived.
-- The full 17-test mock Playwright suite also remains to be rerun in an unrestricted environment. The opt-in read-only smoke UI audit passed independently and made no provider call.
-
-- Lint, formatting verification, type-check, production Next.js build, and secret scan: passed on the production-alignment state.
-- Unit: 178 passed, including complete 24-candidate, document-hash, expected-answer-hash, exact/extra/missing scope, and provider-boundary controls.
-- Integration: 57 passed against the confirmed Supabase project, including exact complete-scope binding, RLS no-op denial, privileged append-only enforcement, worker limits, fingerprint persistence, ownership, and cross-workspace rejection.
-- Mock Playwright: 17 passed with `PHASE4_LIVE_VERIFICATION_ENABLED=false` and `E2E_LIVE_OPENAI=0`; no live model calls occurred.
+- Unit: 183 passed, including complete 24-candidate, date/number/scope, semantic contracts, malformed/failure paths, provenance hashes, exact/extra/missing scope, and provider-boundary controls.
+- Integration: 57 passed sequentially against the confirmed Supabase project, including exact complete-scope binding, RLS no-op denial, privileged append-only enforcement, worker limits, fingerprint persistence, ownership, cross-workspace rejection, provider failures, budget cancellation and parent/child persistence.
+- Mock Playwright: 17 passed in four isolated fresh-server/session runs with `E2E_LIVE_OPENAI=0`; the separate read-only completed-smoke UI audit also passed.
+- Lint, formatting verification, strict type-check, production Next.js build, offline dependency audit (zero vulnerabilities), secret scan, and invariant review passed.
 - Secret scan: passed across tracked files and the client bundle.
 - Targeted five-candidate mock probe: 5/5 candidates and six calls passed with clean first-pass Pass A/Pass B, zero repairs, exact expected statuses, and no injection influence.
 - Deterministic semantic/facts-v4/decision-v6/evaluator-v3 fixture: Pass A and Pass B metrics, source status, precedence, date, number, quote, citation, proof, duplicate, and every schema layer are 1.0; zero critical false-supported, false-active, false merges, incompletes, repairs, or injection influence. It remains a fallback/regression result, not a live qualification.
-- Invariant checklist above: passed; the controlled live application smoke remains intentionally pending.
+- Invariant checklist above: passed; no Phase 4 completion gate remains pending.
 
 ## Phase 3 — Candidate extraction, retrieval, providers (COMPLETE)
 
@@ -141,7 +140,7 @@ The proposed verification configuration passed three fresh full repetitions and 
 
 - OpenAI Responses API + embeddings verified against the live key in gitignored `.env.local`.
 - Extraction model selected by live known-answer evaluation: `gpt-5.4-mini-2026-03-17` (`low` reasoning).
-- GPT-5.5 passed the Phase 4-specific qualification gate and is approved only for a separately authorized controlled synthetic smoke; general live verification remains disabled.
+- GPT-5.5/low passed the Phase 4-specific qualification and corrected production smoke, and is fingerprint-pinned for verification; general live verification remains disabled pending a separate rollout decision.
 - Embeddings: `text-embedding-3-small` (1536-d).
 - Strict `json_schema` structured output + Zod re-validation; `store: false` on Responses calls.
 - **Do not claim ZDR** from `store: false` alone; account-level ZDR must be verified separately.

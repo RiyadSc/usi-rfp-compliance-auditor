@@ -44,21 +44,21 @@ flowchart TD
 
 ## Selected stack (Design §4 + Phase 0 decisions)
 
-| Layer         | Selection                                                                                                                             | Notes                                                                       |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Language      | TypeScript, `strict`                                                                                                                  | Shared Zod schemas                                                          |
-| Web           | Next.js App Router (latest stable, verify via Context7 at Phase 1)                                                                    | Server actions/API routes; long tasks in worker                             |
-| UI            | React + Tailwind CSS + accessible primitives (Radix-based)                                                                            | Enterprise dashboard patterns                                               |
-| DB            | Supabase PostgreSQL 17 — project `RFP demo` (`uxmxkdjschbekkbnweby`, us-east-2)                                                       | RLS on all app tables                                                       |
-| Storage       | Supabase Storage, private buckets, expiring signed URLs                                                                               | Workspace-scoped object keys                                                |
-| Auth          | Supabase Auth (email/password), public signup disabled, seeded demo users                                                             | Production SSO out of scope                                                 |
-| Queue         | pg-boss (Postgres-backed) in a Node worker                                                                                            | No new paid service; stage retries + visibility                             |
-| PDF parsing   | `pdfjs-dist` adapter behind `ParserAdapter` interface (page text + offsets); evidence viewer renders pages via pdf.js from signed URL | OCR out of scope for demo fixture (machine-readable); interface allows swap |
-| Model gateway | Internal `ModelGateway` interface; real provider TBD (open question OQ-1); deterministic `MockProvider` for tests + cached fallback   | Record provider, model, version, tokens, latency, cost                      |
-| Validation    | Zod + provider JSON-schema-constrained output                                                                                         | Never free-parse critical fields                                            |
-| Retrieval     | Hybrid: Postgres FTS/pg_trgm (lexical) + pgvector (semantic), always workspace-filtered                                               | Citations validated against stored page text before display                 |
-| Testing       | Vitest, Playwright (`playwright-cli` skill available), fixture evaluator                                                              | Snapshot structured outputs only after normalization                        |
-| Deployment    | Local-first demo; hosting decision deferred (OQ-2)                                                                                    | Env vars outside repository                                                 |
+| Layer         | Selection                                                                                                                                                                       | Notes                                                                                                   |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Language      | TypeScript, `strict`                                                                                                                                                            | Shared Zod schemas                                                                                      |
+| Web           | Next.js App Router (latest stable, verify via Context7 at Phase 1)                                                                                                              | Server actions/API routes; long tasks in worker                                                         |
+| UI            | React + Tailwind CSS + accessible primitives (Radix-based)                                                                                                                      | Enterprise dashboard patterns                                                                           |
+| DB            | Supabase PostgreSQL 17 — project `RFP demo` (`uxmxkdjschbekkbnweby`, us-east-2)                                                                                                 | RLS on all app tables                                                                                   |
+| Storage       | Supabase Storage, private buckets, expiring signed URLs                                                                                                                         | Workspace-scoped object keys                                                                            |
+| Auth          | Supabase Auth (email/password), public signup disabled, seeded demo users                                                                                                       | Production SSO out of scope                                                                             |
+| Queue         | pg-boss (Postgres-backed) in a Node worker                                                                                                                                      | No new paid service; stage retries + visibility                                                         |
+| PDF parsing   | `pdfjs-dist` adapter behind `ParserAdapter` interface (page text + offsets); evidence viewer renders pages via pdf.js from signed URL                                           | OCR out of scope for demo fixture (machine-readable); interface allows swap                             |
+| Model gateway | Internal `ModelGateway`; Phase 3 extraction and Phase 4 verification use separately selected pinned models; deterministic `MockProvider` remains the default test/fallback path | Record provider, model, version, tokens, latency, cost; unrestricted live verification remains disabled |
+| Validation    | Zod + provider JSON-schema-constrained output                                                                                                                                   | Never free-parse critical fields                                                                        |
+| Retrieval     | Hybrid: Postgres FTS/pg_trgm (lexical) + pgvector (semantic), always workspace-filtered                                                                                         | Citations validated against stored page text before display                                             |
+| Testing       | Vitest, Playwright (`playwright-cli` skill available), fixture evaluator                                                                                                        | Snapshot structured outputs only after normalization                                                    |
+| Deployment    | Local-first demo; hosting decision deferred (OQ-2)                                                                                                                              | Env vars outside repository                                                                             |
 
 ## Repository layout (Design §4.1, npm workspaces)
 
@@ -101,9 +101,16 @@ validate → parse → normalize → index → extract → verify → build_chec
 
 1. Candidate extractor (strict schema, `RequirementCandidate` with source {documentId, pageNumber, sectionPath, quote} + advisory confidence).
 2. Evidence resolver — workspace-only retrieval.
-3. Verifier — supported / partially supported / contradicted / unsupported (separate prompt/model; no self-certification).
-4. Rule engine — deterministic dates, form references, numeric thresholds, duplicates, superseded items. Models never decide numeric equivalence without explicit tolerance rules.
-5. Only supported candidates become "verified"; everything else enters human review.
+3. Candidate-centered verifier — Pass A entailment and conditional Pass B adversarial challenge use separate prompts, schemas, and call records; neither can assign the persisted final status.
+4. Rule engine — deterministic quote/page validation, dates, form references, numeric thresholds, parser quality, duplicates, and explicit addendum precedence derive the machine assessment. Models never decide numeric equivalence or final precedence without deterministic evidence.
+5. Machine axes remain separate: source support, precedence, proof requirement, and human review. A supported machine finding remains `machine_assessment_only` and `pending`; it is never silently converted into human approval, compliance, completion, or submission readiness.
+
+### Qualified Phase 4 verification path
+
+- Configuration fingerprint `c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b` pins `gpt-5.5-2026-04-23`, low reasoning, two evidence contexts, 1,800/1,600/600 output limits, 90-second timeout, v7/v5 Pass A, v4/v4 Pass B, facts v4, decision v6, evaluator v3, final schema v1, atomic parent/child v1, Responses API, `store:false`, and no tools.
+- Production asserts the fingerprint before provider construction and persists it on analysis runs, verification runs, and model calls. Environment drift cannot override a fingerprinted value.
+- `verification_runs`, immutable `verification_fact_envelopes`, `verification_pass_results`, versioned `verification_findings`, exact `verification_evidence`, non-destructive `requirement_relationships`, and append-only/revision-audited `human_review_decisions` preserve the complete lifecycle.
+- Live verification is selected but rollout-restricted: ordinary/confidential workspaces continue to use the deterministic mock/human path. Only the immutable synthetic scope can enable the provider until a separate rollout decision.
 
 Readiness (deterministic, Design §7.6): criticalBlockers>0 → NOT_READY; unreviewed mandatory → NEEDS_REVIEW; unresolved high findings → NEEDS_REVIEW; approvals incomplete → NEEDS_APPROVAL; else READY_FOR_FINAL_HUMAN_REVIEW. Never "compliant" or "safe to submit".
 
