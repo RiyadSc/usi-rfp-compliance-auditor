@@ -1,6 +1,6 @@
 # Build Status
 
-## Current phase: Phase 4 first full GPT-5.5 repetition passed — repeatability not authorized
+## Current phase: Phase 4 GPT-5.5 repeatability passed — operational validation not authorized
 
 Last updated: 2026-07-18.
 
@@ -8,6 +8,10 @@ Last updated: 2026-07-18.
 
 ### Gate decision
 
+- Two additional authorized fresh full GPT-5.5 repetitions ran sequentially after the first full pass. Each independently passed every gate under the identical full fingerprint. Across all three full repetitions, candidate status/precedence vectors were identical; every required accuracy and schema metric was `1.0`; and there were zero repairs, retries, incompletes, critical false findings, false merges, semantic changes, or injection influence.
+- Three-run totals were 120 calls, 268,866 input, 16,771 output, 1,101 reasoning, 48,640 cached tokens, 269.547 seconds summed latency, and `$1.628580`. The two Stage 3 repetitions added `$1.010175`, below their combined `$2.70` authorization.
+- Final authoritative ledgers are Phase 4 `$10.965484/$15`, remediation `$9.283190/$12`, and cumulative API `$11.374025`.
+- The evidence supports proposing `gpt-5.5-2026-04-23` at `low` reasoning for Phase 4 verification. The model is not yet selected or enabled. A separately authorized controlled synthetic application/worker smoke and explicit selection decision remain required; Phase 5 is blocked.
 - One separately authorized completely fresh full `gpt-5.5-2026-04-23` repetition passed all single-run gates under full fingerprint `c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b`. All 24 frozen candidates received the expected source and precedence statuses; every required accuracy, evidence, duplicate, and schema metric was `1.0`.
 - The full run made 40 calls: 24 Pass A, 14 Pass B, and two duplicate classifications. It used 89,625 input, 5,676 output, 455 reported reasoning, and zero cached tokens; summed latency was 91.805 seconds. There were zero repairs, retries, incompletes, refusals, timeouts, critical false-supported/false-active findings, false merges, or injection influence. Actual cost was `$0.618405`.
 - Authoritative post-run ledgers are Phase 4 `$9.955309/$15`, remediation `$8.273015/$12`, and cumulative API `$10.363850`. Two additional identical repetitions have a conservative combined maximum of `$2.70`, projecting `$12.655309/$15` and `$10.973015/$12`; they fit both ceilings but are not authorized.
@@ -54,7 +58,7 @@ Last updated: 2026-07-18.
 - Historical candidate-level Pass A, Pass B, and fact envelopes were not retained. Their exact values remain explicitly unavailable rather than reconstructed. Full traces and limitations are in `artifacts/evaluation/phase4-zero-live-diagnostic-v1.json`.
 - No successful prompt-injection influence or dangerous false merge occurred. All counted supported quotes were exact/normalized-exact.
 - Live verification remains disabled (`PHASE4_LIVE_VERIFICATION_ENABLED=false`). `MockProvider` remains the demo fallback, and every machine finding remains human-review pending.
-- Phase 4 ledger spend: `$9.955309` of `$15`; remediation spend: `$8.273015` of the authorized `$12`; cumulative API spend: `$10.363850`. The passing full Stage 2 repetition added `$0.618405`.
+- Phase 4 ledger spend: `$10.965484` of `$15`; remediation spend: `$9.283190` of the authorized `$12`; cumulative API spend: `$11.374025`. The two passing Stage 3 repetitions added `$1.010175`.
 - Phase 4 is **not complete**. No model is selected, no live application verification smoke was run, and Phase 5 remains blocked.
 
 ### Implemented Phase 4 scope
