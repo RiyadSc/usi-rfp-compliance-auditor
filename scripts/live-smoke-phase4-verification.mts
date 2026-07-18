@@ -1,5 +1,5 @@
 /** One explicitly scoped synthetic-only smoke through the production Phase 4 worker handler. */
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { config as loadEnv } from 'dotenv';
@@ -12,7 +12,8 @@ import {
   computeSyntheticCandidateSetHash,
   computeSyntheticDocumentSetHash,
   computeSyntheticExpectedAnswersHash,
-  runAfterPhase4SyntheticSmokePreflight,
+  computePhase4SmokeRunInputHash,
+  validatePhase4SyntheticSmokePreflight,
   type Phase4SyntheticSmokeSnapshot,
   type SyntheticSmokeCandidate,
 } from '../apps/worker/src/phase4-smoke-preflight.ts';
@@ -193,12 +194,11 @@ if (marker?.document_set_hash !== computeSyntheticDocumentSetHash(snapshot.docum
 if (marker?.expected_answers_hash !== computeSyntheticExpectedAnswersHash([...VERIFICATION_CASES]))
   throw new Error('phase4_synthetic_smoke_preflight_failed:frozen_expected_answers_hash');
 
-const preflight = await runAfterPhase4SyntheticSmokePreflight({
+const preflight = validatePhase4SyntheticSmokePreflight(
   request,
   snapshot,
-  runtime: PHASE4_QUALIFIED_PRODUCTION_CONFIG,
-  execute: async () => ({ passed: true as const }),
-});
+  PHASE4_QUALIFIED_PRODUCTION_CONFIG,
+);
 
 if (dryRunProviderBoundary) {
   console.info(
@@ -227,11 +227,11 @@ process.env.PHASE4_SPEND_CEILING_USD = String(phase4Ceiling);
 
 const verificationRunId = randomUUID();
 const processingJobId = randomUUID();
-const inputHash = createHash('sha256')
-  .update(
-    `${request.analysisRunId}:${preflight.candidateSetHash}:${preflight.assertedCompatibilityFingerprint}`,
-  )
-  .digest('hex');
+const inputHash = computePhase4SmokeRunInputHash({
+  analysisRunId: request.analysisRunId,
+  candidateSetHash: preflight.candidateSetHash,
+  compatibilityFingerprint: preflight.assertedCompatibilityFingerprint,
+});
 const { error: runInsertError } = await admin.from('verification_runs').insert({
   id: verificationRunId,
   workspace_id: request.workspaceId,

@@ -128,6 +128,23 @@ export function computeSyntheticExpectedAnswersHash(
   return createHash('sha256').update(JSON.stringify(normalized)).digest('hex');
 }
 
+export function computePhase4SmokeRunInputHash(input: {
+  analysisRunId: string;
+  candidateSetHash: string;
+  compatibilityFingerprint: string;
+}): string {
+  if (
+    !input.analysisRunId ||
+    !/^[a-f0-9]{64}$/.test(input.candidateSetHash) ||
+    !/^[a-f0-9]{64}$/.test(input.compatibilityFingerprint)
+  ) {
+    stop('invalid_run_input_hash_material');
+  }
+  return createHash('sha256')
+    .update(`${input.analysisRunId}:${input.candidateSetHash}:${input.compatibilityFingerprint}`)
+    .digest('hex');
+}
+
 function stop(reason: string): never {
   throw new Error(`phase4_synthetic_smoke_preflight_failed:${reason}`);
 }

@@ -8,6 +8,7 @@ import {
 import {
   PHASE4_SYNTHETIC_MARKER,
   PHASE4_COMPLETE_SYNTHETIC_SCOPE_VERSION,
+  computePhase4SmokeRunInputHash,
   computeSyntheticCandidateSetHash,
   computeSyntheticDocumentSetHash,
   runAfterPhase4SyntheticSmokePreflight,
@@ -155,6 +156,28 @@ describe('synthetic-only smoke preflight', () => {
       candidateIds: manifest.candidateIds,
       documentIds: request.documentIds,
     });
+  });
+
+  it('hashes only validated complete-scope provenance into the smoke run input hash', () => {
+    const validated = validatePhase4SyntheticSmokePreflight(
+      request,
+      validSnapshot(),
+      PHASE4_QUALIFIED_PRODUCTION_CONFIG,
+    );
+    expect(
+      computePhase4SmokeRunInputHash({
+        analysisRunId: request.analysisRunId,
+        candidateSetHash: validated.candidateSetHash,
+        compatibilityFingerprint: validated.assertedCompatibilityFingerprint,
+      }),
+    ).toBe('2ef68e32c45ebe4ab089ec34efbbfcc80722530d1b1618f7e71d4798de1a83c3');
+    expect(() =>
+      computePhase4SmokeRunInputHash({
+        analysisRunId: request.analysisRunId,
+        candidateSetHash: undefined as unknown as string,
+        compatibilityFingerprint: undefined as unknown as string,
+      }),
+    ).toThrow(/invalid_run_input_hash_material/);
   });
 
   it.each([
