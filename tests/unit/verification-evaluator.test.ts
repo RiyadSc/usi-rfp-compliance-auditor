@@ -21,7 +21,7 @@ beforeAll(async () => {
   baseline = await runVerificationEvaluation(new MockProvider());
 });
 
-describe('verification evaluator v2 integrity', () => {
+describe('verification evaluator v3 integrity', () => {
   it('scores all frozen deterministic axes independently', () => {
     const metrics = scoreVerificationPipelineRun(baseline);
     expect(metrics.final).toMatchObject({

@@ -541,7 +541,7 @@ describe('Phase 4 conservative candidate-centered remediation', () => {
         challengeFailed: true,
       }),
     ).toMatchObject({
-      sourceSupportStatus: 'unsupported',
+      sourceSupportStatus: 'contradicted',
       challengeStatus: 'failed',
     });
   });

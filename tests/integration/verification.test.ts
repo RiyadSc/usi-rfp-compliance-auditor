@@ -612,7 +612,7 @@ describe('Phase 4 verification persistence and isolation', () => {
         analysis_run_id: first.analysisRunId,
         verification_run_id: first.verificationRunId,
         candidate_id: second.candidateId,
-        envelope_version: 'verification-facts-v3',
+        envelope_version: 'verification-facts-v4',
         context_hash: 'a'.repeat(64),
         payload: { machineOnly: true },
       });
@@ -702,6 +702,63 @@ describe('Phase 4 verification persistence and isolation', () => {
       .single();
     expect(finding?.source_support_status).toBe('contradicted');
     expect(finding?.deterministic_model_disagreement).not.toEqual([]);
-    expect(finding?.decision_engine_version).toBe('verification-decision-v5');
+    expect(finding?.decision_engine_version).toBe('verification-decision-v6');
+  });
+
+  it('persists a reviewable parent/child proposal without merging either candidate', async () => {
+    const source =
+      'Attach Exhibit C, a staffing plan showing at least 4 full-time-equivalent staff.';
+    const seed = await seedVerification({
+      pageText: source,
+      obligation: 'Attach Exhibit C, a staffing plan.',
+      evidenceQuote: source,
+    });
+    const childId = crypto.randomUUID();
+    await admin().from('requirement_candidates').insert({
+      id: childId,
+      workspace_id: workspaceA,
+      analysis_run_id: seed.analysisRunId,
+      document_id: seed.documentId,
+      category: 'staffing_requirement',
+      title: 'Exhibit C staffing minimum',
+      obligation: 'Exhibit C must show at least 4 full-time-equivalent staff.',
+      mandatory_class: 'mandatory',
+      preliminary_page: 1,
+      evidence_quote: source,
+      confidence: 0.8,
+      status: 'unverified',
+      prompt_version: 'extract-v1',
+      schema_version: 'candidate-v1',
+      model_id: 'mock',
+    });
+    await handleVerifyJob(
+      {
+        workspaceId: workspaceA,
+        analysisRunId: seed.analysisRunId,
+        verificationRunId: seed.verificationRunId,
+        processingJobId: seed.processingJobId,
+      },
+      new MockProvider(),
+    );
+    const { data: relationship } = await admin()
+      .from('requirement_relationships')
+      .select(
+        'source_candidate_id,target_candidate_id,relationship_type,relationship_version,deterministic_metadata',
+      )
+      .eq('verification_run_id', seed.verificationRunId)
+      .eq('relationship_type', 'parent_child')
+      .maybeSingle();
+    expect(relationship).toMatchObject({
+      source_candidate_id: seed.candidateId,
+      target_candidate_id: childId,
+      relationship_type: 'parent_child',
+      relationship_version: 'atomic-parent-child-v1',
+      deterministic_metadata: { preservesAtomicRecords: true },
+    });
+    const { count } = await admin()
+      .from('verification_findings')
+      .select('id', { count: 'exact', head: true })
+      .eq('verification_run_id', seed.verificationRunId);
+    expect(count).toBe(2);
   });
 });

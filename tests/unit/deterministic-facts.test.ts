@@ -34,6 +34,20 @@ describe('typed deterministic date facts', () => {
     ).toMatchObject({ comparison: 'uncertain', reason: 'semantic_role_mismatch' });
   });
 
+  it('reports explicit party scope separately from date equality', () => {
+    expect(
+      compareDate(
+        'Offerors must attend the meeting on March 4, 2027.',
+        'City staff must attend the meeting on March 4, 2027.',
+      ),
+    ).toMatchObject({
+      comparison: 'match',
+      reason: 'value_match_scope_mismatch',
+      scopeComparison: 'mismatch',
+      materialScopeDifferences: ['party'],
+    });
+  });
+
   it('rejects a superseded deadline as a match for its active replacement', () => {
     expect(
       compareDate(
@@ -58,7 +72,7 @@ describe('typed deterministic date facts', () => {
     ).toMatchObject({ comparison: 'uncertain', reason: 'ambiguous_candidate' });
   });
 
-  it('requires time and timezone qualifiers to match', () => {
+  it('compares explicit time/timezone independently and preserves an absent qualifier as unknown', () => {
     expect(
       compareDate(
         'Proposals are due March 4, 2027 at 2:00 PM ET.',
@@ -68,6 +82,12 @@ describe('typed deterministic date facts', () => {
     expect(
       compareDate(
         'Proposals are due March 4, 2027.',
+        'The submission deadline is March 4, 2027 at 2:00 PM ET.',
+      ),
+    ).toMatchObject({ comparison: 'match', reason: 'all_material_fields_match' });
+    expect(
+      compareDate(
+        'Proposals are due March 4, 2027 at 5:00 PM ET.',
         'The submission deadline is March 4, 2027 at 2:00 PM ET.',
       ),
     ).toMatchObject({ comparison: 'mismatch', reason: 'time_mismatch' });

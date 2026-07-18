@@ -146,7 +146,7 @@ function contexts(number: number) {
   return selected;
 }
 
-describe('Phase 4 semantic contract v4/v2', () => {
+describe('Phase 4 semantic contract v5/v3', () => {
   it.each([...expectedContract])(
     'matches the frozen Stage 1 contract for candidate %i',
     async (number, expected) => {
@@ -271,7 +271,12 @@ describe('Phase 4 semantic contract v4/v2', () => {
       machineOnly: true,
     };
     expect(
-      validateEntailmentSemanticContract({ candidate: item, contexts: supplied, result }),
+      validateEntailmentSemanticContract({
+        candidate: item,
+        contexts: supplied,
+        facts: buildDeterministicFactEnvelope(item, supplied),
+        result,
+      }),
     ).toEqual(expect.objectContaining({ success: false }));
   });
 
@@ -439,12 +444,7 @@ describe('Phase 4 semantic contract v4/v2', () => {
     });
     expect(output.failedStage).toBe('challenge');
     expect(output.challengeCall?.schemaAdherent).toBe(false);
-    expect(output.finalAssessment).toMatchObject({
-      sourceSupportStatus: 'unsupported',
-      challengeStatus: 'failed',
-      humanReviewStatus: 'pending',
-      machineOnly: true,
-    });
+    expect(output.finalAssessment).toBeNull();
     expect(output.error).toMatch(/^semantic_contract_invalid:pass_b:/);
   });
 
