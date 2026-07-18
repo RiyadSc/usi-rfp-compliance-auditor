@@ -1,0 +1,110 @@
+{
+  "reportVersion": "phase4-production-path-alignment-v1",
+  "date": "2026-07-18",
+  "providerCalls": 0,
+  "liveVerificationEnabled": false,
+  "approvedCompatibilityFingerprint": "c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b",
+  "differencesCorrected": [
+    { "field": "maxContextsPerCandidate", "before": 8, "after": 2 },
+    {
+      "field": "outputLimits",
+      "before": "one shared value up to 4000; duplicate 1000",
+      "after": { "entailment": 1800, "challenge": 1600, "duplicate": 600 }
+    },
+    { "field": "timeoutMs", "before": 60000, "after": 90000 },
+    {
+      "field": "compatibilityAssertion",
+      "before": "none in production worker",
+      "after": "fail closed before provider construction"
+    },
+    {
+      "field": "compatibilityPersistence",
+      "before": "not persisted",
+      "after": "analysis_runs, verification_runs, model_calls"
+    },
+    {
+      "field": "syntheticSmokeScope",
+      "before": "no Phase 4 harness; Phase 3 harness selected an arbitrary member",
+      "after": "explicit immutable service-only scope and identifiers"
+    }
+  ],
+  "qualifiedRuntime": {
+    "model": "gpt-5.5-2026-04-23",
+    "reasoning": "low",
+    "fixture": "verification-cases-v2",
+    "passA": "verify-entailment-v7 / verification-entailment-v5",
+    "passB": "verify-challenge-v4 / verification-challenge-v4",
+    "facts": "verification-facts-v4",
+    "decision": "verification-decision-v6",
+    "evaluator": "verification-evaluator-v3",
+    "finalSchema": "verification-final-assessment-v1",
+    "parentChild": "atomic-parent-child-v1",
+    "contexts": 2,
+    "outputLimits": [1800, 1600, 600],
+    "timeoutMs": 90000,
+    "api": "responses",
+    "store": false,
+    "tools": false
+  },
+  "syntheticSmokeHarness": {
+    "command": "npm run smoke:live:verification",
+    "requiredArguments": [
+      "smoke-scope-id",
+      "workspace-id",
+      "synthetic-user-id",
+      "document-ids",
+      "analysis-run-id",
+      "expected-fingerprint",
+      "fixture-version"
+    ],
+    "stopConditions": [
+      "missing explicit identifier",
+      "missing or invalid immutable synthetic marker",
+      "identity is not a workspace member",
+      "analysis run is outside the workspace",
+      "document set differs or contains a non-synthetic/cross-workspace document",
+      "candidate IDs or candidate-set hash differ from the frozen fixture",
+      "runtime or marker fingerprint differs",
+      "budget reservation exceeds either ceiling",
+      "provider key or Supabase runtime is absent"
+    ],
+    "providerFlagSetOnlyAfterPreflight": true,
+    "arbitraryWorkspaceFallback": false
+  },
+  "tests": {
+    "unit": { "passed": 165, "failed": 0 },
+    "integration": { "passed": 56, "failed": 0 },
+    "playwrightMock": { "passed": 17, "failed": 0, "liveCalls": 0 },
+    "deterministicFixture": {
+      "candidates": 24,
+      "requiredMetrics": 1,
+      "criticalFalseSupported": 0,
+      "criticalFalseActive": 0,
+      "repairs": 0
+    },
+    "productionBuild": "passed",
+    "lint": "passed",
+    "format": "passed",
+    "typecheck": "passed",
+    "secretScan": "passed",
+    "invariantChecklist": "passed"
+  },
+  "database": {
+    "migration": "20260718000015_phase4_production_alignment",
+    "targetProjectConfirmed": true,
+    "newTable": "phase4_synthetic_smoke_scopes",
+    "rlsEnabled": true,
+    "ordinaryUserPolicies": 0,
+    "immutable": true
+  },
+  "ledger": {
+    "cumulativeApiSpendUsd": 11.374025,
+    "phase4SpendUsd": 10.965484,
+    "remediationSpendUsd": 9.28319,
+    "phase4CeilingUsd": 15,
+    "remediationCeilingUsd": 12,
+    "proposedSmokeMaximumUsd": 0.75,
+    "projectedPhase4Usd": 11.715484,
+    "projectedRemediationUsd": 10.03319
+  }
+}

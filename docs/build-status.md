@@ -1,6 +1,6 @@
 # Build Status
 
-## Current phase: Phase 4 GPT-5.5 repeatability passed — operational validation not authorized
+## Current phase: Phase 4 production path aligned — live smoke reauthorization pending
 
 Last updated: 2026-07-18.
 
@@ -8,6 +8,11 @@ Last updated: 2026-07-18.
 
 ### Gate decision
 
+- Zero-live production alignment is complete. The worker now uses the exact approved GPT-5.5/low configuration with 2 contexts, 1,800/1,600/600 limits, 90-second timeout, and fingerprint `c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b`; any model or material configuration drift fails before provider construction.
+- The fingerprint persists on `analysis_runs`, `verification_runs`, and `model_calls`. An immutable, RLS-enabled, service-only `phase4_synthetic_smoke_scopes` marker binds exact workspace, user, documents, analysis run, candidates, fixture, hash, and fingerprint. The dedicated harness has no arbitrary workspace or fallback path and sets its process-local live flag only after every preflight passes.
+- Offline gates pass: 165 unit, 56 Supabase integration, 17 mock Playwright, perfect 24-candidate deterministic evaluation, lint, formatting, type-check, production build, secret scan, and invariant checklist. No provider call occurred.
+- The first mock Playwright attempt exposed Phase 3 budget reads that included Phase 4 ledger rows. Phase 3 web/worker reads now explicitly filter `phase3`; the full 17-test rerun passed and both phase ceilings remain independent.
+- Ledgers remain Phase 4 `$10.965484/$15`, remediation `$9.283190/$12`, and cumulative API `$11.374025`. A renewed `$0.75` controlled smoke would project `$11.715484` and `$10.033190`, but is not authorized. General live verification remains disabled and Phase 5 remains blocked.
 - Two additional authorized fresh full GPT-5.5 repetitions ran sequentially after the first full pass. Each independently passed every gate under the identical full fingerprint. Across all three full repetitions, candidate status/precedence vectors were identical; every required accuracy and schema metric was `1.0`; and there were zero repairs, retries, incompletes, critical false findings, false merges, semantic changes, or injection influence.
 - Three-run totals were 120 calls, 268,866 input, 16,771 output, 1,101 reasoning, 48,640 cached tokens, 269.547 seconds summed latency, and `$1.628580`. The two Stage 3 repetitions added `$1.010175`, below their combined `$2.70` authorization.
 - Final authoritative ledgers are Phase 4 `$10.965484/$15`, remediation `$9.283190/$12`, and cumulative API `$11.374025`.
@@ -81,6 +86,7 @@ Last updated: 2026-07-18.
 | `20260717000012_phase4_scope_hardening`           | Composite verification-run/workspace relationship key; page/document evidence consistency; relationship, human-review revision, and model-call scope triggers                                                                                    |
 | `20260717000013_phase4_candidate_verification_v3` | Deterministic fact envelopes, Pass A/Pass B intermediate state, challenge status, versioned final-decision metadata, and relationship evidence hardening                                                                                         |
 | `20260717000014_phase4_incomplete_reason`         | Observable normalized provider incomplete reason on model-call records                                                                                                                                                                           |
+| `20260718000015_phase4_production_alignment`      | Qualified compatibility fingerprints on analysis/verification/model-call records; immutable service-only synthetic smoke scopes; workspace/identity/document/candidate validation                                                                |
 
 ### Phase 4 invariant check
 
@@ -93,22 +99,23 @@ Last updated: 2026-07-18.
 - [x] Review decisions are append-only/revision-linked and generate immutable audit events.
 - [x] Fixtures are synthetic only; live calls used `store:false` and no real USI documents.
 - [x] Deterministic MockProvider fallback remains operational and injection-inert.
-- [ ] Verification model gate passed — **NO; Phase 4 remains incomplete.**
+- [x] Verification model qualification gate passed across three fresh full GPT-5.5 repetitions; production path now matches the approved fingerprint.
+- [ ] Controlled synthetic application/worker smoke passed — **not yet authorized after alignment; Phase 4 remains incomplete.**
 
 ### Remaining gate before Phase 4 can close
 
-The remediated five-candidate targeted probe passed, but an operational subset cannot qualify a model. No full live qualification, additional targeted probe, other model, application smoke, selection, or Phase 5 work is authorized. Live verification remains disabled; human-only review with deterministic mock findings remains the demo mode.
+The selected verification configuration passed three fresh full repetitions and production is fingerprint-aligned. The remaining gate is one separately authorized controlled synthetic-only application/worker smoke, followed by final Phase 4 sign-off. Live verification remains disabled; human-only review with deterministic mock findings remains the demo mode.
 
 ### Phase 4 regression gate
 
-- Lint, formatting verification, and type-check: passed on the output-budget-remediation state. The production Next.js build also passed with process binding permitted.
-- Unit: 138 passed, including six dedicated meeting-consequence cases, 20 targeted-remediation, 23 semantic-contract, 19 typed date/number, and 6 evaluator-integrity tests.
-- Integration: 54 passed against the configured Supabase project, including semantic-contract rejection, atomic parent/child persistence, plus Phase 4 RLS, linkage, immutability, idempotency, audit, failure paths, budget cancellation, and isolation.
+- Lint, formatting verification, type-check, production Next.js build, and secret scan: passed on the production-alignment state.
+- Unit: 165 passed, including 27 production-fingerprint and synthetic-preflight cases.
+- Integration: 56 passed against the confirmed Supabase project, including exact worker limits, fingerprint persistence, immutable service-only synthetic scopes, ownership, and cross-workspace rejection.
 - Mock Playwright: 17 passed with `PHASE4_LIVE_VERIFICATION_ENABLED=false` and `E2E_LIVE_OPENAI=0`; no live model calls occurred.
 - Secret scan: passed across tracked files and the client bundle.
 - Targeted five-candidate mock probe: 5/5 candidates and six calls passed with clean first-pass Pass A/Pass B, zero repairs, exact expected statuses, and no injection influence.
 - Deterministic semantic/facts-v4/decision-v6/evaluator-v3 fixture: Pass A and Pass B metrics, source status, precedence, date, number, quote, citation, proof, duplicate, and every schema layer are 1.0; zero critical false-supported, false-active, false merges, incompletes, repairs, or injection influence. It remains a fallback/regression result, not a live qualification.
-- Invariant checklist above: passed except the explicitly failed live verification-model gate.
+- Invariant checklist above: passed; the controlled live application smoke remains intentionally pending.
 
 ## Phase 3 — Candidate extraction, retrieval, providers (COMPLETE)
 
@@ -116,7 +123,7 @@ The remediated five-candidate targeted probe passed, but an operational subset c
 
 - OpenAI Responses API + embeddings verified against the live key in gitignored `.env.local`.
 - Extraction model selected by live known-answer evaluation: `gpt-5.4-mini-2026-03-17` (`low` reasoning).
-- The former provisional Phase 4 model did not pass the Phase 4-specific gate; no live verification model is approved.
+- GPT-5.5 passed the Phase 4-specific qualification gate and is approved only for a separately authorized controlled synthetic smoke; general live verification remains disabled.
 - Embeddings: `text-embedding-3-small` (1536-d).
 - Strict `json_schema` structured output + Zod re-validation; `store: false` on Responses calls.
 - **Do not claim ZDR** from `store: false` alone; account-level ZDR must be verified separately.
