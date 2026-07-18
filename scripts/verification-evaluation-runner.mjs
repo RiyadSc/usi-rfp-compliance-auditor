@@ -12,8 +12,12 @@ import {
 } from '../fixtures/eval/verification-cases.ts';
 
 export async function runVerificationEvaluation(provider, options = {}) {
+  const selectedCandidateIds = options.candidateIds ? new Set(options.candidateIds) : null;
+  const candidates = selectedCandidateIds
+    ? VERIFICATION_INPUT_CANDIDATES.filter((candidate) => selectedCandidateIds.has(candidate.id))
+    : VERIFICATION_INPUT_CANDIDATES;
   const results = [];
-  for (const candidate of VERIFICATION_INPUT_CANDIDATES) {
+  for (const candidate of candidates) {
     results.push(
       await runCandidateVerificationPipeline({
         provider,
@@ -33,7 +37,8 @@ export async function runVerificationEvaluation(provider, options = {}) {
     );
   }
   const duplicateResults = [];
-  for (const pair of generateDuplicatePairCandidates(VERIFICATION_INPUT_CANDIDATES)) {
+  if (options.includeDuplicates === false) return { results, duplicateResults };
+  for (const pair of generateDuplicatePairCandidates(candidates)) {
     try {
       await options.beforeCall?.('duplicate', pair.source.id, pair.target.id);
       const call = await provider.classifyDuplicatePair({

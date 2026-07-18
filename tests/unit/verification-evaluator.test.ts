@@ -1,11 +1,16 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { MockProvider } from '../../packages/ai/src/mock-provider';
 import { finalMachineAssessmentSchema } from '../../packages/ai/src/verification-v3-schemas';
+import {
+  OUTPUT_BUDGET_PREQUALIFICATION_CASE_IDS,
+  OUTPUT_BUDGET_PREQUALIFICATION_VERSION,
+} from '../../fixtures/eval/verification-cases';
 // @ts-expect-error The evaluator is intentionally an executable JavaScript module shared with the CLI.
 import { runVerificationEvaluation } from '../../scripts/verification-evaluation-runner.mjs';
 // @ts-expect-error The evaluator is intentionally an executable JavaScript module shared with the CLI.
 import {
   deterministicComparisonOutcome,
+  scoreOutputBudgetPrequalificationRun,
   scoreVerificationPipelineRun,
   VERIFICATION_EVALUATOR_VERSION,
 } from '../../scripts/verification-metrics.mjs';
@@ -17,9 +22,14 @@ import {
 } from '../../scripts/verification-evaluator-compatibility.mjs';
 
 let baseline: Awaited<ReturnType<typeof runVerificationEvaluation>>;
+let outputBudgetBaseline: Awaited<ReturnType<typeof runVerificationEvaluation>>;
 
 beforeAll(async () => {
   baseline = await runVerificationEvaluation(new MockProvider());
+  outputBudgetBaseline = await runVerificationEvaluation(new MockProvider(), {
+    candidateIds: OUTPUT_BUDGET_PREQUALIFICATION_CASE_IDS,
+    includeDuplicates: false,
+  });
 });
 
 describe('verification evaluator v3 integrity', () => {
@@ -78,9 +88,11 @@ describe('verification evaluator v3 integrity', () => {
     const compatibility = buildVerificationEvaluationCompatibility();
     expect(compatibility).toMatchObject({
       parentChildRelationshipVersion: 'atomic-parent-child-v1',
-      reasoning: 'medium',
+      evaluationMode: 'full',
+      reasoning: 'low',
       maxContextsPerCandidate: 2,
-      outputLimits: { entailment: 1200, challenge: 1000, duplicate: 600 },
+      outputLimits: { entailment: 1800, challenge: 1600, duplicate: 600 },
+      structuredAnswerMaxTokens: { entailment: 500, challenge: 650 },
       timeoutMs: 90_000,
       providerContract: { api: 'responses', store: false, tools: false, maxRepairAttempts: 1 },
     });
@@ -100,5 +112,26 @@ describe('verification evaluator v3 integrity', () => {
     expect(isResumableRunCompatible({ metrics: { totals: { calls: 1 } } }, compatibility)).toBe(
       false,
     );
+  });
+
+  it('uses a narrow operational fixture without treating it as full qualification', () => {
+    const metrics = scoreOutputBudgetPrequalificationRun(outputBudgetBaseline);
+    expect(metrics).toMatchObject({
+      fixtureVersion: OUTPUT_BUDGET_PREQUALIFICATION_VERSION,
+      completeCandidateSet: true,
+      noDuplicateCalls: true,
+      passes: true,
+      totals: { repairs: 0 },
+    });
+    expect(metrics.candidateResults).toHaveLength(OUTPUT_BUDGET_PREQUALIFICATION_CASE_IDS.length);
+    const targetedCompatibility = buildVerificationEvaluationCompatibility({
+      evaluationMode: OUTPUT_BUDGET_PREQUALIFICATION_VERSION,
+    });
+    expect(targetedCompatibility).toMatchObject({
+      evaluationMode: OUTPUT_BUDGET_PREQUALIFICATION_VERSION,
+      prequalificationFixtureVersion: OUTPUT_BUDGET_PREQUALIFICATION_VERSION,
+      candidateIds: [...OUTPUT_BUDGET_PREQUALIFICATION_CASE_IDS],
+    });
+    expect(targetedCompatibility).not.toEqual(buildVerificationEvaluationCompatibility());
   });
 });

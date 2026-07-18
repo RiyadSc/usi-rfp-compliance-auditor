@@ -144,7 +144,7 @@ export class OpenAIProvider implements ModelProvider {
     this.embedModel = options.embedModel ?? 'text-embedding-3-small';
     this.verifyModel = options.verifyModel ?? 'gpt-5.5-2026-04-23';
     this.reasoningEffort = options.reasoningEffort ?? 'low';
-    this.verifyReasoningEffort = options.verifyReasoningEffort ?? 'medium';
+    this.verifyReasoningEffort = options.verifyReasoningEffort ?? 'low';
   }
 
   private async structuredAssessment<T>(input: {

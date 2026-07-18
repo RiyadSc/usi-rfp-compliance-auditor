@@ -12,3 +12,5 @@ USI_AI_RFP_Compliance_Auditor_Engineering_Design.md
 .playwright
 supabase/migrations
 apps/web/next-env.d.ts
+artifacts/evaluation/phase4-gpt55-stage1-v6-20260718a-gpt-5.5-2026-04-23-run-1.json
+artifacts/evaluation/phase4-gpt55-stage1-v6-20260718a-live-results.json

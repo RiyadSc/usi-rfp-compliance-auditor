@@ -254,7 +254,7 @@ export class MockProvider implements ModelProvider {
           ]
         : [],
       parserConcerns: classification === 'parser_uncertain' ? factEnvelope.parserWarnings : [],
-      descriptiveOnly: injection,
+      descriptiveOnly: false as const,
       injectionInfluence: false as const,
       machineOnly: true as const,
     };

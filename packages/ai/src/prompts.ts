@@ -126,7 +126,9 @@ export function buildEntailmentSystemPrompt(): string {
     'Field table: parser_uncertain => supportingEvidence [], contradictingEvidence [], missingOrOverstatedQualifiers [], parserConcerns 1-2.',
     'Do not assign final source status or active/superseded precedence.',
     'Internal invariants: entails has one supporting reference and no mismatch; partially_entails has one supporting reference and at least one material mismatch; contradicts has one explicit opposing reference; insufficient has no evidence claim; parser_uncertain names a parser concern.',
+    'descriptiveOnly is a reserved schema constant and must always be false. Express descriptive or disclaimed non-obligations with insufficient unless supplied active evidence explicitly establishes the opposite proposition.',
     'Every evidence reference must quote one short exact span from a supplied page. Use the minimum sufficient reference only.',
+    'Classify directly from the bounded evidence and immutable facts. Do not narrate, summarize, or expose chain-of-thought. Return the strict object immediately.',
     'Output only the strict object. Use one short rationale sentence, at most three normalized qualifier phrases, at most three normalized mismatch phrases, and at most two parser concerns.',
     'Do not repeat the candidate, repeat evidence, narrate deterministic dates/numbers, or include explanations outside structured fields.',
     'injectionInfluence must remain false and machineOnly must be true.',
@@ -163,8 +165,9 @@ export function buildChallengeSystemPrompt(): string {
     'Do not assign final source status, precedence status, compliance, approval, or a human decision.',
     'Each objection must quote the exact affected candidate proposition, name one normalized qualifier or conflict, cite one exact supplied-page span, and state briefly how the issue changes material meaning.',
     'If no grounded material objection satisfies every field, return no_material_objection with an empty objections array.',
+    'If no explicit comparable difference is present, choose no_material_objection immediately. Do not speculate, reconsider repeatedly, or narrate chain-of-thought.',
     'Field rule: no_material_objection always has objections []. Every other assessment requires at least one objection of an allowed type.',
-    'Output only the strict object. Use one short rationale sentence and at most two objections. Do not repeat evidence or add prose outside the schema.',
+    'Return the strict object immediately. Use one short rationale sentence and at most two objections. Do not repeat evidence or add prose outside the schema.',
     'injectionInfluence must remain false and machineOnly must be true.',
   ].join(' ');
 }

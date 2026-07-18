@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-export const ENTAILMENT_PROMPT_VERSION = 'verify-entailment-v5';
-export const ENTAILMENT_SCHEMA_VERSION = 'verification-entailment-v3';
-export const CHALLENGE_PROMPT_VERSION = 'verify-challenge-v3';
-export const CHALLENGE_SCHEMA_VERSION = 'verification-challenge-v3';
+export const ENTAILMENT_PROMPT_VERSION = 'verify-entailment-v6';
+export const ENTAILMENT_SCHEMA_VERSION = 'verification-entailment-v4';
+export const CHALLENGE_PROMPT_VERSION = 'verify-challenge-v4';
+export const CHALLENGE_SCHEMA_VERSION = 'verification-challenge-v4';
 export const DUPLICATE_PROMPT_VERSION = 'verify-duplicate-v1';
 export const DUPLICATE_SCHEMA_VERSION = 'verification-duplicate-v1';
 export const DECISION_ENGINE_VERSION = 'verification-decision-v6';
@@ -60,7 +60,7 @@ export const entailmentResultSchema = z
     materialQualifiersPresent: z.array(z.string().min(1).max(80)).max(3),
     missingOrOverstatedQualifiers: z.array(z.string().min(1).max(100)).max(3),
     parserConcerns: z.array(z.string().min(1).max(100)).max(2),
-    descriptiveOnly: z.boolean(),
+    descriptiveOnly: z.literal(false),
     injectionInfluence: z.literal(false),
     machineOnly: z.literal(true),
   })
@@ -80,8 +80,6 @@ export const entailmentResultSchema = z
         );
       if (result.parserConcerns.length)
         issue('parserConcerns', 'semantic_contract.entails_forbids_parser_concerns');
-      if (result.descriptiveOnly)
-        issue('descriptiveOnly', 'semantic_contract.descriptive_text_cannot_entail');
     }
     if (result.classification === 'partially_entails') {
       if (result.supportingEvidence.length !== 1)
@@ -91,8 +89,6 @@ export const entailmentResultSchema = z
           'missingOrOverstatedQualifiers',
           'semantic_contract.partial_requires_material_mismatch',
         );
-      if (result.descriptiveOnly)
-        issue('descriptiveOnly', 'semantic_contract.descriptive_text_cannot_partially_entail');
     }
     if (result.classification === 'contradicts') {
       if (result.contradictingEvidence.length !== 1)
@@ -107,8 +103,6 @@ export const entailmentResultSchema = z
           'missingOrOverstatedQualifiers',
           'semantic_contract.contradiction_is_not_a_missing_qualifier',
         );
-      if (result.descriptiveOnly)
-        issue('descriptiveOnly', 'semantic_contract.descriptive_text_is_insufficient');
     }
     if (result.classification === 'insufficient') {
       if (result.supportingEvidence.length)
@@ -322,7 +316,12 @@ export const entailmentJsonSchema = {
       description: 'Required only for parser_uncertain; otherwise use [].',
       items: { type: 'string', minLength: 1, maxLength: 100 },
     },
-    descriptiveOnly: { type: 'boolean' },
+    descriptiveOnly: {
+      type: 'boolean',
+      const: false,
+      description:
+        'Reserved constant. Use insufficient for merely descriptive/disclaimed text; use contradicts only for explicit opposing evidence.',
+    },
     injectionInfluence: { type: 'boolean', const: false },
     machineOnly: { type: 'boolean', const: true },
   },

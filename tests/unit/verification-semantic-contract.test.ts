@@ -205,7 +205,32 @@ describe('Phase 4 semantic contract v5/v3', () => {
       machineOnly: true,
     };
     expect(entailmentResultSchema.safeParse(partial).success).toBe(true);
-    expect(JSON.stringify(partial).length).toBeLessThan(1_500);
+    expect(Buffer.byteLength(JSON.stringify(partial))).toBeLessThanOrEqual(1_350);
+  });
+
+  it('bounds a maximum valid Pass B object below the reserved structured-answer budget', () => {
+    const reference = {
+      documentId: 'd'.repeat(36),
+      pageNumber: 999,
+      quote: 'q'.repeat(240),
+    };
+    const objection = {
+      type: 'overstated_scope' as const,
+      candidateProposition: 'c'.repeat(120),
+      qualifierOrConflict: 'q'.repeat(100),
+      materialEffect: 'm'.repeat(140),
+      evidence: [reference],
+    };
+    const maximum = {
+      candidateId: 'c'.repeat(36),
+      assessment: 'material_qualification_missing' as const,
+      rationale: 'r'.repeat(160),
+      objections: [objection, { ...objection, type: 'missing_condition' as const }],
+      injectionInfluence: false as const,
+      machineOnly: true as const,
+    };
+    expect(challengeResultSchema.safeParse(maximum).success).toBe(true);
+    expect(Buffer.byteLength(JSON.stringify(maximum))).toBeLessThanOrEqual(1_925);
   });
 
   it('enforces class-dependent Pass A invariants', () => {
@@ -364,6 +389,27 @@ describe('Phase 4 semantic contract v5/v3', () => {
     expect(output.failedStage).toBe('entailment');
     expect(output.entailmentCall?.schemaAdherent).toBe(false);
     expect(output.error).toMatch(/^semantic_contract_invalid:pass_a:/);
+  });
+
+  it('structurally forbids model-controlled descriptiveOnly=true', () => {
+    const item = candidate(14);
+    expect(
+      entailmentResultSchema.safeParse({
+        candidateId: item.id,
+        classification: 'contradicts',
+        rationale: 'The active addendum explicitly resolves the claimed conflict.',
+        supportingEvidence: [],
+        contradictingEvidence: [
+          { documentId: item.documentId, pageNumber: 3, quote: item.evidenceQuote },
+        ],
+        materialQualifiersPresent: [],
+        missingOrOverstatedQualifiers: [],
+        parserConcerns: [],
+        descriptiveOnly: true,
+        injectionInfluence: false,
+        machineOnly: true,
+      }).success,
+    ).toBe(false);
   });
 
   it('retains a controlled-repair failure as auditable metadata', async () => {
@@ -526,8 +572,11 @@ describe('Phase 4 semantic contract v5/v3', () => {
     expect(passA).toMatch(/Exact wording is not required/i);
     expect(passA).toMatch(/Absence of evidence is not contradiction/i);
     expect(passA).toMatch(/Output only the strict object/i);
+    expect(passA).toMatch(/Return the strict object immediately/i);
+    expect(passA).toMatch(/descriptiveOnly is a reserved schema constant/i);
     expect(passB).toMatch(/Do not invent an objection/i);
     expect(passB).toMatch(/independent child requirements are not material objections/i);
     expect(passB).toMatch(/exact affected candidate proposition/i);
+    expect(passB).toMatch(/choose no_material_objection immediately/i);
   });
 });

@@ -3,6 +3,8 @@ import { finalMachineAssessmentSchema } from '../packages/ai/src/verification-v3
 import {
   EXPECTED_DUPLICATE_PAIRS,
   FORBIDDEN_MERGE_PAIRS,
+  OUTPUT_BUDGET_PREQUALIFICATION_CASE_IDS,
+  OUTPUT_BUDGET_PREQUALIFICATION_VERSION,
   VERIFICATION_CASES,
   VERIFICATION_CONTEXTS,
 } from '../fixtures/eval/verification-cases.ts';
@@ -15,6 +17,8 @@ const SOURCE_STATUSES = [
   'parser_uncertain',
 ];
 export const VERIFICATION_EVALUATOR_VERSION = 'verification-evaluator-v3';
+export const OUTPUT_BUDGET_PREQUALIFICATION_EVALUATOR_VERSION =
+  'verification-output-budget-evaluator-v1';
 
 const fixtureId = (n) => `20000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const EXPECTED_DATE_COMPARISONS = new Map([
@@ -100,6 +104,90 @@ function callTotals(results, key) {
         calls.filter((call) => call.incompleteReason === reason).length,
       ]),
     ),
+  };
+}
+
+export function scoreOutputBudgetPrequalificationRun(evaluation) {
+  const expectedCases = VERIFICATION_CASES.filter((item) =>
+    OUTPUT_BUDGET_PREQUALIFICATION_CASE_IDS.includes(item.id),
+  );
+  const resultById = new Map(evaluation.results.map((result) => [result.candidate.id, result]));
+  const candidateResults = expectedCases.map((test) => {
+    const result = resultById.get(test.id);
+    const final = result?.finalAssessment;
+    const passA = result?.entailmentCall;
+    const passB = result?.challengeCall;
+    const passAClean = Boolean(
+      passA?.schemaAdherent &&
+      (passA?.firstPassSchemaAdherent ?? (passA?.repairAttempts === 0 && passA?.schemaAdherent)) &&
+      !passA?.incomplete &&
+      !passA?.refused &&
+      passA?.repairAttempts === 0,
+    );
+    const passBRequired = result?.entailment?.classification === 'entails';
+    const passBClean = !passBRequired
+      ? passB == null
+      : Boolean(
+          passB?.schemaAdherent &&
+          (passB?.firstPassSchemaAdherent ??
+            (passB?.repairAttempts === 0 && passB?.schemaAdherent)) &&
+          !passB?.incomplete &&
+          !passB?.refused &&
+          passB?.repairAttempts === 0,
+        );
+    const finalSchemaAdherent = finalMachineAssessmentSchema.safeParse(final).success;
+    const statusCorrect = final?.sourceSupportStatus === test.expected.sourceSupportStatus;
+    const precedenceCorrect = final?.precedenceStatus === test.expected.precedenceStatus;
+    const proofCorrect = final?.proofRequirement === test.expected.proofRequirement;
+    const noInjectionInfluence =
+      !result?.entailment?.injectionInfluence && !result?.challenge?.injectionInfluence;
+    return {
+      candidateId: test.id,
+      passAClean,
+      passBClean,
+      passBRequired,
+      finalSchemaAdherent,
+      statusCorrect,
+      precedenceCorrect,
+      proofCorrect,
+      noInjectionInfluence,
+      passed:
+        passAClean &&
+        passBClean &&
+        finalSchemaAdherent &&
+        statusCorrect &&
+        precedenceCorrect &&
+        proofCorrect &&
+        noInjectionInfluence,
+    };
+  });
+  const passATotals = callTotals(evaluation.results, 'entailmentCall');
+  const passBTotals = callTotals(evaluation.results, 'challengeCall');
+  const completeCandidateSet =
+    evaluation.results.length === expectedCases.length &&
+    candidateResults.every((result) => resultById.has(result.candidateId));
+  const noDuplicateCalls = evaluation.duplicateResults.length === 0;
+  return {
+    version: OUTPUT_BUDGET_PREQUALIFICATION_EVALUATOR_VERSION,
+    fixtureVersion: OUTPUT_BUDGET_PREQUALIFICATION_VERSION,
+    completeCandidateSet,
+    noDuplicateCalls,
+    candidateResults,
+    passA: passATotals,
+    passB: passBTotals,
+    totals: {
+      calls: passATotals.calls + passBTotals.calls,
+      inputTokens: passATotals.inputTokens + passBTotals.inputTokens,
+      outputTokens: passATotals.outputTokens + passBTotals.outputTokens,
+      reasoningTokens: passATotals.reasoningTokens + passBTotals.reasoningTokens,
+      cachedTokens: passATotals.cachedTokens + passBTotals.cachedTokens,
+      latencyMs: passATotals.latencyMs + passBTotals.latencyMs,
+      retries: passATotals.retries + passBTotals.retries,
+      repairs: passATotals.repairs + passBTotals.repairs,
+      estimatedCostUsd: passATotals.costUsd + passBTotals.costUsd,
+    },
+    passes:
+      completeCandidateSet && noDuplicateCalls && candidateResults.every((result) => result.passed),
   };
 }
 

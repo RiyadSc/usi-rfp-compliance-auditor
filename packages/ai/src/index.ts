@@ -42,7 +42,7 @@ export function createProvider(env: ProviderEnv = {}): ModelProvider {
       verifyReasoningEffort:
         env.OPENAI_REASONING_EFFORT ??
         (process.env.OPENAI_REASONING_EFFORT as 'low' | 'medium' | 'high' | undefined) ??
-        'medium',
+        'low',
     });
   }
   return new MockProvider();

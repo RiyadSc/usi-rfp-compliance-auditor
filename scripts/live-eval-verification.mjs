@@ -15,12 +15,15 @@ import {
   OpenAIProvider,
 } from '../packages/ai/src/index.ts';
 import {
+  OUTPUT_BUDGET_PREQUALIFICATION_CASE_IDS,
+  OUTPUT_BUDGET_PREQUALIFICATION_VERSION,
   VERIFICATION_CASES,
   VERIFICATION_FIXTURE_VERSION,
 } from '../fixtures/eval/verification-cases.ts';
 import { runVerificationEvaluation } from './verification-evaluation-runner.mjs';
 import {
   aggregateVerificationPipelineRuns,
+  scoreOutputBudgetPrequalificationRun,
   scoreVerificationPipelineRun,
   VERIFICATION_EVALUATOR_VERSION,
 } from './verification-metrics.mjs';
@@ -29,6 +32,8 @@ import {
   fingerprintVerificationEvaluationCompatibility,
   isResumableRunCompatible,
   VERIFICATION_EVALUATION_OUTPUT_LIMITS,
+  VERIFICATION_EVALUATION_PROJECTED_MAXIMUM_USD,
+  VERIFICATION_EVALUATION_REASONING,
   VERIFICATION_EVALUATION_TIMEOUT_MS,
 } from './verification-evaluator-compatibility.mjs';
 
@@ -38,8 +43,8 @@ loadEnv({ path: resolve('.env'), quiet: true });
 if (process.env.PHASE4_LIVE_EVAL !== '1')
   throw new Error('Refusing live verification evaluation: set PHASE4_LIVE_EVAL=1 explicitly');
 const ceiling = Number(process.env.PHASE4_SPEND_CEILING_USD);
-if (!Number.isFinite(ceiling) || ceiling <= 0 || ceiling > 10)
-  throw new Error('PHASE4_SPEND_CEILING_USD must be present and no greater than 10');
+if (!Number.isFinite(ceiling) || ceiling <= 0 || ceiling > 15)
+  throw new Error('PHASE4_SPEND_CEILING_USD must be present and no greater than 15');
 const apiKey = process.env.OPENAI_API_KEY?.trim();
 if (!apiKey) throw new Error('OPENAI_API_KEY absent for opt-in live verification evaluation');
 for (const name of ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'])
@@ -77,6 +82,13 @@ const repetitions = requestedRepetitions === undefined ? 3 : Number(requestedRep
 if (!Number.isInteger(repetitions) || repetitions < 1 || repetitions > 3)
   throw new Error('--repetitions must be an integer from 1 through 3');
 const freshRun = process.argv.includes('--fresh');
+const prequalification = argumentValue('--prequalification');
+if (prequalification && prequalification !== OUTPUT_BUDGET_PREQUALIFICATION_VERSION)
+  throw new Error(`Unsupported prequalification fixture: ${prequalification}`);
+if (prequalification && (!freshRun || repetitions !== 1 || models.length !== 1))
+  throw new Error('Output-budget prequalification requires one model, one repetition, and --fresh');
+const evaluationMode = prequalification ?? 'full';
+const selectedCandidateIds = prequalification ? [...OUTPUT_BUDGET_PREQUALIFICATION_CASE_IDS] : null;
 const runId = argumentValue('--run-id');
 if (freshRun && (!runId || !/^[a-z0-9][a-z0-9-]{0,79}$/i.test(runId)))
   throw new Error(
@@ -88,7 +100,7 @@ const resumeCompletedRuns = !freshRun && process.env.PHASE4_RESUME_COMPLETED_RUN
 const outputLimits = VERIFICATION_EVALUATION_OUTPUT_LIMITS;
 const artifactDir = resolve('artifacts/evaluation');
 await mkdir(artifactDir, { recursive: true });
-const compatibility = buildVerificationEvaluationCompatibility();
+const compatibility = buildVerificationEvaluationCompatibility({ evaluationMode });
 const compatibilityFingerprint = fingerprintVerificationEvaluationCompatibility(compatibility);
 const runArtifactPath = (model, repetition) =>
   resolve(
@@ -134,29 +146,26 @@ if (resumeCompletedRuns) {
 // Conservative planned estimate: all 24 Pass A contexts, all possible Pass B prompt
 // inputs, the 14 planted positive challenges, and both prequalified duplicate pairs.
 // A runtime reservation stops before any next call that could cross the approved cap.
-const projectedMaximumByModelRun = {
-  'gpt-5.5-2026-04-23': 1.1,
-  'gpt-5.4-2026-03-05': 0.55,
-  'gpt-5.4-mini-2026-03-17': 0.3,
-};
+const activeProjection = prequalification
+  ? VERIFICATION_EVALUATION_PROJECTED_MAXIMUM_USD.outputBudgetPrequalification
+  : VERIFICATION_EVALUATION_PROJECTED_MAXIMUM_USD.full;
 const projectedMaximumUsd = models.reduce(
   (sum, model) =>
     sum +
     Array.from({ length: repetitions }, (_, index) => index + 1).reduce(
       (modelSum, repetition) =>
-        modelSum +
-        (resumableRuns.has(`${model}:${repetition}`) ? 0 : projectedMaximumByModelRun[model]),
+        modelSum + (resumableRuns.has(`${model}:${repetition}`) ? 0 : activeProjection[model]),
       0,
     ),
   0,
 );
-const totalRemediationCeilingUsd = Number(process.env.PHASE4_REMEDIATION_SPEND_CEILING_USD ?? 4);
+const totalRemediationCeilingUsd = Number(process.env.PHASE4_REMEDIATION_SPEND_CEILING_USD);
 if (
   !Number.isFinite(totalRemediationCeilingUsd) ||
   totalRemediationCeilingUsd <= 0 ||
-  totalRemediationCeilingUsd > 7.75
+  totalRemediationCeilingUsd > 12
 )
-  throw new Error('PHASE4_REMEDIATION_SPEND_CEILING_USD must be present and no greater than 7.75');
+  throw new Error('PHASE4_REMEDIATION_SPEND_CEILING_USD must be present and no greater than 12');
 const remainingRemediationCeilingUsd = Math.min(
   Math.max(0, totalRemediationCeilingUsd - priorRemediationSpend),
   Math.max(0, ceiling - phase4Spend),
@@ -170,10 +179,11 @@ console.log(
     projectedPhase4Cumulative: phase4Spend + projectedMaximumUsd,
     phase4CeilingUsd: ceiling,
     remainingRemediationCeilingUsd,
-    candidates: VERIFICATION_CASES.length,
+    candidates: selectedCandidateIds?.length ?? VERIFICATION_CASES.length,
+    evaluationMode,
     plannedModels: models.length,
     repetitions,
-    reasoning: 'medium',
+    reasoning: VERIFICATION_EVALUATION_REASONING,
     freshRun,
     runId: runId ?? null,
     maxContextsPerCandidate: 2,
@@ -185,7 +195,7 @@ console.log(
 if (projectedMaximumUsd > remainingRemediationCeilingUsd + 1e-9)
   throw new Error('Refusing live calls: planned remediation evaluation exceeds its approved cap');
 if (phase4Spend + projectedMaximumUsd > ceiling + 1e-9)
-  throw new Error('Refusing live calls: projected Phase 4 cumulative spend exceeds $10');
+  throw new Error('Refusing live calls: projected Phase 4 cumulative spend exceeds $15');
 
 const modelResponse = await fetch('https://api.openai.com/v1/models', {
   headers: { authorization: `Bearer ${apiKey}` },
@@ -292,11 +302,13 @@ for (const model of models) {
     const provider = new OpenAIProvider({
       apiKey,
       verifyModel: model,
-      verifyReasoningEffort: 'medium',
+      verifyReasoningEffort: VERIFICATION_EVALUATION_REASONING,
       timeoutMs: VERIFICATION_EVALUATION_TIMEOUT_MS,
     });
     let budgetBlocked = false;
     const evaluation = await runVerificationEvaluation(provider, {
+      candidateIds: selectedCandidateIds,
+      includeDuplicates: !prequalification,
       maxContexts: 2,
       entailmentMaxOutputTokens: outputLimits.entailment,
       challengeMaxOutputTokens: outputLimits.challenge,
@@ -329,12 +341,16 @@ for (const model of models) {
       throw new Error(
         'Live evaluation stopped before completing the scored run: remediation budget reserved',
       );
-    const metrics = scoreVerificationPipelineRun(evaluation);
+    const metrics = prequalification
+      ? scoreOutputBudgetPrequalificationRun(evaluation)
+      : scoreVerificationPipelineRun(evaluation);
+    const runPasses = prequalification ? metrics.passes : passesAuthorizedSingleRunGate(metrics);
     const run = {
       repetition,
       compatibility,
       metrics,
-      qualifiesAuthorizedSingleRunGate: passesAuthorizedSingleRunGate(metrics),
+      qualifiesAuthorizedSingleRunGate: !prequalification && runPasses,
+      passesOutputBudgetPrequalification: Boolean(prequalification && runPasses),
       boundedTrace: boundedEvaluationTrace(evaluation),
     };
     runs.push(run);
@@ -345,9 +361,19 @@ for (const model of models) {
     );
     console.log(JSON.stringify({ model, repetition, metrics }));
   }
-  const aggregate = aggregateVerificationPipelineRuns(runs);
-  const qualifies = runs.every((run) => passesAuthorizedSingleRunGate(run.metrics));
-  modelResults.push({ model, reasoning: 'medium', runs, aggregate, qualifies });
+  const aggregate = prequalification
+    ? { repetitions: runs.length, allPassed: runs.every((run) => run.metrics.passes) }
+    : aggregateVerificationPipelineRuns(runs);
+  const qualifies =
+    !prequalification && runs.every((run) => passesAuthorizedSingleRunGate(run.metrics));
+  modelResults.push({
+    model,
+    reasoning: VERIFICATION_EVALUATION_REASONING,
+    runs,
+    aggregate,
+    qualifies,
+    prequalificationPasses: Boolean(prequalification && runs.every((run) => run.metrics.passes)),
+  });
 }
 
 const { data: finalSpendRows, error: finalSpendError } = await admin
@@ -361,8 +387,9 @@ const artifact = {
   phase: 'phase4-remediation',
   freshRun,
   runId: runId ?? null,
+  evaluationMode,
   fixtureVersion: VERIFICATION_FIXTURE_VERSION,
-  candidateCount: VERIFICATION_CASES.length,
+  candidateCount: selectedCandidateIds?.length ?? VERIFICATION_CASES.length,
   prompts: {
     entailment: ENTAILMENT_PROMPT_VERSION,
     challenge: CHALLENGE_PROMPT_VERSION,
@@ -379,7 +406,7 @@ const artifact = {
   evaluatorVersion: VERIFICATION_EVALUATOR_VERSION,
   compatibility,
   compatibilityFingerprint,
-  reasoning: 'medium',
+  reasoning: VERIFICATION_EVALUATION_REASONING,
   repetitions,
   maxContextsPerCandidate: 2,
   outputLimits,
@@ -402,5 +429,8 @@ console.log(
     additionalActualUsd,
     finalPhase4Spend,
     qualified: modelResults.filter((item) => item.qualifies).map((item) => item.model),
+    prequalified: modelResults
+      .filter((item) => item.prequalificationPasses)
+      .map((item) => item.model),
   }),
 );

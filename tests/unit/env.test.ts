@@ -16,6 +16,8 @@ describe('parseServerEnv', () => {
     expect(env.MAX_PAGES_PER_WORKSPACE).toBe(100);
     expect(env.MAX_MODEL_COST_USD_PER_RUN).toBe(10);
     expect(env.PHASE3_SPEND_CEILING_USD).toBe(10);
+    expect(env.PHASE4_SPEND_CEILING_USD).toBe(15);
+    expect(env.OPENAI_REASONING_EFFORT).toBe('low');
     expect(env.OPENAI_EXTRACT_MODEL).toBe('gpt-5.4-mini-2026-03-17');
   });
 
@@ -35,6 +37,10 @@ describe('parseServerEnv', () => {
 
   it('rejects a Phase 3 ceiling above the authoritative $10 limit', () => {
     expect(() => parseServerEnv({ ...valid, PHASE3_SPEND_CEILING_USD: '10.01' })).toThrow();
+  });
+
+  it('rejects a Phase 4 ceiling above the authoritative $15 limit', () => {
+    expect(() => parseServerEnv({ ...valid, PHASE4_SPEND_CEILING_USD: '15.01' })).toThrow();
   });
 
   it('requires service-role and database URL for Phase 2 privileged paths', () => {

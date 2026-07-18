@@ -463,6 +463,20 @@ export const FORBIDDEN_MERGE_PAIRS = [
   [id(10), id(23)],
 ] as const;
 
+/**
+ * A narrow operational prequalification for output-budget/schema stability only.
+ * Passing it never qualifies a model or replaces the full frozen evaluation.
+ */
+export const OUTPUT_BUDGET_PREQUALIFICATION_VERSION =
+  'verification-output-budget-prequalification-v1';
+export const OUTPUT_BUDGET_PREQUALIFICATION_CASE_IDS = [
+  id(3), // positive Pass B previously exhausted its allowance
+  id(4), // partial Pass A previously exhausted its allowance
+  id(11), // deterministic numerical contradiction sentinel
+  id(14), // contradicts/descriptiveOnly first-pass contract failure
+  id(22), // injection/non-obligation sentinel
+] as const;
+
 export const VERIFICATION_CONTEXTS = VERIFICATION_PAGES_V2.map((page) => ({
   chunkId: `page-${page.pageNumber}`,
   documentId: FIXTURE_DOCUMENT_ID,

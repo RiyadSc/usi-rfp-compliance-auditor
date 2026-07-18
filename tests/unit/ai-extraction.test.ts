@@ -593,27 +593,21 @@ describe('Phase 4 conservative candidate-centered remediation', () => {
         facts,
         entailment: {
           candidateId: injectedCandidate.id,
-          classification: 'contradicts',
-          rationale: 'The source labels the text malicious and non-authoritative.',
+          classification: 'insufficient',
+          rationale: 'The malicious document text does not establish a procurement obligation.',
           supportingEvidence: [],
-          contradictingEvidence: [
-            {
-              documentId: injectedContext.documentId,
-              pageNumber: injectedContext.pageNumber,
-              quote: injectedCandidate.evidenceQuote,
-            },
-          ],
+          contradictingEvidence: [],
           materialQualifiersPresent: [],
           missingOrOverstatedQualifiers: [],
           parserConcerns: [],
-          descriptiveOnly: true,
+          descriptiveOnly: false,
           injectionInfluence: false,
           machineOnly: true,
         },
         challenge: null,
       }),
     ).toMatchObject({
-      sourceSupportStatus: 'contradicted',
+      sourceSupportStatus: 'unsupported',
       precedenceStatus: 'undetermined',
       machineOnly: true,
     });
