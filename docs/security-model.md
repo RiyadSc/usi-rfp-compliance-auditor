@@ -25,6 +25,7 @@ Sources: Engineering Design §10, build-brief AI security rules, Phase 0 threat 
 | T10 | Hallucinated obligations       | Model invents requirements                                                                    | Independent verification; quote-must-exist-on-page check; deterministic numeric/date checks; known-answer eval; zero-critical-false gate                          | 3–4, 8  |
 | T11 | Unauthenticated access to demo | Public URL discovery                                                                          | Supabase Auth with signup disabled; seeded demo accounts; no unauthenticated analysis endpoints                                                                   | 1       |
 | T12 | Model provider data retention  | Fixture content sent to provider                                                              | Synthetic/public data only (BR-09); provider data controls documented; re-evaluate before any pilot                                                               | 3       |
+| T13 | Incomplete AI-run provenance   | A harness persists a run without binding the approved fixture/configuration hashes            | Validated preflight metadata; fail-closed typed input-hash helper; immutable run/call fingerprints; operational smoke gate                                        | 4       |
 
 ## Data classification & retention (Design §10.2)
 
@@ -53,3 +54,4 @@ Sources: Engineering Design §10, build-brief AI security rules, Phase 0 threat 
 3. **Verification gate:** candidate → verified transition requires (a) quote found on cited page in stored text, (b) verifier support classification, (c) deterministic rule checks pass; otherwise unverified/needs-review.
 4. **Scope gate:** retrieval and prompt assembly accept an explicit allowlist of document IDs belonging to the run's workspace; nothing else can enter context.
 5. **Red-team fixtures:** injection test cases from Design §12.4 run in CI (ignore-instructions text, fake system formatting, key-exfiltration text, self-verified claims, similar RFP in another workspace).
+6. **Operational provenance:** the synthetic smoke binds analysis run, complete candidate-set hash, and approved compatibility fingerprint into the verification-run input hash. Undefined or malformed material stops before provider construction; an otherwise correct model result cannot waive this check.

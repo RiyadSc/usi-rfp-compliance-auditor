@@ -1,0 +1,45 @@
+{
+  "reportVersion": "phase4-production-worker-smoke-v1",
+  "generatedAt": "2026-07-18T18:23:19.958Z",
+  "syntheticScope": {
+    "smokeScopeId": "40000000-0000-4000-8000-000000000001",
+    "workspaceId": "10000000-0000-4000-8000-000000000001",
+    "authenticatedUserId": "922727a8-727b-4b9e-a0ff-6e7f7f43d82c",
+    "documentIds": ["10000000-0000-4000-8000-000000000002"],
+    "analysisRunId": "10000000-0000-4000-8000-000000000003",
+    "fixtureVersion": "verification-cases-v2"
+  },
+  "verificationRunId": "c21e53fb-873b-4fca-aa90-43a7e0dd1d95",
+  "processingJobId": "8f9efadb-a738-48d1-8bc7-302f70069fd7",
+  "model": "gpt-5.5-2026-04-23",
+  "checks": {
+    "runCompleted": true,
+    "jobCompleted": true,
+    "expectedFindingsMatch": true,
+    "findingCount": 24,
+    "candidateCount": 24,
+    "modelMetadataComplete": false,
+    "noRepairRetryOrIncomplete": true,
+    "contextsBounded": true,
+    "factsComplete": true,
+    "passesPersisted": true,
+    "evidenceValidated": true,
+    "pagesResolve": true,
+    "parentChildPersisted": true,
+    "machineOnly": true,
+    "humanReviewStatusPending": true,
+    "auditEventPersisted": true,
+    "spendLedgerPersisted": true,
+    "unsupportedNeverVerified": true,
+    "sourceNavigationPattern": "/w/{workspaceId}/documents/{documentId}?page={pageNumber}"
+  },
+  "usage": {
+    "calls": 40,
+    "inputTokens": 89868,
+    "outputTokens": 5424,
+    "reasoningTokens": 167,
+    "cachedTokens": 0,
+    "latencyMs": 85458,
+    "costUsd": 0.61206
+  }
+}
