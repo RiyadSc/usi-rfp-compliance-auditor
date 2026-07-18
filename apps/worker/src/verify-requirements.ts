@@ -8,9 +8,10 @@ import {
   ENTAILMENT_PROMPT_VERSION,
   ENTAILMENT_SCHEMA_VERSION,
   FACT_ENVELOPE_VERSION,
+  PHASE4_QUALIFIED_COMPATIBILITY,
   applyDuplicateSafetyBlock,
+  assertQualifiedPhase4Runtime,
   checkBudget,
-  createProvider,
   findDeterministicParentChildRelationships,
   findExplicitPrecedenceRelationships,
   generateDuplicatePairCandidates,
@@ -21,6 +22,7 @@ import {
   type VerificationCandidateInput,
   type VerificationContext,
   MockProvider,
+  OpenAIProvider,
   validateEvidenceQuote,
 } from '@usi/ai';
 import { adminClient } from './db.js';
@@ -35,6 +37,16 @@ export type VerifyJobPayload = {
   verificationRunId: string;
   processingJobId: string;
 };
+
+export function resolvePhase4ProductionRuntime(input: { model: string; reasoning: string }) {
+  return assertQualifiedPhase4Runtime({
+    model: input.model,
+    compatibility: {
+      ...PHASE4_QUALIFIED_COMPATIBILITY,
+      reasoning: input.reasoning,
+    } as typeof PHASE4_QUALIFIED_COMPATIBILITY,
+  });
+}
 
 type PageRow = {
   id: string;
@@ -87,16 +99,24 @@ export async function handleVerifyJob(
   payload: VerifyJobPayload,
   providerOverride?: ModelProvider,
 ): Promise<void> {
+  const runtime = resolvePhase4ProductionRuntime({
+    model: env.OPENAI_VERIFY_MODEL,
+    reasoning: env.OPENAI_REASONING_EFFORT,
+  });
+  if (env.PHASE4_LIVE_VERIFICATION_ENABLED && !env.OPENAI_API_KEY) {
+    throw new Error('phase4_runtime_incompatible:openai_api_key:missing');
+  }
   const admin = adminClient();
   const provider =
     providerOverride ??
     (env.PHASE4_LIVE_VERIFICATION_ENABLED
-      ? createProvider({
-          ...(env.OPENAI_API_KEY ? { OPENAI_API_KEY: env.OPENAI_API_KEY } : {}),
-          OPENAI_EXTRACT_MODEL: env.OPENAI_EXTRACT_MODEL,
-          OPENAI_VERIFY_MODEL: env.OPENAI_VERIFY_MODEL,
-          OPENAI_EMBED_MODEL: env.OPENAI_EMBED_MODEL,
-          OPENAI_REASONING_EFFORT: env.OPENAI_REASONING_EFFORT,
+      ? new OpenAIProvider({
+          apiKey: env.OPENAI_API_KEY ?? '',
+          extractModel: env.OPENAI_EXTRACT_MODEL,
+          verifyModel: runtime.model,
+          embedModel: env.OPENAI_EMBED_MODEL,
+          verifyReasoningEffort: runtime.compatibility.reasoning,
+          timeoutMs: runtime.compatibility.timeoutMs,
         })
       : new MockProvider());
 
@@ -168,6 +188,7 @@ export async function handleVerifyJob(
       estimated_cost_usd: input.call.estimatedCostUsd,
       retries: input.call.retries,
       repair_attempts: input.call.repairAttempts,
+      compatibility_fingerprint: runtime.compatibilityFingerprint,
       status,
       error_category: wouldExceed
         ? 'budget'
@@ -231,10 +252,16 @@ export async function handleVerifyJob(
       status: 'retrieving',
       started_at: new Date().toISOString(),
       provider: provider.name,
-      model: env.OPENAI_VERIFY_MODEL,
-      reasoning_effort: env.OPENAI_REASONING_EFFORT,
+      model: runtime.model,
+      reasoning_effort: runtime.compatibility.reasoning,
+      compatibility_fingerprint: runtime.compatibilityFingerprint,
     })
     .eq('id', run.id);
+  await admin
+    .from('analysis_runs')
+    .update({ verification_compatibility_fingerprint: runtime.compatibilityFingerprint })
+    .eq('id', payload.analysisRunId)
+    .eq('workspace_id', payload.workspaceId);
   await admin
     .from('processing_jobs')
     .update({ status: 'running', started_at: new Date().toISOString() })
@@ -297,8 +324,9 @@ export async function handleVerifyJob(
         verificationRunId: run.id,
         candidate,
         availableContexts,
-        maxContexts: 8,
-        maxOutputTokens: Math.min(Math.max(env.MAX_OUTPUT_TOKENS, 1800), 4000),
+        maxContexts: runtime.compatibility.maxContextsPerCandidate,
+        entailmentMaxOutputTokens: runtime.compatibility.outputLimits.entailment,
+        challengeMaxOutputTokens: runtime.compatibility.outputLimits.challenge,
         onEnvelope: async (facts, contexts) => {
           const retrievalRows = contexts.map((context, index) => {
             const page = pageByKey.get(`${context.documentId}:${context.pageNumber}`)!;
@@ -523,7 +551,7 @@ export async function handleVerifyJob(
           source: pair.source,
           target: pair.target,
           deterministicMaterialDifferences: pair.materialDifferences,
-          maxOutputTokens: 1000,
+          maxOutputTokens: runtime.compatibility.outputLimits.duplicate,
         });
         await persistCall({
           candidateId: pair.source.id,

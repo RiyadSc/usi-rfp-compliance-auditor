@@ -15,6 +15,7 @@ export * from './verification-v3-schemas';
 export * from './verification-decision-engine';
 export * from './candidate-verification-pipeline';
 export * from './verification-semantic-contract';
+export * from './phase4-qualified-config';
 export { MockProvider } from './mock-provider';
 export { OpenAIProvider } from './openai-provider';
 

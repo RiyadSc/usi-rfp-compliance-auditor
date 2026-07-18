@@ -5,8 +5,13 @@ import {
   MockProvider,
   type CandidateAssessmentInput,
   type ChallengeInput,
+  type DuplicatePairInput,
 } from '../../packages/ai/src/index.js';
 import { handleVerifyJob } from '../../apps/worker/src/verify-requirements.js';
+import {
+  PHASE4_SYNTHETIC_MARKER,
+  computeSyntheticCandidateSetHash,
+} from '../../apps/worker/src/phase4-smoke-preflight.js';
 import { createTestWorkspace, signInUser } from './helpers.js';
 
 loadEnv({ path: '.env.local' });
@@ -19,7 +24,8 @@ let userA: SupabaseClient,
   userB: SupabaseClient,
   workspaceA: string,
   workspaceB: string,
-  userAId: string;
+  userAId: string,
+  userBId: string;
 
 beforeAll(async () => {
   userA = await signInUser('A');
@@ -27,6 +33,7 @@ beforeAll(async () => {
   workspaceA = await createTestWorkspace(userA, `verify-A ${Date.now()}`);
   workspaceB = await createTestWorkspace(userB, `verify-B ${Date.now()}`);
   userAId = (await userA.auth.getUser()).data.user!.id;
+  userBId = (await userB.auth.getUser()).data.user!.id;
 });
 afterAll(async () => {
   await userA.auth.signOut();
@@ -164,6 +171,175 @@ async function seedVerification(options?: {
 }
 
 describe('Phase 4 verification persistence and isolation', () => {
+  it('enforces immutable service-only synthetic smoke scopes and workspace ownership', async () => {
+    const seed = await seedVerification();
+    const svc = admin();
+    await svc
+      .from('documents')
+      .update({ parser_name: 'synthetic-fixture' })
+      .eq('id', seed.documentId);
+    const candidate = {
+      id: seed.candidateId,
+      workspaceId: workspaceA,
+      analysisRunId: seed.analysisRunId,
+      documentId: seed.documentId,
+      category: 'certification',
+      title: 'Certificate Z-9',
+      obligation: 'Offerors must submit Certificate Z-9 by April 22, 2026.',
+      preliminaryPage: 1,
+      evidenceQuote: seed.pageText,
+    };
+    const scopeId = crypto.randomUUID();
+    const valid = await svc.from('phase4_synthetic_smoke_scopes').insert({
+      id: scopeId,
+      workspace_id: workspaceA,
+      authenticated_user_id: userAId,
+      analysis_run_id: seed.analysisRunId,
+      fixture_version: 'verification-cases-v2',
+      compatibility_fingerprint: 'c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b',
+      approved_document_ids: [seed.documentId],
+      approved_candidate_ids: [seed.candidateId],
+      candidate_set_hash: computeSyntheticCandidateSetHash([candidate]),
+      synthetic_marker: PHASE4_SYNTHETIC_MARKER,
+    });
+    expect(valid.error).toBeNull();
+    expect(
+      (await userA.from('phase4_synthetic_smoke_scopes').select('id').eq('id', scopeId)).data,
+    ).toEqual([]);
+    expect(
+      (
+        await svc
+          .from('phase4_synthetic_smoke_scopes')
+          .update({ fixture_version: 'changed' })
+          .eq('id', scopeId)
+      ).error,
+    ).not.toBeNull();
+    const wrongIdentity = await svc.from('phase4_synthetic_smoke_scopes').insert({
+      workspace_id: workspaceA,
+      authenticated_user_id: userBId,
+      analysis_run_id: seed.analysisRunId,
+      fixture_version: 'verification-cases-v2',
+      compatibility_fingerprint: 'c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b',
+      approved_document_ids: [seed.documentId],
+      approved_candidate_ids: [seed.candidateId],
+      candidate_set_hash: computeSyntheticCandidateSetHash([candidate]),
+      synthetic_marker: PHASE4_SYNTHETIC_MARKER,
+    });
+    expect(wrongIdentity.error?.message).toMatch(/identity lacks workspace access/i);
+    const foreignDocumentId = crypto.randomUUID();
+    await svc.from('documents').insert({
+      id: foreignDocumentId,
+      workspace_id: workspaceB,
+      created_by: userBId,
+      document_type: 'primary_rfp',
+      original_filename: 'synthetic-denial.pdf',
+      normalized_filename: 'synthetic-denial.pdf',
+      mime_type: 'application/pdf',
+      object_key: `${workspaceB}/synthetic-denial/${foreignDocumentId}.pdf`,
+      size_bytes: 10,
+      sha256: 'b'.repeat(64),
+      status: 'parsed',
+      page_count: 1,
+      parser_name: 'synthetic-fixture',
+      parser_version: '1',
+    });
+    const foreignDocument = await svc.from('phase4_synthetic_smoke_scopes').insert({
+      workspace_id: workspaceA,
+      authenticated_user_id: userAId,
+      analysis_run_id: seed.analysisRunId,
+      fixture_version: 'verification-cases-v2',
+      compatibility_fingerprint: 'c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b',
+      approved_document_ids: [foreignDocumentId],
+      approved_candidate_ids: [seed.candidateId],
+      candidate_set_hash: computeSyntheticCandidateSetHash([candidate]),
+      synthetic_marker: PHASE4_SYNTHETIC_MARKER,
+    });
+    expect(foreignDocument.error?.message).toMatch(/cross-workspace synthetic smoke document/i);
+  });
+
+  it('binds the production worker to the qualified context/output limits and persists its fingerprint', async () => {
+    const seed = await seedVerification();
+    const secondCandidateId = crypto.randomUUID();
+    await admin().from('requirement_candidates').insert({
+      id: secondCandidateId,
+      workspace_id: workspaceA,
+      analysis_run_id: seed.analysisRunId,
+      document_id: seed.documentId,
+      category: 'certification',
+      title: 'Certificate Z-9',
+      obligation: 'Offerors must submit Certificate Z-9 by April 22, 2026.',
+      mandatory_class: 'mandatory',
+      preliminary_page: 1,
+      evidence_quote: seed.pageText,
+      confidence: 0.8,
+      status: 'unverified',
+      prompt_version: 'extract-v1',
+      schema_version: 'candidate-v1',
+      model_id: 'mock',
+    });
+    const observed = {
+      entailment: [] as Array<{ contexts: number; maxOutputTokens: number }>,
+      challenge: [] as Array<{ contexts: number; maxOutputTokens: number }>,
+      duplicate: [] as number[],
+    };
+    class RecordingProvider extends MockProvider {
+      override async assessEntailment(input: CandidateAssessmentInput) {
+        observed.entailment.push({
+          contexts: input.contexts.length,
+          maxOutputTokens: input.maxOutputTokens,
+        });
+        return super.assessEntailment(input);
+      }
+      override async challengeEntailment(input: ChallengeInput) {
+        observed.challenge.push({
+          contexts: input.contexts.length,
+          maxOutputTokens: input.maxOutputTokens,
+        });
+        return super.challengeEntailment(input);
+      }
+      override async classifyDuplicatePair(input: DuplicatePairInput) {
+        observed.duplicate.push(input.maxOutputTokens);
+        return super.classifyDuplicatePair(input);
+      }
+    }
+    await handleVerifyJob(
+      {
+        workspaceId: workspaceA,
+        analysisRunId: seed.analysisRunId,
+        verificationRunId: seed.verificationRunId,
+        processingJobId: seed.processingJobId,
+      },
+      new RecordingProvider(),
+    );
+    expect(observed.entailment.length).toBe(2);
+    expect(observed.entailment.every((item) => item.contexts <= 2)).toBe(true);
+    expect(observed.entailment.every((item) => item.maxOutputTokens === 1800)).toBe(true);
+    expect(observed.challenge.every((item) => item.contexts <= 2)).toBe(true);
+    expect(observed.challenge.every((item) => item.maxOutputTokens === 1600)).toBe(true);
+    expect(observed.duplicate).toContain(600);
+    const fingerprint = 'c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b';
+    const [{ data: run }, { data: analysis }, { data: calls }] = await Promise.all([
+      admin()
+        .from('verification_runs')
+        .select('compatibility_fingerprint')
+        .eq('id', seed.verificationRunId)
+        .single(),
+      admin()
+        .from('analysis_runs')
+        .select('verification_compatibility_fingerprint')
+        .eq('id', seed.analysisRunId)
+        .single(),
+      admin()
+        .from('model_calls')
+        .select('compatibility_fingerprint')
+        .eq('verification_run_id', seed.verificationRunId),
+    ]);
+    expect(run?.compatibility_fingerprint).toBe(fingerprint);
+    expect(analysis?.verification_compatibility_fingerprint).toBe(fingerprint);
+    expect(calls?.length).toBeGreaterThan(0);
+    expect(calls?.every((call) => call.compatibility_fingerprint === fingerprint)).toBe(true);
+  });
+
   it('runs the mock worker path and persists linked, versioned machine findings and exact evidence', async () => {
     const seed = await seedVerification();
     await handleVerifyJob(
