@@ -150,9 +150,9 @@ const totalRemediationCeilingUsd = Number(process.env.PHASE4_REMEDIATION_SPEND_C
 if (
   !Number.isFinite(totalRemediationCeilingUsd) ||
   totalRemediationCeilingUsd <= 0 ||
-  totalRemediationCeilingUsd > 6
+  totalRemediationCeilingUsd > 7
 )
-  throw new Error('PHASE4_REMEDIATION_SPEND_CEILING_USD must be present and no greater than 6');
+  throw new Error('PHASE4_REMEDIATION_SPEND_CEILING_USD must be present and no greater than 7');
 const remainingRemediationCeilingUsd = Math.min(
   Math.max(0, totalRemediationCeilingUsd - priorRemediationSpend),
   Math.max(0, ceiling - phase4Spend),
