@@ -1,0 +1,180 @@
+{
+  "phase": "phase4-remediation",
+  "status": "failed_qualification",
+  "model": "gpt-5.5-2026-04-23",
+  "reasoning": "medium",
+  "repetition": 1,
+  "freshRun": true,
+  "runId": "gpt55-stage1-v6-20260718a",
+  "compatibilityFingerprint": "661f2137b47631341017cab93d1852ca56e242538e5286ce790626dca0eabed6",
+  "sourceArtifacts": [
+    "phase4-gpt55-stage1-v6-20260718a-gpt-5.5-2026-04-23-run-1.json",
+    "phase4-gpt55-stage1-v6-20260718a-live-results.json"
+  ],
+  "spend": {
+    "projectedMaximumUsd": 1.1,
+    "actualAdditionalUsd": 0.853762,
+    "phase4CumulativeUsd": 9.127362,
+    "remediationCumulativeUsd": 7.445068,
+    "cumulativeApiSpendUsd": 9.535903
+  },
+  "qualification": {
+    "qualified": false,
+    "sourceStatusAccuracy": 0.875,
+    "supportedPrecision": 1,
+    "criticalFalseSupported": 0,
+    "precedenceAccuracy": 0.875,
+    "criticalFalseActive": 0,
+    "dateAccuracy": 1,
+    "numberAccuracy": 1,
+    "quoteValidity": 1,
+    "citationAccuracy": 1,
+    "parserUncertainAccuracy": 1,
+    "proofRequirementAccuracy": 0.9166666666666666,
+    "duplicatePrecision": 1,
+    "duplicateRecall": 1,
+    "falseMergeCount": 0,
+    "injectionInfluence": 0,
+    "passAFirstPassSchemaAdherence": 0.9166666666666666,
+    "passBFirstPassSchemaAdherence": 0.9285714285714286,
+    "duplicateFirstPassSchemaAdherence": 1,
+    "decisionSchemaAdherence": 0.9166666666666666,
+    "evaluationArtifactSchemaAdherence": 1,
+    "refusalIncompleteCount": 2,
+    "controlledRepairs": 1,
+    "semanticChangingRepairs": 1
+  },
+  "failures": [
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000003",
+      "title": "Electronic submission only",
+      "expected": {
+        "sourceSupportStatus": "supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified"
+      },
+      "retrievedPages": [11, 12],
+      "deterministicInputs": {
+        "quoteMatch": "exact",
+        "parserReliable": true,
+        "precedence": "active",
+        "comparisons": [],
+        "atomicRelationship": "parent_with_additive_child"
+      },
+      "passA": {
+        "classification": "entails",
+        "firstPassSchemaAdherent": true,
+        "repairAttempts": 0,
+        "inputTokens": 1832,
+        "outputTokens": 341,
+        "reasoningTokens": 166
+      },
+      "passB": {
+        "result": null,
+        "incomplete": true,
+        "incompleteReason": "max_output_tokens",
+        "firstPassSchemaAdherent": false,
+        "repairAttempts": 0,
+        "inputTokens": 1810,
+        "outputTokens": 1000,
+        "reasoningTokens": 1000
+      },
+      "decision": {
+        "sourceSupportStatus": "unsupported",
+        "precedenceStatus": "undetermined",
+        "challengeStatus": "failed",
+        "rule": "A failed or missing Pass B after Pass A entails cannot produce supported; decision v6 fails closed to unsupported and does not preserve active precedence for an unsupported finding."
+      },
+      "rootCause": "Pass B output-token exhaustion. All 1,000 output tokens were reported as reasoning, leaving no structured challenge result. Retrieval, quote validation, deterministic facts, and Pass A were correct."
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000004",
+      "title": "Meeting requirement missing consequence",
+      "expected": {
+        "sourceSupportStatus": "partially_supported",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified"
+      },
+      "retrievedPages": [7, 6],
+      "deterministicInputs": {
+        "quoteMatch": "exact",
+        "parserReliable": true,
+        "precedence": "active",
+        "dateComparison": "match",
+        "scopeComparison": "unknown",
+        "scopeUnknowns": ["party"],
+        "atomicRelationship": "parent_missing_material_condition"
+      },
+      "passA": {
+        "result": null,
+        "incomplete": true,
+        "incompleteReason": "max_output_tokens",
+        "firstPassSchemaAdherent": false,
+        "repairAttempts": 0,
+        "inputTokens": 2344,
+        "outputTokens": 1200,
+        "reasoningTokens": 1200
+      },
+      "passB": null,
+      "decision": null,
+      "actualEvaluatorAxes": {
+        "sourceSupportStatus": "missing",
+        "precedenceStatus": "undetermined",
+        "proofRequirement": "missing"
+      },
+      "rootCause": "Pass A output-token exhaustion. All 1,200 output tokens were reported as reasoning, leaving no structured entailment result. The corrected deterministic date comparison remained a match; unknown source-party scope did not manufacture a mismatch."
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000014",
+      "title": "False ambiguous deadline conflict",
+      "expected": {
+        "sourceSupportStatus": "contradicted",
+        "precedenceStatus": "active",
+        "proofRequirement": "none_identified"
+      },
+      "retrievedPages": [3, 2],
+      "deterministicInputs": {
+        "quoteMatch": "exact",
+        "parserReliable": true,
+        "precedence": "active",
+        "dateComparisons": ["match", "mismatch"],
+        "explicitAmendmentVerb": "supersedes"
+      },
+      "passA": {
+        "result": null,
+        "incomplete": false,
+        "firstPassSchemaAdherent": false,
+        "repairAttempts": 1,
+        "repairChangedSemanticMeaning": true,
+        "normalizedError": "semantic_contract_invalid:pass_a:descriptiveOnly:semantic_contract.descriptive_text_is_insufficient|semantic_contract_invalid:repair_changed_semantic_meaning",
+        "inputTokens": 5425,
+        "outputTokens": 1244,
+        "reasoningTokens": 852
+      },
+      "passB": null,
+      "decision": null,
+      "actualEvaluatorAxes": {
+        "sourceSupportStatus": "missing",
+        "precedenceStatus": "undetermined",
+        "proofRequirement": "missing"
+      },
+      "rootCause": "The first structured Pass A attempted the internally forbidden combination contradicts plus descriptiveOnly=true. The controlled repair changed a protected semantic fingerprint and was correctly rejected. Raw invalid and repair payloads are intentionally not persisted; the normalized contract errors and semantic-change flag are persisted."
+    }
+  ],
+  "rootCauseSummary": {
+    "retrievalErrors": 0,
+    "deterministicFactErrors": 0,
+    "decisionRuleSafetyErrors": 0,
+    "providerOutputTokenExhaustions": 2,
+    "semanticContractInstabilities": 1,
+    "unsafeFindings": 0,
+    "note": "The three precedence misses and two proof-axis misses are downstream effects of the same incomplete or rejected candidate pipelines, not separate precedence or proof classifiers errors."
+  },
+  "controls": {
+    "liveVerificationEnabled": false,
+    "applicationSmokeRun": false,
+    "additionalProviderCalls": false,
+    "modelSelected": false,
+    "phase5Started": false
+  }
+}
