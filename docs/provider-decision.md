@@ -1,6 +1,8 @@
 # Provider Decision — Phase 3 Extraction and Phase 4 Verification
 
-Date: 2026-07-17. Phase 3 extraction is approved. The Phase 4 verification comparison rejected every provisional candidate, so no live verification model is approved.
+Date: 2026-07-18. Phase 3 extraction and the remediated Phase 4 verification selection are approved. Phase 4 live use remains restricted to the protected synthetic path pending a separate rollout decision.
+
+> Phase 6 note (2026-07-18): proposal draft audit is deterministic and made zero provider calls. It does not change the later Phase 4 model selection/fingerprint or enable unrestricted live verification. `MockProvider` remains the default outside the protected synthetic Phase 4 path.
 
 ## Decision summary
 

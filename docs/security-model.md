@@ -39,6 +39,24 @@ Sources: Engineering Design §10, build-brief AI security rules, Phase 0 threat 
 - Artifacts reuse private PDF storage and signed access; no upload type was widened.
 - UI notes are rendered as escaped React text. Audit payloads are bounded and contain no provider prompts, keys, or authorization headers.
 
+## Phase 6 controls
+
+- Existing private PDF upload, signed access, type/magic/size checks, asynchronous parsing, and workspace object keys are reused for proposal drafts.
+- All ten Phase 6 tables enable RLS. Authenticated members receive workspace-scoped SELECT only; machine writes use the server-only deterministic service.
+- Cross-workspace documents, pages, checklist items, verification evidence, artifact links, findings, and revisions are rejected by composite constraints or validation triggers.
+- Proposal text never supports its own company assertions. Reviewed same-workspace evidence or explicit human proof remains necessary.
+- Exact claim/source page anchors are immutable. Parser uncertainty cannot silently become addressed or supported.
+- `resolve_proposal_audit_finding` rechecks membership, validates transitions, requires a reason, appends history, and emits an audit event.
+- Phase 6 has no provider or tool access; hostile proposal instructions cannot change application behavior.
+
+### Added Phase 6 threats
+
+| #   | Threat                                     | Control                                                                             |
+| --- | ------------------------------------------ | ----------------------------------------------------------------------------------- |
+| T17 | Proposal claim is treated as its own proof | Separate coverage/support axes and reviewed external/company proof policy           |
+| T18 | Cross-tenant proposal audit reference      | Composite scope constraints, validation triggers, RLS, two-user tests               |
+| T19 | Hostile proposal instructions              | Content-as-data parsing, deterministic injection signals, no provider/tools/secrets |
+
 ## Data classification & retention (Design §10.2)
 
 | Data                          | Classification                                 | Retention                                 |

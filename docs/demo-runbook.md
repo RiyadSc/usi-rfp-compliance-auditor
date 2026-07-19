@@ -7,6 +7,9 @@
 5. Assign a same-workspace owner, move workflow to `in_progress`, link an existing allowed PDF artifact, and record an exception note.
 6. Request a waiver and show the append-only pending state. Explain that it cannot remove a blocker until an authorized final decision exists.
 7. Show deterministic readiness counts and audit history. State explicitly that workflow completion is not human acceptance or a source-status change.
-8. Demonstrate a second workspace URL returns Not Found.
+8. Open **Proposal draft audit** and select a parsed synthetic proposal plus the completed checklist.
+9. Show response coverage, atomic claims, separate support/consistency, exact source quotation, and original proposal/source page navigation.
+10. Open a finding, explain the machine-only/pending label, and append a human decision. Show that the original finding and decision history remain.
+11. Demonstrate a second workspace URL returns Not Found.
 
-No Phase 5 step invokes a paid provider. General live Phase 4 verification remains disabled.
+No Phase 5 or Phase 6 step invokes a paid provider. General live Phase 4 verification remains disabled.

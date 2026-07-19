@@ -15,3 +15,8 @@ Last updated: 2026-07-18 after Phase 4 closure.
 - A mandatory form, signature, initial, acknowledgment, attachment, response, resume, staffing plan, bond, certification, or license implies an artifact workflow even when Phase 4 proof status is `none_identified`.
 - Deadlines enter Phase 5 only when Phase 4 deterministic facts provide an unambiguous normalized instant. Missing timezone or relative/ambiguous dates remain unresolved rather than guessed.
 - Workspace membership roles currently authorize workflow review actions; a finer-grained enterprise authority matrix remains a rollout concern.
+- Phase 6 audits only parsed PDFs explicitly typed `proposal_draft` and one explicitly selected completed Phase 5 checklist generation in the same workspace.
+- Proposal text is a response surface, never independent proof of a company credential, capability, insurance policy, past performance, or other external fact.
+- Deterministic proposal matching favors precision. A missing or uncertain match is shown for human review rather than guessed.
+- A linked proposal revision is a new immutable document/audit. Prior claims, findings, evidence, and human resolutions remain retained.
+- Phase 6 requires no paid model call; `MockProvider` and Phase 4 live-verification rollout controls remain unchanged.

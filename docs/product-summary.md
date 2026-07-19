@@ -2,6 +2,8 @@
 
 Condensed from `USI_AI_RFP_Compliance_Auditor_PRD.md` (v1.0, 2026-07-16). This summary must not silently narrow the PRD; when in doubt, consult the source sections cited.
 
+Implementation status as of 2026-07-18: Phases 1–6 are complete. Phase 6 adds deterministic proposal-draft auditing, exact proposal/source evidence, separate coverage/support/consistency/human axes, revision history, and append-only finding resolution. Phase 7 has not begun. General live verification remains disabled outside the controlled synthetic path.
+
 ## Thesis (PRD §1–2)
 
 USI does not need another proposal writer. It needs a **verification layer** that proves what a source RFP requires, detects missing submission items, and flags unsupported claims before a bid is submitted. North-star: a reviewer can answer "Are we missing anything, and can every critical output be traced to the source?" in minutes.

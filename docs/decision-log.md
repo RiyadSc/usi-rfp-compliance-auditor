@@ -130,6 +130,14 @@ Append-only. Each entry: date, decision, rationale, reversibility, source.
 - **D-077 — Human workflow never rewrites source assessment.** Phase 5 records retain immutable finding/evidence links. Owners, status, artifacts, waivers, exceptions, resolutions, and review events use separate fields and revision-audited paths.
 - **D-078 — Readiness is a rule sequence, not a compliance conclusion.** Required completion counts exclude unsupported, contradicted, and superseded findings; conflicts/parser uncertainty create blockers; proof remains separate; product copy is guarded by automated prohibited-language scans.
 - **D-079 — Phase 5 tenant writes use narrow privileged paths.** Machine tables are SELECT-only under member RLS. SECURITY DEFINER RPCs repeat membership and object-scope checks; worker/service generation validates the completed verification run and every source reference.
+- **D-080 — Phase 6 is deterministic and provider-free.** Proposal sectioning, atomic claim segmentation, response matching, support policy, typed contradiction checks, findings, and revision comparison are separately versioned repository engines. No model selects a claim status or finding, and Phase 6 made no provider call.
+- **D-081 — Proposal coverage is not claim proof.** An active requirement may be addressed while a company assertion still requires human proof. Coverage, support, consistency, Phase 4 source state, Phase 5 workflow, human resolution, and finding workflow remain independent persisted axes.
+- **D-082 — Proposal machine structures are immutable; human resolution appends.** Ten workspace-scoped Phase 6 tables use SELECT-only member RLS. Cross-scope triggers protect document/page/checklist/evidence references. One controlled RPC appends a reasoned decision and audit event without rewriting the claim, source, or finding classification.
+- **D-083 — Correct procurement identity is deterministic evidence, not an unsupported claim.** A proposal cover that contains the immutable audit solicitation number and customer is supported for procurement identity. A procurement-specific identity that contains neither remains contradicted and produces wrong-procurement/copied-language findings. The frozen fixture now reports unsupported-claim precision explicitly at `1.0` without changing its expected answers.
+
+## External documentation decisions (Phase 6)
+
+- 2026-07-18: Context7 `/supabase/supabase` confirmed member-derived RLS, non-exposed SECURITY DEFINER authorization helpers, least-privilege function grants, and short-lived signed access for private storage. Phase 6 uses those existing repository patterns for SELECT-only machine data and controlled resolution.
 
 ## External documentation decisions (Phase 5)
 

@@ -66,3 +66,15 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] The five-form fixture is synthetic, exact-evidence-linked, precision/recall 1.0, with zero false blockers or merges.
 - [x] Prohibited-copy tests cover Phase 5 UI, server actions, service, migration, fixture, and evaluation artifact.
 - [x] MockProvider/default Phase 4 controls and the selected fingerprint remain unchanged; Phase 5 made zero provider calls.
+
+## Phase 6 invariant result — 2026-07-18
+
+- [x] Every matched response/finding retains checklist, Phase 4 finding/evidence, document, page, quote, proposal claim, audit run, and version provenance.
+- [x] Coverage, claim support, deterministic consistency, source support, precedence, proof, checklist workflow, finding workflow, and human resolution remain separate.
+- [x] Proposal text cannot support its own company assertions; missing external evidence becomes human proof or unsupported, never an invented fact.
+- [x] Unsupported, contradicted, parser-uncertain, superseded, conflicting, excluded, and obsolete requirements cannot become ordinary response obligations.
+- [x] Phase 6 never updates Phase 4 verification or Phase 5 checklist state.
+- [x] Ten new tables have RLS enabled; ordinary members cannot fabricate machine findings; controlled resolution appends audit history.
+- [x] Hostile proposal instructions have zero influence and no tool, provider, secret, or application authority.
+- [x] The frozen 12-case synthetic fixture passes every evidence/citation/date/number/status/schema gate with zero critical false-supported/false-consistent results or false merges.
+- [x] Phase 6 made zero provider calls and left Phase 4 rollout controls unchanged.

@@ -118,11 +118,15 @@ Readiness (deterministic, Design §7.6): criticalBlockers>0 → NOT_READY; unrev
 
 Phase 5 consumes immutable Phase 4 findings through `checklist-eligibility-v1`, `checklist-generator-v1`, `checklist-blockers-v1`, and `checklist-readiness-v1`. It adds no model calls. Machine structure, source provenance, human workflow, artifact state, waivers, blockers, and readiness remain separate. Stable keys and input hashes make generation idempotent; regeneration reuses stable records, preserves human edits, and marks obsolete machine structure instead of deleting it. See `docs/phase5-data-flow.md`.
 
+## Phase 6 deterministic proposal-audit layer
+
+Phase 6 reuses private `proposal_draft` ingestion and consumes one completed Phase 5 checklist generation. `proposal-section-parser-v1`, `proposal-claim-segmenter-v1`, `proposal-response-matcher-v1`, `proposal-support-policy-v1`, `proposal-contradiction-v1`, and `proposal-audit-evaluator-v1` create page-anchored atomic claims, requirement coverage, evidence support, deterministic consistency checks, and machine-only findings without a provider call. Draft revisions and findings are immutable; human resolutions append separately. See `docs/phase6-data-flow.md`.
+
 ## API surface (Design §8.2) and routes (Design §9.1)
 
 REST-ish routes: workspaces CRUD, signed uploads, document finalize, analysis-runs start/status, requirements list/patch, evidence get, checklist list/patch, drafts + audits + findings, exports. Error contract: `{code, message, stage?, retryable, correlationId, details?}` — never expose secrets or raw provider errors.
 
-Frontend routes: `/` (workspace list), `/w/:id` (overview), `/w/:id/documents`, `/w/:id/requirements`, `/w/:id/requirements/:reqId` (evidence viewer), `/w/:id/checklist`, `/w/:id/drafts/:draftId`, `/w/:id/report`, `/w/:id/audit`.
+Frontend routes: `/` (workspace list), `/w/:id` (overview), `/w/:id/documents`, `/w/:id/requirements`, `/w/:id/requirements/:reqId` (evidence viewer), `/w/:id/checklist`, `/w/:id/proposal-audit`, `/w/:id/proposal-audit/:auditRunId`, and later report/export routes.
 
 UI state model: every async view supports empty/loading/progress/success/terminal-error/retryable-error; source status displayed separately from extraction confidence; blockers pinned; protected "Reset fixture" control.
 

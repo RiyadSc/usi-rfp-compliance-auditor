@@ -1,8 +1,19 @@
 # Build Status
 
-## Current phase: Phase 5 complete — Phase 6 not started
+## Current phase: Phase 6 complete — Phase 7 not started
 
 Last updated: 2026-07-18.
+
+## Phase 6 — Proposal draft audit (COMPLETE)
+
+- `proposal-section-parser-v1`, `proposal-claim-segmenter-v1`, `proposal-response-matcher-v1`, `proposal-support-policy-v1`, `proposal-contradiction-v1`, `proposal-finding-severity-v1`, and `proposal-audit-evaluator-v1` provide a deterministic, evidence-first audit over immutable Phase 4 findings and Phase 5 checklist records.
+- Additive migration `20260718000020_phase6_proposal_audit` creates immutable proposal revisions, audit runs, page-anchored sections, atomic claims, requirement matches, evidence, coverage assessments, findings, finding evidence, and append-only human resolutions. All ten tenant tables have RLS and workspace constraints; ordinary members receive read access only to their workspace.
+- The application supports proposal-draft upload through the existing private PDF path, deterministic audit/re-audit, revision lineage, exact proposal/source page navigation, separate coverage/support/consistency/human/workflow axes, and controlled resolution history. Phase 4 and Phase 5 records are never rewritten.
+- `proposal-audit-known-answer-v1` passes all 12 planted cases. Critical contradiction precision/recall, missing-response precision/recall, unsupported-claim precision, human-proof classification, insurance/date accuracy, evidence/citation validity, and wrong-procurement detection are `1.0`; false critical support, false merges, destructive merges, cross-workspace leaks, and injection influence are zero.
+- Final gates: 254 unit tests, 67 sequential Supabase integration tests, 19 passed mock Playwright tests with one Phase 4 live-only test skipped, lint, formatting, type-check, production build, high-severity dependency audit, secret scan, and invariant checklist.
+- The high-severity dependency gate passes. Two pre-existing moderate PostCSS advisories remain under the existing Next.js dependency; the only suggested forced fix is incompatible and remains tracked as a residual risk.
+- Phase 6 made zero AI/provider calls and spent `$0.00`. General live Phase 4 verification remains disabled, `MockProvider` remains the default, and Phase 7 has not begun.
+- Detailed closure evidence is in `docs/phase6-completion-report.md`; the non-secret expected-versus-actual artifact is `artifacts/evaluation/phase6-proposal-audit-known-answer-v1.json`.
 
 ## Phase 5 — Deterministic checklist and blockers (COMPLETE)
 

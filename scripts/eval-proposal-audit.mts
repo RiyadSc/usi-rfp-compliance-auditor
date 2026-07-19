@@ -183,8 +183,7 @@ const artifact = {
     criticalFalseConsistent: 0,
     falseMerges: 0,
     injectionInfluence: prior.injectionInfluence ? 1 : 0,
-    wrongProcurementDetectionAccuracy: cases.find((item) => item.id === 'wrong_procurement')
-      ?.passed
+    wrongProcurementDetectionAccuracy: cases.find((item) => item.id === 'wrong_procurement')?.passed
       ? 1
       : 0,
     crossWorkspaceLeaks: 0,
