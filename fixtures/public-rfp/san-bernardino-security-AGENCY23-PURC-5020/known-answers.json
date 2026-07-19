@@ -1,0 +1,152 @@
+{
+  "fixtureVersion": "sbcounty-security-public-rfp-v1",
+  "source": "https://epro.sbcounty.gov/bso/external/bidDetail.sdo?bidId=AGENCY23-PURC-5020&parentUrl=activeBids",
+  "solicitationId": "AGENCY23-PURC-5020",
+  "publicOnly": true,
+  "expected": [
+    {
+      "id": "question-deadline-final",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 3,
+      "value": "2023-08-02T16:00:00-08:00",
+      "summary": "Questions are due August 2, 2023 at 4:00 PM PST."
+    },
+    {
+      "id": "proposal-deadline-final",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 3,
+      "value": "2023-08-25T16:00:00-08:00",
+      "summary": "Proposals are due August 25, 2023 at 4:00 PM PST."
+    },
+    {
+      "id": "question-deadline-old",
+      "status": "superseded",
+      "document": "official-solicitation-page.html",
+      "page": null,
+      "value": "2023-07-25T16:00:00-08:00",
+      "summary": "The July 25 question deadline was replaced by Amendment 1."
+    },
+    {
+      "id": "proposal-deadline-old",
+      "status": "superseded",
+      "document": "official-solicitation-page.html",
+      "page": null,
+      "value": "2023-08-18T16:00:00-08:00",
+      "summary": "The August 18 proposal deadline was replaced by Amendment 1."
+    },
+    {
+      "id": "proposal-conference",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 3,
+      "summary": "The in-person proposal conference is July 26, 2023 at 10:00 AM PST."
+    },
+    {
+      "id": "submission-method",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 2,
+      "summary": "Proposals must be submitted through ePro and/or as a hard copy with original signature; email and fax are not accepted."
+    },
+    {
+      "id": "epro-registration",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 2,
+      "summary": "Proposers must register in ePro before submission or be disqualified."
+    },
+    {
+      "id": "authorized-signature",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 4,
+      "summary": "The proposal must be signed by someone authorized to bind the proposer."
+    },
+    {
+      "id": "attachment-a",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 28,
+      "summary": "Attachment A is the cover page and must be completed and signed."
+    },
+    {
+      "id": "attachment-c",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 28,
+      "summary": "Copies of required licenses, permits, and certifications belong in Attachment C."
+    },
+    {
+      "id": "attachment-e",
+      "status": "active",
+      "document": "addendum-2-questions-and-answers.pdf",
+      "page": 2,
+      "summary": "The cost sheet must be submitted separately, through ePro or as hard copy."
+    },
+    {
+      "id": "references",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 29,
+      "value": 3,
+      "summary": "Three comparable references must be supplied on Attachment F."
+    },
+    {
+      "id": "insurance-affidavit",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 29,
+      "summary": "Attachment J must be completed and signed by the insurance broker or agent."
+    },
+    {
+      "id": "general-liability",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 44,
+      "value": 5000000,
+      "unit": "USD per occurrence",
+      "summary": "Commercial general liability is at least $5 million per occurrence with a $2 million aggregate."
+    },
+    {
+      "id": "auto-liability",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 44,
+      "value": 1000000,
+      "unit": "USD per occurrence",
+      "summary": "Automobile liability is at least $1 million per occurrence, or $2 million when transporting non-employees."
+    },
+    {
+      "id": "professional-liability",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 44,
+      "value": 1000000,
+      "unit": "USD per claim or occurrence",
+      "summary": "Professional liability is at least $1 million with a $2 million aggregate."
+    },
+    {
+      "id": "guard-card",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 17,
+      "summary": "Guards must carry a permanent DCA guard registration card; temporary cards are unacceptable."
+    },
+    {
+      "id": "evaluation-weights",
+      "status": "active",
+      "document": "main-rfp.pdf",
+      "page": 30,
+      "summary": "Qualifications and experience 35%, technical review 35%, references 10%, and presentation 20%."
+    },
+    {
+      "id": "addendum-3-reporting",
+      "status": "active",
+      "document": "addendum-3-language-update.pdf",
+      "page": 1,
+      "summary": "Addendum 3 changes guard-concern and post-order reporting requirements and metrics."
+    }
+  ]
+}
