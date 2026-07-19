@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const workspaceId = '81000000-0000-4000-8000-000000000002';
 const scopeId = '81000000-0000-4000-8000-000000000001';
+const proposalAuditRunId = '81000000-0000-4000-8000-000000000012';
 const expectedFingerprint = 'c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b';
 const required = (name: string) => {
   const value = process.env[name];
@@ -134,6 +135,21 @@ test('@demo-critical completes the exact protected synthetic presentation flow',
     await page.getByRole('button', { name: 'Record finding review' }).click();
     await expect(page.getByRole('status').filter({ hasText: 'Review recorded' })).toBeVisible();
     await expect(page.getByTestId('resolution-history')).toContainText('Append-only');
+    await page.goto(`/w/${workspaceId}/proposal-audit/${proposalAuditRunId}`);
+    await expect(page.getByRole('heading', { name: 'phase8-flawed-proposal.pdf' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Findings' })).toBeVisible();
+    await expect(
+      page.getByText('No findings. Human review is still required for the audit.'),
+    ).toHaveCount(0);
+    await expect(
+      page
+        .locator('section')
+        .filter({ has: page.getByRole('heading', { name: 'Findings' }) })
+        .locator('li'),
+    ).toHaveCount(9);
+    await expect(page.getByText('Incorrect insurance value', { exact: true })).toBeVisible();
+    await expect(page.getByText('Conflicting deadline', { exact: true })).toBeVisible();
+    await page.goto(`/w/${workspaceId}/demo`);
   });
 
   await step('report_export_and_audit', async () => {
@@ -150,6 +166,18 @@ test('@demo-critical completes the exact protected synthetic presentation flow',
     await expect(page.getByText('DEMO — SYNTHETIC DATA — NOT FOR SUBMISSION')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Private exports' })).toBeVisible();
     await expect(page.getByText('prepared-fallback.html')).toBeVisible();
+    const linkedRecords = page.getByRole('link', { name: 'Open linked record' });
+    await expect(linkedRecords).toHaveCount(12);
+    const linkedRecordHrefs = await linkedRecords.evaluateAll((links) =>
+      links
+        .map((link) => link.getAttribute('href'))
+        .filter((href): href is string => Boolean(href)),
+    );
+    expect(new Set(linkedRecordHrefs).size).toBe(12);
+    for (const href of linkedRecordHrefs) {
+      await page.goto(href);
+      await expect(page.getByRole('heading', { name: 'Not found' })).toHaveCount(0);
+    }
     await page.goto(`/w/${workspaceId}/demo`);
     await expect(page.getByText('demo_fallback_activated').first()).toBeVisible();
   });

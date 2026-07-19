@@ -174,7 +174,11 @@ export default async function ProposalAuditDetailPage({
         {findings?.length ? (
           <ul className="space-y-4">
             {findings.map((finding) => (
-              <li key={finding.id} className="rounded border border-slate-200 bg-white p-4">
+              <li
+                id={`finding-${finding.id}`}
+                key={finding.id}
+                className="rounded border border-slate-200 bg-white p-4"
+              >
                 <div className="flex flex-wrap justify-between gap-2">
                   <h3 className="font-medium">{finding.title}</h3>
                   <span className="text-sm">

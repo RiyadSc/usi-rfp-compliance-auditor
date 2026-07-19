@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { reportSnapshotSchema } from '@usi/domain';
 import { z } from 'zod';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { createPreparedDemoLinkResolver } from '@/lib/reporting/prepared-demo-links';
 import { ExportArtifactControls, ReportExportControls } from '../report-controls';
 
 const label = (value: string) => value.replaceAll('_', ' ');
@@ -45,6 +46,7 @@ export default async function ReportDetailPage({
   const parsed = reportSnapshotSchema.safeParse(row.snapshot);
   if (!parsed.success) throw new Error('Persisted report snapshot failed strict schema validation');
   const report = parsed.data;
+  const preparedLinks = createPreparedDemoLinkResolver({ workspaceId, reportId, report });
   const query = await searchParams;
   const phaseFilter = ['phase4', 'phase5', 'phase6'].includes(query.phase ?? '')
     ? query.phase!
@@ -304,7 +306,7 @@ export default async function ReportDetailPage({
                     <td className="p-2">{label(item.humanReviewState)}</td>
                     <td className="p-2">
                       <Link
-                        href={item.navigationReference}
+                        href={preparedLinks.navigationReference(item.navigationReference)}
                         className="text-blue-700 hover:underline"
                       >
                         Open linked record
@@ -335,7 +337,7 @@ export default async function ReportDetailPage({
               </div>
               <p className="text-sm text-slate-600">{item.reason}</p>
               <Link
-                href={item.navigationReference}
+                href={preparedLinks.navigationReference(item.navigationReference)}
                 className="text-sm text-blue-700 hover:underline"
               >
                 Inspect source record
@@ -363,7 +365,7 @@ export default async function ReportDetailPage({
                 <tr key={`${item.checklistItemId}:${item.artifactType}`} className="border-b">
                   <td className="p-2">
                     <Link
-                      href={`/w/${workspaceId}/checklist/${item.checklistItemId}`}
+                      href={`/w/${workspaceId}/checklist/${preparedLinks.checklistId(item.checklistItemId)}`}
                       className="text-blue-700 hover:underline"
                     >
                       {item.title}
@@ -375,7 +377,7 @@ export default async function ReportDetailPage({
                   <td className="p-2">
                     {item.sourceDocumentId && item.sourcePageNumber ? (
                       <Link
-                        href={`/w/${workspaceId}/documents/${item.sourceDocumentId}?page=${item.sourcePageNumber}`}
+                        href={`/w/${workspaceId}/documents/${preparedLinks.sourceDocumentId(item.sourceDocumentId)}?page=${item.sourcePageNumber}`}
                         className="text-blue-700 hover:underline"
                       >
                         Page {item.sourcePageNumber}
@@ -414,7 +416,7 @@ export default async function ReportDetailPage({
                 <tr key={item.findingId} className="border-b align-top">
                   <td className="p-2">
                     <Link
-                      href={`/w/${workspaceId}/requirements/${item.candidateId}`}
+                      href={`/w/${workspaceId}/requirements/${preparedLinks.candidateId(item.candidateId)}`}
                       className="font-medium text-blue-700 hover:underline"
                     >
                       {item.title}
@@ -430,7 +432,7 @@ export default async function ReportDetailPage({
                       <>
                         <br />
                         <Link
-                          href={`/w/${workspaceId}/documents/${item.documentId}?page=${item.pageNumber}`}
+                          href={`/w/${workspaceId}/documents/${preparedLinks.sourceDocumentId(item.documentId)}?page=${item.pageNumber}`}
                           className="text-blue-700 hover:underline"
                         >
                           Original page {item.pageNumber}
@@ -463,7 +465,7 @@ export default async function ReportDetailPage({
                 <tr key={item.id} className="border-b align-top">
                   <td className="p-2">
                     <Link
-                      href={`/w/${workspaceId}/checklist/${item.id}`}
+                      href={`/w/${workspaceId}/checklist/${preparedLinks.checklistId(item.id)}`}
                       className="font-medium text-blue-700 hover:underline"
                     >
                       {item.title}
@@ -482,7 +484,7 @@ export default async function ReportDetailPage({
                       <>
                         <br />
                         <Link
-                          href={`/w/${workspaceId}/documents/${item.sourceDocumentId}?page=${item.sourcePageNumber}`}
+                          href={`/w/${workspaceId}/documents/${preparedLinks.sourceDocumentId(item.sourceDocumentId)}?page=${item.sourcePageNumber}`}
                           className="text-blue-700 hover:underline"
                         >
                           Original page {item.sourcePageNumber}
@@ -505,7 +507,7 @@ export default async function ReportDetailPage({
         <ul className="space-y-2">
           {paginate(filteredProposalFindings).map((finding) => (
             <li
-              id={`finding-${finding.id}`}
+              id={`finding-${preparedLinks.findingId(finding.id)}`}
               key={finding.id}
               className="rounded border border-slate-200 bg-white p-3"
             >
@@ -534,7 +536,7 @@ export default async function ReportDetailPage({
                         {' '}
                         ·{' '}
                         <Link
-                          href={`/w/${workspaceId}/documents/${finding.sourceDocumentId}?page=${finding.sourcePageNumber}`}
+                          href={`/w/${workspaceId}/documents/${preparedLinks.sourceDocumentId(finding.sourceDocumentId)}?page=${finding.sourcePageNumber}`}
                           className="text-blue-700 hover:underline"
                         >
                           page {finding.sourcePageNumber}
