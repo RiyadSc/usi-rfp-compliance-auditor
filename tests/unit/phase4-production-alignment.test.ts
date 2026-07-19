@@ -8,6 +8,7 @@ import {
 import {
   PHASE4_SYNTHETIC_MARKER,
   PHASE4_COMPLETE_SYNTHETIC_SCOPE_VERSION,
+  assertNextPhase4SyntheticSmokeRunVersion,
   computePhase4SmokeRunInputHash,
   computeSyntheticCandidateSetHash,
   computeSyntheticDocumentSetHash,
@@ -144,6 +145,31 @@ describe('qualified Phase 4 production runtime', () => {
 });
 
 describe('synthetic-only smoke preflight', () => {
+  it('accepts only the next consecutive immutable verification-run version', () => {
+    expect(assertNextPhase4SyntheticSmokeRunVersion(1, [])).toBe(1);
+    expect(assertNextPhase4SyntheticSmokeRunVersion(2, [1])).toBe(2);
+    expect(assertNextPhase4SyntheticSmokeRunVersion(4, [1, 3, 2])).toBe(4);
+  });
+
+  it.each([
+    ['a duplicate version', 1, [1]],
+    ['a stale version', 1, [1, 2]],
+    ['a skipped version', 4, [1, 2]],
+    ['zero', 0, []],
+    ['a fractional version', 1.5, [1]],
+    ['not a number', Number.NaN, [1]],
+  ])('rejects %s before provider execution', (_label, requestedVersion, existingVersions) => {
+    expect(() =>
+      assertNextPhase4SyntheticSmokeRunVersion(requestedVersion, existingVersions),
+    ).toThrow(/phase4_synthetic_smoke_preflight_failed/);
+  });
+
+  it('fails closed when persisted versions are malformed', () => {
+    expect(() => assertNextPhase4SyntheticSmokeRunVersion(2, [Number.NaN])).toThrow(
+      /invalid_existing_verification_run_version/,
+    );
+  });
+
   it('accepts only the exact immutable synthetic scope', () => {
     expect(
       validatePhase4SyntheticSmokePreflight(

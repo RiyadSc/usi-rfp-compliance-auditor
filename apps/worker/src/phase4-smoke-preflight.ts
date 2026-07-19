@@ -145,6 +145,23 @@ export function computePhase4SmokeRunInputHash(input: {
     .digest('hex');
 }
 
+export function assertNextPhase4SyntheticSmokeRunVersion(
+  requestedVersion: number,
+  existingVersions: number[],
+): number {
+  if (!Number.isInteger(requestedVersion) || requestedVersion < 1) {
+    stop('invalid_verification_run_version');
+  }
+  if (existingVersions.some((version) => !Number.isInteger(version) || version < 1)) {
+    stop('invalid_existing_verification_run_version');
+  }
+  const expectedVersion = existingVersions.length === 0 ? 1 : Math.max(...existingVersions) + 1;
+  if (requestedVersion !== expectedVersion) {
+    stop(`verification_run_version_must_be_${expectedVersion}`);
+  }
+  return requestedVersion;
+}
+
 function stop(reason: string): never {
   throw new Error(`phase4_synthetic_smoke_preflight_failed:${reason}`);
 }

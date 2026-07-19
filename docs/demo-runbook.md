@@ -53,3 +53,7 @@ Use business labels in narration: `RFP-backed`, `Replaced by an addendum`, `Comp
 10. In a separate user-B browser, open the demo URL and confirm uniform Not found.
 
 Expected complete flow is about 20 seconds in the prepared environment; allow five minutes for presentation narration. Afterward, run reset again and close all signed-download tabs. Do not change RLS, storage privacy, provider flags, hashes, or fixture answers during a demo.
+
+### Controlled Phase 4 synthetic re-verification
+
+The live smoke requires an explicit `--verification-version`. The requested value must be exactly one greater than the highest existing version for the immutable analysis-run/input-hash pair. The dry-run provider-boundary check validates this before provider construction. Duplicate, stale, skipped, fractional, or missing versions fail closed; the database uniqueness constraint remains the final race-condition guard. Never delete an earlier verification run to make a version reusable.

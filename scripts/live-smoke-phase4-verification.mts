@@ -13,6 +13,7 @@ import {
   computeSyntheticDocumentSetHash,
   computeSyntheticExpectedAnswersHash,
   computePhase4SmokeRunInputHash,
+  assertNextPhase4SyntheticSmokeRunVersion,
   validatePhase4SyntheticSmokePreflight,
   type Phase4SyntheticSmokeSnapshot,
   type SyntheticSmokeCandidate,
@@ -34,6 +35,7 @@ const required = (name: string) => {
 };
 
 const dryRunProviderBoundary = process.argv.includes('--dry-run-provider-boundary');
+const requestedVerificationVersion = Number(required('--verification-version'));
 if (dryRunProviderBoundary) {
   if (process.env.PHASE4_SMOKE_DRY_RUN !== '1' || process.env.PHASE4_LIVE_SMOKE === '1')
     throw new Error('phase4_synthetic_smoke_preflight_failed:invalid_dry_run_mode');
@@ -171,6 +173,7 @@ const snapshot: Phase4SyntheticSmokeSnapshot = {
 const allSpend = spendResult.data ?? [];
 const sum = (rows: typeof allSpend) =>
   rows.reduce((total, row) => total + Number(row.estimated_cost_usd ?? 0), 0);
+const roundedUsd = (value: number) => Number(value.toFixed(6));
 const phase4SpendBefore = sum(allSpend.filter((row) => row.phase === 'phase4'));
 const remediationSpendBefore = sum(
   allSpend.filter((row) => row.phase === 'phase4' && row.note?.startsWith('phase4-remediation:')),
@@ -199,6 +202,25 @@ const preflight = validatePhase4SyntheticSmokePreflight(
   snapshot,
   PHASE4_QUALIFIED_PRODUCTION_CONFIG,
 );
+const inputHash = computePhase4SmokeRunInputHash({
+  analysisRunId: request.analysisRunId,
+  candidateSetHash: preflight.candidateSetHash,
+  compatibilityFingerprint: preflight.assertedCompatibilityFingerprint,
+});
+const existingVersionsResult = await admin
+  .from('verification_runs')
+  .select('version')
+  .eq('analysis_run_id', request.analysisRunId)
+  .eq('input_hash', inputHash);
+if (existingVersionsResult.error) {
+  throw new Error(
+    `phase4_synthetic_smoke_preflight_failed:database:${existingVersionsResult.error.message}`,
+  );
+}
+const verificationVersion = assertNextPhase4SyntheticSmokeRunVersion(
+  requestedVerificationVersion,
+  (existingVersionsResult.data ?? []).map((row) => Number(row.version)),
+);
 
 if (dryRunProviderBoundary) {
   console.info(
@@ -207,9 +229,19 @@ if (dryRunProviderBoundary) {
       providerConstructed: false,
       providerCalled: false,
       stoppedAt: 'final_provider_access_boundary',
+      budget: {
+        phase4SpendBefore: roundedUsd(phase4SpendBefore),
+        remediationSpendBefore: roundedUsd(remediationSpendBefore),
+        smokeMaximum,
+        projectedPhase4Maximum: roundedUsd(phase4SpendBefore + smokeMaximum),
+        projectedRemediationMaximum: roundedUsd(remediationSpendBefore + smokeMaximum),
+        phase4Ceiling,
+        remediationCeiling,
+      },
       syntheticScope: {
         ...request,
         candidateCount: candidates.length,
+        verificationVersion,
         assertedCandidateSetHash: preflight.candidateSetHash,
         assertedDocumentSetHash: preflight.documentSetHash,
         assertedExpectedAnswersHash: preflight.expectedAnswersHash,
@@ -227,17 +259,12 @@ process.env.PHASE4_SPEND_CEILING_USD = String(phase4Ceiling);
 
 const verificationRunId = randomUUID();
 const processingJobId = randomUUID();
-const inputHash = computePhase4SmokeRunInputHash({
-  analysisRunId: request.analysisRunId,
-  candidateSetHash: preflight.candidateSetHash,
-  compatibilityFingerprint: preflight.assertedCompatibilityFingerprint,
-});
 const { error: runInsertError } = await admin.from('verification_runs').insert({
   id: verificationRunId,
   workspace_id: request.workspaceId,
   analysis_run_id: request.analysisRunId,
   status: 'queued',
-  version: 1,
+  version: verificationVersion,
   input_hash: inputHash,
   prompt_version: 'verify-entailment-v7+verify-challenge-v4',
   schema_version: 'verification-entailment-v5+verification-challenge-v4',
@@ -347,6 +374,7 @@ const report = {
     documentIds: request.documentIds,
     analysisRunId: request.analysisRunId,
     fixtureVersion: request.fixtureVersion,
+    verificationVersion,
     candidateSetHash: preflight.candidateSetHash,
     documentSetHash: preflight.documentSetHash,
     expectedAnswersHash: preflight.expectedAnswersHash,
@@ -355,6 +383,15 @@ const report = {
   processingJobId,
   model: PHASE4_QUALIFIED_PRODUCTION_CONFIG.model,
   compatibilityFingerprint: preflight.assertedCompatibilityFingerprint,
+  budget: {
+    phase4SpendBefore: roundedUsd(phase4SpendBefore),
+    remediationSpendBefore: roundedUsd(remediationSpendBefore),
+    smokeMaximum,
+    projectedPhase4Maximum: roundedUsd(phase4SpendBefore + smokeMaximum),
+    projectedRemediationMaximum: roundedUsd(remediationSpendBefore + smokeMaximum),
+    phase4Ceiling,
+    remediationCeiling,
+  },
   checks: {
     runCompleted: runResult.data.status === 'completed',
     jobCompleted: jobResult.data.status === 'completed',
