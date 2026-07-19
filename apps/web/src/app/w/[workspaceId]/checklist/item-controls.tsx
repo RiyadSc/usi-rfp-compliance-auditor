@@ -45,10 +45,13 @@ export function ChecklistItemControls({
   const router = useRouter();
   const [pending, start] = useTransition();
   const [message, setMessage] = useState('');
-  const run = (action: () => Promise<{ ok: boolean; error?: string }>) =>
+  const run = (
+    action: () => Promise<{ ok: boolean; error?: string }>,
+    successMessage = 'Change recorded.',
+  ) =>
     start(async () => {
       const result = await action();
-      setMessage(result.ok ? 'Change recorded.' : (result.error ?? 'Change failed.'));
+      setMessage(result.ok ? successMessage : (result.error ?? 'Change failed.'));
       if (result.ok) router.refresh();
     });
   return (
@@ -76,9 +79,9 @@ export function ChecklistItemControls({
             className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-2"
           >
             <option value="">Unassigned</option>
-            {members.map((member) => (
+            {members.map((member, index) => (
               <option key={member.user_id} value={member.user_id}>
-                {member.user_id.slice(0, 8)} · {member.role}
+                {member.role.replaceAll('_', ' ')} · Team member {index + 1}
               </option>
             ))}
           </select>
@@ -91,9 +94,9 @@ export function ChecklistItemControls({
             className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-2"
           >
             <option value="">Unassigned</option>
-            {members.map((member) => (
+            {members.map((member, index) => (
               <option key={member.user_id} value={member.user_id}>
-                {member.user_id.slice(0, 8)} · {member.role}
+                {member.role.replaceAll('_', ' ')} · Team member {index + 1}
               </option>
             ))}
           </select>
@@ -345,14 +348,16 @@ export function ChecklistItemControls({
         onSubmit={(event) => {
           event.preventDefault();
           const form = new FormData(event.currentTarget);
-          run(() =>
-            requestChecklistWaiverAction({
-              workspaceId,
-              itemId,
-              reason: String(form.get('reason')),
-              designation: String(form.get('designation')),
-              authorityNote: String(form.get('authority') ?? ''),
-            }),
+          run(
+            () =>
+              requestChecklistWaiverAction({
+                workspaceId,
+                itemId,
+                reason: String(form.get('reason')),
+                designation: String(form.get('designation')),
+                authorityNote: String(form.get('authority') ?? ''),
+              }),
+            'Pending waiver: request recorded for team review.',
           );
         }}
       >

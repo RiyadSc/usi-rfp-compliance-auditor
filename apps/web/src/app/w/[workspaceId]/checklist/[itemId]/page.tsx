@@ -1,11 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
+import { StatusBadge, StatusAxis } from '@/components/status-badge';
+import { WorkspaceNavigation } from '@/components/workspace-navigation';
+import { businessLabel, formatDate } from '@/lib/presentation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { ChecklistItemControls } from '../item-controls';
 
 const uuid = z.string().uuid();
-const label = (value: string) => value.replaceAll('_', ' ');
+const label = businessLabel;
 
 function Field({ name, value }: { name: string; value: string }) {
   return (
@@ -108,26 +111,75 @@ export default async function ChecklistItemPage({
     (documents ?? []).map((document) => [document.id, document.normalized_filename]),
   );
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
-      <nav aria-label="Breadcrumb" className="mb-6 text-sm">
-        <Link className="text-blue-700 hover:underline" href={`/w/${workspaceId}/checklist`}>
-          ← Checklist
-        </Link>
-      </nav>
-      <h1 className="text-2xl font-semibold">{item.title}</h1>
-      <p className="mt-1 text-sm text-slate-600">
-        Machine-generated checklist item · Human review: {label(item.source_human_review_status)}
+    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+      <WorkspaceNavigation
+        workspaceId={workspaceId}
+        workspaceName={workspace.name}
+        current="checklist"
+        compact
+      />
+      <Link className="action-link text-sm" href={`/w/${workspaceId}/checklist`}>
+        ← Submission plan
+      </Link>
+      <header className="mt-4">
+        <p className="section-kicker">Submission task</p>
+        <h1 className="mt-1 text-3xl font-semibold tracking-tight">{item.title}</h1>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <StatusBadge value={item.workflow_status} />
+          <StatusBadge
+            value={item.artifact_state}
+            label={`Artifact: ${label(item.artifact_state)}`}
+          />
+          <StatusBadge value={item.source_human_review_status} />
+        </div>
+      </header>
+      <p className="my-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+        Completing this task records workflow progress only. It does not change the RFP evidence or
+        indicate final approval.
       </p>
-      <p className="my-5 rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm">
-        Workflow completion does not change source verification or grant human acceptance. The
-        underlying Phase 4 finding remains immutable.
-      </p>
+
+      <section className="surface-card mb-6 p-5" aria-labelledby="action-summary">
+        <p className="section-kicker">What needs to happen</p>
+        <h2 id="action-summary" className="mt-2 text-xl font-semibold">
+          {item.obligation}
+        </h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <StatusAxis
+            label="Task status"
+            value={item.workflow_status}
+            help="The team's progress on this action."
+          />
+          <StatusAxis
+            label="RFP evidence"
+            value={item.source_support_status}
+            help="Whether the source documents support the requirement."
+          />
+          <StatusAxis
+            label="Current version"
+            value={item.precedence_status}
+            help="Whether the requirement remains active after addenda."
+          />
+          <StatusAxis
+            label="Company evidence"
+            value={item.proof_requirement}
+            help="What internal or external proof is still needed."
+          />
+        </div>
+        <p className="mt-4 text-sm text-slate-600">
+          <strong>Due:</strong>{' '}
+          {item.due_at
+            ? `${formatDate(item.due_at)} · ${item.due_timezone ?? 'timezone not stated'}`
+            : 'No deterministic deadline identified'}
+        </p>
+      </section>
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-5">
-          <section className="rounded border border-slate-200 bg-white p-4">
-            <h2 className="font-semibold">Why this item exists</h2>
-            <p className="mt-2">{item.obligation}</p>
-            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+          <section className="surface-card p-4">
+            <h2 className="font-semibold">Why this task exists</h2>
+            <p className="mt-2 text-sm text-slate-700">
+              It was generated from an evidence-linked RFP requirement.
+            </p>
+            <dl className="analyst-only mt-4 grid gap-3 text-sm sm:grid-cols-2">
               <Field name="Category" value={label(item.category)} />
               <Field
                 name="Eligibility"
@@ -156,7 +208,7 @@ export default async function ChecklistItemPage({
               Open linked Phase 4 requirement →
             </Link>
           </section>
-          <section className="rounded border border-slate-200 bg-white p-4">
+          <section className="surface-card p-4">
             <h2 className="font-semibold">Exact source evidence</h2>
             {sources?.length ? (
               <ul className="mt-3 space-y-3">
@@ -185,7 +237,7 @@ export default async function ChecklistItemPage({
               </p>
             )}
           </section>
-          <section className="rounded border border-slate-200 bg-white p-4">
+          <section className="surface-card p-4">
             <h2 className="font-semibold">Blockers</h2>
             {blockers?.length ? (
               <ul className="mt-3 space-y-2 text-sm">
@@ -205,7 +257,7 @@ export default async function ChecklistItemPage({
               <p className="mt-2 text-sm text-slate-600">No blocker records.</p>
             )}
           </section>
-          <section className="rounded border border-slate-200 bg-white p-4">
+          <section className="surface-card p-4">
             <h2 className="font-semibold">Relationships</h2>
             {relationships?.length ? (
               <ul className="mt-3 space-y-2 text-sm">
@@ -222,8 +274,8 @@ export default async function ChecklistItemPage({
               </p>
             )}
           </section>
-          <section className="rounded border border-slate-200 bg-white p-4">
-            <h2 className="font-semibold">Decision history</h2>
+          <details className="surface-card analyst-only p-4">
+            <summary className="cursor-pointer font-semibold">Decision and audit history</summary>
             <h3 className="mt-3 text-sm font-medium">Waivers</h3>
             {waivers?.length ? (
               <ol className="mt-2 space-y-2 text-sm">
@@ -269,10 +321,13 @@ export default async function ChecklistItemPage({
             ) : (
               <p className="text-sm text-slate-600">No item audit events.</p>
             )}
-          </section>
+          </details>
         </div>
-        <aside className="h-fit rounded border border-slate-200 bg-white p-4">
-          <h2 className="mb-4 font-semibold">Human workflow controls</h2>
+        <aside className="surface-card h-fit p-4 lg:sticky lg:top-4">
+          <h2 className="mb-1 font-semibold">Update this task</h2>
+          <p className="mb-4 text-sm text-slate-600">
+            Assign ownership, update progress, or attach supporting documents.
+          </p>
           <ChecklistItemControls
             workspaceId={workspaceId}
             itemId={itemId}

@@ -2,11 +2,14 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { reportSnapshotSchema } from '@usi/domain';
 import { z } from 'zod';
+import { WorkspaceNavigation } from '@/components/workspace-navigation';
+import { StatusBadge } from '@/components/status-badge';
+import { businessLabel, phaseLabel } from '@/lib/presentation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { createPreparedDemoLinkResolver } from '@/lib/reporting/prepared-demo-links';
 import { ExportArtifactControls, ReportExportControls } from '../report-controls';
 
-const label = (value: string) => value.replaceAll('_', ' ');
+const label = businessLabel;
 
 export default async function ReportDetailPage({
   params,
@@ -132,7 +135,7 @@ export default async function ReportDetailPage({
     }));
   });
   return (
-    <main className="mx-auto max-w-7xl px-4 py-10">
+    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
       {report.demoWatermark ? (
         <div
           className="mb-4 rounded border-2 border-amber-500 bg-amber-50 p-3 text-center font-semibold text-amber-950"
@@ -141,29 +144,99 @@ export default async function ReportDetailPage({
           {report.demoWatermark}
         </div>
       ) : null}
-      <nav aria-label="Breadcrumb" className="mb-6 text-sm">
-        <Link href={`/w/${workspaceId}/reports`} className="text-blue-700 hover:underline">
-          ← Reports
-        </Link>
-      </nav>
+      <WorkspaceNavigation
+        workspaceId={workspaceId}
+        workspaceName={workspace.name}
+        current="reports"
+        compact
+      />
+      <Link href={`/w/${workspaceId}/reports`} className="action-link text-sm">
+        ← Final review history
+      </Link>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">{label(report.reportType)} report</h1>
+          <p className="section-kicker mt-4">Executive final review</p>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+            {label(report.reportType)} report
+          </h1>
           <p className="mt-1 text-sm text-slate-600">
             Generated {new Date(row.generated_at).toLocaleString()} · revision{' '}
             {report.summary.proposalRevision}
           </p>
         </div>
-        <span className="rounded bg-slate-100 px-3 py-1 text-sm">
-          Human review remains distinct
-        </span>
+        <StatusBadge value="pending" label="Human decisions remain separate" tone="warning" />
       </div>
-      <p className="mt-4 rounded border border-slate-200 bg-white p-3 text-sm text-slate-700">
+      <p className="mt-4 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
         {report.provenance.humanReviewDisclaimer}
       </p>
 
+      <nav
+        aria-label="Report sections"
+        className="sticky top-0 z-10 mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white/95 p-2 text-sm shadow-sm backdrop-blur"
+      >
+        <div className="flex min-w-max gap-1">
+          {[
+            ['#decision-brief', 'Decision brief'],
+            ['#blockers', 'Top issues'],
+            ['#unresolved', 'Needs review'],
+            ['#missing-artifacts', 'Missing evidence'],
+            ['#proposal-findings', 'Draft issues'],
+            ['#coverage', 'Source coverage'],
+            ['#exports', 'Exports'],
+          ].map(([href, text]) => (
+            <a
+              key={href}
+              href={href}
+              className="rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100"
+            >
+              {text}
+            </a>
+          ))}
+        </div>
+      </nav>
+
+      <section id="decision-brief" className="mt-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="rounded-xl border border-slate-900 bg-slate-900 p-5 text-white">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+            Bid status
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold">{label(report.summary.readinessState)}</h2>
+          <p className="mt-2 text-sm text-slate-300">
+            {report.summary.requiredItems
+              ? Math.round(
+                  (report.summary.completedRequiredItems / report.summary.requiredItems) * 100,
+                )
+              : 0}
+            % of required tasks are complete ·{' '}
+            {report.summary.criticalBlockers + report.summary.blockingIssues} blocking issues
+            require attention.
+          </p>
+          <a
+            href="#blockers"
+            className="mt-4 inline-flex rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-900"
+          >
+            Review top issues →
+          </a>
+        </div>
+        <div className="surface-card p-5">
+          <p className="section-kicker">Decisions needed</p>
+          <ul className="mt-3 space-y-2 text-sm">
+            <li>
+              <strong>{report.summary.humanReviewPending}</strong> machine assessments await team
+              review.
+            </li>
+            <li>
+              <strong>{report.summary.humanProofCount}</strong> items require company evidence.
+            </li>
+            <li>
+              <strong>{report.summary.missingArtifacts}</strong> required artifacts are missing.
+            </li>
+          </ul>
+        </div>
+      </section>
+
       <form
-        className="mt-4 grid gap-3 rounded border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-5"
+        className="analyst-only mt-4 grid gap-3 rounded border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-5"
         method="get"
       >
         <label className="text-sm font-medium">
@@ -174,9 +247,9 @@ export default async function ReportDetailPage({
             className="mt-1 block w-full rounded border border-slate-300 px-2 py-2"
           >
             <option value="">All</option>
-            <option value="phase4">Phase 4</option>
-            <option value="phase5">Phase 5</option>
-            <option value="phase6">Phase 6</option>
+            <option value="phase4">RFP requirement review</option>
+            <option value="phase5">Submission planning</option>
+            <option value="phase6">Proposal draft review</option>
           </select>
         </label>
         <label className="text-sm font-medium">
@@ -246,37 +319,42 @@ export default async function ReportDetailPage({
         ))}
       </section>
 
-      <section className="mt-8">
-        <h2 className="mb-3 text-lg font-semibold">Private exports</h2>
-        <ReportExportControls workspaceId={workspaceId} snapshotId={reportId} />
-        {artifacts.length ? (
-          <ul className="mt-3 divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-            {artifacts.map((artifact) => (
-              <li key={artifact.id} className="space-y-2 p-3">
-                <div>
-                  <span className="font-medium">{artifact.normalized_filename}</span>
-                  <span className="ml-2 text-sm text-slate-600">
-                    {artifact.format}
-                    {artifact.dataset ? ` · ${artifact.dataset}` : ''} · generation{' '}
-                    {artifact.generation} · {artifact.content_length} bytes
-                  </span>
-                </div>
-                <p className="break-all text-xs text-slate-500">
-                  SHA-256 {artifact.sha256} · retained until{' '}
-                  {new Date(artifact.retention_until).toLocaleString()}
-                </p>
-                <ExportArtifactControls
-                  workspaceId={workspaceId}
-                  artifactId={artifact.id}
-                  status={artifact.status}
-                />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-2 text-sm text-slate-600">No exports generated.</p>
-        )}
-      </section>
+      <details id="exports" className="surface-card mt-8 p-4" open>
+        <summary className="cursor-pointer text-sm font-semibold text-slate-600">
+          Export and download options
+        </summary>
+        <div className="mt-4">
+          <h2 className="mb-3 text-lg font-semibold">Private exports</h2>
+          <ReportExportControls workspaceId={workspaceId} snapshotId={reportId} />
+          {artifacts.length ? (
+            <ul className="mt-3 divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+              {artifacts.map((artifact) => (
+                <li key={artifact.id} className="space-y-2 p-3">
+                  <div>
+                    <span className="font-medium">{artifact.normalized_filename}</span>
+                    <span className="ml-2 text-sm text-slate-600">
+                      {artifact.format}
+                      {artifact.dataset ? ` · ${artifact.dataset}` : ''} · generation{' '}
+                      {artifact.generation} · {artifact.content_length} bytes
+                    </span>
+                  </div>
+                  <p className="break-all text-xs text-slate-500">
+                    SHA-256 {artifact.sha256} · retained until{' '}
+                    {new Date(artifact.retention_until).toLocaleString()}
+                  </p>
+                  <ExportArtifactControls
+                    workspaceId={workspaceId}
+                    artifactId={artifact.id}
+                    status={artifact.status}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-slate-600">No exports generated.</p>
+          )}
+        </div>
+      </details>
 
       <section className="mt-8" id="blockers">
         <h2 className="mb-3 text-lg font-semibold">Critical and blocking issues</h2>
@@ -285,7 +363,7 @@ export default async function ReportDetailPage({
             <table className="w-full border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="p-2">Phase</th>
+                  <th className="p-2">Source</th>
                   <th className="p-2">Severity</th>
                   <th className="p-2">Issue</th>
                   <th className="p-2">Workflow</th>
@@ -296,20 +374,27 @@ export default async function ReportDetailPage({
               <tbody>
                 {paginate(filteredBlockers).map((item) => (
                   <tr key={item.stableId} className="border-b align-top">
-                    <td className="p-2">{item.sourcePhase}</td>
-                    <td className="p-2">{item.severity}</td>
+                    <td className="p-2">{phaseLabel(item.sourcePhase)}</td>
+                    <td className="p-2">
+                      <StatusBadge value={item.severity} />
+                    </td>
                     <td className="p-2">
                       <strong>{item.title}</strong>
                       <p className="text-slate-600">{item.explanation}</p>
                     </td>
-                    <td className="p-2">{label(item.workflowState)}</td>
-                    <td className="p-2">{label(item.humanReviewState)}</td>
+                    <td className="p-2">
+                      <StatusBadge value={item.workflowState} />
+                    </td>
+                    <td className="p-2">
+                      <StatusBadge value={item.humanReviewState} />
+                    </td>
                     <td className="p-2">
                       <Link
                         href={preparedLinks.navigationReference(item.navigationReference)}
+                        aria-label="Open linked record"
                         className="text-blue-700 hover:underline"
                       >
-                        Open linked record
+                        Review issue and evidence
                       </Link>
                     </td>
                   </tr>
@@ -332,7 +417,7 @@ export default async function ReportDetailPage({
               <div className="flex flex-wrap justify-between gap-2">
                 <strong>{item.title}</strong>
                 <span className="text-sm">
-                  {item.sourcePhase} · {label(item.humanState)}
+                  {phaseLabel(item.sourcePhase)} · {label(item.humanState)}
                 </span>
               </div>
               <p className="text-sm text-slate-600">{item.reason}</p>

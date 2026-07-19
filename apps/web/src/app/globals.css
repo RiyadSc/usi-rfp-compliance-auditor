@@ -8,6 +8,30 @@ body {
   @apply bg-slate-50 text-slate-900 antialiased;
 }
 
+html:not([data-view-mode='analyst']) .analyst-only {
+  display: none;
+}
+
+html[data-view-mode='analyst'] .executive-only {
+  display: none;
+}
+
+.surface-card {
+  @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+}
+
+.action-link {
+  @apply font-semibold text-blue-700 hover:text-blue-900 hover:underline;
+}
+
+.section-kicker {
+  @apply text-xs font-semibold uppercase tracking-[0.14em] text-slate-500;
+}
+
+.metric-value {
+  @apply mt-1 text-2xl font-semibold tracking-tight text-slate-950;
+}
+
 /* Visible focus for keyboard users (accessibility requirement). */
 :focus-visible {
   outline: 2px solid theme('colors.blue.700');

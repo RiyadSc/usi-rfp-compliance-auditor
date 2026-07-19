@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Phase8DemoMode } from '@usi/domain';
 import { DemoModeBanner, OperationalStateNotice } from '@/components/operational-state';
+import { StatusBadge } from '@/components/status-badge';
+import { businessLabel } from '@/lib/presentation';
 import { loadValidatedPhase8Cache } from '@/lib/hardening/service';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
@@ -90,24 +92,120 @@ export default async function Phase8DemoPage({
     (state.data?.state as { findingReviewDemonstrated?: boolean } | null)
       ?.findingReviewDemonstrated,
   );
+  const reportSummary = (report.data?.summary ?? {}) as Record<string, unknown>;
+  const sourceCoverage = reportSummary.sourceCoverage as
+    { numerator?: number; denominator?: number; ratio?: number | null } | undefined;
+  const executiveMetrics = [
+    {
+      label: 'Required progress',
+      value: `${String(reportSummary.completedRequiredItems ?? 0)} of ${String(reportSummary.requiredItems ?? 0)}`,
+    },
+    { label: 'Critical blockers', value: String(reportSummary.criticalBlockers ?? 0) },
+    { label: 'Blocking issues', value: String(reportSummary.blockingIssues ?? 0) },
+    { label: 'Missing artifacts', value: String(reportSummary.missingArtifacts ?? 0) },
+    { label: 'Company evidence', value: String(reportSummary.humanProofCount ?? 0) },
+    { label: 'Team reviews pending', value: String(reportSummary.humanReviewPending ?? 0) },
+    {
+      label: 'Source coverage',
+      value:
+        typeof sourceCoverage?.ratio === 'number'
+          ? `${Math.round(sourceCoverage.ratio * 100)}%`
+          : `${sourceCoverage?.numerator ?? 0} of ${sourceCoverage?.denominator ?? 0}`,
+    },
+    {
+      label: 'Readiness',
+      value: businessLabel(String(reportSummary.readinessState ?? 'unresolved')),
+    },
+  ];
 
   return (
-    <main className="mx-auto max-w-6xl space-y-8 px-4 py-6">
+    <main className="mx-auto max-w-7xl space-y-8 px-4 py-6 lg:px-6">
       <DemoModeBanner mode={mode} />
-      <header>
-        <p className="text-sm font-medium text-amber-800">SYNTHETIC / PUBLIC FIXTURE ONLY</p>
-        <h1 className="text-3xl font-semibold">Harbor City full-roadmap demo</h1>
-        <p className="mt-2 text-slate-700">
-          Fixture {scope.binding.fixtureVersion} · Phase 4 fingerprint{' '}
-          <code>{scope.binding.compatibilityFingerprint}</code>
-        </p>
+      <header className="rounded-2xl bg-slate-950 p-6 text-white lg:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-300">
+              Prepared synthetic demonstration
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight lg:text-4xl">
+              Harbor City full-roadmap demo
+            </h1>
+            <p className="mt-3 max-w-3xl text-slate-300">
+              A guided story from RFP evidence to submission blockers, proposal risk, and executive
+              final review—using known-answer synthetic data only.
+            </p>
+          </div>
+          <StatusBadge value="informational" label="Safe demo data" tone="info" />
+        </div>
+        <details className="analyst-only mt-5 text-sm text-slate-300">
+          <summary className="cursor-pointer">Technical fixture details</summary>
+          <p className="mt-2">
+            Fixture {scope.binding.fixtureVersion} · Phase 4 fingerprint{' '}
+            <code>{scope.binding.compatibilityFingerprint}</code>
+          </p>
+        </details>
       </header>
 
-      <section aria-labelledby="requirements-heading">
+      <nav
+        aria-label="Demo walkthrough"
+        className="sticky top-0 z-10 overflow-x-auto rounded-xl border border-slate-200 bg-white/95 p-2 shadow-sm backdrop-blur"
+      >
+        <ol className="flex min-w-max gap-1 text-sm font-semibold">
+          {[
+            ['#demo-overview', '1. Opportunity'],
+            ['#requirements-heading', '2. RFP change'],
+            ['#checklist-heading', '3. Missing forms'],
+            ['#proposal-heading', '4. Draft errors'],
+            ['#report-heading', '5. Final review'],
+          ].map(([href, text]) => (
+            <li key={href}>
+              <a
+                href={href}
+                className="block rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100"
+              >
+                {text}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <section
+        id="demo-overview"
+        className="grid gap-3 md:grid-cols-3"
+        aria-label="Demo opportunity summary"
+      >
+        <DemoMetric
+          label="RFP requirements"
+          value={candidateRows.length}
+          note="Evidence-linked candidates"
+        />
+        <DemoMetric
+          label="Submission blockers"
+          value={blockerRows.length}
+          note="Missing mandatory forms"
+          danger
+        />
+        <DemoMetric
+          label="Planted draft risks"
+          value={expectedProposalFindings.length}
+          note="Known-answer issues to inspect"
+          warning
+        />
+      </section>
+
+      <aside className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">
+        <strong>Suggested talk track:</strong> start with one changed RFP requirement, show the five
+        missing forms, inspect the incorrect deadline or insurance value, then finish with the
+        executive report.
+      </aside>
+
+      <section aria-labelledby="requirements-heading" className="scroll-mt-20">
+        <p className="section-kicker">Step 2 · Understand the RFP</p>
         <h2 id="requirements-heading" className="text-2xl font-semibold">
           Candidate extraction and source verification
         </h2>
-        <p>
+        <p className="mt-1 text-slate-600">
           {candidateRows.length} immutable extraction candidates; machine findings remain distinct
           from human review.
         </p>
@@ -123,11 +221,11 @@ export default async function Phase8DemoPage({
                 <blockquote className="my-2 border-l-4 border-blue-600 pl-3">
                   {candidate.evidence_quote}
                 </blockquote>
-                <p className="text-sm">
-                  Source: {finding?.source_support_status ?? 'pending'} · precedence:{' '}
-                  {finding?.precedence_status ?? 'undetermined'} · proof:{' '}
-                  {finding?.proof_requirement ?? 'undetermined'}
-                </p>
+                <div className="my-3 flex flex-wrap gap-1.5">
+                  <StatusBadge value={finding?.source_support_status ?? 'pending'} />
+                  <StatusBadge value={finding?.precedence_status ?? 'undetermined'} />
+                  <StatusBadge value={finding?.proof_requirement ?? 'undetermined'} />
+                </div>
                 {finding?.id ? (
                   <Link
                     className="text-blue-700 underline"
@@ -149,21 +247,29 @@ export default async function Phase8DemoPage({
         </div>
       </section>
 
-      <section aria-labelledby="checklist-heading">
+      <section aria-labelledby="checklist-heading" className="scroll-mt-20">
+        <p className="section-kicker">Step 3 · Organize the submission</p>
         <h2 id="checklist-heading" className="text-2xl font-semibold">
           Deterministic checklist and blockers
         </h2>
         <p data-testid="missing-form-count">
           Exactly {blockerRows.length} missing mandatory-form blockers.
         </p>
-        <p className="font-medium">Blocked by 5 required items · Human review required</p>
+        <p className="mt-1 font-medium text-red-700">
+          Blocked by 5 required items · Human review required
+        </p>
         <ul className="mt-3 space-y-2">
           {checklistRows.map((item) => {
             const blocker = blockerRows.find((entry) => entry.checklist_item_id === item.id);
             return (
               <li key={item.id} className="rounded border border-slate-300 bg-white p-3">
-                <strong>{item.title}</strong> · {item.workflow_status} · artifact{' '}
-                {item.artifact_state}
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <strong>{item.title}</strong>
+                  <span className="flex flex-wrap gap-1">
+                    <StatusBadge value={item.workflow_status} />
+                    <StatusBadge value={item.artifact_state} />
+                  </span>
+                </div>
                 {blocker ? (
                   <>
                     <br />
@@ -183,7 +289,8 @@ export default async function Phase8DemoPage({
         </ul>
       </section>
 
-      <section aria-labelledby="proposal-heading">
+      <section aria-labelledby="proposal-heading" className="scroll-mt-20">
+        <p className="section-kicker">Step 4 · Review the proposal</p>
         <h2 id="proposal-heading" className="text-2xl font-semibold">
           Proposal draft audit
         </h2>
@@ -199,7 +306,7 @@ export default async function Phase8DemoPage({
               data-finding-type={type}
             >
               <h3 className="font-semibold">{title}</h3>
-              <p>{type}</p>
+              <p className="analyst-only text-xs text-slate-500">{businessLabel(type)}</p>
               {proposalPage ? (
                 <Link
                   className="text-blue-700 underline"
@@ -232,7 +339,8 @@ export default async function Phase8DemoPage({
         </p>
       </section>
 
-      <section aria-labelledby="report-heading">
+      <section aria-labelledby="report-heading" className="scroll-mt-20">
+        <p className="section-kicker">Step 5 · Prepare the decision meeting</p>
         <h2 id="report-heading" className="text-2xl font-semibold">
           Executive readiness report
         </h2>
@@ -240,9 +348,14 @@ export default async function Phase8DemoPage({
           Critical blockers, unresolved findings, missing artifacts, source coverage, and review
           completion are deterministic projections.
         </p>
-        <pre className="mt-3 overflow-auto rounded bg-slate-900 p-3 text-sm text-white">
-          {JSON.stringify(report.data?.summary ?? {}, null, 2)}
-        </pre>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {executiveMetrics.map((metric) => (
+            <div key={metric.label} className="surface-card p-3">
+              <p className="text-xs font-medium text-slate-500">{metric.label}</p>
+              <p className="mt-1 text-lg font-semibold">{metric.value}</p>
+            </div>
+          ))}
+        </div>
         <p className="mt-2">DEMO — SYNTHETIC DATA — NOT FOR SUBMISSION</p>
         <Link
           className="text-blue-700 underline"
@@ -277,5 +390,29 @@ export default async function Phase8DemoPage({
         </ul>
       </section>
     </main>
+  );
+}
+
+function DemoMetric({
+  label,
+  value,
+  note,
+  danger = false,
+  warning = false,
+}: {
+  label: string;
+  value: number;
+  note: string;
+  danger?: boolean;
+  warning?: boolean;
+}) {
+  return (
+    <div className="surface-card p-4">
+      <p className="text-sm font-medium text-slate-600">{label}</p>
+      <p className={`metric-value ${danger ? 'text-red-700' : warning ? 'text-amber-700' : ''}`}>
+        {value}
+      </p>
+      <p className="text-xs text-slate-500">{note}</p>
+    </div>
   );
 }

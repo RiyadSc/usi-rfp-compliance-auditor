@@ -1,11 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
+import { StatusBadge } from '@/components/status-badge';
+import { WorkspaceNavigation } from '@/components/workspace-navigation';
+import { businessLabel, formatDate } from '@/lib/presentation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { GenerateChecklistButton } from './generate-button';
 
 const uuid = z.string().uuid();
-const label = (value: string) => value.replaceAll('_', ' ');
+const label = businessLabel;
 
 export default async function ChecklistPage({
   params,
@@ -76,12 +79,24 @@ export default async function ChecklistPage({
         .limit(1)
         .maybeSingle()
     : { data: null };
+  const { data: members } = await supabase
+    .from('workspace_members')
+    .select('user_id,role')
+    .eq('workspace_id', workspaceId)
+    .order('role');
+  const memberNames = new Map(
+    (members ?? []).map((member, index) => [
+      member.user_id,
+      `${businessLabel(member.role)} · Team member ${index + 1}`,
+    ]),
+  );
   const blocked = new Set((blockers ?? []).map((blocker) => blocker.checklist_item_id));
   const selected = (items ?? []).filter(
     (item) =>
       (!filters.category || item.category === filters.category) &&
       (!filters.status || item.workflow_status === filters.status) &&
-      (!filters.owner || item.owner_id === filters.owner) &&
+      (!filters.owner ||
+        (filters.owner === 'unassigned' ? !item.owner_id : item.owner_id === filters.owner)) &&
       (!filters.blocker ||
         (filters.blocker === 'yes' ? blocked.has(item.id) : !blocked.has(item.id))) &&
       (!filters.unresolved || item.workflow_status === 'unresolved') &&
@@ -89,18 +104,24 @@ export default async function ChecklistPage({
       (!filters.due || Boolean(item.due_at)),
   );
   return (
-    <main className="mx-auto max-w-7xl px-4 py-10">
-      <nav aria-label="Breadcrumb" className="mb-6 text-sm">
-        <Link className="text-blue-700 hover:underline" href={`/w/${workspaceId}`}>
-          ← {workspace.name}
-        </Link>
-      </nav>
+    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+      <WorkspaceNavigation
+        workspaceId={workspaceId}
+        workspaceName={workspace.name}
+        current="checklist"
+      />
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Deterministic checklist and blockers</h1>
+          <p className="section-kicker">Stage 3</p>
+          <h1
+            aria-label="Deterministic checklist and blockers"
+            className="mt-1 text-3xl font-semibold tracking-tight"
+          >
+            Submission plan
+          </h1>
           <p className="mt-1 text-sm text-slate-600">
-            Machine-generated workflow structure. Human review and source verification remain
-            separate.
+            Assign work, resolve blockers, collect company evidence, and prepare the response for
+            final team review.
           </p>
         </div>
         {latestVerification ? (
@@ -113,49 +134,126 @@ export default async function ChecklistPage({
         )}
       </div>
       {readiness ? (
-        <section
-          aria-label="Readiness"
-          className="mb-6 rounded border border-slate-300 bg-white p-4"
-        >
-          <p className="text-lg font-semibold">{readiness.summary}</p>
-          <p className="mt-1 text-sm text-slate-700">
-            {readiness.completed_required} of {readiness.total_required} required items complete ·{' '}
-            {readiness.blocked_items} blocked · {readiness.unresolved_items} unresolved ·{' '}
-            {readiness.items_requiring_human_proof} require human proof
-          </p>
-          <p className="mt-2 text-xs text-slate-500">
-            Calculated by {readiness.engine_version}. This is workflow readiness, not source
-            approval or a submission determination.
-          </p>
+        <section aria-label="Readiness" className="surface-card mb-6 overflow-hidden">
+          <div className="grid gap-px bg-slate-200 sm:grid-cols-4">
+            <ReadinessMetric
+              label="Required work"
+              value={`${readiness.completed_required} of ${readiness.total_required}`}
+              note="tasks complete"
+            />
+            <ReadinessMetric
+              label="Submission blockers"
+              value={readiness.blocked_items}
+              note="need action"
+              danger={readiness.blocked_items > 0}
+            />
+            <ReadinessMetric
+              label="Unresolved"
+              value={readiness.unresolved_items}
+              note="need a decision"
+              warning={readiness.unresolved_items > 0}
+            />
+            <ReadinessMetric
+              label="Company evidence"
+              value={readiness.items_requiring_human_proof}
+              note="items need proof"
+              info={readiness.items_requiring_human_proof > 0}
+            />
+          </div>
+          <div className="border-t border-slate-200 px-4 py-3">
+            <p className="font-semibold">{readiness.summary}</p>
+            <p className="analyst-only mt-1 text-xs text-slate-500">
+              Calculated by {readiness.engine_version}. This is workflow readiness, not source
+              approval or a submission determination.
+            </p>
+          </div>
         </section>
       ) : null}
+
+      <div className="mb-4 flex flex-wrap gap-2" aria-label="Saved checklist views">
+        <Preset
+          href={`/w/${workspaceId}/checklist`}
+          active={
+            !filters.blocker &&
+            !filters.unresolved &&
+            !filters.proof &&
+            !filters.owner &&
+            !filters.due
+          }
+        >
+          All work
+        </Preset>
+        <Preset href={`/w/${workspaceId}/checklist?blocker=yes`} active={filters.blocker === 'yes'}>
+          Blocking submission
+        </Preset>
+        <Preset
+          href={`/w/${workspaceId}/checklist?owner=unassigned`}
+          active={filters.owner === 'unassigned'}
+        >
+          Unassigned
+        </Preset>
+        <Preset href={`/w/${workspaceId}/checklist?proof=yes`} active={Boolean(filters.proof)}>
+          Company evidence needed
+        </Preset>
+        <Preset
+          href={`/w/${workspaceId}/checklist?unresolved=yes`}
+          active={Boolean(filters.unresolved)}
+        >
+          Needs a decision
+        </Preset>
+        <Preset href={`/w/${workspaceId}/checklist?due=yes`} active={Boolean(filters.due)}>
+          Has a deadline
+        </Preset>
+      </div>
       <form
         aria-label="Checklist filters"
-        className="mb-5 grid gap-3 rounded border border-slate-200 bg-white p-4 sm:grid-cols-4"
+        className="mb-5 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-4"
       >
         <label className="text-sm">
           Category
-          <input
+          <select
             name="category"
             defaultValue={String(filters.category ?? '')}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1"
-          />
+            className="mt-1 w-full rounded border border-slate-300 bg-white px-2 py-2"
+          >
+            <option value="">All categories</option>
+            {[...new Set((items ?? []).map((item) => item.category))].map((category) => (
+              <option key={category} value={category}>
+                {label(category)}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="text-sm">
           Workflow status
-          <input
+          <select
             name="status"
             defaultValue={String(filters.status ?? '')}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1"
-          />
+            className="mt-1 w-full rounded border border-slate-300 bg-white px-2 py-2"
+          >
+            <option value="">All statuses</option>
+            {[...new Set((items ?? []).map((item) => item.workflow_status))].map((status) => (
+              <option key={status} value={status}>
+                {label(status)}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="text-sm">
-          Owner ID
-          <input
+          Owner
+          <select
             name="owner"
             defaultValue={String(filters.owner ?? '')}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1"
-          />
+            className="mt-1 w-full rounded border border-slate-300 bg-white px-2 py-2"
+          >
+            <option value="">All owners</option>
+            <option value="unassigned">Unassigned</option>
+            {(members ?? []).map((member) => (
+              <option key={member.user_id} value={member.user_id}>
+                {memberNames.get(member.user_id)}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="text-sm">
           Blocker
@@ -228,24 +326,31 @@ export default async function ChecklistPage({
                   </td>
                   <td className="px-3 py-3">{label(item.category)}</td>
                   <td className="px-3 py-3">
-                    {label(item.source_support_status)} / {label(item.precedence_status)}
-                    <span className="block text-xs text-slate-500">
-                      Human review: {label(item.source_human_review_status)}
+                    <div className="space-y-1">
+                      <StatusBadge value={item.source_support_status} />
+                      <span className="block">
+                        <StatusBadge value={item.precedence_status} />
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-3 py-3">
+                    <StatusBadge value={item.workflow_status} />
+                    <span className="mt-1 block text-xs text-slate-500">
+                      Artifact: {label(item.artifact_state)} · Team:{' '}
+                      {label(item.source_human_review_status)}
                     </span>
                   </td>
                   <td className="px-3 py-3">
-                    {label(item.workflow_status)}
-                    <span className="block text-xs text-slate-500">
-                      Artifact: {label(item.artifact_state)}
-                    </span>
-                  </td>
-                  <td className="px-3 py-3">
-                    {item.owner_id ? item.owner_id.slice(0, 8) : 'Unassigned'}
+                    {item.owner_id ? (
+                      (memberNames.get(item.owner_id) ?? 'Workspace member')
+                    ) : (
+                      <StatusBadge value="unresolved" label="Unassigned" tone="warning" />
+                    )}
                   </td>
                   <td className="px-3 py-3">
                     {item.due_at ? (
                       <>
-                        <time dateTime={item.due_at}>{new Date(item.due_at).toLocaleString()}</time>
+                        <time dateTime={item.due_at}>{formatDate(item.due_at)}</time>
                         <span className="block text-xs">
                           {item.due_timezone ?? 'Timezone not stated'}
                         </span>
@@ -254,7 +359,13 @@ export default async function ChecklistPage({
                       '—'
                     )}
                   </td>
-                  <td className="px-3 py-3">{blocked.has(item.id) ? 'Blocked' : 'None active'}</td>
+                  <td className="px-3 py-3">
+                    {blocked.has(item.id) ? (
+                      <StatusBadge value="blocked" />
+                    ) : (
+                      <span className="text-slate-500">No active blocker</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -266,5 +377,56 @@ export default async function ChecklistPage({
         </p>
       )}
     </main>
+  );
+}
+
+function ReadinessMetric({
+  label,
+  value,
+  note,
+  danger = false,
+  warning = false,
+  info = false,
+}: {
+  label: string;
+  value: string | number;
+  note: string;
+  danger?: boolean;
+  warning?: boolean;
+  info?: boolean;
+}) {
+  const color = danger
+    ? 'text-red-700'
+    : warning
+      ? 'text-amber-700'
+      : info
+        ? 'text-blue-700'
+        : 'text-slate-950';
+  return (
+    <div className="bg-white p-4">
+      <p className="text-sm font-medium text-slate-600">{label}</p>
+      <p className={`metric-value ${color}`}>{value}</p>
+      <p className="text-xs text-slate-500">{note}</p>
+    </div>
+  );
+}
+
+function Preset({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? 'page' : undefined}
+      className={`rounded-full border px-3 py-1.5 text-sm font-medium ${active ? 'border-blue-700 bg-blue-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100'}`}
+    >
+      {children}
+    </Link>
   );
 }

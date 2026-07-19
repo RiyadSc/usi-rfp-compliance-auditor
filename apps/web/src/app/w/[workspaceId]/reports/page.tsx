@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
+import { WorkspaceNavigation } from '@/components/workspace-navigation';
+import { StatusBadge } from '@/components/status-badge';
+import { businessLabel, formatDate } from '@/lib/presentation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { ReportGenerationControls } from './report-controls';
 
@@ -74,43 +77,64 @@ export default async function ReportsPage({
     ];
   });
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
-      <nav aria-label="Breadcrumb" className="mb-6 text-sm">
-        <Link href={`/w/${workspaceId}`} className="text-blue-700 hover:underline">
-          ← {workspace.name}
-        </Link>
-      </nav>
-      <h1 className="text-2xl font-semibold">Reports and exports</h1>
+    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+      <WorkspaceNavigation
+        workspaceId={workspaceId}
+        workspaceName={workspace.name}
+        current="reports"
+      />
+      <p className="section-kicker">Stage 5</p>
+      <h1 aria-label="Reports and exports" className="mt-1 text-3xl font-semibold tracking-tight">
+        Final review and reports
+      </h1>
       <p className="mt-1 mb-6 text-sm text-slate-600">
-        Versioned deterministic reporting from selected Phase 4–6 records. Reports keep workflow
-        evidence and human review state separate.
+        Bring submission blockers, missing evidence, proposal issues, and human decisions into one
+        executive review. Reports never represent automatic approval.
       </p>
-      <ReportGenerationControls workspaceId={workspaceId} sourceOptions={sourceOptions} />
+      <details className="surface-card" open={!reportRuns?.length}>
+        <summary className="cursor-pointer list-none px-4 py-4 font-semibold">
+          Generate a new report{' '}
+          <span className="ml-2 text-sm font-normal text-slate-500">
+            Choose a completed draft review
+          </span>
+        </summary>
+        <div className="border-t border-slate-200 p-4">
+          <ReportGenerationControls workspaceId={workspaceId} sourceOptions={sourceOptions} />
+        </div>
+      </details>
       <section className="mt-8" aria-labelledby="report-history">
-        <h2 id="report-history" className="mb-3 font-medium">
-          Report history
+        <h2 id="report-history" className="mb-1 text-lg font-semibold">
+          Executive review history
         </h2>
+        <p className="mb-3 text-sm text-slate-600">
+          Open the latest report for the current opportunity state.
+        </p>
         {reportRuns?.length ? (
-          <ul className="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+          <ul className="grid gap-3 md:grid-cols-2">
             {reportRuns.slice(0, pageSize).map((run) => {
               const snapshot = (
                 run.report_snapshots as unknown as Array<{ id: string }> | null
               )?.[0];
               return (
-                <li key={run.id} className="p-4">
-                  {snapshot ? (
-                    <Link
-                      href={`/w/${workspaceId}/reports/${snapshot.id}`}
-                      className="font-medium text-blue-700 hover:underline"
-                    >
-                      {run.report_type.replaceAll('_', ' ')}
-                    </Link>
-                  ) : (
-                    <span className="font-medium">{run.report_type.replaceAll('_', ' ')}</span>
-                  )}
-                  <p className="text-sm text-slate-600">
-                    {run.status} · input {run.input_hash.slice(0, 12)}… ·{' '}
-                    {new Date(run.created_at).toLocaleString()}
+                <li key={run.id} className="surface-card p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    {snapshot ? (
+                      <Link
+                        href={`/w/${workspaceId}/reports/${snapshot.id}`}
+                        className="font-medium text-blue-700 hover:underline"
+                      >
+                        {businessLabel(run.report_type)}
+                      </Link>
+                    ) : (
+                      <span className="font-medium">{businessLabel(run.report_type)}</span>
+                    )}
+                    <StatusBadge value={run.status} />
+                  </div>
+                  <p className="mt-3 text-sm text-slate-600">
+                    Generated {formatDate(run.created_at)} · Human review remains separate
+                  </p>
+                  <p className="analyst-only mt-2 text-xs text-slate-500">
+                    Input {run.input_hash.slice(0, 12)}…
                   </p>
                 </li>
               );

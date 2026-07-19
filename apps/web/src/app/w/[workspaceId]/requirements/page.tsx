@@ -1,25 +1,12 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
+import { StatusBadge, StatusAxis } from '@/components/status-badge';
+import { WorkspaceNavigation } from '@/components/workspace-navigation';
+import { businessLabel } from '@/lib/presentation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 const uuid = z.string().uuid();
-const LABELS: Record<string, string> = {
-  supported: 'Source-supported — review pending',
-  partially_supported: 'Partially supported',
-  unsupported: 'Unsupported',
-  contradicted: 'Contradicted',
-  parser_uncertain: 'Parser uncertainty',
-  active: 'Active',
-  superseded: 'Superseded',
-  conflicting: 'Conflicting',
-  undetermined: 'Precedence undetermined',
-  pending: 'Review pending',
-  accepted: 'Human review accepted',
-  rejected: 'Human review rejected',
-  needs_follow_up: 'Needs follow-up',
-  waived: 'Review waived',
-};
 
 type FindingRow = {
   id: string;
@@ -98,6 +85,7 @@ export default async function RequirementsPage({
   const categoryFilter = typeof filters.category === 'string' ? filters.category : '';
   const mandatoryFilter = typeof filters.mandatory === 'string' ? filters.mandatory : '';
   const reviewFilter = typeof filters.review === 'string' ? filters.review : '';
+  const attentionOnly = filters.attention === 'yes';
   const rows = (candidates ?? []).filter((candidate) => {
     const finding = latest.get(candidate.id);
     const review = finding ? (reviews.get(finding.id) ?? 'pending') : 'pending';
@@ -107,7 +95,12 @@ export default async function RequirementsPage({
       (!proofFilter || finding?.proof_requirement === proofFilter) &&
       (!categoryFilter || candidate.category === categoryFilter) &&
       (!mandatoryFilter || candidate.mandatory_class === mandatoryFilter) &&
-      (!reviewFilter || review === reviewFilter)
+      (!reviewFilter || review === reviewFilter) &&
+      (!attentionOnly ||
+        !finding ||
+        finding.source_support_status !== 'supported' ||
+        finding.precedence_status !== 'active' ||
+        review === 'pending')
     );
   });
   const latestRun = (findings ?? [])[0]?.verification_run_id;
@@ -119,31 +112,116 @@ export default async function RequirementsPage({
         .maybeSingle()
     : { data: null };
 
+  const latestRows = [...latest.values()];
+  const needsAttention = latestRows.filter(
+    (finding) =>
+      finding.source_support_status !== 'supported' || finding.precedence_status !== 'active',
+  ).length;
+  const companyProof = latestRows.filter(
+    (finding) => finding.proof_requirement !== 'none_identified',
+  ).length;
+  const pendingReviews = latestRows.filter(
+    (finding) => (reviews.get(finding.id) ?? 'pending') === 'pending',
+  ).length;
+
   return (
-    <main className="mx-auto max-w-7xl px-4 py-10">
-      <nav aria-label="Breadcrumb" className="mb-6 text-sm">
-        <Link href={`/w/${workspaceId}`} className="text-blue-700 hover:underline">
-          ← Workspace
-        </Link>
-      </nav>
+    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+      <WorkspaceNavigation
+        workspaceId={workspaceId}
+        workspaceName={workspace.name}
+        current="requirements"
+      />
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Requirement register</h1>
+          <p className="section-kicker">Stage 2</p>
+          <h1
+            aria-label="Requirement register"
+            className="mt-1 text-3xl font-semibold tracking-tight"
+          >
+            RFP requirements
+          </h1>
           <p className="mt-1 text-sm text-slate-600">
-            Machine source assessments remain separate from human decisions. This register does not
-            determine bidder compliance.
+            Understand what the RFP requires, whether it is still current, what company evidence is
+            needed, and whether your team has reviewed it.
           </p>
         </div>
         {verificationRun ? (
-          <p className="rounded border border-slate-200 bg-white px-3 py-2 text-xs">
+          <p className="analyst-only rounded border border-slate-200 bg-white px-3 py-2 text-xs">
             Latest verification: {verificationRun.status} · {verificationRun.model ?? 'mock'} ·
             reasoning {verificationRun.reasoning_effort ?? 'n/a'}
           </p>
         ) : null}
       </div>
+
+      <section
+        aria-label="Requirement summary"
+        className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+      >
+        <Summary
+          label="Requirements identified"
+          value={candidates?.length ?? 0}
+          note="Immutable extraction candidates"
+        />
+        <Summary
+          label="Needs attention"
+          value={needsAttention}
+          note="Source or current-version issue"
+          tone={needsAttention ? 'warning' : 'positive'}
+        />
+        <Summary
+          label="Company evidence needed"
+          value={companyProof}
+          note="Proof remains separate from source support"
+          tone={companyProof ? 'info' : 'neutral'}
+        />
+        <Summary
+          label="Team reviews pending"
+          value={pendingReviews}
+          note="Machine-supported is not human-approved"
+          tone={pendingReviews ? 'warning' : 'positive'}
+        />
+      </section>
+
+      <div className="mb-4 flex flex-wrap gap-2" aria-label="Saved requirement views">
+        <Preset
+          href={`/w/${workspaceId}/requirements`}
+          active={
+            !attentionOnly && !sourceFilter && !precedenceFilter && !proofFilter && !reviewFilter
+          }
+        >
+          All requirements
+        </Preset>
+        <Preset href={`/w/${workspaceId}/requirements?attention=yes`} active={attentionOnly}>
+          Needs attention
+        </Preset>
+        <Preset
+          href={`/w/${workspaceId}/requirements?mandatory=mandatory`}
+          active={mandatoryFilter === 'mandatory'}
+        >
+          Mandatory
+        </Preset>
+        <Preset
+          href={`/w/${workspaceId}/requirements?precedence=superseded`}
+          active={precedenceFilter === 'superseded'}
+        >
+          Changed by addendum
+        </Preset>
+        <Preset
+          href={`/w/${workspaceId}/requirements?proof=requires_company_artifact`}
+          active={proofFilter === 'requires_company_artifact'}
+        >
+          Company evidence needed
+        </Preset>
+        <Preset
+          href={`/w/${workspaceId}/requirements?review=pending`}
+          active={reviewFilter === 'pending'}
+        >
+          Team review pending
+        </Preset>
+      </div>
       <form
         method="get"
-        className="mb-5 grid gap-3 rounded border border-slate-200 bg-white p-4 sm:grid-cols-3 lg:grid-cols-6"
+        className="analyst-only mb-5 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-3 lg:grid-cols-6"
       >
         <Filter
           name="category"
@@ -205,7 +283,7 @@ export default async function RequirementsPage({
           </Link>
         </div>
       </form>
-      <div className="overflow-x-auto rounded border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="min-w-full text-left text-sm">
           <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-600">
             <tr>
@@ -213,12 +291,10 @@ export default async function RequirementsPage({
                 'Requirement',
                 'Category',
                 'Mandatory',
-                'Source status',
-                'Precedence',
-                'Proof requirement',
+                'RFP status',
+                'Evidence needed',
                 'Source',
-                'Human review',
-                'Last updated',
+                'Team review',
               ].map((head) => (
                 <th scope="col" key={head} className="px-3 py-3">
                   {head}
@@ -243,24 +319,31 @@ export default async function RequirementsPage({
                       {candidate.obligation}
                     </p>
                   </td>
-                  <td className="px-3 py-3">{candidate.category}</td>
-                  <td className="px-3 py-3">{candidate.mandatory_class}</td>
+                  <td className="px-3 py-3">{businessLabel(candidate.category)}</td>
                   <td className="px-3 py-3">
-                    <Status value={finding?.source_support_status ?? 'pending'} />
+                    <StatusBadge value={candidate.mandatory_class} />
                   </td>
                   <td className="px-3 py-3">
-                    <Status value={finding?.precedence_status ?? 'undetermined'} />
+                    <div className="space-y-1.5">
+                      <StatusBadge value={finding?.source_support_status ?? 'pending'} />
+                      <span className="block">
+                        <StatusBadge value={finding?.precedence_status ?? 'undetermined'} />
+                      </span>
+                    </div>
                   </td>
-                  <td className="px-3 py-3">{finding?.proof_requirement ?? 'undetermined'}</td>
+                  <td className="px-3 py-3">
+                    <StatusBadge value={finding?.proof_requirement ?? 'undetermined'} />
+                  </td>
                   <td className="px-3 py-3">
                     {documentNames.get(candidate.document_id) ?? 'Source document'} · page{' '}
                     {candidate.preliminary_page}
                   </td>
                   <td className="px-3 py-3">
-                    <Status value={review} />
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-3 text-xs">
-                    {new Date(finding?.created_at ?? candidate.created_at).toLocaleString()}
+                    <StatusBadge value={review} />
+                    <span className="analyst-only mt-1 block whitespace-nowrap text-xs text-slate-500">
+                      Updated{' '}
+                      {new Date(finding?.created_at ?? candidate.created_at).toLocaleString()}
+                    </span>
                   </td>
                 </tr>
               );
@@ -271,6 +354,29 @@ export default async function RequirementsPage({
           <p className="p-6 text-sm text-slate-600">No requirements match these filters.</p>
         ) : null}
       </div>
+
+      <section className="mt-6 grid gap-3 md:grid-cols-4" aria-label="Status guide">
+        <StatusAxis
+          label="RFP evidence"
+          value="supported"
+          help="Does the source document support this requirement?"
+        />
+        <StatusAxis
+          label="Current version"
+          value="active"
+          help="Is this the instruction that currently applies after addenda?"
+        />
+        <StatusAxis
+          label="Company evidence"
+          value="requires_company_artifact"
+          help="What certificate, license, or company record will the response need?"
+        />
+        <StatusAxis
+          label="Team review"
+          value="pending"
+          help="Has an authorized person reviewed the machine assessment?"
+        />
+      </section>
     </main>
   );
 }
@@ -297,7 +403,7 @@ function Filter({
         <option value="">All</option>
         {options.map((option) => (
           <option key={option} value={option}>
-            {option.replaceAll('_', ' ')}
+            {businessLabel(option)}
           </option>
         ))}
       </select>
@@ -305,10 +411,50 @@ function Filter({
   );
 }
 
-function Status({ value }: { value: string }) {
+function Summary({
+  label,
+  value,
+  note,
+  tone = 'neutral',
+}: {
+  label: string;
+  value: number;
+  note: string;
+  tone?: 'neutral' | 'positive' | 'warning' | 'info';
+}) {
+  const color =
+    tone === 'positive'
+      ? 'text-emerald-700'
+      : tone === 'warning'
+        ? 'text-amber-700'
+        : tone === 'info'
+          ? 'text-blue-700'
+          : 'text-slate-950';
   return (
-    <span className="inline-flex rounded-full border border-slate-300 bg-slate-50 px-2 py-1 text-xs font-medium">
-      {LABELS[value] ?? value.replaceAll('_', ' ')}
-    </span>
+    <div className="surface-card p-4">
+      <p className="text-sm font-medium text-slate-600">{label}</p>
+      <p className={`metric-value ${color}`}>{value}</p>
+      <p className="mt-1 text-xs text-slate-500">{note}</p>
+    </div>
+  );
+}
+
+function Preset({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? 'page' : undefined}
+      className={`rounded-full border px-3 py-1.5 text-sm font-medium ${active ? 'border-blue-700 bg-blue-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100'}`}
+    >
+      {children}
+    </Link>
   );
 }

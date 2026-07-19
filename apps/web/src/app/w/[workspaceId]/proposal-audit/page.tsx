@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
+import { StatusBadge } from '@/components/status-badge';
+import { WorkspaceNavigation } from '@/components/workspace-navigation';
+import { formatDate } from '@/lib/presentation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { ProposalAuditControls } from './audit-controls';
 
@@ -48,69 +51,99 @@ export default async function ProposalAuditPage({
         .order('created_at', { ascending: false }),
     ]);
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
-      <nav aria-label="Breadcrumb" className="mb-6 text-sm">
-        <Link href={`/w/${workspaceId}`} className="text-blue-700 hover:underline">
-          ← {workspace.name}
-        </Link>
-      </nav>
+    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+      <WorkspaceNavigation
+        workspaceId={workspaceId}
+        workspaceName={workspace.name}
+        current="proposal-audit"
+      />
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Proposal draft audit</h1>
+        <p className="section-kicker">Stage 4</p>
+        <h1
+          aria-label="Proposal draft audit"
+          className="mt-1 text-3xl font-semibold tracking-tight"
+        >
+          Draft review
+        </h1>
         <p className="mt-1 text-sm text-slate-600">
-          Deterministic, evidence-linked audit. Machine findings remain pending until a human
-          records a decision.
+          Compare the proposal against the RFP-backed submission plan and focus the team on material
+          issues before final review.
         </p>
       </div>
-      <div className="mb-6 flex gap-4 text-sm">
+      <div className="mb-6 flex flex-wrap gap-3 text-sm">
         <Link href={`/w/${workspaceId}/documents`} className="text-blue-700 hover:underline">
-          Upload proposal PDF
+          Upload a new proposal revision
         </Link>
         <Link href={`/w/${workspaceId}/checklist`} className="text-blue-700 hover:underline">
-          Open source checklist
+          Open the submission plan
         </Link>
       </div>
-      <ProposalAuditControls
-        workspaceId={workspaceId}
-        documents={(documents ?? []).map((document) => ({
-          id: document.id,
-          name: document.normalized_filename,
-        }))}
-        checklistRuns={(checklistRuns ?? []).map((run) => ({
-          id: run.id,
-          createdAt: run.created_at,
-        }))}
-        priorDrafts={(drafts ?? []).map((draft) => ({
-          id: draft.id,
-          label: `${(draft.documents as unknown as { normalized_filename: string }).normalized_filename} · revision ${draft.revision_number}`,
-        }))}
-      />
+      <details className="surface-card" open={!auditRuns?.length}>
+        <summary className="cursor-pointer list-none px-4 py-4 font-semibold">
+          Start a review for a new proposal revision
+          <span className="ml-2 text-sm font-normal text-slate-500">
+            Only needed when the proposal changes
+          </span>
+        </summary>
+        <div className="border-t border-slate-200 p-4">
+          <ProposalAuditControls
+            workspaceId={workspaceId}
+            documents={(documents ?? []).map((document) => ({
+              id: document.id,
+              name: document.normalized_filename,
+            }))}
+            checklistRuns={(checklistRuns ?? []).map((run) => ({
+              id: run.id,
+              createdAt: run.created_at,
+            }))}
+            priorDrafts={(drafts ?? []).map((draft) => ({
+              id: draft.id,
+              label: `${(draft.documents as unknown as { normalized_filename: string }).normalized_filename} · revision ${draft.revision_number}`,
+            }))}
+          />
+        </div>
+      </details>
       <section className="mt-8">
-        <h2 className="mb-3 font-medium">Audit history</h2>
+        <div className="mb-3">
+          <h2 className="text-lg font-semibold">Completed draft reviews</h2>
+          <p className="text-sm text-slate-600">
+            Open an existing result; run a new review only after uploading a new revision.
+          </p>
+        </div>
         {auditRuns?.length ? (
-          <ul className="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+          <ul className="grid gap-3 md:grid-cols-2">
             {auditRuns.map((run) => (
-              <li key={run.id} className="p-4">
-                <Link
-                  href={`/w/${workspaceId}/proposal-audit/${run.id}`}
-                  className="font-medium text-blue-700 hover:underline"
-                >
-                  {String(
-                    (
-                      run.proposal_drafts as unknown as {
-                        documents: { normalized_filename: string };
-                      }
-                    ).documents.normalized_filename,
-                  )}
-                </Link>
+              <li key={run.id} className="surface-card p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <Link
+                    href={`/w/${workspaceId}/proposal-audit/${run.id}`}
+                    className="font-semibold text-blue-700 hover:underline"
+                  >
+                    {String(
+                      (
+                        run.proposal_drafts as unknown as {
+                          documents: { normalized_filename: string };
+                        }
+                      ).documents.normalized_filename,
+                    )}
+                  </Link>
+                  <StatusBadge value={run.status} />
+                </div>
+                <p className="mt-3 text-2xl font-semibold">{run.finding_count}</p>
                 <p className="text-sm text-slate-600">
-                  {run.status} · {run.claim_count} claims · {run.finding_count} findings ·{' '}
-                  {new Date(run.created_at).toLocaleString()}
+                  issue{run.finding_count === 1 ? '' : 's'} found · {run.claim_count} proposal
+                  claims checked
+                </p>
+                <p className="mt-3 text-xs text-slate-500">
+                  Completed {formatDate(run.created_at)} · Human decisions remain separate
                 </p>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-slate-600">No proposal audits yet.</p>
+          <p className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600">
+            No draft reviews yet. Upload a parsed proposal PDF, then start the first review above.
+          </p>
         )}
       </section>
     </main>

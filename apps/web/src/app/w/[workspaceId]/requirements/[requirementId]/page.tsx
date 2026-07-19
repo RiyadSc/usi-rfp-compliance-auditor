@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation';
 import { z } from 'zod';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
+import { StatusAxis, StatusBadge } from '@/components/status-badge';
+import { WorkspaceNavigation } from '@/components/workspace-navigation';
+import { businessLabel } from '@/lib/presentation';
 import { EvidenceHighlight } from '../evidence-highlight';
 import { ReviewControls } from '../review-controls';
 
@@ -117,52 +120,74 @@ export default async function RequirementDetailPage({
   const challengePass = latestPasses.get('challenge');
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-10">
-      <nav aria-label="Breadcrumb" className="mb-6 text-sm">
-        <Link href={`/w/${workspaceId}/requirements`} className="text-blue-700 hover:underline">
+    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+      <WorkspaceNavigation
+        workspaceId={workspaceId}
+        workspaceName={workspace.name}
+        current="requirements"
+        compact
+      />
+      <div className="mb-5">
+        <Link href={`/w/${workspaceId}/requirements`} className="action-link text-sm">
           ← Requirement register
         </Link>
-      </nav>
-      <div className="mb-5">
-        <h1 className="text-2xl font-semibold">{candidate.title}</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          {candidate.category} · {candidate.mandatory_class} · extraction candidate remains{' '}
-          {candidate.status}
-        </p>
+        <p className="section-kicker mt-4">RFP requirement</p>
+        <h1 className="mt-1 text-3xl font-semibold tracking-tight">{candidate.title}</h1>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <StatusBadge value={candidate.mandatory_class} />
+          <StatusBadge
+            value={candidate.category}
+            label={businessLabel(candidate.category)}
+            tone="neutral"
+          />
+          <StatusBadge value={latestReview} />
+        </div>
       </div>
-      <p className="mb-6 rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm">
-        Machine assessment only. Human review: <strong>{latestReview.replaceAll('_', ' ')}</strong>.
-        This view does not determine compliance.
+      <p className="mb-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+        <strong>Machine assessment:</strong> {businessLabel(latestReview)}. Source evidence, company
+        proof, workflow completion, and human review remain separate.
       </p>
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="space-y-5">
-          <Panel title="Structured requirement">
-            <p>{candidate.obligation}</p>
-            <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-              <Field name="Source support" value={finding?.source_support_status ?? 'pending'} />
-              <Field name="Precedence" value={finding?.precedence_status ?? 'undetermined'} />
-              <Field
-                name="Proof requirement"
+          <Panel title="What the RFP requires">
+            <p className="text-lg leading-relaxed">{candidate.obligation}</p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <StatusAxis
+                label="Backed by the RFP?"
+                value={finding?.source_support_status ?? 'pending'}
+                help="Whether source evidence supports the complete material requirement."
+              />
+              <StatusAxis
+                label="Is this still current?"
+                value={finding?.precedence_status ?? 'undetermined'}
+                help="Whether addenda leave this requirement active, superseded, conflicting, or unclear."
+              />
+              <StatusAxis
+                label="What evidence must we provide?"
                 value={finding?.proof_requirement ?? 'undetermined'}
+                help="Company or external proof needed later; this is separate from source support."
               />
-              <Field
-                name="Finding version"
-                value={finding ? String(finding.finding_version) : 'none'}
+              <StatusAxis
+                label="Has our team reviewed it?"
+                value={latestReview}
+                help="The latest authorized human decision on the machine assessment."
               />
-            </dl>
+            </div>
             {finding ? (
-              <p className="mt-4 text-sm text-slate-700">{finding.rationale}</p>
+              <div className="mt-4 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
+                <strong>Why:</strong> {finding.rationale}
+              </div>
             ) : (
               <p className="mt-4 text-sm text-slate-600">No verification finding yet.</p>
             )}
           </Panel>
-          <Panel title="Evidence and conflicts">
+          <Panel title="Exact RFP evidence">
             {(evidence ?? []).length ? (
               <ul className="space-y-3">
                 {(evidence ?? []).map((item) => (
                   <li key={item.id} className="rounded border border-slate-200 p-3">
                     <div className="flex flex-wrap justify-between gap-2 text-xs">
-                      <strong>{item.evidence_role}</strong>
+                      <strong>{businessLabel(item.evidence_role)}</strong>
                       <span>
                         {item.match_type} · page {item.page_number} ·{' '}
                         {item.validated ? 'validated quote' : 'not validated'}
@@ -178,7 +203,7 @@ export default async function RequirementDetailPage({
               <p className="text-sm text-slate-600">No evidence references persisted.</p>
             )}
           </Panel>
-          <Panel title="Candidate-centered verification passes">
+          <Panel title="Technical verification details" className="analyst-only">
             <dl className="grid grid-cols-2 gap-3 text-sm">
               <Field
                 name="Pass A — entailment"
@@ -217,12 +242,15 @@ export default async function RequirementDetailPage({
               </p>
             ) : null}
           </Panel>
-          <Panel title="Addendum and duplicate relationships">
+          <Panel title="Addendum and relationship timeline">
             {(relationships ?? []).length ? (
-              <ul className="space-y-2 text-sm">
-                {relationships!.map((item) => (
+              <ol className="space-y-2 text-sm">
+                {relationships!.map((item, index) => (
                   <li key={item.id} className="rounded border border-slate-200 p-3">
-                    <strong>{item.relationship_type}</strong> →{' '}
+                    <span className="mr-2 text-xs font-semibold text-slate-500">
+                      CHANGE {index + 1}
+                    </span>
+                    <strong>{businessLabel(item.relationship_type)}</strong> →{' '}
                     <Link
                       className="text-blue-700 hover:underline"
                       href={`/w/${workspaceId}/requirements/${item.target_candidate_id}`}
@@ -249,17 +277,17 @@ export default async function RequirementDetailPage({
                     </details>
                   </li>
                 ))}
-              </ul>
+              </ol>
             ) : (
               <p className="text-sm text-slate-600">No machine-proposed relationships.</p>
             )}
           </Panel>
           {finding ? (
-            <Panel title="Human review controls">
+            <Panel title="Record a team decision">
               <ReviewControls workspaceId={workspaceId} findingId={finding.id} />
             </Panel>
           ) : null}
-          <Panel title="Review audit">
+          <Panel title="Decision history">
             {(decisions ?? []).length ? (
               <ol className="space-y-2 text-sm">
                 {decisions!.map((decision) => (
@@ -328,7 +356,7 @@ export default async function RequirementDetailPage({
               <p className="text-sm text-slate-600">No extracted evidence page available.</p>
             )}
           </Panel>
-          <Panel title="Machine provenance">
+          <Panel title="Technical provenance" className="analyst-only">
             <dl className="grid grid-cols-2 gap-3 text-sm">
               <Field name="Extraction model" value={candidate.model_id} />
               <Field name="Verification model" value={finding?.model_id ?? 'none'} />
@@ -368,9 +396,17 @@ export default async function RequirementDetailPage({
   );
 }
 
-function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+function Panel({
+  title,
+  children,
+  className = '',
+}: {
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <section className="rounded border border-slate-200 bg-white p-4">
+    <section className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${className}`}>
       <h2 className="mb-3 text-base font-semibold">{title}</h2>
       {children}
     </section>
@@ -380,7 +416,7 @@ function Field({ name, value }: { name: string; value: string }) {
   return (
     <div>
       <dt className="text-xs uppercase tracking-wide text-slate-500">{name}</dt>
-      <dd className="mt-1 break-words font-medium">{value.replaceAll('_', ' ')}</dd>
+      <dd className="mt-1 break-words font-medium">{businessLabel(value)}</dd>
     </div>
   );
 }
