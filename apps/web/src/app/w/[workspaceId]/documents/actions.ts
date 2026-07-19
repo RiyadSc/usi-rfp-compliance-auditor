@@ -19,6 +19,21 @@ import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { enqueueParseJob } from '@/lib/jobs';
 import { serverEnv } from '@/lib/env';
 
+const DOCUMENT_TYPES = [
+  'primary_rfp',
+  'addendum',
+  'attachment',
+  'proposal_draft',
+  'reference',
+] as const;
+
+function validDocumentType(value: string | undefined) {
+  const documentType = value ?? 'primary_rfp';
+  if (!DOCUMENT_TYPES.includes(documentType as (typeof DOCUMENT_TYPES)[number]))
+    throw new DocumentProcessingError('invalid_type', 'Unsupported document type');
+  return documentType;
+}
+
 async function requireMember(workspaceId: string) {
   const supabase = await createSupabaseServerClient();
   const {
@@ -66,7 +81,7 @@ export async function createUploadIntent(input: {
     const objectId = randomUUID();
     const objectKey = buildObjectKey(workspaceId, intentId, objectId);
     const expiresAt = new Date(Date.now() + UPLOAD_INTENT_TTL_MS).toISOString();
-    const documentType = input.documentType ?? 'primary_rfp';
+    const documentType = validDocumentType(input.documentType);
 
     const admin = createSupabaseAdminClient();
     const { error: insertError } = await admin.from('upload_intents').insert({
@@ -192,7 +207,7 @@ export async function finalizeUpload(input: {
       id: documentId,
       workspace_id: workspaceId,
       upload_intent_id: intent.id,
-      document_type: intent.document_type ?? input.documentType ?? 'primary_rfp',
+      document_type: validDocumentType(intent.document_type ?? input.documentType),
       original_filename: intent.original_filename,
       normalized_filename: intent.normalized_filename,
       mime_type: 'application/pdf',

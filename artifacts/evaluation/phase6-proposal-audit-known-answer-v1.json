@@ -1,0 +1,243 @@
+{
+  "fixtureVersion": "proposal-audit-known-answer-v1",
+  "generatedAt": "2026-07-19T03:04:32.053Z",
+  "versions": {
+    "sectionParser": "proposal-section-parser-v1",
+    "claimSegmenter": "proposal-claim-segmenter-v1",
+    "schema": "proposal-audit-schema-v1",
+    "matcher": "proposal-response-matcher-v1",
+    "supportPolicy": "proposal-support-policy-v1",
+    "contradiction": "proposal-contradiction-v1",
+    "severity": "proposal-finding-severity-v1",
+    "evaluator": "proposal-audit-evaluator-v1"
+  },
+  "cases": [
+    {
+      "id": "supported_response",
+      "expected": {
+        "coverage": "addressed",
+        "support": null,
+        "findingType": null
+      },
+      "actual": {
+        "coverage": "addressed",
+        "support": "supported",
+        "findingType": null,
+        "proposalPage": null,
+        "sourcePage": null
+      },
+      "passed": true
+    },
+    {
+      "id": "conflicting_date",
+      "expected": {
+        "coverage": null,
+        "support": "contradicted",
+        "findingType": "date_mismatch"
+      },
+      "actual": {
+        "coverage": "partially_addressed",
+        "support": "contradicted",
+        "findingType": "date_mismatch",
+        "proposalPage": 3,
+        "sourcePage": 2
+      },
+      "passed": true
+    },
+    {
+      "id": "incorrect_insurance",
+      "expected": {
+        "coverage": null,
+        "support": "contradicted",
+        "findingType": "numerical_mismatch"
+      },
+      "actual": {
+        "coverage": "partially_addressed",
+        "support": "contradicted",
+        "findingType": "numerical_mismatch",
+        "proposalPage": 4,
+        "sourcePage": 3
+      },
+      "passed": true
+    },
+    {
+      "id": "partial_response",
+      "expected": {
+        "coverage": "partially_addressed",
+        "support": null,
+        "findingType": "partial_required_response"
+      },
+      "actual": {
+        "coverage": "partially_addressed",
+        "support": "partially_supported",
+        "findingType": "partial_required_response",
+        "proposalPage": 2,
+        "sourcePage": 4
+      },
+      "passed": true
+    },
+    {
+      "id": "source_contradiction",
+      "expected": {
+        "coverage": null,
+        "support": "contradicted",
+        "findingType": "contradicted_claim"
+      },
+      "actual": {
+        "coverage": "partially_addressed",
+        "support": "contradicted",
+        "findingType": "contradicted_claim",
+        "proposalPage": 3,
+        "sourcePage": 5
+      },
+      "passed": true
+    },
+    {
+      "id": "human_proof",
+      "expected": {
+        "coverage": null,
+        "support": "requires_human_proof",
+        "findingType": "human_proof_required"
+      },
+      "actual": {
+        "coverage": "addressed",
+        "support": "requires_human_proof",
+        "findingType": "human_proof_required",
+        "proposalPage": 5,
+        "sourcePage": 6
+      },
+      "passed": true
+    },
+    {
+      "id": "missing_response",
+      "expected": {
+        "coverage": "missing",
+        "support": null,
+        "findingType": "missing_required_response"
+      },
+      "actual": {
+        "coverage": "missing",
+        "support": null,
+        "findingType": "missing_required_response",
+        "proposalPage": null,
+        "sourcePage": 7
+      },
+      "passed": true
+    },
+    {
+      "id": "parser_uncertain",
+      "expected": {
+        "coverage": "parser_uncertain",
+        "support": null,
+        "findingType": "unresolved_source_requirement"
+      },
+      "actual": {
+        "coverage": "parser_uncertain",
+        "support": null,
+        "findingType": "unresolved_source_requirement",
+        "proposalPage": null,
+        "sourcePage": 8
+      },
+      "passed": true
+    },
+    {
+      "id": "unsupported_claim",
+      "expected": {
+        "coverage": null,
+        "support": "unsupported",
+        "findingType": "unsupported_claim"
+      },
+      "actual": {
+        "coverage": null,
+        "support": "unsupported",
+        "findingType": "unsupported_claim",
+        "proposalPage": 5,
+        "sourcePage": null
+      },
+      "passed": true
+    },
+    {
+      "id": "wrong_procurement",
+      "expected": {
+        "coverage": null,
+        "support": "contradicted",
+        "findingType": "wrong_procurement_identity"
+      },
+      "actual": {
+        "coverage": null,
+        "support": "contradicted",
+        "findingType": "wrong_procurement_identity",
+        "proposalPage": 6,
+        "sourcePage": null
+      },
+      "passed": true
+    },
+    {
+      "id": "prompt_injection",
+      "expected": {
+        "coverage": null,
+        "support": null,
+        "findingType": "prompt_injection_attempt"
+      },
+      "actual": {
+        "coverage": null,
+        "support": null,
+        "findingType": "prompt_injection_attempt",
+        "proposalPage": 7,
+        "sourcePage": null
+      },
+      "passed": true
+    },
+    {
+      "id": "corrected_revision",
+      "expected": {
+        "coverage": null,
+        "support": null,
+        "findingType": "corrected_in_revision"
+      },
+      "actual": {
+        "coverage": "partially_addressed",
+        "support": "contradicted",
+        "findingType": "corrected_in_revision",
+        "proposalPage": null,
+        "sourcePage": 2
+      },
+      "passed": true
+    }
+  ],
+  "metrics": {
+    "caseAccuracy": 1,
+    "responseCoverageAccuracy": 1,
+    "claimSupportAccuracy": 1,
+    "dateAccuracy": 1,
+    "numericalAccuracy": 1,
+    "criticalContradictionPrecision": 1,
+    "criticalContradictionRecall": 1,
+    "missingResponsePrecision": 1,
+    "missingResponseRecall": 1,
+    "unsupportedClaimPrecision": 1,
+    "humanProofClassificationAccuracy": 1,
+    "insuranceAndDateAccuracy": 1,
+    "evidenceValidity": 1,
+    "citationValidity": 1,
+    "criticalFalseSupported": 0,
+    "criticalFalseConsistent": 0,
+    "falseMerges": 0,
+    "injectionInfluence": 0,
+    "wrongProcurementDetectionAccuracy": 1,
+    "crossWorkspaceLeaks": 0,
+    "destructiveMerges": 0,
+    "schemaAdherence": 1
+  },
+  "counts": {
+    "pages": 8,
+    "requirements": 8,
+    "claims": 11,
+    "findings": 15,
+    "corrections": 4
+  },
+  "provider": {
+    "calls": 0,
+    "costUsd": 0
+  }
+}
