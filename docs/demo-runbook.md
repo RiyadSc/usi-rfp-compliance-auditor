@@ -31,6 +31,16 @@ No Phase 5, Phase 6, or Phase 7 step invokes a paid provider. General live Phase
 
 ### Presentation
 
+Use **Executive view** for the narrated walkthrough; switch to **Analyst view** only when the audience asks for schema, model, hash, or run detail. Follow the page's suggested sequence rather than opening records at random:
+
+1. Start with the opportunity and deadline.
+2. Explain that RFP requirements are source-backed machine assessments and still distinct from human review.
+3. Show the five missing forms as submission blockers.
+4. Inspect one planted draft risk beside its RFP source.
+5. Finish with the final-review decision brief and the explicit next action.
+
+Use business labels in narration: `RFP-backed`, `Replaced by an addendum`, `Company document needed`, and `Team confirmation needed`. Avoid internal enum names unless explaining the audit trail. Do not describe checklist completion as procurement compliance or customer approval.
+
 1. Sign in as synthetic user A and open workspace `81000000-0000-4000-8000-000000000002` → **Full-roadmap demo**.
 2. Confirm the `Prepared synthetic demo` banner, fixture `full-roadmap-known-answer-v1`, exact Phase 4 fingerprint, and 24 immutable candidates.
 3. Open Mandatory Form A-1: exact quote is on source page 18. Navigate to the original 22-page RFP.

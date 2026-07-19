@@ -145,3 +145,9 @@ local (dev, unit/integration), preview (mock/sandbox model), demo (frozen fixtur
 `phase8-consolidated-evaluation-v1` recomputes the provider-free Phase 4–7 known answers and one strict consolidated gate. The Phase 8 control plane adds fixed database-atomic rate buckets, advisory-locked budget reservations before provider construction, privacy-safe performance events, immutable synthetic scope/cache/fallback records, and an idempotent presentation-state reset. The prepared route is `/w/:id/demo`; it requires the exact validated cache rather than merely a membership.
 
 The prepared scope binds every Phase 4–7 run/document/hash/version and the qualified Phase 4 fingerprint. Prepared, cached, fallback, and offline-read-only modes remain authorized and visibly labeled. The fallback reuses one immutable private Phase 7 artifact via a transient five-minute grant. See `docs/phase8-data-flow.md` and `docs/demo-reset-cache-fallback.md`.
+
+## Executive presentation layer
+
+The web application projects the unchanged Phase 4–8 records into two display modes. Executive view is the default and emphasizes deadlines, decision signals, next actions, blockers, ownership, missing proof, and human review. Analyst view reveals model/run/schema/hash and detailed filtering controls. The preference is browser-local presentation state; it is not an authorization boundary and never changes persisted findings or calculations.
+
+`WorkspaceNavigation` supplies the shared journey: Overview → RFP files → RFP requirements → Submission plan → Draft review → Final review. `presentation.ts` centralizes business labels, tone, deadlines, and event names so technical enum values remain stable in storage and APIs. Detail pages remain provenance-first: every simplified status links back to exact evidence, original page, and the separate machine/human axes.

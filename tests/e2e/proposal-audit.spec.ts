@@ -454,7 +454,8 @@ test('Phase 6 proposal audit keeps evidence, findings, human decisions, and work
   await page.getByLabel('Reason').fill('Synthetic reviewer accepted this machine assessment.');
   await page.getByRole('button', { name: 'Record decision' }).click();
   await expect(page.getByText('Human decision appended.')).toBeVisible();
-  await expect(page.getByText(/resolved · human accepted/)).toBeVisible();
+  await expect(page.locator('span').filter({ hasText: /^Resolved$/ })).toBeVisible();
+  await expect(page.getByText('Source assessment accepted', { exact: true })).toBeVisible();
   await expect(page.locator('body')).not.toContainText(
     /\bCompliant\b|\bApproved\b|Safe to submit|Guaranteed complete/i,
   );

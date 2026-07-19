@@ -43,10 +43,13 @@ test('sign in, create a workspace, reopen it, and see the audit trail', async ({
   const url = page.url();
 
   // Audit event is visible.
-  await expect(page.getByText('workspace_created')).toBeVisible();
+  await expect(page.getByText('Opportunity created')).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Opportunity stages' })).toBeVisible();
+  await expect(page.getByText('Recommended next action')).toBeVisible();
 
   // Reopen from the list.
   await page.getByRole('link', { name: '← Opportunities' }).click();
+  await page.getByText(/Test workspaces/).click();
   await page.getByRole('link', { name: new RegExp(name) }).click();
   await expect(page).toHaveURL(url);
   await expect(page.getByRole('heading', { name })).toBeVisible();

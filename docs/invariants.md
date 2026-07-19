@@ -102,3 +102,13 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] All UI modes are visibly distinguished, accessible under repository checks, and preserve authorization and uncertainty.
 - [x] Three complete reset-backed rehearsals and the final demo-critical test passed with zero provider calls or prohibited language.
 - [x] General live verification remains disabled and no customer/confidential data was used.
+
+## Post-Phase 8 executive UX invariant result — 2026-07-19
+
+- [x] Business labels are projections over the existing separate source, precedence, proof, workflow, blocker, and human-review axes; no persisted state or deterministic rule changed.
+- [x] Every supported requirement and checklist action retains a direct evidence and original-page path.
+- [x] Unsupported, contradicted, uncertain, conflicting, replaced, machine-only, and pending-review states remain visible in Executive view and more detailed in Analyst view.
+- [x] No database, provider, retrieval, storage, RLS, or mutation path was added or weakened.
+- [x] No member UUID is rendered as an owner label; roles or neutral team-member labels are used until authorized profiles exist.
+- [x] The prepared synthetic demo remains visibly labeled and provider-free; general live verification remains disabled.
+- [x] Unit, integration, browser, known-answer, formatting, type, build, dependency, secret, and invariant checks pass.

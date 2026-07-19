@@ -1,5 +1,13 @@
 # Build Status
 
+## Post-Phase 8 executive UX hardening — complete (2026-07-19)
+
+The application now has a director-oriented presentation layer across the opportunity portfolio, workspace command center, RFP files, requirement register, submission plan, draft review, final review, and prepared demo. A shared six-stage workspace navigation, Executive/Analyst view switch, business-language status badges, preset risk views, action-first detail screens, deadline/change signals, and guided demo narrative reduce the need to interpret internal workflow vocabulary.
+
+The redesign is presentation-only: it does not change deterministic decisions, Phase 4 axes, human-review state, evidence provenance, RLS, provider configuration, or rollout controls. Technical run/schema/hash details remain available in Analyst view. Where the current data model has no member profile name, assignments use a workspace role or neutral `Team member N` label rather than exposing UUIDs.
+
+Validation: 315 unit tests, 77 sequential Supabase/RLS integration tests, and the complete mock Playwright suite (`21` passed, `1` intentionally skipped live-only audit) pass. Lint, formatting, type-check, production build, lockfile, high-severity dependency, secret, known-answer evaluation, and invariant gates pass. The existing two moderate PostCSS advisories remain documented; npm's suggested forced fix is a breaking downgrade and was not applied.
+
 ## Phase 8 — complete (2026-07-19)
 
 Final evaluation/security/reliability/demo hardening is complete. Migration `20260719000023` is applied to project `uxmxkdjschbekkbnweby`; all nine new tables have RLS and privileged RPCs are service-only. Atomic rate/budget controls, privacy-safe performance instrumentation, exact prepared cache, private labeled fallback, deterministic reset, accessible operational states, controlled CI, consolidated evaluator, and full-roadmap demo are implemented.

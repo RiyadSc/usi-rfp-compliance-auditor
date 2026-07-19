@@ -10,6 +10,8 @@
 
 Before a handoff: run unit, integration, isolated E2E, consolidated evaluation, lint, formatting, TypeScript, production build, lockfile, dependency, secret, and invariant gates in that order. Integration/browser processes must not overlap.
 
+The post-Phase 8 presentation suite adds unit coverage for business labels, camel-case event names, deadline messaging, and status tones. Mock Playwright verifies the shared workspace journey, portfolio grouping, executive command center, preset views, action-first detail screens, guided prepared demo, business-language badges, evidence navigation, and cross-workspace denial. Existing domain assertions remain in place so a copy or layout improvement cannot silently alter a deterministic result.
+
 Sources: Engineering Design §12, PRD §8.1/§11.2, build brief Phase 8.
 
 ## Test pyramid

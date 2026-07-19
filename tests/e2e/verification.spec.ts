@@ -512,17 +512,19 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
 
     await page.goto(`/w/${workspaceId}/requirements`);
     await expect(page.getByRole('heading', { name: 'Requirement register' })).toBeVisible();
-    await expect(page.getByText('Source-supported — review pending').first()).toBeVisible();
-    await expect(page.getByRole('cell', { name: 'Contradicted', exact: true })).toBeVisible();
-    await expect(page.getByRole('cell', { name: 'Superseded', exact: true })).toBeVisible();
-    await expect(page.getByRole('cell', { name: 'Parser uncertainty', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'analyst' }).click();
+    const requirementsTable = page.getByRole('table');
+    await expect(requirementsTable.getByText('Backed by the RFP').first()).toBeVisible();
+    await expect(requirementsTable.getByText('Conflicts with the RFP').first()).toBeVisible();
+    await expect(requirementsTable.getByText('Replaced by an addendum').first()).toBeVisible();
+    await expect(requirementsTable.getByText('Document needs manual review').first()).toBeVisible();
     await page.getByLabel('Source status').selectOption('contradicted');
     await page.getByRole('button', { name: 'Apply filters' }).click();
     await expect(page.getByRole('link', { name: 'Email submission permitted' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Signed Proposal Form A-1' })).not.toBeVisible();
     await page.getByRole('link', { name: 'Clear' }).click();
     await page.getByRole('link', { name: 'Signed Proposal Form A-1' }).click();
-    await expect(page.getByText('Machine assessment only')).toBeVisible();
+    await expect(page.getByText(/Machine assessment:/)).toBeVisible();
     await expect(page.getByText(pages[0], { exact: true }).first()).toBeVisible();
     await expect(page.locator('mark')).toContainText('Proposal Form A-1');
     await expect(page.getByRole('link', { name: 'related requirement' })).toBeVisible();
@@ -554,7 +556,7 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
       page
         .getByText('Pass B — challenge', { exact: true })
         .locator('..')
-        .getByText('pending', { exact: true }),
+        .getByText('Team review pending', { exact: true }),
     ).toBeVisible();
     await page.getByRole('link', { name: /Requirement register/ }).click();
     await page.getByRole('link', { name: 'Certificate proof' }).click();
@@ -564,14 +566,19 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
     await expect(page.getByText('Deterministic/model disagreement')).toBeVisible();
     await page.getByRole('link', { name: /Requirement register/ }).click();
     await page.getByRole('link', { name: 'Unresolved North Campus insurance conflict' }).click();
-    await expect(page.getByText('conflicting', { exact: true })).toBeVisible();
+    await expect(
+      page
+        .getByText('Is this still current?', { exact: true })
+        .locator('..')
+        .getByText('Conflicting source instructions', { exact: true }),
+    ).toBeVisible();
     await page.getByRole('link', { name: /Requirement register/ }).click();
     await page.getByRole('link', { name: 'Image-only obligation' }).click();
     await page.getByLabel('Decision').selectOption('needs_follow_up');
     await page.getByLabel('Reviewer note').fill('Confirm with procurement');
     await page.getByRole('button', { name: 'Record review' }).click();
     await expect(page.getByText('Confirm with procurement')).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText('needs follow up').first()).toBeVisible();
+    await expect(page.getByText('Follow-up needed', { exact: true }).first()).toBeVisible();
     const detailUrl = page.url();
     const ctxB = await browser.newContext();
     const pageB = await ctxB.newPage();

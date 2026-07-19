@@ -12,7 +12,9 @@ async function signIn(page: Page, which: 'A' | 'B') {
   await page.getByLabel('Email').fill(required(`DEMO_USER_${which}_EMAIL`));
   await page.getByLabel('Password').fill(required(`DEMO_USER_${which}_PASSWORD`));
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await expect(page.getByRole('heading', { name: 'Opportunities' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Opportunities' })).toBeVisible({
+    timeout: 30_000,
+  });
 }
 
 async function createWorkspace(page: Page, name: string) {

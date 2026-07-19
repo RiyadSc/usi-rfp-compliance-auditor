@@ -385,7 +385,7 @@ test('Phase 5 checklist detects five missing forms and preserves evidence, workf
   await page.getByRole('button', { name: 'Record exception note' }).click();
   await page.getByLabel('Waiver reason').fill('Synthetic waiver request for UI coverage.');
   await page.getByRole('button', { name: 'Request waiver' }).click();
-  await expect(page.getByText(/Pending waiver:/)).toBeVisible();
+  await expect(page.getByText('Pending waiver:', { exact: true })).toBeVisible();
   await expect(page.locator('body')).not.toContainText(
     /\bCompliant\b|\bApproved\b|Safe to submit|Guaranteed complete/i,
   );
