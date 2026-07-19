@@ -2,7 +2,7 @@
 
 The prepared demo is separate synthetic scope `81000000-0000-4000-8000-000000000001`, workspace `81000000-0000-4000-8000-000000000002`, fixture `full-roadmap-known-answer-v1`, and marker `phase8-synthetic-demo-only`. It binds two private PDFs, their hashes, all Phase 4–7 run identities and versions, the Phase 4 fingerprint, report hash, fixture hash, and derived cache key. A missing, stale, cross-workspace, incomplete, parser-failed, version-drifted, or hash-drifted binding is rejected.
 
-`npm run demo:provision:phase8` is deterministic and idempotent. It validates project `uxmxkdjschbekkbnweby`, the authorized synthetic identity, private buckets, and exact source objects before inserting the immutable scope/cache/fallback rows. It never discovers an arbitrary workspace.
+`npm run demo:provision:phase8` is deterministic and idempotent. It validates project `uxmxkdjschbekkbnweby`, the authorized synthetic identity, private buckets, and exact source objects before inserting the immutable scope/cache/fallback rows. On a repeat run it reads the cache by its global cache key and the fallback by its `(scope_id, report_snapshot_id)` key, then reuses either record only when every immutable binding field matches. A mismatch fails closed; immutable rows are never updated or deleted. It never discovers an arbitrary workspace.
 
 `npm run demo:reset:phase8 -- --dry-run` validates the exact scope and returns the expected final-state hash without mutation. `npm run demo:reset:phase8` changes only the mutable presentation state and appends reset/audit history. It never rewrites immutable candidates, findings, checklist structure, proposal audits, reports, exports, provider ledgers, unrelated users, or non-synthetic workspaces.
 

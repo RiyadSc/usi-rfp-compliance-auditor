@@ -59,6 +59,144 @@ async function insert(table: string, values: unknown) {
   if (error) throw new Error(`${table}:${error.message}`);
 }
 
+type ImmutablePhase8CacheEntry = {
+  workspace_id: string;
+  scope_id: string;
+  cache_key: string;
+  report_snapshot_id: string;
+  binding_hash: string;
+  fixture_hash: string;
+  status: 'valid' | 'stale' | 'revoked';
+  cache_version: string;
+};
+
+function assertMatchingImmutableCacheEntry(
+  existing: ImmutablePhase8CacheEntry,
+  expected: ImmutablePhase8CacheEntry,
+) {
+  const fields = [
+    'workspace_id',
+    'scope_id',
+    'cache_key',
+    'report_snapshot_id',
+    'binding_hash',
+    'fixture_hash',
+    'status',
+    'cache_version',
+  ] as const;
+  for (const field of fields) {
+    if (existing[field] !== expected[field]) {
+      throw new Error(`phase8_cache_key_conflict_${field}`);
+    }
+  }
+}
+
+async function ensureImmutablePhase8CacheEntry(expected: ImmutablePhase8CacheEntry) {
+  const columns =
+    'workspace_id,scope_id,cache_key,report_snapshot_id,binding_hash,fixture_hash,status,cache_version';
+  const existing = await admin
+    .from('phase8_demo_cache_entries')
+    .select(columns)
+    .eq('cache_key', expected.cache_key)
+    .maybeSingle<ImmutablePhase8CacheEntry>();
+  if (existing.error) throw new Error(`phase8_demo_cache_entries:${existing.error.message}`);
+  if (existing.data) {
+    assertMatchingImmutableCacheEntry(existing.data, expected);
+    return;
+  }
+
+  const inserted = await admin
+    .from('phase8_demo_cache_entries')
+    .insert(expected)
+    .select(columns)
+    .maybeSingle<ImmutablePhase8CacheEntry>();
+  if (!inserted.error && inserted.data) {
+    assertMatchingImmutableCacheEntry(inserted.data, expected);
+    return;
+  }
+
+  // A concurrent provision may have inserted the immutable entry after our read.
+  const concurrent = await admin
+    .from('phase8_demo_cache_entries')
+    .select(columns)
+    .eq('cache_key', expected.cache_key)
+    .maybeSingle<ImmutablePhase8CacheEntry>();
+  if (concurrent.error || !concurrent.data) {
+    throw new Error(
+      `phase8_demo_cache_entries:${inserted.error?.message ?? concurrent.error?.message ?? 'insert_failed'}`,
+    );
+  }
+  assertMatchingImmutableCacheEntry(concurrent.data, expected);
+}
+
+type ImmutablePhase8Fallback = {
+  workspace_id: string;
+  scope_id: string;
+  report_snapshot_id: string;
+  export_artifact_id: string;
+  content_sha256: string;
+  label: string;
+  status: 'active' | 'revoked';
+  fallback_version: string;
+};
+
+function assertMatchingImmutableFallback(
+  existing: ImmutablePhase8Fallback,
+  expected: ImmutablePhase8Fallback,
+) {
+  const fields = [
+    'workspace_id',
+    'scope_id',
+    'report_snapshot_id',
+    'export_artifact_id',
+    'content_sha256',
+    'label',
+    'status',
+    'fallback_version',
+  ] as const;
+  for (const field of fields) {
+    if (existing[field] !== expected[field]) {
+      throw new Error(`phase8_fallback_conflict_${field}`);
+    }
+  }
+}
+
+async function ensureImmutablePhase8Fallback(expected: ImmutablePhase8Fallback) {
+  const columns =
+    'workspace_id,scope_id,report_snapshot_id,export_artifact_id,content_sha256,label,status,fallback_version';
+  const find = () =>
+    admin
+      .from('phase8_demo_fallbacks')
+      .select(columns)
+      .eq('scope_id', expected.scope_id)
+      .eq('report_snapshot_id', expected.report_snapshot_id)
+      .maybeSingle<ImmutablePhase8Fallback>();
+  const existing = await find();
+  if (existing.error) throw new Error(`phase8_demo_fallbacks:${existing.error.message}`);
+  if (existing.data) {
+    assertMatchingImmutableFallback(existing.data, expected);
+    return;
+  }
+
+  const inserted = await admin
+    .from('phase8_demo_fallbacks')
+    .insert(expected)
+    .select(columns)
+    .maybeSingle<ImmutablePhase8Fallback>();
+  if (!inserted.error && inserted.data) {
+    assertMatchingImmutableFallback(inserted.data, expected);
+    return;
+  }
+
+  const concurrent = await find();
+  if (concurrent.error || !concurrent.data) {
+    throw new Error(
+      `phase8_demo_fallbacks:${inserted.error?.message ?? concurrent.error?.message ?? 'insert_failed'}`,
+    );
+  }
+  assertMatchingImmutableFallback(concurrent.data, expected);
+}
+
 await insert('workspaces', {
   id: PHASE8_DEMO_WORKSPACE_ID,
   name: 'Harbor City Full-Roadmap Synthetic Demo',
@@ -512,7 +650,7 @@ await insert('phase8_demo_scopes', {
   scope_version: manifest.binding.scopeVersion,
   active_mode: 'prepared',
 });
-await insert('phase8_demo_cache_entries', {
+await ensureImmutablePhase8CacheEntry({
   workspace_id: PHASE8_DEMO_WORKSPACE_ID,
   scope_id: PHASE8_DEMO_SCOPE_ID,
   cache_key: manifest.binding.cacheKey,
@@ -522,7 +660,7 @@ await insert('phase8_demo_cache_entries', {
   status: 'valid',
   cache_version: 'phase8-demo-cache-v1',
 });
-await insert('phase8_demo_fallbacks', {
+await ensureImmutablePhase8Fallback({
   workspace_id: PHASE8_DEMO_WORKSPACE_ID,
   scope_id: PHASE8_DEMO_SCOPE_ID,
   report_snapshot_id: PHASE8_REPORT_SNAPSHOT_ID,
