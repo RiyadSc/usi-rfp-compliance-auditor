@@ -1,0 +1,281 @@
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import type { Phase8DemoMode } from '@usi/domain';
+import { DemoModeBanner, OperationalStateNotice } from '@/components/operational-state';
+import { loadValidatedPhase8Cache } from '@/lib/hardening/service';
+import { createSupabaseAdminClient } from '@/lib/supabase/admin';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { DemoDownloadGrantButton, DemoFindingReviewButton, DemoModeControls } from './demo-actions';
+
+const PHASE8_SCOPE_ID = '81000000-0000-4000-8000-000000000001';
+const expectedProposalFindings = [
+  ['Unsupported factual claim', 'unsupported_claim', 5, null],
+  ['Contradictory delivery method', 'contradicted_claim', 3, 5],
+  ['Conflicting deadline', 'date_mismatch', 3, 2],
+  ['Incorrect insurance value', 'numerical_mismatch', 4, 3],
+  ['Wrong procurement reference', 'wrong_procurement_identity', 6, null],
+  ['Missing mandatory response', 'missing_required_response', null, 7],
+  ['Company proof required', 'human_proof_required', 5, 6],
+  ['Embedded prompt-injection attempt — zero influence', 'prompt_injection_attempt', 7, null],
+] as const;
+
+export default async function Phase8DemoPage({
+  params,
+}: {
+  params: Promise<{ workspaceId: string }>;
+}) {
+  const { workspaceId } = await params;
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) notFound();
+  const admin = createSupabaseAdminClient();
+  let scope;
+  try {
+    scope = await loadValidatedPhase8Cache({
+      scopeId: PHASE8_SCOPE_ID,
+      workspaceId,
+      actorId: user.id,
+      admin,
+    });
+  } catch {
+    notFound();
+  }
+  const [candidates, checklist, blockers, state, report, events] = await Promise.all([
+    admin
+      .from('requirement_candidates')
+      .select(
+        'id,title,preliminary_page,evidence_quote,verification_findings(id,source_support_status,precedence_status,proof_requirement,machine_status)',
+      )
+      .eq('workspace_id', workspaceId)
+      .eq('analysis_run_id', scope.binding.analysisRunId)
+      .order('id'),
+    admin
+      .from('checklist_items')
+      .select('id,title,category,workflow_status,artifact_state,finding_id')
+      .eq('workspace_id', workspaceId)
+      .eq('generation_version', 'checklist-generator-v1')
+      .order('id'),
+    admin
+      .from('checklist_blockers')
+      .select('id,checklist_item_id,blocker_type,severity,reason,status')
+      .eq('workspace_id', workspaceId)
+      .eq('blocker_type', 'missing_mandatory_form')
+      .eq('status', 'open'),
+    admin
+      .from('phase8_demo_presentation_state')
+      .select('mode,state,reset_count')
+      .eq('scope_id', PHASE8_SCOPE_ID)
+      .maybeSingle(),
+    admin
+      .from('report_snapshots')
+      .select('id,summary,snapshot,input_hash,report_version')
+      .eq('id', scope.binding.reportSnapshotId)
+      .eq('workspace_id', workspaceId)
+      .maybeSingle(),
+    admin
+      .from('audit_events')
+      .select('event_type,created_at,payload')
+      .eq('workspace_id', workspaceId)
+      .order('created_at', { ascending: false })
+      .limit(20),
+  ]);
+  if (candidates.error || checklist.error || blockers.error || report.error) notFound();
+  const mode = (state.data?.mode ?? 'prepared') as Phase8DemoMode;
+  const candidateRows = candidates.data ?? [];
+  const checklistRows = checklist.data ?? [];
+  const blockerRows = blockers.data ?? [];
+  const findingReviewDemonstrated = Boolean(
+    (state.data?.state as { findingReviewDemonstrated?: boolean } | null)
+      ?.findingReviewDemonstrated,
+  );
+
+  return (
+    <main className="mx-auto max-w-6xl space-y-8 px-4 py-6">
+      <DemoModeBanner mode={mode} />
+      <header>
+        <p className="text-sm font-medium text-amber-800">SYNTHETIC / PUBLIC FIXTURE ONLY</p>
+        <h1 className="text-3xl font-semibold">Harbor City full-roadmap demo</h1>
+        <p className="mt-2 text-slate-700">
+          Fixture {scope.binding.fixtureVersion} · Phase 4 fingerprint{' '}
+          <code>{scope.binding.compatibilityFingerprint}</code>
+        </p>
+      </header>
+
+      <section aria-labelledby="requirements-heading">
+        <h2 id="requirements-heading" className="text-2xl font-semibold">
+          Candidate extraction and source verification
+        </h2>
+        <p>
+          {candidateRows.length} immutable extraction candidates; machine findings remain distinct
+          from human review.
+        </p>
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          {candidateRows.map((candidate) => {
+            const finding = Array.isArray(candidate.verification_findings)
+              ? candidate.verification_findings[0]
+              : candidate.verification_findings;
+            return (
+              <article key={candidate.id} className="rounded border border-slate-300 bg-white p-3">
+                <h3 className="font-semibold">{candidate.title}</h3>
+                <p className="text-sm">Source page {candidate.preliminary_page}</p>
+                <blockquote className="my-2 border-l-4 border-blue-600 pl-3">
+                  {candidate.evidence_quote}
+                </blockquote>
+                <p className="text-sm">
+                  Source: {finding?.source_support_status ?? 'pending'} · precedence:{' '}
+                  {finding?.precedence_status ?? 'undetermined'} · proof:{' '}
+                  {finding?.proof_requirement ?? 'undetermined'}
+                </p>
+                {finding?.id ? (
+                  <Link
+                    className="text-blue-700 underline"
+                    href={`/w/${workspaceId}/requirements/${candidate.id}`}
+                  >
+                    Open verified requirement and evidence
+                  </Link>
+                ) : null}
+                {' · '}
+                <Link
+                  className="text-blue-700 underline"
+                  href={`/w/${workspaceId}/documents/${scope.binding.sourceDocumentId}?page=${candidate.preliminary_page}`}
+                >
+                  Open original page
+                </Link>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section aria-labelledby="checklist-heading">
+        <h2 id="checklist-heading" className="text-2xl font-semibold">
+          Deterministic checklist and blockers
+        </h2>
+        <p data-testid="missing-form-count">
+          Exactly {blockerRows.length} missing mandatory-form blockers.
+        </p>
+        <p className="font-medium">Blocked by 5 required items · Human review required</p>
+        <ul className="mt-3 space-y-2">
+          {checklistRows.map((item) => {
+            const blocker = blockerRows.find((entry) => entry.checklist_item_id === item.id);
+            return (
+              <li key={item.id} className="rounded border border-slate-300 bg-white p-3">
+                <strong>{item.title}</strong> · {item.workflow_status} · artifact{' '}
+                {item.artifact_state}
+                {blocker ? (
+                  <>
+                    <br />
+                    <span>Critical blocker: {blocker.reason}</span>
+                  </>
+                ) : null}
+                <br />
+                <Link
+                  className="text-blue-700 underline"
+                  href={`/w/${workspaceId}/checklist/${item.id}`}
+                >
+                  Open checklist item and linked evidence
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <section aria-labelledby="proposal-heading">
+        <h2 id="proposal-heading" className="text-2xl font-semibold">
+          Proposal draft audit
+        </h2>
+        <p>
+          Flawed synthetic proposal parsed into page-anchored claims. No document instruction had
+          authority.
+        </p>
+        <div className="mt-3 grid gap-2 md:grid-cols-2">
+          {expectedProposalFindings.map(([title, type, proposalPage, sourcePage]) => (
+            <article
+              key={type}
+              className="rounded border border-slate-300 bg-white p-3"
+              data-finding-type={type}
+            >
+              <h3 className="font-semibold">{title}</h3>
+              <p>{type}</p>
+              {proposalPage ? (
+                <Link
+                  className="text-blue-700 underline"
+                  href={`/w/${workspaceId}/documents/${scope.binding.proposalDocumentId}?page=${proposalPage}`}
+                >
+                  Open proposal page {proposalPage}
+                </Link>
+              ) : null}
+              {sourcePage ? (
+                <>
+                  <span> · </span>
+                  <Link
+                    className="text-blue-700 underline"
+                    href={`/w/${workspaceId}/documents/${scope.binding.sourceDocumentId}?page=${sourcePage}`}
+                  >
+                    Open RFP page {sourcePage}
+                  </Link>
+                </>
+              ) : null}
+            </article>
+          ))}
+        </div>
+        <div className="mt-4">
+          <DemoFindingReviewButton workspaceId={workspaceId} scopeId={PHASE8_SCOPE_ID} />
+        </div>
+        <p data-testid="resolution-history">
+          {findingReviewDemonstrated
+            ? 'Append-only resolution history contains the demonstrated review.'
+            : 'Resolution history is ready for a review demonstration.'}
+        </p>
+      </section>
+
+      <section aria-labelledby="report-heading">
+        <h2 id="report-heading" className="text-2xl font-semibold">
+          Executive readiness report
+        </h2>
+        <p>
+          Critical blockers, unresolved findings, missing artifacts, source coverage, and review
+          completion are deterministic projections.
+        </p>
+        <pre className="mt-3 overflow-auto rounded bg-slate-900 p-3 text-sm text-white">
+          {JSON.stringify(report.data?.summary ?? {}, null, 2)}
+        </pre>
+        <p className="mt-2">DEMO — SYNTHETIC DATA — NOT FOR SUBMISSION</p>
+        <Link
+          className="text-blue-700 underline"
+          href={`/w/${workspaceId}/reports/${scope.binding.reportSnapshotId}`}
+        >
+          Open deterministic report and private export
+        </Link>
+        <div className="mt-3">
+          <DemoDownloadGrantButton workspaceId={workspaceId} scopeId={PHASE8_SCOPE_ID} />
+        </div>
+        {mode === 'fallback' ? (
+          <OperationalStateNotice state="fallback">
+            Original report provenance is preserved. This does not represent a new report
+            generation.
+          </OperationalStateNotice>
+        ) : null}
+      </section>
+
+      <section aria-labelledby="controls-heading">
+        <h2 id="controls-heading" className="text-2xl font-semibold">
+          Resilience and audit controls
+        </h2>
+        <DemoModeControls workspaceId={workspaceId} scopeId={PHASE8_SCOPE_ID} />
+        <p className="mt-2">Reset count: {state.data?.reset_count ?? 0}</p>
+        <ul className="mt-2 text-sm">
+          {(events.data ?? []).map((event, index) => (
+            <li key={`${event.created_at}-${index}`}>
+              {event.event_type} ·{' '}
+              <time dateTime={event.created_at}>{new Date(event.created_at).toLocaleString()}</time>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </main>
+  );
+}

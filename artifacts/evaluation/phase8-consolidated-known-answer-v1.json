@@ -1,0 +1,342 @@
+{
+  "artifactVersion": "phase8-consolidated-evaluation-v1",
+  "generatedAt": "2026-07-19T06:31:09.521Z",
+  "provider": { "name": "MockProvider", "calls": 0, "spendUsd": 0 },
+  "fixtures": {
+    "phase4": "verification-cases-v2",
+    "phase5": "checklist-five-missing-forms-v1",
+    "phase6": "proposal-audit-known-answer-v1",
+    "phase7": "reporting-known-answer-v1"
+  },
+  "expected": {
+    "metrics": "all accuracy/validity/adherence values 1; all dangerous counts 0",
+    "missingForms": ["Form A-1", "Form B-2", "Form C-3", "Form D-4", "Form E-5"]
+  },
+  "actual": {
+    "metrics": {
+      "criticalFalseSupported": 0,
+      "criticalFalseActive": 0,
+      "criticalFalseConsistent": 0,
+      "falseBlockers": 0,
+      "falseMissingForms": 0,
+      "falseMissingResponses": 0,
+      "falseMerges": 0,
+      "destructiveMerges": 0,
+      "injectionInfluence": 0,
+      "crossWorkspaceLeaks": 0,
+      "unauthorizedDownloads": 0,
+      "prohibitedLanguageViolations": 0,
+      "csvInjectionVulnerabilities": 0,
+      "evidenceValidity": 1,
+      "citationValidity": 1,
+      "provenanceValidity": 1,
+      "schemaAdherence": 1,
+      "knownAnswerCaseAccuracy": 1
+    },
+    "missingForms": ["Form A-1", "Form B-2", "Form C-3", "Form D-4", "Form E-5"],
+    "phase4": {
+      "evaluatorVersion": "verification-evaluator-v3",
+      "totalCases": 24,
+      "sourceStatusAccuracy": 1,
+      "supportedPrecision": 1,
+      "criticalFalseSupported": 0,
+      "precedenceAccuracy": 1,
+      "criticalFalseActive": 0,
+      "dateAccuracy": 1,
+      "numberAccuracy": 1,
+      "quoteValidity": 1,
+      "citationAccuracy": 1,
+      "retrievalRecall": 1,
+      "parserUncertainAccuracy": 1,
+      "proofRequirementAccuracy": 1,
+      "duplicatePrecision": 1,
+      "duplicateRecall": 1,
+      "falseMergeCount": 0,
+      "injectionInfluence": 0,
+      "schemaAdherence": 1,
+      "allLayerSchemaAdherence": 1,
+      "schemaLayers": {
+        "passA": 1,
+        "passB": 1,
+        "duplicateClassifier": 1,
+        "decisionEngine": 1,
+        "evaluationArtifact": 1
+      },
+      "firstPassSchemaLayers": { "passA": 1, "passB": 1, "duplicateClassifier": 1 },
+      "refusalIncompleteCount": 0,
+      "perClass": [
+        { "status": "supported", "precision": 1, "recall": 1, "f1": 1 },
+        { "status": "partially_supported", "precision": 1, "recall": 1, "f1": 1 },
+        { "status": "unsupported", "precision": 1, "recall": 1, "f1": 1 },
+        { "status": "contradicted", "precision": 1, "recall": 1, "f1": 1 },
+        { "status": "parser_uncertain", "precision": 1, "recall": 1, "f1": 1 }
+      ],
+      "finalStatusVector": [
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000001",
+          "passA": "entails",
+          "passB": "no_material_objection",
+          "status": "supported",
+          "precedence": "active",
+          "dateComparison": "match",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000002",
+          "passA": "entails",
+          "passB": "no_material_objection",
+          "status": "supported",
+          "precedence": "active",
+          "dateComparison": "unavailable",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000003",
+          "passA": "entails",
+          "passB": "no_material_objection",
+          "status": "supported",
+          "precedence": "active",
+          "dateComparison": "unavailable",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000004",
+          "passA": "partially_entails",
+          "passB": "not_invoked",
+          "status": "partially_supported",
+          "precedence": "active",
+          "dateComparison": "match",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000005",
+          "passA": "partially_entails",
+          "passB": "not_invoked",
+          "status": "partially_supported",
+          "precedence": "active",
+          "dateComparison": "unavailable",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000006",
+          "passA": "insufficient",
+          "passB": "not_invoked",
+          "status": "unsupported",
+          "precedence": "undetermined",
+          "dateComparison": "unavailable",
+          "numberComparison": "uncertain"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000007",
+          "passA": "contradicts",
+          "passB": "not_invoked",
+          "status": "contradicted",
+          "precedence": "active",
+          "dateComparison": "unavailable",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000008",
+          "passA": "entails",
+          "passB": "no_material_objection",
+          "status": "supported",
+          "precedence": "active",
+          "dateComparison": "match",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000009",
+          "passA": "contradicts",
+          "passB": "not_invoked",
+          "status": "contradicted",
+          "precedence": "active",
+          "dateComparison": "mismatch",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000010",
+          "passA": "entails",
+          "passB": "no_material_objection",
+          "status": "supported",
+          "precedence": "active",
+          "dateComparison": "unavailable",
+          "numberComparison": "match"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000011",
+          "passA": "contradicts",
+          "passB": "not_invoked",
+          "status": "contradicted",
+          "precedence": "active",
+          "dateComparison": "unavailable",
+          "numberComparison": "mismatch"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000012",
+          "passA": "entails",
+          "passB": "no_material_objection",
+          "status": "supported",
+          "precedence": "superseded",
+          "dateComparison": "unavailable",
+          "numberComparison": "match"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000013",
+          "passA": "entails",
+          "passB": "no_material_objection",
+          "status": "supported",
+          "precedence": "active",
+          "dateComparison": "unavailable",
+          "numberComparison": "match"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000014",
+          "passA": "contradicts",
+          "passB": "not_invoked",
+          "status": "contradicted",
+          "precedence": "active",
+          "dateComparison": "mismatch",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000015",
+          "passA": "entails",
+          "passB": "no_material_objection",
+          "status": "supported",
+          "precedence": "active",
+          "dateComparison": "unavailable",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000016",
+          "passA": "entails",
+          "passB": "no_material_objection",
+          "status": "supported",
+          "precedence": "active",
+          "dateComparison": "unavailable",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000017",
+          "passA": "entails",
+          "passB": "no_material_objection",
+          "status": "supported",
+          "precedence": "active",
+          "dateComparison": "unavailable",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000018",
+          "passA": "entails",
+          "passB": "no_material_objection",
+          "status": "supported",
+          "precedence": "active",
+          "dateComparison": "unavailable",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000019",
+          "passA": "parser_uncertain",
+          "passB": "not_invoked",
+          "status": "parser_uncertain",
+          "precedence": "undetermined",
+          "dateComparison": "unavailable",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000020",
+          "passA": "entails",
+          "passB": "no_material_objection",
+          "status": "supported",
+          "precedence": "active",
+          "dateComparison": "unavailable",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000021",
+          "passA": "contradicts",
+          "passB": "not_invoked",
+          "status": "contradicted",
+          "precedence": "active",
+          "dateComparison": "unavailable",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000022",
+          "passA": "insufficient",
+          "passB": "not_invoked",
+          "status": "unsupported",
+          "precedence": "undetermined",
+          "dateComparison": "unavailable",
+          "numberComparison": "unavailable"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000023",
+          "passA": "entails",
+          "passB": "no_material_objection",
+          "status": "supported",
+          "precedence": "conflicting",
+          "dateComparison": "unavailable",
+          "numberComparison": "match"
+        },
+        {
+          "candidateId": "20000000-0000-4000-8000-000000000024",
+          "passA": "entails",
+          "passB": "no_material_objection",
+          "status": "supported",
+          "precedence": "conflicting",
+          "dateComparison": "unavailable",
+          "numberComparison": "match"
+        }
+      ]
+    },
+    "phase6": {
+      "caseAccuracy": 1,
+      "responseCoverageAccuracy": 1,
+      "claimSupportAccuracy": 1,
+      "dateAccuracy": 1,
+      "numericalAccuracy": 1,
+      "criticalContradictionPrecision": 1,
+      "criticalContradictionRecall": 1,
+      "missingResponsePrecision": 1,
+      "missingResponseRecall": 1,
+      "unsupportedClaimPrecision": 1,
+      "humanProofClassificationAccuracy": 1,
+      "insuranceAndDateAccuracy": 1,
+      "evidenceValidity": 1,
+      "citationValidity": 1,
+      "criticalFalseSupported": 0,
+      "criticalFalseConsistent": 0,
+      "falseMerges": 0,
+      "injectionInfluence": 0,
+      "wrongProcurementDetectionAccuracy": 1,
+      "crossWorkspaceLeaks": 0,
+      "destructiveMerges": 0,
+      "schemaAdherence": 1
+    },
+    "phase7": {
+      "executiveSummaryAccuracy": 1,
+      "criticalBlockerPrecision": 1,
+      "criticalBlockerRecall": 1,
+      "unresolvedFindingAccuracy": 1,
+      "missingArtifactPrecision": 1,
+      "missingArtifactRecall": 1,
+      "missingFormPrecision": 1,
+      "missingFormRecall": 1,
+      "reviewCompletionAccuracy": 1,
+      "sourceCoverageAccuracy": 1,
+      "exportRowAccuracy": 1,
+      "evidenceLinkValidity": 1,
+      "provenanceValidity": 1,
+      "demoWatermarkAccuracy": 1,
+      "structuredReportSectionAccuracy": 1,
+      "falseMissingArtifacts": 0,
+      "prohibitedLanguageViolations": 0,
+      "csvInjectionVulnerabilities": 0,
+      "crossWorkspaceLeaks": 0,
+      "unauthorizedDownloads": 0,
+      "destructiveOverwrites": 0,
+      "providerCalls": 0
+    }
+  }
+}

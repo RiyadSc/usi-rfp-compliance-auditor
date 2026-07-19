@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   quality-gates:
@@ -26,5 +27,34 @@ jobs:
       - run: npm run format:check
       - run: npm run typecheck
       - run: npm run test:unit
+      - run: npm run eval:mock:phase8
+      - run: npm run check:dependencies
       - run: npm run build
       - run: npm run check:secrets
+
+  controlled-supabase-and-browser:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.DEMO_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.DEMO_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.DEMO_SUPABASE_SERVICE_ROLE_KEY }}
+      DATABASE_URL: ${{ secrets.DEMO_DATABASE_URL }}
+      DEMO_USER_A_EMAIL: ${{ secrets.DEMO_USER_A_EMAIL }}
+      DEMO_USER_A_PASSWORD: ${{ secrets.DEMO_USER_A_PASSWORD }}
+      DEMO_USER_B_EMAIL: ${{ secrets.DEMO_USER_B_EMAIL }}
+      DEMO_USER_B_PASSWORD: ${{ secrets.DEMO_USER_B_PASSWORD }}
+      OPENAI_API_KEY: ''
+      PHASE4_LIVE_VERIFICATION_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:integration
+      # Fresh process/server per spec prevents auth-session or dev-server state reuse.
+      - run: npm run test:e2e:isolated -- --exclude-demo-critical
+      - run: npx playwright test --grep @demo-critical --workers=1

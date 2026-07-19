@@ -41,9 +41,15 @@ import {
   findExplicitPrecedenceRelationships,
   generateDuplicatePairCandidates,
   runCandidateVerificationPipeline,
+  createProvider,
 } from '../../packages/ai/src/index.js';
 
 describe('candidate schema', () => {
+  it('does not construct a paid provider from key presence alone', () => {
+    expect(createProvider({ OPENAI_API_KEY: 'synthetic-key-never-used' })).toBeInstanceOf(
+      MockProvider,
+    );
+  });
   it('rejects verified status', () => {
     const result = requirementCandidateSchema.safeParse({
       id: '00000000-0000-4000-8000-000000000001',

@@ -1,0 +1,60 @@
+{
+  "artifactVersion": "phase8-performance-v1",
+  "fixtureVersion": "full-roadmap-known-answer-v1",
+  "rehearsals": 3,
+  "providerCalls": 0,
+  "totalsMs": [19735, 20361, 19733],
+  "totalSummaryMs": { "minimum": 19733, "maximum": 20361, "mean": 19943, "range": 628 },
+  "steps": {
+    "reset": { "values": [68, 84, 71], "minimum": 68, "maximum": 84, "mean": 74 },
+    "sign_in_and_workspace": {
+      "values": [3477, 3444, 3929],
+      "minimum": 3444,
+      "maximum": 3929,
+      "mean": 3617
+    },
+    "requirements_and_evidence": {
+      "values": [3976, 3960, 3479],
+      "minimum": 3479,
+      "maximum": 3976,
+      "mean": 3805
+    },
+    "checklist_and_missing_forms": {
+      "values": [2065, 1967, 2057],
+      "minimum": 1967,
+      "maximum": 2065,
+      "mean": 2030
+    },
+    "proposal_audit": {
+      "values": [2488, 2697, 2450],
+      "minimum": 2450,
+      "maximum": 2697,
+      "mean": 2545
+    },
+    "report_export_and_audit": {
+      "values": [4032, 4599, 3996],
+      "minimum": 3996,
+      "maximum": 4599,
+      "mean": 4209
+    },
+    "fallback_and_language_policy": {
+      "values": [900, 913, 914],
+      "minimum": 900,
+      "maximum": 914,
+      "mean": 909
+    },
+    "cross_workspace_denial": {
+      "values": [1944, 1959, 2042],
+      "minimum": 1944,
+      "maximum": 2042,
+      "mean": 1982
+    }
+  },
+  "interpretation": {
+    "resetBudgetMs": 30000,
+    "presentationBudgetMs": 180000,
+    "resetPassed": true,
+    "presentationPassed": true,
+    "note": "Multi-navigation rehearsal steps are not single-route measurements. Sign-in/workspace and report/export steps use a documented 5-second composite budget; route-level server telemetry remains privacy-safe and separate."
+  }
+}

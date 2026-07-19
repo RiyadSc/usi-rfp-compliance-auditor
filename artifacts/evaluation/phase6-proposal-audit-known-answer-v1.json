@@ -1,6 +1,6 @@
 {
   "fixtureVersion": "proposal-audit-known-answer-v1",
-  "generatedAt": "2026-07-19T03:10:39.242Z",
+  "generatedAt": "2026-07-19T06:31:09.168Z",
   "versions": {
     "sectionParser": "proposal-section-parser-v1",
     "claimSegmenter": "proposal-claim-segmenter-v1",

@@ -18,6 +18,11 @@ const PATTERNS = [
   { name: 'OpenAI-style API key', regex: /sk-[A-Za-z0-9_-]{20,}/ },
   { name: 'Anthropic API key', regex: /sk-ant-[A-Za-z0-9_-]{10,}/ },
   { name: 'AWS access key id', regex: /AKIA[0-9A-Z]{16}/ },
+  {
+    name: 'Bearer authorization value',
+    regex: /authorization["']?\s*[:=]\s*["']Bearer\s+[A-Za-z0-9._-]{20,}/i,
+  },
+  { name: 'Signed URL token', regex: /[?&](?:token|signature|sig)=[A-Za-z0-9._~-]{20,}/i },
   { name: 'Password assignment with literal', regex: /PASSWORD\s*=\s*['"][^'"$]{8,}['"]/i },
 ];
 
@@ -38,7 +43,7 @@ const untracked = execSync('git ls-files --others --exclude-standard', { encodin
   .filter(Boolean);
 const repositoryFiles = [...new Set([...tracked, ...untracked])];
 for (const file of repositoryFiles) {
-  if (/\.(pdf|png|jpg|jpeg|gif|webp|woff2?)$/.test(file)) continue;
+  if (/\.(pdf|png|jpg|jpeg|gif|webp|woff2?|zip|mp4|webm)$/.test(file)) continue;
   try {
     scanContent(readFileSync(file, 'utf8'), file);
   } catch {
