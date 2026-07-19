@@ -1,0 +1,196 @@
+{
+  "fixtureVersion": "reporting-known-answer-v1",
+  "generatedAt": "2026-07-19T04:21:17.183Z",
+  "versions": {
+    "input": "report-input-v1",
+    "aggregation": "report-aggregation-v1",
+    "schema": "report-schema-v1",
+    "executive": "executive-readiness-report-v1"
+  },
+  "expected": {
+    "requiredItems": 10,
+    "completedRequiredItems": 3,
+    "criticalBlockers": 8,
+    "blockingIssues": 4,
+    "warnings": 3,
+    "unresolvedRequirements": 2,
+    "unresolvedProposalFindings": 7,
+    "missingArtifacts": 6,
+    "humanProofCount": 2,
+    "humanReviewPending": 9,
+    "reviewedFindings": 2,
+    "criticalBlockerRows": 12,
+    "unresolvedRows": 16,
+    "phase4Review": {
+      "numerator": 6,
+      "denominator": 8,
+      "ratio": 0.75
+    },
+    "phase5Review": {
+      "numerator": 3,
+      "denominator": 10,
+      "ratio": 0.3
+    },
+    "phase6Review": {
+      "numerator": 2,
+      "denominator": 9,
+      "ratio": 0.2222222222222222
+    },
+    "sourceCoverage": {
+      "activeRequirements": {
+        "numerator": 6,
+        "denominator": 7,
+        "ratio": 0.8571428571428571
+      },
+      "checklistEvidence": {
+        "numerator": 10,
+        "denominator": 10,
+        "ratio": 1
+      },
+      "proposalClaimPages": {
+        "numerator": 8,
+        "denominator": 8,
+        "ratio": 1
+      },
+      "criticalFindingEvidence": {
+        "numerator": 5,
+        "denominator": 5,
+        "ratio": 1
+      },
+      "humanProofAvailability": {
+        "numerator": 0,
+        "denominator": 1,
+        "ratio": 0
+      }
+    },
+    "demoWatermark": "DEMO — SYNTHETIC DATA — NOT FOR SUBMISSION"
+  },
+  "actual": {
+    "summary": {
+      "projectName": "Harbor City Reporting Demo",
+      "procurementTitle": "Harbor City Security Services",
+      "solicitationNumber": "HC-2027-14",
+      "proposalRevision": 2,
+      "analysisTimestamp": "2027-09-01T12:00:00.000Z",
+      "readinessState": "blocked",
+      "readinessSummary": "Blocked by 7 required items",
+      "requiredItems": 10,
+      "completedRequiredItems": 3,
+      "criticalBlockers": 8,
+      "blockingIssues": 4,
+      "warnings": 3,
+      "unresolvedRequirements": 2,
+      "unresolvedProposalFindings": 7,
+      "missingArtifacts": 6,
+      "humanProofCount": 2,
+      "humanReviewPending": 9,
+      "reviewedFindings": 2,
+      "sourceCoverage": {
+        "numerator": 6,
+        "denominator": 7,
+        "ratio": 0.8571428571428571,
+        "denominatorDescription": "All non-superseded Phase 4 requirements in the selected verification run."
+      },
+      "scope": "Analysis 71000000-0000-4000-0800-000000000001; verification 71000000-0000-4000-0800-000000000002; checklist 71000000-0000-4000-0800-000000000003; proposal audit 71000000-0000-4000-0800-000000000005."
+    },
+    "criticalBlockerRows": 12,
+    "unresolvedRows": 16,
+    "missingArtifacts": 6,
+    "reviewCompletion": {
+      "phase4": {
+        "numerator": 6,
+        "denominator": 8,
+        "ratio": 0.75,
+        "denominatorDescription": "All Phase 4 findings in the selected verification run."
+      },
+      "phase5": {
+        "numerator": 3,
+        "denominator": 10,
+        "ratio": 0.3,
+        "denominatorDescription": "All active checklist items in the selected generation."
+      },
+      "phase6": {
+        "numerator": 2,
+        "denominator": 9,
+        "ratio": 0.2222222222222222,
+        "denominatorDescription": "All proposal findings in the selected audit run."
+      }
+    },
+    "sourceCoverage": {
+      "activeRequirements": {
+        "numerator": 6,
+        "denominator": 7,
+        "ratio": 0.8571428571428571,
+        "denominatorDescription": "All non-superseded Phase 4 requirements in the selected verification run."
+      },
+      "checklistEvidence": {
+        "numerator": 10,
+        "denominator": 10,
+        "ratio": 1,
+        "denominatorDescription": "All active, non-excluded checklist items in the selected generation."
+      },
+      "proposalClaimPages": {
+        "numerator": 8,
+        "denominator": 8,
+        "ratio": 1,
+        "denominatorDescription": "All persisted atomic claims in the selected proposal audit."
+      },
+      "criticalFindingEvidence": {
+        "numerator": 5,
+        "denominator": 5,
+        "ratio": 1,
+        "denominatorDescription": "All critical or blocking proposal findings, using evidence required by finding type."
+      },
+      "humanProofAvailability": {
+        "numerator": 0,
+        "denominator": 1,
+        "ratio": 0,
+        "denominatorDescription": "All proposal claims explicitly classified as requiring human proof."
+      },
+      "missingSourcePages": 1,
+      "parserUncertainPages": 1,
+      "excludedSupersededSources": 1
+    },
+    "csvRows": 8,
+    "reportSections": [
+      "Executive summary",
+      "Critical and blocking items",
+      "Unresolved findings",
+      "Missing artifacts",
+      "Source requirements",
+      "Review completion",
+      "Source coverage",
+      "Methodology and provenance"
+    ],
+    "demoWatermark": "DEMO — SYNTHETIC DATA — NOT FOR SUBMISSION",
+    "inputHash": "1fc80b182b8b0820dbbd49f2801825adbb311b94e664ee123e2f223822efc7bf"
+  },
+  "metrics": {
+    "executiveSummaryAccuracy": 1,
+    "criticalBlockerPrecision": 1,
+    "criticalBlockerRecall": 1,
+    "unresolvedFindingAccuracy": 1,
+    "missingArtifactPrecision": 1,
+    "missingArtifactRecall": 1,
+    "missingFormPrecision": 1,
+    "missingFormRecall": 1,
+    "reviewCompletionAccuracy": 1,
+    "sourceCoverageAccuracy": 1,
+    "exportRowAccuracy": 1,
+    "evidenceLinkValidity": 1,
+    "provenanceValidity": 1,
+    "demoWatermarkAccuracy": 1,
+    "structuredReportSectionAccuracy": 1,
+    "falseMissingArtifacts": 0,
+    "prohibitedLanguageViolations": 0,
+    "csvInjectionVulnerabilities": 0,
+    "crossWorkspaceLeaks": 0,
+    "unauthorizedDownloads": 0,
+    "destructiveOverwrites": 0,
+    "providerCalls": 0
+  },
+  "provider": {
+    "calls": 0,
+    "costUsd": 0
+  }
+}

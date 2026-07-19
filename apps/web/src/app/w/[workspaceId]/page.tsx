@@ -89,6 +89,13 @@ export default async function WorkspaceOverviewPage({
         >
           Open proposal audit →
         </Link>
+        <span className="mx-3 text-slate-300">|</span>
+        <Link
+          href={`/w/${workspaceId}/reports`}
+          className="text-sm font-medium text-blue-700 hover:underline"
+        >
+          Open reports and exports →
+        </Link>
       </section>
 
       <section aria-labelledby="audit-heading">
