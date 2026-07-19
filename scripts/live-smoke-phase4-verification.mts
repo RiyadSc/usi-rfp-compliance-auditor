@@ -13,6 +13,7 @@ import {
   computeSyntheticDocumentSetHash,
   computeSyntheticExpectedAnswersHash,
   computePhase4SmokeRunInputHash,
+  computePhase4SmokeProcessingJobInputHash,
   assertNextPhase4SyntheticSmokeRunVersion,
   validatePhase4SyntheticSmokePreflight,
   type Phase4SyntheticSmokeSnapshot,
@@ -35,8 +36,17 @@ const required = (name: string) => {
 };
 
 const dryRunProviderBoundary = process.argv.includes('--dry-run-provider-boundary');
+const reconcileSetupOnly = process.argv.includes('--reconcile-setup-only');
 const requestedVerificationVersion = Number(required('--verification-version'));
-if (dryRunProviderBoundary) {
+if (reconcileSetupOnly) {
+  if (
+    process.env.PHASE4_SMOKE_RECONCILE !== '1' ||
+    process.env.PHASE4_LIVE_SMOKE === '1' ||
+    dryRunProviderBoundary
+  ) {
+    throw new Error('phase4_synthetic_smoke_preflight_failed:invalid_reconcile_mode');
+  }
+} else if (dryRunProviderBoundary) {
   if (process.env.PHASE4_SMOKE_DRY_RUN !== '1' || process.env.PHASE4_LIVE_SMOKE === '1')
     throw new Error('phase4_synthetic_smoke_preflight_failed:invalid_dry_run_mode');
 } else if (process.env.PHASE4_LIVE_SMOKE !== '1') {
@@ -47,7 +57,7 @@ const remediationCeiling = Number(process.env.PHASE4_REMEDIATION_SPEND_CEILING_U
 const smokeMaximum = Number(process.env.PHASE4_SMOKE_MAX_USD);
 if (phase4Ceiling !== 15 || remediationCeiling !== 12 || smokeMaximum <= 0 || smokeMaximum > 0.75)
   throw new Error('phase4_synthetic_smoke_preflight_failed:invalid_budget_configuration');
-if (!dryRunProviderBoundary && !process.env.OPENAI_API_KEY)
+if (!dryRunProviderBoundary && !reconcileSetupOnly && !process.env.OPENAI_API_KEY)
   throw new Error('phase4_synthetic_smoke_preflight_failed:openai_api_key_missing');
 
 const request = {
@@ -217,6 +227,101 @@ if (existingVersionsResult.error) {
     `phase4_synthetic_smoke_preflight_failed:database:${existingVersionsResult.error.message}`,
   );
 }
+const processingJobInputHash = computePhase4SmokeProcessingJobInputHash(
+  inputHash,
+  requestedVerificationVersion,
+);
+
+if (reconcileSetupOnly) {
+  const { data: setupRun, error: setupRunError } = await admin
+    .from('verification_runs')
+    .select('*')
+    .eq('analysis_run_id', request.analysisRunId)
+    .eq('input_hash', inputHash)
+    .eq('version', requestedVerificationVersion)
+    .maybeSingle();
+  if (setupRunError) {
+    throw new Error(`phase4_synthetic_smoke_preflight_failed:database:${setupRunError.message}`);
+  }
+  if (
+    !setupRun ||
+    setupRun.workspace_id !== request.workspaceId ||
+    setupRun.status !== 'queued' ||
+    setupRun.started_at !== null ||
+    setupRun.completed_at !== null ||
+    setupRun.provider !== null ||
+    setupRun.model !== null ||
+    Number(setupRun.finding_count) !== 0 ||
+    Number(setupRun.estimated_cost_usd) !== 0 ||
+    setupRun.compatibility_fingerprint !== preflight.assertedCompatibilityFingerprint ||
+    Number(setupRun.candidate_count) !== candidates.length
+  ) {
+    throw new Error('phase4_synthetic_smoke_preflight_failed:run_not_setup_only');
+  }
+  const [calls, findings, passes, jobs, ledger, completedAudits] = await Promise.all([
+    admin.from('model_calls').select('id').eq('verification_run_id', setupRun.id),
+    admin.from('verification_findings').select('id').eq('verification_run_id', setupRun.id),
+    admin.from('verification_pass_results').select('id').eq('verification_run_id', setupRun.id),
+    admin.from('processing_jobs').select('id').eq('input_hash', processingJobInputHash),
+    admin.from('spend_ledger').select('id').ilike('note', `%${setupRun.id}%`),
+    admin
+      .from('audit_events')
+      .select('id')
+      .eq('entity_id', setupRun.id)
+      .eq('event_type', 'verification_completed'),
+  ]);
+  for (const result of [calls, findings, passes, jobs, ledger, completedAudits]) {
+    if (result.error) {
+      throw new Error(`phase4_synthetic_smoke_preflight_failed:database:${result.error.message}`);
+    }
+    if ((result.data ?? []).length !== 0) {
+      throw new Error('phase4_synthetic_smoke_preflight_failed:run_has_execution_records');
+    }
+  }
+  const completedAt = new Date().toISOString();
+  const { error: reconcileError } = await admin
+    .from('verification_runs')
+    .update({
+      status: 'failed',
+      error_category: 'smoke_setup_failed',
+      error_detail: 'Processing-job setup failed before provider construction.',
+      completed_at: completedAt,
+    })
+    .eq('id', setupRun.id)
+    .eq('status', 'queued');
+  if (reconcileError) {
+    throw new Error(`phase4_synthetic_smoke_preflight_failed:database:${reconcileError.message}`);
+  }
+  const { error: auditError } = await admin.from('audit_events').insert({
+    workspace_id: request.workspaceId,
+    actor_type: 'system',
+    actor_id: null,
+    event_type: 'verification_failed',
+    entity_type: 'verification_run',
+    entity_id: setupRun.id,
+    payload: {
+      category: 'smoke_setup_failed',
+      reconciled: true,
+      provider_constructed: false,
+      provider_called: false,
+    },
+  });
+  if (auditError) {
+    throw new Error(`phase4_synthetic_smoke_preflight_failed:database:${auditError.message}`);
+  }
+  console.info(
+    JSON.stringify({
+      reportVersion: 'phase4-production-worker-smoke-setup-reconciliation-v1',
+      verificationRunId: setupRun.id,
+      verificationVersion: requestedVerificationVersion,
+      status: 'failed',
+      providerConstructed: false,
+      providerCalled: false,
+      completedAt,
+    }),
+  );
+  process.exit(0);
+}
 const verificationVersion = assertNextPhase4SyntheticSmokeRunVersion(
   requestedVerificationVersion,
   (existingVersionsResult.data ?? []).map((row) => Number(row.version)),
@@ -281,10 +386,35 @@ const { error: jobInsertError } = await admin.from('processing_jobs').insert({
   document_id: snapshot.analysisRun!.documentId,
   stage: 'verify',
   status: 'queued',
-  input_hash: inputHash,
+  input_hash: processingJobInputHash,
   max_attempts: 1,
 });
-if (jobInsertError) throw new Error(`phase4_smoke_setup_failed:${jobInsertError.message}`);
+if (jobInsertError) {
+  const completedAt = new Date().toISOString();
+  await admin
+    .from('verification_runs')
+    .update({
+      status: 'failed',
+      error_category: 'smoke_setup_failed',
+      error_detail: jobInsertError.message.slice(0, 500),
+      completed_at: completedAt,
+    })
+    .eq('id', verificationRunId);
+  await admin.from('audit_events').insert({
+    workspace_id: request.workspaceId,
+    actor_type: 'system',
+    actor_id: null,
+    event_type: 'verification_failed',
+    entity_type: 'verification_run',
+    entity_id: verificationRunId,
+    payload: {
+      category: 'smoke_setup_failed',
+      provider_constructed: false,
+      provider_called: false,
+    },
+  });
+  throw new Error(`phase4_smoke_setup_failed:${jobInsertError.message}`);
+}
 
 const { handleVerifyJob } = await import('../apps/worker/src/verify-requirements.ts');
 await handleVerifyJob({
@@ -292,6 +422,7 @@ await handleVerifyJob({
   analysisRunId: request.analysisRunId,
   verificationRunId,
   processingJobId,
+  processingJobInputHash,
 });
 
 const [

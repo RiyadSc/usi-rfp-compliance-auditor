@@ -10,6 +10,7 @@ import {
   PHASE4_COMPLETE_SYNTHETIC_SCOPE_VERSION,
   assertNextPhase4SyntheticSmokeRunVersion,
   computePhase4SmokeRunInputHash,
+  computePhase4SmokeProcessingJobInputHash,
   computeSyntheticCandidateSetHash,
   computeSyntheticDocumentSetHash,
   runAfterPhase4SyntheticSmokePreflight,
@@ -167,6 +168,30 @@ describe('synthetic-only smoke preflight', () => {
   it('fails closed when persisted versions are malformed', () => {
     expect(() => assertNextPhase4SyntheticSmokeRunVersion(2, [Number.NaN])).toThrow(
       /invalid_existing_verification_run_version/,
+    );
+  });
+
+  it('derives a distinct deterministic processing-job identity for each run version', () => {
+    const inputHash = computePhase4SmokeRunInputHash({
+      analysisRunId: request.analysisRunId,
+      candidateSetHash: request.expectedCandidateSetHash,
+      compatibilityFingerprint: request.expectedCompatibilityFingerprint,
+    });
+    const versionOne = computePhase4SmokeProcessingJobInputHash(inputHash, 1);
+    const versionTwo = computePhase4SmokeProcessingJobInputHash(inputHash, 2);
+    expect(versionOne).toMatch(/^[a-f0-9]{64}$/);
+    expect(versionTwo).toMatch(/^[a-f0-9]{64}$/);
+    expect(versionOne).not.toBe(versionTwo);
+    expect(computePhase4SmokeProcessingJobInputHash(inputHash, 2)).toBe(versionTwo);
+  });
+
+  it.each([
+    ['malformed input hash', 'not-a-hash', 2],
+    ['zero version', 'f'.repeat(64), 0],
+    ['fractional version', 'f'.repeat(64), 1.5],
+  ])('rejects processing-job identity with %s', (_label, inputHash, version) => {
+    expect(() => computePhase4SmokeProcessingJobInputHash(inputHash, version)).toThrow(
+      /phase4_synthetic_smoke_preflight_failed/,
     );
   });
 

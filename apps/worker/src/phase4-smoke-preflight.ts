@@ -162,6 +162,21 @@ export function assertNextPhase4SyntheticSmokeRunVersion(
   return requestedVersion;
 }
 
+export function computePhase4SmokeProcessingJobInputHash(
+  verificationInputHash: string,
+  verificationVersion: number,
+): string {
+  if (!/^[a-f0-9]{64}$/.test(verificationInputHash)) {
+    stop('invalid_processing_job_input_hash_material');
+  }
+  if (!Number.isInteger(verificationVersion) || verificationVersion < 1) {
+    stop('invalid_processing_job_version');
+  }
+  return createHash('sha256')
+    .update(`${verificationInputHash}:verification-version:${verificationVersion}`)
+    .digest('hex');
+}
+
 function stop(reason: string): never {
   throw new Error(`phase4_synthetic_smoke_preflight_failed:${reason}`);
 }
