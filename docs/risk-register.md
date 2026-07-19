@@ -1,6 +1,6 @@
 # Risk Register
 
-Last updated: 2026-07-18 after Phase 4 closure.
+Last updated: 2026-07-18 for Phase 7 closure.
 
 | ID  | Risk                                                             | Current control                                                                                                                            | Residual / next decision                                                                                   |
 | --- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
@@ -26,3 +26,8 @@ Phase 4 accepted risk posture: the verification implementation is complete for t
 - **R-27 — A draft assertion may be mistaken for company proof.** `proposal-support-policy-v1` prohibits self-support; reviewed same-workspace evidence or human proof is required.
 - **R-28 — Proposal tables/images may parse poorly.** Parser uncertainty fails closed and links to the original page. OCR/table recovery remains a residual limitation.
 - **R-29 — Copied procurement language may survive when identity is implicit.** Explicit customer/RFP identity mismatches are critical; paraphrased or identity-free copied prose remains a human-review risk.
+- **R-30 — A copied signed export URL is a bearer credential until expiry.** Five-minute expiry, workspace authorization before grant creation, private storage, no URL persistence, revocation, and audit reduce exposure. Immediate recall still depends on backing-object deletion propagation.
+- **R-31 — Structured HTML is not a pixel-stable PDF.** Phase 7 deliberately uses escaped self-contained HTML because the repository has no compatible safe PDF generator. Browser/print rendering can vary; add a reviewed generator only under a later format decision.
+- **R-32 — Snapshot reports can become stale after a human decision.** Source snapshot time, input hash, run IDs, review denominators, and generation history are visible. Users must generate a new immutable snapshot to include later decisions; old snapshots remain audit records.
+- **R-33 — Spreadsheet applications have evolving formula heuristics.** All cells with leading `=`, `+`, `-`, or `@` after whitespace are neutralized and fixture-tested. Maintain the policy and regression corpus as spreadsheet behavior changes.
+- **R-34 — Retention cleanup requires the server-maintenance path to run.** Objects deny grants after `retention_until`; `purgeExpiredReportExportsForMaintenance` removes them and preserves audit history. Deployment scheduling remains an operational rollout task.

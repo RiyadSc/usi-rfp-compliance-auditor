@@ -2,7 +2,7 @@
 
 Condensed from `USI_AI_RFP_Compliance_Auditor_PRD.md` (v1.0, 2026-07-16). This summary must not silently narrow the PRD; when in doubt, consult the source sections cited.
 
-Implementation status as of 2026-07-18: Phases 1–6 are complete. Phase 6 adds deterministic proposal-draft auditing, exact proposal/source evidence, separate coverage/support/consistency/human axes, revision history, and append-only finding resolution. Phase 7 has not begun. General live verification remains disabled outside the controlled synthetic path.
+Implementation status as of 2026-07-18: Phases 1–7 are complete. Phase 6 adds deterministic proposal-draft auditing, exact proposal/source evidence, separate coverage/support/consistency/human axes, revision history, and append-only finding resolution. Phase 7 adds deterministic point-in-time readiness reports, full Phase 4–6 provenance, CSV and self-contained HTML exports, private short-lived downloads, export audit history, and synthetic-demo watermarks. Phase 8 has not begun. General live verification remains disabled outside the controlled synthetic path.
 
 ## Thesis (PRD §1–2)
 

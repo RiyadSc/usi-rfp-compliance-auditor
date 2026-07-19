@@ -57,6 +57,26 @@ Sources: Engineering Design §10, build-brief AI security rules, Phase 0 threat 
 | T18 | Cross-tenant proposal audit reference      | Composite scope constraints, validation triggers, RLS, two-user tests               |
 | T19 | Hostile proposal instructions              | Content-as-data parsing, deterministic injection signals, no provider/tools/secrets |
 
+## Phase 7 controls
+
+- Reporting uses persisted Phase 4–6 records only and makes no provider or tool call.
+- Composite scope triggers, service membership checks, RLS, and hidden object-path columns prevent cross-workspace aggregation and export access.
+- CSV cells beginning with formula operators after whitespace are apostrophe-neutralized before RFC-compatible quoting; HTML source text is escaped and contains no executable scripts.
+- `workspace-exports` is private with no authenticated object policy. Service paths never overwrite. Five-minute signed URLs are returned transiently and neither URL nor token is stored in snapshots, manifests, access events, audit events, logs, or the UI.
+- Explicit regeneration creates a new object and manifest, then revokes/removes the superseded object. Expired objects follow the same auditable revocation path.
+- Demo labeling comes only from the immutable Phase 4 synthetic marker. Uploaded or user-authored content cannot mark an export as demo-safe.
+- A centralized language policy rejects unsafe system conclusions in summaries, structured exports, labels, and filenames while preserving quoted source evidence as evidence.
+
+### Added Phase 7 threats
+
+| #   | Threat                                    | Control                                                                                           |
+| --- | ----------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| T20 | Cross-tenant aggregate or export          | Explicit compatible run chain, composite scope triggers, RLS, user and privileged-path checks     |
+| T21 | Spreadsheet formula execution             | Versioned cell neutralization before CSV quoting; malicious-cell fixture                          |
+| T22 | Signed URL or private path leakage        | Hidden path columns, transient five-minute grants, token-free audit/artifacts                     |
+| T23 | Stale/destructive report regeneration     | Immutable snapshots/manifests, canonical-hash idempotency, unique generations, revocation history |
+| T24 | Reporting axes collapse into a conclusion | Phase-specific denominators, strict schema, prohibited-language policy, human-state display       |
+
 ## Data classification & retention (Design §10.2)
 
 | Data                          | Classification                                 | Retention                                 |

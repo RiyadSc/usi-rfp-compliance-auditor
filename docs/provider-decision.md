@@ -334,3 +334,7 @@ Operational constraint: the model is selected and fingerprint-pinned, but unrest
 ## Phase 5 provider decision
 
 Phase 5 checklist generation, blocker creation, readiness, workflow, waivers, and exceptions are deterministic and make zero provider calls. `MockProvider` and the Phase 4 rollout controls are unchanged; general live verification remains disabled. Phase 5 provider spend is `$0.00`.
+
+## Phase 7 provider decision
+
+Phase 7 report aggregation, CSV/HTML rendering, export storage, and access control are deterministic and make zero provider calls. No model is selected for reporting. The Phase 4 `gpt-5.5-2026-04-23`/low selection and fingerprint remain unchanged and unrestricted live verification remains disabled. Phase 7 provider usage and spend are exactly zero.

@@ -14,3 +14,10 @@
 - **Proposal parser uncertainty:** inspect the original signed PDF page. Keep the finding unresolved until a reliable parse or human decision exists.
 - **Revision conflict:** link the explicit prior draft, retain both audits, and inspect correction findings. Never delete the prior revision or resolution history.
 - **Phase 6 isolation anomaly:** stop audit writes, retain the audit event trail, run the Phase 6 RLS/integration suite, and do not bypass the controlled RPC.
+- **Report chain rejected:** confirm analysis, verification, checklist generation, readiness snapshot, proposal audit, and draft belong to one workspace and compatible completed run chain. Never mix run IDs to make a report succeed.
+- **Report hash unexpectedly changes:** compare canonical source records, latest human decisions, upstream versions, report type, and source snapshot. Do not reuse an old snapshot under a new hash.
+- **Private export unavailable:** confirm artifact state, retention, membership, and bucket policy. Generate a new short-lived grant; never expose the stored object path or make the bucket public.
+- **Export regeneration fails:** retain both manifests and audit events, verify whether the predecessor object was revoked, and use the idempotency integration test. Never overwrite an existing object.
+- **CSV injection regression:** stop CSV distribution, rerun `reporting-domain.test.ts` and `eval:mock:reporting`, and fix the versioned neutralizer before regenerating exports.
+- **Retention cleanup not running:** deny expired grants, invoke the reviewed maintenance purge from a server-only environment, and verify revocation/access events. Do not extend URLs or add a public policy.
+- **Phase 7 isolation anomaly:** stop report/export mutations, preserve audit/access evidence, run the reporting integration and RLS suites, and do not bypass membership or composite scope checks.

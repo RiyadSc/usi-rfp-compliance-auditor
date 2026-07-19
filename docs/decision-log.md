@@ -135,6 +135,17 @@ Append-only. Each entry: date, decision, rationale, reversibility, source.
 - **D-082 — Proposal machine structures are immutable; human resolution appends.** Ten workspace-scoped Phase 6 tables use SELECT-only member RLS. Cross-scope triggers protect document/page/checklist/evidence references. One controlled RPC appends a reasoned decision and audit event without rewriting the claim, source, or finding classification.
 - **D-083 — Correct procurement identity is deterministic evidence, not an unsupported claim.** A proposal cover that contains the immutable audit solicitation number and customer is supported for procurement identity. A procurement-specific identity that contains neither remains contradicted and produces wrong-procurement/copied-language findings. The frozen fixture now reports unsupported-claim precision explicitly at `1.0` without changing its expected answers.
 
+- **D-084 — Phase 7 is a deterministic snapshot over one explicit Phase 4–6 chain.** `report-input-v1` preserves source, precedence, proof, parser, workflow, artifact, blocker, claim, consistency, and human axes. `report-aggregation-v1` counts them with explicit denominators and never updates upstream records or creates a combined acceptance score.
+- **D-085 — Phase 7 ships CSV plus structured HTML, not PDF.** CSV is versioned, stable, RFC-compatible, and formula-neutralized. HTML is escaped, self-contained, printable, and supports full provenance without adding an unreviewed rendering dependency. PDF may be added only through a later format decision.
+- **D-086 — Exports are private, transiently granted, versioned, and revocable.** The server owns `workspace-exports`; ordinary clients cannot read object coordinates or storage objects. Signed grants last 300 seconds and persist no token. Explicit regeneration never overwrites: it creates a new manifest/object and then revokes the predecessor while retaining history.
+- **D-087 — Demo labeling is trusted metadata, never content inference.** Only the immutable Phase 4 synthetic scope can set `demo=true` in production report generation. User-entered content, proposal claims, filenames, and report parameters cannot create the watermark.
+- **D-088 — Phase 7 is provider-free.** Reports and exports use persisted, validated Phase 4–6 data and deterministic repository code. Provider calls, token usage, and paid-service spend are all zero; the Phase 4 model pin and restricted rollout are unchanged.
+
+## External documentation decisions (Phase 7)
+
+- 2026-07-18: Context7 `/supabase/supabase` confirmed private bucket access with RLS and `createSignedUrl(path, expiresInSeconds)` for bounded server-authorized access. Phase 7 uses a private bucket with no authenticated object policy and a 300-second grant.
+- 2026-07-18: Context7 `/supabase/supabase` confirmed workspace-derived RLS/least-privilege patterns. All six Phase 7 tables use workspace-member SELECT only; ordinary writes are absent and service writes repeat membership and scope validation.
+
 ## External documentation decisions (Phase 6)
 
 - 2026-07-18: Context7 `/supabase/supabase` confirmed member-derived RLS, non-exposed SECURITY DEFINER authorization helpers, least-privilege function grants, and short-lived signed access for private storage. Phase 6 uses those existing repository patterns for SELECT-only machine data and controlled resolution.

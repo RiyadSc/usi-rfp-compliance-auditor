@@ -1,8 +1,18 @@
 # Build Status
 
-## Current phase: Phase 6 complete — Phase 7 not started
+## Current phase: Phase 7 complete — Phase 8 not started
 
 Last updated: 2026-07-18.
+
+## Phase 7 — Deterministic reporting and export (COMPLETE)
+
+- `report-input-v1`, `report-aggregation-v1`, `report-schema-v1`, `executive-readiness-report-v1`, `report-csv-v1`, `report-html-v1`, and versioned language/download policies deterministically report one explicit compatible Phase 4–6 run chain. All source, precedence, proof, parser, workflow, artifact, blocker, proposal, and human-review axes remain separate.
+- Applied migrations `20260718000021`–`000022` add six workspace-scoped report/export tables, strict composite scope validation, immutable history, partial-hash idempotency, unique export generations, RLS/member-SELECT-only policies, and private `workspace-exports` storage with hidden object paths.
+- The application provides report history/detail, executive and detailed views, phase/severity/review/type filters, pagination, exact evidence drill-down, original-page navigation, private formula-safe CSV/escaped HTML exports, five-minute audited download grants, regeneration, revocation, and seven-day retention metadata/cleanup.
+- `reporting-known-answer-v1` passes all aggregate, blocker, missing-artifact/form, review, source-coverage, evidence, provenance, export, watermark, and section metrics at `1.0`, with zero false missing artifacts, prohibited conclusions, CSV injection vulnerabilities, cross-workspace leaks, unauthorized downloads, destructive overwrites, or provider calls.
+- Direct database inspection confirms RLS on all six tables, exactly one member SELECT policy per table, no authenticated `workspace-exports` object policy, a private 10 MiB CSV/HTML bucket, and both migrations recorded on project `uxmxkdjschbekkbnweby`.
+- Final gates: 280 unit tests, 72 sequential Supabase integration tests, 20 passed mock Playwright tests with one opt-in live-smoke UI audit skipped, perfect Phase 6/7 deterministic evaluations, lint, formatting, type-check, production build, zero-vulnerability high-severity offline dependency audit, secret scan, and invariant checklist.
+- Phase 7 made zero provider calls and spent `$0.00`. Phase 4 model/fingerprint/rollout controls are unchanged, general live verification remains disabled, and Phase 8 has not begun. Detailed evidence is in `docs/phase7-completion-report.md` and `artifacts/evaluation/phase7-reporting-known-answer-v1.json`.
 
 ## Phase 6 — Proposal draft audit (COMPLETE)
 

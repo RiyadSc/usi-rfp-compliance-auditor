@@ -49,7 +49,7 @@ Checklist generated from active verified requirements: forms, deadlines, signatu
 Draft upload + parsing; section extraction; atomic claim segmentation; support matching; contradiction detection; missing-response detection; `requires_human_proof` classification (never "false" merely because company evidence is absent); evidence-linked findings; resolution workflow; audit history.
 **Tests:** unsupported factual claims; conflicting dates; incorrect insurance values; claims copied from another procurement; missing mandatory responses; contradictory source documents; prompt injection embedded in draft.
 
-### Phase 7 — Reporting and export
+### Phase 7 — Reporting and export (COMPLETE — see phase7-completion-report.md)
 
 Executive readiness summary; critical blockers; unresolved findings; missing artifacts; review completion; source coverage; analysis metadata; CSV export; report export; private short-lived download URLs; export audit events; demo watermark. No cross-workspace leakage in exports.
 

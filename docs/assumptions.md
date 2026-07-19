@@ -20,3 +20,13 @@ Last updated: 2026-07-18 after Phase 4 closure.
 - Deterministic proposal matching favors precision. A missing or uncertain match is shown for human review rather than guessed.
 - A linked proposal revision is a new immutable document/audit. Prior claims, findings, evidence, and human resolutions remain retained.
 - Phase 6 requires no paid model call; `MockProvider` and Phase 4 live-verification rollout controls remain unchanged.
+
+## Phase 7 assumptions — 2026-07-18
+
+- Phase 7 reports one explicitly selected compatible Phase 4–6 run chain; it does not blend multiple analyses, checklist generations, or proposal revisions.
+- Persisted upstream records and latest append-only human decisions are the reporting source of truth. Phase 7 does not recompute verification, readiness, or proposal findings.
+- Self-contained HTML satisfies the structured-report requirement for this phase. PDF remains a separate later format decision.
+- CSV is intended for analysis, not round-trip import. Every dataset has a fixed versioned header and formula-neutralized cells.
+- A Phase 4 immutable synthetic marker is the only trusted source for demo watermarking. Other workspaces are classified `internal_authorized` unless a future reviewed public-data marker is added.
+- Export objects use seven-day retention and five-minute signed grants. Deployment must schedule the provided maintenance purge before a broader rollout.
+- Phase 7 uses no model provider. The selected Phase 4 model and its rollout restriction are unchanged.

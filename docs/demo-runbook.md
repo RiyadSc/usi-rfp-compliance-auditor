@@ -11,5 +11,10 @@
 9. Show response coverage, atomic claims, separate support/consistency, exact source quotation, and original proposal/source page navigation.
 10. Open a finding, explain the machine-only/pending label, and append a human decision. Show that the original finding and decision history remain.
 11. Demonstrate a second workspace URL returns Not Found.
+12. Open **Reports and exports**, select one completed synthetic Phase 4–6 run chain, and generate the executive report. Point out the source snapshot, input hash, report versions, and separate human-review denominators.
+13. Show `3 of 10` required items, the five planted mandatory-form rows, the separate human-proof item, critical/blocking findings, source coverage, and the synthetic watermark.
+14. Open missing Form A-1, follow its immutable Phase 4 evidence, and navigate to original page 2.
+15. Generate the missing-artifacts CSV. Explain that it is stored privately, formulas are neutralized, the download link lasts five minutes, regeneration creates a new immutable generation, and revocation removes the backing object while preserving history.
+16. Use report phase/severity/review/type filters and pagination, then demonstrate a second workspace report URL returns Not Found.
 
-No Phase 5 or Phase 6 step invokes a paid provider. General live Phase 4 verification remains disabled.
+No Phase 5, Phase 6, or Phase 7 step invokes a paid provider. General live Phase 4 verification remains disabled.

@@ -78,3 +78,15 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] Hostile proposal instructions have zero influence and no tool, provider, secret, or application authority.
 - [x] The frozen 12-case synthetic fixture passes every evidence/citation/date/number/status/schema gate with zero critical false-supported/false-consistent results or false merges.
 - [x] Phase 6 made zero provider calls and left Phase 4 rollout controls unchanged.
+
+## Phase 7 invariant result — 2026-07-18
+
+- [x] Every reported requirement/checklist/finding retains explicit workspace, upstream run, document/page/evidence, version, workflow, and human-review provenance where applicable.
+- [x] Source support, precedence, proof, parser quality, workflow, artifact, blocker, proposal support/consistency, and human review remain separate report fields and denominators.
+- [x] Reporting reads immutable Phase 4–6 records and never updates verification, checklist, readiness, claims, findings, waivers, or human decisions.
+- [x] Canonical input hashing, immutable snapshots, partial uniqueness, and explicit export generations make reporting deterministic, idempotent, and auditable.
+- [x] Six new tenant tables have RLS, member SELECT-only policies, composite scope validation, ordinary-write denial, and two-user cross-workspace tests.
+- [x] Private export paths are hidden; signed grants expire in 300 seconds; URLs/tokens are not persisted; regeneration/revocation/retention preserve audit history.
+- [x] CSV formula injection and HTML/script injection are neutralized; system conclusions are guarded by a versioned prohibited-language policy.
+- [x] The synthetic fixture reports all five missing forms with precision/recall 1.0, every aggregate/provenance/coverage metric 1.0, and zero isolation/download/overwrite/provider failures.
+- [x] Phase 7 made zero provider calls, used only synthetic fixture data, and left the Phase 4 model/fingerprint/rollout controls unchanged.

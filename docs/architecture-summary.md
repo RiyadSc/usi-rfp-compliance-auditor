@@ -122,11 +122,17 @@ Phase 5 consumes immutable Phase 4 findings through `checklist-eligibility-v1`, 
 
 Phase 6 reuses private `proposal_draft` ingestion and consumes one completed Phase 5 checklist generation. `proposal-section-parser-v1`, `proposal-claim-segmenter-v1`, `proposal-response-matcher-v1`, `proposal-support-policy-v1`, `proposal-contradiction-v1`, and `proposal-audit-evaluator-v1` create page-anchored atomic claims, requirement coverage, evidence support, deterministic consistency checks, and machine-only findings without a provider call. Draft revisions and findings are immutable; human resolutions append separately. See `docs/phase6-data-flow.md`.
 
+## Phase 7 deterministic reporting and export layer
+
+Phase 7 binds one compatible completed Phase 4 verification, Phase 5 checklist/readiness snapshot, and Phase 6 proposal audit/revision into `report-input-v1`. `report-aggregation-v1` computes explicit phase-specific blocker, unresolved, artifact, review, and source-coverage denominators; it never recomputes or updates upstream state. `report-schema-v1` snapshots are immutable and idempotent by canonical SHA-256.
+
+`report-csv-v1` emits deterministic formula-neutralized UTF-8 CSV datasets. `report-html-v1` emits escaped self-contained structured reports. Exports use a service-only private bucket, immutable manifests, unique regeneration numbers, SHA-256 integrity, seven-day retention, and 300-second authorized download grants. Signed URLs and object paths are never persisted in report artifacts or exposed through authenticated table reads. Routes `/w/:id/reports` and `/w/:id/reports/:snapshotId` provide report selection, filters, pagination, evidence drill-down, source-page navigation, export generation, download, and revocation. See `docs/phase7-data-flow.md` and `docs/phase7-database.md`.
+
 ## API surface (Design §8.2) and routes (Design §9.1)
 
 REST-ish routes: workspaces CRUD, signed uploads, document finalize, analysis-runs start/status, requirements list/patch, evidence get, checklist list/patch, drafts + audits + findings, exports. Error contract: `{code, message, stage?, retryable, correlationId, details?}` — never expose secrets or raw provider errors.
 
-Frontend routes: `/` (workspace list), `/w/:id` (overview), `/w/:id/documents`, `/w/:id/requirements`, `/w/:id/requirements/:reqId` (evidence viewer), `/w/:id/checklist`, `/w/:id/proposal-audit`, `/w/:id/proposal-audit/:auditRunId`, and later report/export routes.
+Frontend routes: `/` (workspace list), `/w/:id` (overview), `/w/:id/documents`, `/w/:id/requirements`, `/w/:id/requirements/:reqId` (evidence viewer), `/w/:id/checklist`, `/w/:id/proposal-audit`, `/w/:id/proposal-audit/:auditRunId`, `/w/:id/reports`, and `/w/:id/reports/:snapshotId`.
 
 UI state model: every async view supports empty/loading/progress/success/terminal-error/retryable-error; source status displayed separately from extraction confidence; blockers pinned; protected "Reset fixture" control.
 
