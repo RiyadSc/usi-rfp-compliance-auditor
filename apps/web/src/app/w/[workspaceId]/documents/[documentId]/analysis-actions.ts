@@ -7,6 +7,7 @@ import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { enqueueExtractJob } from '@/lib/jobs';
 import { serverEnv } from '@/lib/env';
 import { checkBudget } from '@usi/ai';
+import { enforceRateLimit } from '@/lib/hardening/service';
 
 async function requireMember(workspaceId: string) {
   const supabase = await createSupabaseServerClient();
@@ -29,6 +30,7 @@ export async function startExtraction(input: {
 }): Promise<{ ok: true; analysisRunId: string } | { ok: false; error: string }> {
   try {
     const { supabase, user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceRateLimit({ operation: 'extraction_request', actorId: user.id, workspaceId });
     const admin = createSupabaseAdminClient();
     const env = serverEnv();
 

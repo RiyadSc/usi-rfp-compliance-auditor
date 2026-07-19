@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { checklistWorkflowStatusSchema } from '@usi/domain';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { generateChecklist, recalculateChecklistState } from '@/lib/checklist/service';
+import { enforceRateLimit, measureServerOperation } from '@/lib/hardening/service';
 
 const uuid = z.string().uuid();
 
@@ -44,16 +45,31 @@ async function refresh(workspaceId: string, itemId?: string) {
   if (itemId) revalidatePath(`/w/${workspaceId}/checklist/${itemId}`);
 }
 
+async function enforceChecklistLimit(
+  userId: string,
+  workspaceId: string,
+  operation: 'checklist_generation' | 'checklist_workflow' = 'checklist_workflow',
+) {
+  await enforceRateLimit({ operation, actorId: userId, workspaceId });
+}
+
 export async function generateChecklistAction(input: {
   workspaceId: string;
   verificationRunId: string;
 }) {
   try {
     const { user, workspaceId } = await requireMember(input.workspaceId);
-    const result = await generateChecklist({
+    await enforceChecklistLimit(user.id, workspaceId, 'checklist_generation');
+    const result = await measureServerOperation({
+      operation: 'checklist_generation',
       workspaceId,
-      verificationRunId: uuid.parse(input.verificationRunId),
       actorId: user.id,
+      execute: () =>
+        generateChecklist({
+          workspaceId,
+          verificationRunId: uuid.parse(input.verificationRunId),
+          actorId: user.id,
+        }),
     });
     await refresh(workspaceId);
     return { ok: true as const, ...result };
@@ -72,7 +88,8 @@ export async function assignChecklistOwnerAction(input: {
   reviewerId?: string | null;
 }) {
   try {
-    const { supabase, workspaceId } = await requireMember(input.workspaceId);
+    const { supabase, user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceChecklistLimit(user.id, workspaceId);
     const { error } = await supabase.rpc('assign_checklist_owner', {
       p_workspace_id: workspaceId,
       p_item_id: uuid.parse(input.itemId),
@@ -98,6 +115,7 @@ export async function updateChecklistStatusAction(input: {
 }) {
   try {
     const { supabase, user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceChecklistLimit(user.id, workspaceId);
     const status = checklistWorkflowStatusSchema.parse(input.status);
     const { error } = await supabase.rpc('update_checklist_status', {
       p_workspace_id: workspaceId,
@@ -130,6 +148,7 @@ export async function linkChecklistArtifactAction(input: {
 }) {
   try {
     const { supabase, user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceChecklistLimit(user.id, workspaceId);
     const { error } = await supabase.rpc('link_checklist_artifact', {
       p_workspace_id: workspaceId,
       p_item_id: uuid.parse(input.itemId),
@@ -159,6 +178,7 @@ export async function reviewChecklistArtifactAction(input: {
 }) {
   try {
     const { supabase, user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceChecklistLimit(user.id, workspaceId);
     const { error } = await supabase.rpc('review_checklist_artifact', {
       p_workspace_id: workspaceId,
       p_item_id: uuid.parse(input.itemId),
@@ -191,6 +211,7 @@ export async function removeChecklistArtifactAction(input: {
 }) {
   try {
     const { supabase, user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceChecklistLimit(user.id, workspaceId);
     const { error } = await supabase.rpc('remove_checklist_artifact', {
       p_workspace_id: workspaceId,
       p_item_id: uuid.parse(input.itemId),
@@ -218,7 +239,8 @@ export async function createChecklistExceptionAction(input: {
   priorNoteId?: string | null;
 }) {
   try {
-    const { supabase, workspaceId } = await requireMember(input.workspaceId);
+    const { supabase, user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceChecklistLimit(user.id, workspaceId);
     const explanation = z.string().trim().min(1).max(4000).parse(input.explanation);
     const { error } = await supabase.rpc('create_checklist_exception', {
       p_workspace_id: workspaceId,
@@ -245,7 +267,8 @@ export async function requestChecklistWaiverAction(input: {
   authorityNote?: string;
 }) {
   try {
-    const { supabase, workspaceId } = await requireMember(input.workspaceId);
+    const { supabase, user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceChecklistLimit(user.id, workspaceId);
     const { error } = await supabase.rpc('create_checklist_waiver', {
       p_workspace_id: workspaceId,
       p_item_id: uuid.parse(input.itemId),
@@ -276,6 +299,7 @@ export async function reviewChecklistWaiverAction(input: {
 }) {
   try {
     const { supabase, user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceChecklistLimit(user.id, workspaceId);
     const { error } = await supabase.rpc('review_checklist_waiver', {
       p_workspace_id: workspaceId,
       p_waiver_id: uuid.parse(input.waiverId),
@@ -305,6 +329,7 @@ export async function resolveChecklistBlockerAction(input: {
 }) {
   try {
     const { supabase, user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceChecklistLimit(user.id, workspaceId);
     const { error } = await supabase.rpc('resolve_checklist_blocker', {
       p_workspace_id: workspaceId,
       p_blocker_id: uuid.parse(input.blockerId),

@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { enforceRateLimit } from '@/lib/hardening/service';
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -17,6 +18,8 @@ export async function signIn(formData: FormData) {
   if (!parsed.success) {
     redirect('/login?error=invalid');
   }
+
+  await enforceRateLimit({ operation: 'sign_in', discriminator: parsed.data.email });
 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);

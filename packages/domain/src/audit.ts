@@ -55,6 +55,17 @@ export const AUDIT_EVENT_TYPES = [
   'report_export_accessed',
   'report_export_revoked',
   'report_export_permission_denied',
+  'security_rate_limited',
+  'provider_budget_reserved',
+  'provider_budget_settled',
+  'provider_budget_adjusted',
+  'performance_recorded',
+  'demo_cache_used',
+  'demo_cache_rejected',
+  'demo_fallback_activated',
+  'demo_reset_dry_run',
+  'demo_reset_completed',
+  'demo_reset_failed',
 ] as const;
 
 export const auditEventTypeSchema = z.enum(AUDIT_EVENT_TYPES);

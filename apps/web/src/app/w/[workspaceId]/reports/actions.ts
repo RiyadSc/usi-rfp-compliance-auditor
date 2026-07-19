@@ -10,6 +10,7 @@ import {
   revokeReportExport,
 } from '@/lib/reporting/service';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { enforceRateLimit, measureServerOperation } from '@/lib/hardening/service';
 
 const uuid = z.string().uuid();
 
@@ -40,15 +41,22 @@ export async function generateReportAction(input: {
 }) {
   try {
     const { user, workspaceId } = await requireMember(input.workspaceId);
-    const result = await generateReport({
+    await enforceRateLimit({ operation: 'report_generation', actorId: user.id, workspaceId });
+    const result = await measureServerOperation({
+      operation: 'report_generation',
       workspaceId,
       actorId: user.id,
-      analysisRunId: uuid.parse(input.analysisRunId),
-      verificationRunId: uuid.parse(input.verificationRunId),
-      checklistGenerationRunId: uuid.parse(input.checklistGenerationRunId),
-      readinessSnapshotId: uuid.parse(input.readinessSnapshotId),
-      proposalAuditRunId: uuid.parse(input.proposalAuditRunId),
-      reportType: reportTypeSchema.parse(input.reportType),
+      execute: () =>
+        generateReport({
+          workspaceId,
+          actorId: user.id,
+          analysisRunId: uuid.parse(input.analysisRunId),
+          verificationRunId: uuid.parse(input.verificationRunId),
+          checklistGenerationRunId: uuid.parse(input.checklistGenerationRunId),
+          readinessSnapshotId: uuid.parse(input.readinessSnapshotId),
+          proposalAuditRunId: uuid.parse(input.proposalAuditRunId),
+          reportType: reportTypeSchema.parse(input.reportType),
+        }),
     });
     revalidatePath(`/w/${workspaceId}/reports`);
     return { ok: true as const, ...result };
@@ -69,14 +77,21 @@ export async function createReportExportAction(input: {
 }) {
   try {
     const { user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceRateLimit({ operation: 'export_generation', actorId: user.id, workspaceId });
     const format = z.enum(['csv', 'html']).parse(input.format);
-    const result = await createReportExport({
+    const result = await measureServerOperation({
+      operation: 'export_generation',
       workspaceId,
       actorId: user.id,
-      reportSnapshotId: uuid.parse(input.reportSnapshotId),
-      format,
-      csvDataset: format === 'csv' ? csvDatasetSchema.parse(input.csvDataset) : null,
-      regenerate: Boolean(input.regenerate),
+      execute: () =>
+        createReportExport({
+          workspaceId,
+          actorId: user.id,
+          reportSnapshotId: uuid.parse(input.reportSnapshotId),
+          format,
+          csvDataset: format === 'csv' ? csvDatasetSchema.parse(input.csvDataset) : null,
+          regenerate: Boolean(input.regenerate),
+        }),
     });
     revalidatePath(`/w/${workspaceId}/reports`);
     return { ok: true as const, ...result };
@@ -94,10 +109,17 @@ export async function createReportDownloadAction(input: {
 }) {
   try {
     const { user, workspaceId } = await requireMember(input.workspaceId);
-    const result = await createReportDownloadGrant({
+    await enforceRateLimit({ operation: 'signed_download', actorId: user.id, workspaceId });
+    const result = await measureServerOperation({
+      operation: 'signed_download',
       workspaceId,
       actorId: user.id,
-      artifactId: uuid.parse(input.artifactId),
+      execute: () =>
+        createReportDownloadGrant({
+          workspaceId,
+          actorId: user.id,
+          artifactId: uuid.parse(input.artifactId),
+        }),
     });
     return { ok: true as const, ...result };
   } catch (error) {

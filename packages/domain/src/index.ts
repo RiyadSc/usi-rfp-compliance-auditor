@@ -8,3 +8,4 @@ export { auditEventTypeSchema, AUDIT_EVENT_TYPES, type AuditEventType } from './
 export * from './checklist';
 export * from './proposal-audit';
 export * from './reporting';
+export * from './hardening';

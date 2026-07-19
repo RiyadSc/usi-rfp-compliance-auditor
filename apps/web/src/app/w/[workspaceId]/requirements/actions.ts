@@ -16,6 +16,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { enqueueVerifyJob } from '@/lib/jobs';
 import { serverEnv } from '@/lib/env';
+import { enforceRateLimit } from '@/lib/hardening/service';
 
 async function requireMember(workspaceId: string) {
   const supabase = await createSupabaseServerClient();
@@ -35,6 +36,11 @@ async function requireMember(workspaceId: string) {
 export async function startVerification(input: { workspaceId: string; analysisRunId: string }) {
   try {
     const { supabase, user } = await requireMember(input.workspaceId);
+    await enforceRateLimit({
+      operation: 'verification_request',
+      actorId: user.id,
+      workspaceId: input.workspaceId,
+    });
     const admin = createSupabaseAdminClient();
     const env = serverEnv();
     const { data: analysis } = await admin
@@ -152,7 +158,12 @@ export async function recordHumanReview(input: {
   relationshipId?: string;
 }) {
   try {
-    const { supabase } = await requireMember(input.workspaceId);
+    const { supabase, user } = await requireMember(input.workspaceId);
+    await enforceRateLimit({
+      operation: 'verification_request',
+      actorId: user.id,
+      workspaceId: input.workspaceId,
+    });
     let correctedValues: unknown = {};
     if (input.correctedValues?.trim()) {
       try {

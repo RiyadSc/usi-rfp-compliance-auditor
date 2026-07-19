@@ -8,6 +8,7 @@ import {
 } from '@usi/domain';
 import { runProposalAudit } from '@/lib/proposal-audit/service';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { enforceRateLimit, measureServerOperation } from '@/lib/hardening/service';
 
 const uuid = z.string().uuid();
 
@@ -35,12 +36,19 @@ export async function startProposalAuditAction(input: {
 }) {
   try {
     const { user, workspaceId } = await requireMember(input.workspaceId);
-    const result = await runProposalAudit({
+    await enforceRateLimit({ operation: 'proposal_audit', actorId: user.id, workspaceId });
+    const result = await measureServerOperation({
+      operation: 'proposal_audit',
       workspaceId,
-      documentId: uuid.parse(input.documentId),
-      checklistGenerationRunId: uuid.parse(input.checklistGenerationRunId),
       actorId: user.id,
-      priorDraftId: input.priorDraftId ? uuid.parse(input.priorDraftId) : null,
+      execute: () =>
+        runProposalAudit({
+          workspaceId,
+          documentId: uuid.parse(input.documentId),
+          checklistGenerationRunId: uuid.parse(input.checklistGenerationRunId),
+          actorId: user.id,
+          priorDraftId: input.priorDraftId ? uuid.parse(input.priorDraftId) : null,
+        }),
     });
     revalidatePath(`/w/${workspaceId}/proposal-audit`);
     return { ok: true as const, ...result };
@@ -61,7 +69,8 @@ export async function resolveProposalFindingAction(input: {
   reason: string;
 }) {
   try {
-    const { supabase, workspaceId } = await requireMember(input.workspaceId);
+    const { supabase, user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceRateLimit({ operation: 'proposal_resolution', actorId: user.id, workspaceId });
     const humanStatus = proposalHumanResolutionStatusSchema
       .exclude(['pending'])
       .parse(input.humanStatus);

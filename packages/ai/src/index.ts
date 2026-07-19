@@ -20,6 +20,7 @@ export { MockProvider } from './mock-provider';
 export { OpenAIProvider } from './openai-provider';
 
 export type ProviderEnv = {
+  LIVE_PROVIDER_ENABLED?: boolean | undefined;
   OPENAI_API_KEY?: string | undefined;
   OPENAI_EXTRACT_MODEL?: string | undefined;
   OPENAI_EMBED_MODEL?: string | undefined;
@@ -27,10 +28,13 @@ export type ProviderEnv = {
   OPENAI_REASONING_EFFORT?: 'low' | 'medium' | 'high' | undefined;
 };
 
-/** Prefer OpenAI when a server-only key is present; otherwise MockProvider. */
+/**
+ * Mock is the application default. A key alone is never authority to construct a paid provider;
+ * controlled callers must also opt in explicitly after their budget/provenance preflight.
+ */
 export function createProvider(env: ProviderEnv = {}): ModelProvider {
   const key = env.OPENAI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim();
-  if (key) {
+  if (key && env.LIVE_PROVIDER_ENABLED === true) {
     return new OpenAIProvider({
       apiKey: key,
       extractModel:

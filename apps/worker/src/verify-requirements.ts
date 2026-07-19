@@ -27,6 +27,11 @@ import {
 } from '@usi/ai';
 import { adminClient } from './db.js';
 import { env } from './env.js';
+import {
+  constructProviderAfterBudget,
+  reserveProviderBudget,
+  settleProviderBudget,
+} from './cost-control.js';
 
 export const VERIFICATION_RETRIEVAL_VERSION = 'verify-retrieval-v2-candidate-centered';
 export const EVIDENCE_NORMALIZATION_VERSION = 'evidence-nfkc-v1';
@@ -107,18 +112,6 @@ export async function handleVerifyJob(
     throw new Error('phase4_runtime_incompatible:openai_api_key:missing');
   }
   const admin = adminClient();
-  const provider =
-    providerOverride ??
-    (env.PHASE4_LIVE_VERIFICATION_ENABLED
-      ? new OpenAIProvider({
-          apiKey: env.OPENAI_API_KEY ?? '',
-          extractModel: env.OPENAI_EXTRACT_MODEL,
-          verifyModel: runtime.model,
-          embedModel: env.OPENAI_EMBED_MODEL,
-          verifyReasoningEffort: runtime.compatibility.reasoning,
-          timeoutMs: runtime.compatibility.timeoutMs,
-        })
-      : new MockProvider());
 
   const { data: run } = await admin
     .from('verification_runs')
@@ -150,6 +143,37 @@ export async function handleVerifyJob(
     await budgetCancel(payload, 'Phase 4 spend ceiling reached');
     return;
   }
+
+  let budgetReservationId: string | null = null;
+  // Paid provider construction is intentionally below every scope, compatibility, and atomic
+  // budget check. A server key by itself never reaches this branch.
+  const provider = providerOverride
+    ? providerOverride
+    : env.PHASE4_LIVE_VERIFICATION_ENABLED
+      ? await constructProviderAfterBudget(
+          async () => {
+            budgetReservationId = await reserveProviderBudget({
+              admin,
+              phase: 'phase4',
+              workspaceId: payload.workspaceId,
+              actorId: run.created_by,
+              analysisRunId: payload.analysisRunId,
+              kind: 'verify',
+              runIdentity: payload.verificationRunId,
+              requestedMaximumUsd: 1.35,
+            });
+          },
+          () =>
+            new OpenAIProvider({
+              apiKey: env.OPENAI_API_KEY ?? '',
+              extractModel: env.OPENAI_EXTRACT_MODEL,
+              verifyModel: runtime.model,
+              embedModel: env.OPENAI_EMBED_MODEL,
+              verifyReasoningEffort: runtime.compatibility.reasoning,
+              timeoutMs: runtime.compatibility.timeoutMs,
+            }),
+        )
+      : new MockProvider();
 
   let runCost = 0;
   let budgetExceeded = false;
@@ -644,7 +668,11 @@ export async function handleVerifyJob(
         candidate_centered: true,
       },
     });
+    if (budgetReservationId)
+      await settleProviderBudget({ admin, reservationId: budgetReservationId, actualUsd: runCost });
   } catch (error) {
+    if (budgetReservationId)
+      await settleProviderBudget({ admin, reservationId: budgetReservationId, actualUsd: runCost });
     if (budgetExceeded) {
       await budgetCancel(payload, 'Phase 4 ceiling would be exceeded by verification call');
       return;

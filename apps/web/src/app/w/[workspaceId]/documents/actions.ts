@@ -18,6 +18,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { enqueueParseJob } from '@/lib/jobs';
 import { serverEnv } from '@/lib/env';
+import { enforceRateLimit } from '@/lib/hardening/service';
 
 const DOCUMENT_TYPES = [
   'primary_rfp',
@@ -71,6 +72,11 @@ export async function createUploadIntent(input: {
 }): Promise<UploadIntentResult> {
   try {
     const { user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceRateLimit({
+      operation: 'upload_initialize',
+      actorId: user.id,
+      workspaceId,
+    });
     const env = serverEnv();
     const filename = normalizeFilename(input.filename);
     assertPdfExtension(filename);
@@ -132,6 +138,12 @@ export async function finalizeUpload(input: {
 }): Promise<FinalizeResult> {
   try {
     const { supabase, user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceRateLimit({
+      operation: 'upload_finalize',
+      actorId: user.id,
+      workspaceId,
+    });
+    await enforceRateLimit({ operation: 'parse_request', actorId: user.id, workspaceId });
     const env = serverEnv();
     const admin = createSupabaseAdminClient();
 
