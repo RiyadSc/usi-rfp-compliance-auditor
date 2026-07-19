@@ -1,0 +1,84 @@
+{
+  "artifactVersion": "phase5-five-missing-forms-evaluation-v1",
+  "fixtureVersion": "checklist-five-missing-forms-v1",
+  "generatorVersion": "checklist-generator-v1",
+  "blockerEngineVersion": "checklist-blockers-v1",
+  "readinessEngineVersion": "checklist-readiness-v1",
+  "expected": [
+    {
+      "formIdentifier": "Form A-1",
+      "page": 2,
+      "blockerType": "missing_mandatory_form",
+      "severity": "critical"
+    },
+    {
+      "formIdentifier": "Form B-2",
+      "page": 3,
+      "blockerType": "missing_mandatory_form",
+      "severity": "critical"
+    },
+    {
+      "formIdentifier": "Form C-3",
+      "page": 4,
+      "blockerType": "missing_mandatory_form",
+      "severity": "critical"
+    },
+    {
+      "formIdentifier": "Form D-4",
+      "page": 5,
+      "blockerType": "missing_mandatory_form",
+      "severity": "critical"
+    },
+    {
+      "formIdentifier": "Form E-5",
+      "page": 6,
+      "blockerType": "missing_mandatory_form",
+      "severity": "critical"
+    }
+  ],
+  "actual": [
+    {
+      "formIdentifier": "Form A-1",
+      "page": 2,
+      "blockerType": "missing_mandatory_form",
+      "severity": "critical"
+    },
+    {
+      "formIdentifier": "Form B-2",
+      "page": 3,
+      "blockerType": "missing_mandatory_form",
+      "severity": "critical"
+    },
+    {
+      "formIdentifier": "Form C-3",
+      "page": 4,
+      "blockerType": "missing_mandatory_form",
+      "severity": "critical"
+    },
+    {
+      "formIdentifier": "Form D-4",
+      "page": 5,
+      "blockerType": "missing_mandatory_form",
+      "severity": "critical"
+    },
+    {
+      "formIdentifier": "Form E-5",
+      "page": 6,
+      "blockerType": "missing_mandatory_form",
+      "severity": "critical"
+    }
+  ],
+  "metrics": {
+    "truePositives": 5,
+    "falsePositives": 0,
+    "falseNegatives": 0,
+    "precision": 1,
+    "recall": 1,
+    "falseBlockers": 0,
+    "falseMerges": 0,
+    "evidenceValidity": 1,
+    "citationValidity": 1
+  },
+  "providerCalls": 0,
+  "providerSpendUsd": 0
+}
