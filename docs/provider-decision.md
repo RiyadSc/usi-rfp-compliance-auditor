@@ -328,3 +328,7 @@ Selection is based on verification-specific evidence, not feature descriptions. 
 Final ledgers are Phase 4 `$12.100797/$15`, remediation `$9.283190/$12`, and cumulative API `$12.509338`. The smoke's 40 provider/model-call cost rows reconcile with the internal ledger within `$0.000001`. Retention remains `store:false`, which is not a contractual ZDR claim. Caching is provider-reported and was observed; batch was not used because candidate-centered verification requires bounded per-candidate persistence and fail-closed sequencing. Retries remain bounded but the qualifying runs and smoke required none. Rate limits, pricing, context capacity, snapshot status, and Responses/strict-schema support remain as documented above in this memo.
 
 Operational constraint: the model is selected and fingerprint-pinned, but unrestricted verification for ordinary, confidential, or user-provided workspaces remains disabled. Only the explicit immutable synthetic/demo harness can enable the live path until a separate rollout and data-governance decision. `MockProvider` remains the default fallback. Phase 4 is complete; this decision does not authorize Phase 5 implementation or paid Phase 5 model usage.
+
+## Phase 5 provider decision
+
+Phase 5 checklist generation, blocker creation, readiness, workflow, waivers, and exceptions are deterministic and make zero provider calls. `MockProvider` and the Phase 4 rollout controls are unchanged; general live verification remains disabled. Phase 5 provider spend is `$0.00`.

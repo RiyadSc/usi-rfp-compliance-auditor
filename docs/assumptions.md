@@ -10,3 +10,8 @@ Last updated: 2026-07-18 after Phase 4 closure.
 - The current provider path is authorized only for the immutable synthetic/public fixture. No real USI or user-provided confidential content may be sent without a separate rollout and data-governance authorization.
 - `store:false` reduces provider-side storage but is not treated as contractual Zero Data Retention.
 - Phase 5 can be designed and implemented with deterministic/mock data and no paid provider calls. Any new live evaluation or provider call requires explicit authorization and a dedicated budget.
+- Phase 5 is provider-free and operates only on persisted Phase 4 results; no paid-service authorization is needed.
+- A Phase 4 `parent_child` relationship treats `source_candidate_id` as parent and `target_candidate_id` as child; the records remain atomic.
+- A mandatory form, signature, initial, acknowledgment, attachment, response, resume, staffing plan, bond, certification, or license implies an artifact workflow even when Phase 4 proof status is `none_identified`.
+- Deadlines enter Phase 5 only when Phase 4 deterministic facts provide an unambiguous normalized instant. Missing timezone or relative/ambiguous dates remain unresolved rather than guessed.
+- Workspace membership roles currently authorize workflow review actions; a finer-grained enterprise authority matrix remains a rollout concern.

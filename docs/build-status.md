@@ -1,8 +1,19 @@
 # Build Status
 
-## Current phase: Phase 4 complete — Phase 5 ready for separate kickoff authorization
+## Current phase: Phase 5 complete — Phase 6 not started
 
 Last updated: 2026-07-18.
+
+## Phase 5 — Deterministic checklist and blockers (COMPLETE)
+
+- `checklist-eligibility-v1`, `checklist-category-v1`, `checklist-generator-v1`, `checklist-blockers-v1`, `checklist-readiness-v1`, and `checklist-schema-v1` deterministically project immutable Phase 4 findings into auditable workflow records. Phase 4 model/configuration contracts are unchanged and unrestricted live verification remains disabled.
+- Applied additive migrations `20260718000017`–`000019` add generation runs, stable items, source links, parent/child and duplicate relationships, required artifact/link history, assignments, append-only waivers/exceptions, blockers/resolutions, readiness snapshots, RLS, cross-scope triggers, and controlled RPCs.
+- The requirement checklist and detail surface support filtering, readiness counts, exact evidence and original-page navigation, owner/reviewer assignment, guarded status transitions, artifact link/review/removal, exception notes, waiver request/review, blocker resolution, and audit history. Machine status and human review remain visibly separate.
+- `checklist-five-missing-forms-v1` detects all five planted forms with precision 1.0, recall 1.0, evidence/citation validity 1.0, zero false blockers, and zero false merges. Artifact: `artifacts/evaluation/phase5-five-missing-forms-v1.json`.
+- Direct database inspection confirms RLS on all 12 Phase 5 tenant tables and exactly one workspace-member SELECT policy per table; ordinary users cannot fabricate machine findings. Two-user integration/browser tests pass cross-workspace denial.
+- Final gates: 239 unit tests, 61 sequential Supabase integration tests, 18 passed mock Playwright tests (one opt-in Phase 4 audit skipped), lint, formatting, type-check, production build, high-severity dependency audit, secret scan, and invariant checklist.
+- Dependency audit reports two transitive moderate PostCSS advisories under Next.js; the high-severity gate passes. The suggested forced remediation would install a breaking/inappropriate Next version and was not applied. This is tracked as a residual dependency risk.
+- Phase 5 made zero OpenAI/provider calls and spent `$0.00`. No confidential data was used. Phase 6 is not authorized and has not begun.
 
 ## Latest Phase 4 operational result
 

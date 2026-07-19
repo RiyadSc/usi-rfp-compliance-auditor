@@ -28,7 +28,7 @@ These override implementation convenience. If an engineering choice conflicts wi
 ## Language rules
 
 - Never display or export "compliant", "approved", or "safe to submit" as system-generated status.
-- Readiness statuses: `NOT_READY`, `NEEDS_REVIEW`, `NEEDS_APPROVAL`, `READY_FOR_FINAL_HUMAN_REVIEW` only.
+- Phase 5 workflow summaries may say `Checklist complete`, `Ready for final review`, `Blocked by N required items`, `N of M required items complete`, or `Human review required`. They never imply source, legal, or submission acceptance.
 - Visible "Demo" watermark/label on the app and exports.
 
 ## AI security rules (build brief + Design §10.1)
@@ -53,3 +53,16 @@ At the end of each phase confirm and record in `build-status.md`:
 - [ ] Audit events recorded for new mutations/AI calls/exports (15).
 - [ ] Fixtures remain synthetic/public (10, 11).
 - [ ] Cached/deterministic fallback still works (16).
+
+## Phase 5 invariant result — 2026-07-18
+
+- [x] Every item resolves to the immutable Phase 4 finding, candidate, verification run, evidence, document, page, quote, and human-review state.
+- [x] Source support, precedence, proof, parser uncertainty, workflow, artifact, waiver, blocker, and human review remain separate fields.
+- [x] Unsupported, contradicted, superseded, parser-uncertain, partial, and conflicting findings cannot silently become ordinary active obligations.
+- [x] Workflow/RPC operations never update Phase 4 findings or evidence.
+- [x] Waivers/exceptions append decisions and do not erase requirements.
+- [x] Blockers and readiness are deterministic/versioned and provider-free.
+- [x] Twelve new tables have RLS enabled with member SELECT-only policies; controlled RPCs and triggers reject cross-workspace writes.
+- [x] The five-form fixture is synthetic, exact-evidence-linked, precision/recall 1.0, with zero false blockers or merges.
+- [x] Prohibited-copy tests cover Phase 5 UI, server actions, service, migration, fixture, and evaluation artifact.
+- [x] MockProvider/default Phase 4 controls and the selected fingerprint remain unchanged; Phase 5 made zero provider calls.

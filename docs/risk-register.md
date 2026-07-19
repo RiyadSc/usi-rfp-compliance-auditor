@@ -16,3 +16,9 @@ Last updated: 2026-07-18 after Phase 4 closure.
 | R10 | Automation bias / premature approval                             | Separate support, precedence, proof, and human-review axes; machine-only/pending UI; no compliance/readiness claim                         | Reviewer training and rollout policy remain required                                                       |
 
 Phase 4 accepted risk posture: the verification implementation is complete for the controlled synthetic/demo path. General live verification, confidential data, and ordinary-user provider access remain disabled pending a separate rollout decision.
+
+- **R-21 — Workflow completion may be over-read as source or legal acceptance.** Mitigation: separate axes in schema/API/UI, immutable Phase 4 links, prohibited-language scan, human-review-pending labels. Residual: user training remains necessary.
+- **R-22 — A human may link the wrong same-workspace PDF artifact.** Mitigation: private parsed-document allowlist, explicit review states, audit link history, no automatic truth inference. Residual: content-level artifact review is human work.
+- **R-23 — Phase 4 human-review changes create a new generation input.** Mitigation: stable-key regeneration, preserved human fields, obsolete-not-delete behavior, audit history. Residual: complex corrections may require reviewer reconciliation.
+- **R-24 — Coarse owner/reviewer roles are insufficient for a production waiver authority matrix.** Mitigation: same-workspace validation plus append-only decisions in demo; unrestricted rollout remains blocked pending policy design.
+- **R-25 — Transitive PostCSS moderate advisory in the current Next.js dependency tree.** `npm audit --audit-level=high` passes, but reports two moderate findings. The offered forced remediation resolves to a breaking/inappropriate Next version, so it was not applied during Phase 5. Re-evaluate when an upstream patched compatible release is available.

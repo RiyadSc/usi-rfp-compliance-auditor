@@ -114,6 +114,10 @@ validate → parse → normalize → index → extract → verify → build_chec
 
 Readiness (deterministic, Design §7.6): criticalBlockers>0 → NOT_READY; unreviewed mandatory → NEEDS_REVIEW; unresolved high findings → NEEDS_REVIEW; approvals incomplete → NEEDS_APPROVAL; else READY_FOR_FINAL_HUMAN_REVIEW. Never "compliant" or "safe to submit".
 
+## Phase 5 deterministic workflow layer
+
+Phase 5 consumes immutable Phase 4 findings through `checklist-eligibility-v1`, `checklist-generator-v1`, `checklist-blockers-v1`, and `checklist-readiness-v1`. It adds no model calls. Machine structure, source provenance, human workflow, artifact state, waivers, blockers, and readiness remain separate. Stable keys and input hashes make generation idempotent; regeneration reuses stable records, preserves human edits, and marks obsolete machine structure instead of deleting it. See `docs/phase5-data-flow.md`.
+
 ## API surface (Design §8.2) and routes (Design §9.1)
 
 REST-ish routes: workspaces CRUD, signed uploads, document finalize, analysis-runs start/status, requirements list/patch, evidence get, checklist list/patch, drafts + audits + findings, exports. Error contract: `{code, message, stage?, retryable, correlationId, details?}` — never expose secrets or raw provider errors.
