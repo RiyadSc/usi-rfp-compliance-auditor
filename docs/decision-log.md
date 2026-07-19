@@ -1,5 +1,15 @@
 # Decision Log
 
+## Phase 8 decisions — 2026-07-19
+
+- **D-041 — Final controls stay database-atomic.** Rate limits use fixed RPC policy and provider budgets use advisory-locked reservations before construction; no paid external limiter/monitor is introduced.
+- **D-042 — Key presence never enables a provider.** `MockProvider` remains default; the explicit protected live flag plus Phase 4 compatibility/scope/budget preflight are all required.
+- **D-043 — Prepared demo has a separate immutable full-roadmap scope.** It binds two PDFs and every Phase 4–7 identity/hash/version. It does not reuse or alter the Phase 4 live-smoke scope.
+- **D-044 — Reset only presentation state.** Immutable candidates, findings, checklist/proposal/report records, exports, and spend history are never reset.
+- **D-045 — Fallback preserves the original report.** It is private, watermarked, visibly disclosed, audited, and delivered only through a 300-second authorized grant.
+- **D-046 — Browser gates isolate server/auth processes.** The full controlled suite runs each spec sequentially with a fresh Next/worker server because a monolithic development server showed repeatable session/read instability. No test is waived.
+- **D-047 — Roadmap complete; rollout separate.** Phase 8 closes implementation while production deployment, confidential data, and unrestricted verification remain blocked pending new decisions.
+
 Append-only. Each entry: date, decision, rationale, reversibility, source.
 
 ## Inherited from Engineering Design §17.3 (2026-07-16)

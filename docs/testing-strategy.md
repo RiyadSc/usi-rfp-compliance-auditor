@@ -1,5 +1,15 @@
 # Testing Strategy
 
+## Phase 8 final matrix
+
+`npm run test:unit` contains domain, schema, deterministic engine, service helper, component-state, adversarial parser/injection/malformed-output, rate, cost, cache, reset, contingency, and provenance coverage. `npm run eval:mock:phase8` recomputes and gates the Phase 4–7 known-answer artifacts without a provider.
+
+`npm run test:integration` is sequential and covers all database/RLS/service paths, including two-user isolation, immutable records/history, private storage/export grants, rate-limit concurrency, budget idempotency, exact prepared scope/cache/fallback, and ordinary-user denial.
+
+`npm run test:e2e:isolated` runs every Playwright spec sequentially in a fresh web/worker server and auth boundary. The manually controlled CI job runs non-critical specs this way and runs `@demo-critical` once separately. No suite receives an OpenAI key; live flags are forced off. The historical Phase 4 smoke UI audit remains an explicit read-only opt-in and is not a provider test.
+
+Before a handoff: run unit, integration, isolated E2E, consolidated evaluation, lint, formatting, TypeScript, production build, lockfile, dependency, secret, and invariant gates in that order. Integration/browser processes must not overlap.
+
 Sources: Engineering Design §12, PRD §8.1/§11.2, build brief Phase 8.
 
 ## Test pyramid

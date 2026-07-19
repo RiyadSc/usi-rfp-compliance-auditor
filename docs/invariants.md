@@ -90,3 +90,15 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] CSV formula injection and HTML/script injection are neutralized; system conclusions are guarded by a versioned prohibited-language policy.
 - [x] The synthetic fixture reports all five missing forms with precision/recall 1.0, every aggregate/provenance/coverage metric 1.0, and zero isolation/download/overwrite/provider failures.
 - [x] Phase 7 made zero provider calls, used only synthetic fixture data, and left the Phase 4 model/fingerprint/rollout controls unchanged.
+
+## Phase 8 invariant result — 2026-07-19
+
+- [x] The consolidated Phase 4–7 gate has zero dangerous counts and 1.0 evidence, citation, provenance, schema, and known-answer accuracy.
+- [x] Unsupported/malformed/parser-uncertain/injected data cannot become verified, active, consistent, complete, public, or human-approved.
+- [x] Every new table has RLS; privileged rate/budget/reset RPCs are service-only; both storage buckets remain private.
+- [x] Rate/cost controls are server-owned, database-atomic, fail closed, and precede provider construction.
+- [x] The cache, reset, and fallback require the exact synthetic scope, member, hashes, fingerprint, versions, and completed runs.
+- [x] Reset changes only presentation state and appends history; no immutable Phase 4–7 or ledger record is rewritten.
+- [x] All UI modes are visibly distinguished, accessible under repository checks, and preserve authorization and uncertainty.
+- [x] Three complete reset-backed rehearsals and the final demo-critical test passed with zero provider calls or prohibited language.
+- [x] General live verification remains disabled and no customer/confidential data was used.

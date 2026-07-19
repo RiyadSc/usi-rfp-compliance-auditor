@@ -21,3 +21,21 @@
 - **CSV injection regression:** stop CSV distribution, rerun `reporting-domain.test.ts` and `eval:mock:reporting`, and fix the versioned neutralizer before regenerating exports.
 - **Retention cleanup not running:** deny expired grants, invoke the reviewed maintenance purge from a server-only environment, and verify revocation/access events. Do not extend URLs or add a public policy.
 - **Phase 7 isolation anomaly:** stop report/export mutations, preserve audit/access evidence, run the reporting integration and RLS suites, and do not bypass membership or composite scope checks.
+
+## Phase 8 presentation contingencies
+
+| Scenario                                                  | Diagnosis and approved action                                                                                      | Audience disclosure / prohibited action                                          |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Application unavailable                                   | Check local web health; restart only before the demo and rerun preflight                                           | Do not claim a live system is running; show no unvalidated screenshot as current |
+| Supabase unavailable                                      | Stop mutations; use the already generated local rehearsal screenshot only as an explicitly historical illustration | Do not bypass RLS or move files public                                           |
+| Parser unavailable                                        | Show parser-uncertain state and original page where available                                                      | State that human review is required; do not infer missing/support                |
+| Worker/verification/checklist/proposal result unavailable | Use prepared completed cache only if exact binding validates                                                       | Disclose cached mode; never fabricate a run                                      |
+| Cache miss/stale fixture                                  | Stop; reprovision via repository script and rerun exact hash preflight                                             | Do not loosen hashes, versions, workspace, or user binding                       |
+| Report generation failure                                 | Activate the exact private prepared fallback                                                                       | Disclose pre-generated snapshot and original provenance                          |
+| Signed download failure/expired/revoked                   | Keep report visible in app; request one new authorized grant only if service is healthy                            | Do not extend expiry, expose object paths, or make the bucket public             |
+| Unexpected auth/session state                             | Close the browser context, start a fresh one, sign in again, and verify workspace identity                         | Never reuse another user's session or infer a workspace                          |
+| Browser/slow network                                      | Refresh once; use cached/offline-read-only mode only if the exact cache remains valid                              | Disclose mode and stale limitations; no fake progress                            |
+| Reset failure                                             | Stop; run dry-run and inspect exact scope/hash/audit                                                               | Never select an arbitrary workspace or hand-edit immutable rows                  |
+| Partial interruption                                      | Resume only from a visibly validated prepared/cached screen or restart from reset                                  | Explain the restart; do not represent a partial run as complete                  |
+
+For every case preserve auditability, authorization, private storage, uncertainty, and the language policy. If exact provenance cannot be re-established, stop the demo.

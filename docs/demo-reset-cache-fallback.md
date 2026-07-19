@@ -1,0 +1,9 @@
+# Phase 8 Demo State, Cache, Reset, and Fallback
+
+The prepared demo is separate synthetic scope `81000000-0000-4000-8000-000000000001`, workspace `81000000-0000-4000-8000-000000000002`, fixture `full-roadmap-known-answer-v1`, and marker `phase8-synthetic-demo-only`. It binds two private PDFs, their hashes, all Phase 4–7 run identities and versions, the Phase 4 fingerprint, report hash, fixture hash, and derived cache key. A missing, stale, cross-workspace, incomplete, parser-failed, version-drifted, or hash-drifted binding is rejected.
+
+`npm run demo:provision:phase8` is deterministic and idempotent. It validates project `uxmxkdjschbekkbnweby`, the authorized synthetic identity, private buckets, and exact source objects before inserting the immutable scope/cache/fallback rows. It never discovers an arbitrary workspace.
+
+`npm run demo:reset:phase8 -- --dry-run` validates the exact scope and returns the expected final-state hash without mutation. `npm run demo:reset:phase8` changes only the mutable presentation state and appends reset/audit history. It never rewrites immutable candidates, findings, checklist structure, proposal audits, reports, exports, provider ledgers, unrelated users, or non-synthetic workspaces.
+
+Modes are `prepared`, `cached`, `fallback`, and `offline_read_only`. Every mode keeps authorization/RLS active and is visibly disclosed. The fallback is the original immutable Phase 7 HTML artifact in private `workspace-exports`, watermarked `DEMO — SYNTHETIC DATA — NOT FOR SUBMISSION`. It is permitted only for the exact validated cache/scope, uses a 300-second signed grant, preserves original report provenance, and records activation without persisting the bearer URL/token.

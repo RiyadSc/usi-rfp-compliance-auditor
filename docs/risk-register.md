@@ -1,6 +1,17 @@
 # Risk Register
 
-Last updated: 2026-07-18 for Phase 7 closure.
+Last updated: 2026-07-19 for Phase 8 closure.
+
+## Phase 8 final residual risks
+
+| ID  | Risk                                                                                          | Current control                                                                                        | Residual / next decision                                                        |
+| --- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| R25 | Long-lived development server loses reliable auth/data reads under the complete browser suite | Controlled gate uses fresh sequential server/auth process per spec; production paths still enforce RLS | Reassess under the eventual deployment runtime before rollout                   |
+| R26 | Prepared cache/fallback becomes stale or is shown as current                                  | Exact canonical binding/version/hash checks; visible mode banner; private original report provenance   | Reprovision only through reviewed repository script after a contract change     |
+| R27 | Rate/budget races exceed limits                                                               | Database atomic counters and advisory-locked reservations; idempotent settlement                       | Monitor contention and retention of operational buckets after deployment design |
+| R28 | Telemetry leaks content or breaks successful actions                                          | Bounded metadata schema, no text/URLs/secrets, best-effort writes                                      | External monitoring remains unselected and unauthorized                         |
+| R29 | Signed fallback grant is copied during its validity                                           | Member authorization, private bucket, 300-second maximum, audit, no persisted token                    | Bearer risk remains during the five-minute window                               |
+| R30 | Frozen fixtures overstate generalization                                                      | Adversarial fixtures, deterministic fail-closed controls, human review, live rollout disabled          | Separate production/data-governance and broader-evaluation decision required    |
 
 | ID  | Risk                                                             | Current control                                                                                                                            | Residual / next decision                                                                                   |
 | --- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |

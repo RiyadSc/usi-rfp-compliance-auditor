@@ -1,5 +1,16 @@
 # Assumptions
 
+## Phase 8 closure assumptions
+
+- The full-roadmap prepared fixture is synthetic/public and may be retained in development for repeatable demos.
+- `uxmxkdjschbekkbnweby` remains the only authorized development project for this repository.
+- A controlled demo may use cached completed analysis and a visibly disclosed pre-generated report, but neither may be represented as a fresh run.
+- General live verification, customer/confidential data, production rollout, and external monitoring remain unauthorized.
+- Repository-defined accessibility checks do not constitute formal WCAG certification.
+- HTML/CSV exports remain acceptable for the demo; pixel-stable PDF output is not implemented.
+- A five-minute signed URL is an accepted demo bearer-risk window; retention cleanup still requires operational scheduling.
+- Fresh sequential Playwright servers are the reliable local/controlled-CI test topology for the current Next development runtime.
+
 Last updated: 2026-07-18 after Phase 4 closure.
 
 - Phase 4 verifies what the uploaded source set requires; it does not determine whether the bidder complies.

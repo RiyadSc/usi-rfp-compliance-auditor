@@ -113,3 +113,13 @@ Sources: Engineering Design §10, build-brief AI security rules, Phase 0 threat 
 - The exact synthetic production scope is service-created, immutable, RLS-protected, and hash-bound. Missing/extra candidates or documents, a wrong workspace/user/run/fixture/fingerprint, or hash drift stops before provider construction. Cross-workspace database and UI access tests pass.
 - Residual model risk is not eliminated by the perfect frozen fixture. Distribution shift, parser degradation, novel addendum language, and provider behavior changes remain possible. Controls are fail-closed deterministic validation, human-review pending status, immutable provenance, pinned snapshots/fingerprint, mock fallback, and a separately authorized rollout gate.
 - Provider retention remains a governance dependency: `store:false` is used but is not claimed as contractual Zero Data Retention. Confidential or production USI content remains prohibited until retention, access, and rollout controls receive a separate decision.
+
+## Phase 8 final hardening controls
+
+- Sensitive operations consume fixed, database-atomic, workspace/actor-aware rate buckets. Limits/windows are defined server-side; callers cannot raise them.
+- Provider-capable paths validate rollout, authorization, scope, immutable provenance, compatibility, and an advisory-locked maximum-cost reservation before construction. A key alone never activates OpenAI.
+- The prepared demo cache is valid only for the exact workspace/user, two document hashes, completed analysis/verification runs, Phase 4 fingerprint, all Phase 4–7 versions, report hash, fixture hash, binding hash, and cache key.
+- Reset requires the immutable synthetic marker and exact cache binding. It mutates only presentation state and appends audit/reset history.
+- The report fallback remains a private original Phase 7 artifact, explicitly labeled and watermarked, with a transient grant of at most 300 seconds.
+- Privacy-safe performance events contain only bounded categories/timings/counts. Observability failures cannot replace successful application actions.
+- The final repository-owned security review and residual risks are in `docs/security-review-phase8.md`.

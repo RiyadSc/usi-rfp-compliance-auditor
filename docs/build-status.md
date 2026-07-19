@@ -1,5 +1,15 @@
 # Build Status
 
+## Phase 8 — complete (2026-07-19)
+
+Final evaluation/security/reliability/demo hardening is complete. Migration `20260719000023` is applied to project `uxmxkdjschbekkbnweby`; all nine new tables have RLS and privileged RPCs are service-only. Atomic rate/budget controls, privacy-safe performance instrumentation, exact prepared cache, private labeled fallback, deterministic reset, accessible operational states, controlled CI, consolidated evaluator, and full-roadmap demo are implemented.
+
+The consolidated gate has every dangerous count at zero and every required validity/adherence/accuracy metric at 1.0. Unit/service/component tests pass (306), Supabase integration passes (77), the isolated mock Playwright matrix passes (21 default plus the separately executed read-only opt-in audit), and three complete demo-critical rehearsals pass in 19.733–20.361 seconds with zero provider calls. Final quality/build/scanning/invariant gates pass.
+
+Authoritative ledgers remain Phase 3 `$0.408541`, Phase 4 `$12.100797/$15`, remediation `$9.283190/$12`, and cumulative API `$12.509338`. Phase 8 provider usage/spend is `0`/`$0.00`. General live verification remains disabled; customer/confidential data and production rollout remain unauthorized. See `docs/phase8-completion-report.md` and `docs/final-project-handoff.md`.
+
+Phase 8 implementation commit: `f1614e39d58691187981adf59fa7685552f097f9`. Evaluation/demo/test commit: `97aee01e4264827273d0c8b2e8e44320b85ca725`. The final documentation commit is the handoff `HEAD`.
+
 ## Current phase: Phase 7 complete — Phase 8 not started
 
 Last updated: 2026-07-18.

@@ -139,3 +139,9 @@ UI state model: every async view supports empty/loading/progress/success/termina
 ## Environments & CI (Design §13)
 
 local (dev, unit/integration), preview (mock/sandbox model), demo (frozen fixture, stable URL). Env vars per Design §13.2 (`DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `MODEL_PROVIDER`, `MODEL_API_KEY`, `EXTRACTION_MODEL`, `VERIFICATION_MODEL`, `JOB_SIGNING_SECRET`, `DEMO_MODE`, `MAX_PAGES_PER_WORKSPACE=100`, `MAX_MODEL_COST_USD_PER_RUN=10`, …) validated at boot, server-side only. CI gates: typecheck, lint, unit tests, migration validation, secret scan, fixture-evaluation thresholds, Playwright smoke.
+
+## Phase 8 final hardening layer
+
+`phase8-consolidated-evaluation-v1` recomputes the provider-free Phase 4–7 known answers and one strict consolidated gate. The Phase 8 control plane adds fixed database-atomic rate buckets, advisory-locked budget reservations before provider construction, privacy-safe performance events, immutable synthetic scope/cache/fallback records, and an idempotent presentation-state reset. The prepared route is `/w/:id/demo`; it requires the exact validated cache rather than merely a membership.
+
+The prepared scope binds every Phase 4–7 run/document/hash/version and the qualified Phase 4 fingerprint. Prepared, cached, fallback, and offline-read-only modes remain authorized and visibly labeled. The fallback reuses one immutable private Phase 7 artifact via a transient five-minute grant. See `docs/phase8-data-flow.md` and `docs/demo-reset-cache-fallback.md`.

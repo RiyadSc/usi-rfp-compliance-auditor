@@ -338,3 +338,7 @@ Phase 5 checklist generation, blocker creation, readiness, workflow, waivers, an
 ## Phase 7 provider decision
 
 Phase 7 report aggregation, CSV/HTML rendering, export storage, and access control are deterministic and make zero provider calls. No model is selected for reporting. The Phase 4 `gpt-5.5-2026-04-23`/low selection and fingerprint remain unchanged and unrestricted live verification remains disabled. Phase 7 provider usage and spend are exactly zero.
+
+## Phase 8 provider decision
+
+Phase 8 evaluation, hardening, caching, reset, fallback, and rehearsal use deterministic fixtures, completed synthetic records, and `MockProvider`. They made zero provider calls and spent `$0.00`. Provider construction now additionally requires explicit `LIVE_PROVIDER_ENABLED=true`; an API key by itself remains inert. The selected Phase 4 model/fingerprint are unchanged, and general live verification, customer documents, and production rollout remain disabled.

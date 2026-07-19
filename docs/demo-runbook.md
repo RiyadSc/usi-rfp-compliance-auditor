@@ -18,3 +18,28 @@
 16. Use report phase/severity/review/type filters and pagination, then demonstrate a second workspace report URL returns Not Found.
 
 No Phase 5, Phase 6, or Phase 7 step invokes a paid provider. General live Phase 4 verification remains disabled.
+
+## Phase 8 protected full-roadmap demo
+
+### Five-minute preflight
+
+1. Confirm project ref `uxmxkdjschbekkbnweby`, synthetic user A, and a clean worktree. Do not print environment values.
+2. Run `npm run demo:provision:phase8`; expect scope `81000000-0000-4000-8000-000000000001`, workspace `...000002`, 24 candidates, two documents, and zero provider calls/spend.
+3. Run `npm run demo:reset:phase8 -- --dry-run`, then `npm run demo:reset:phase8`; expected final state hash is `215f97d1472e013de82fa0e74d1f6821eabc88608ede05f516f956367fde833e`.
+4. Run `PLAYWRIGHT_REUSE=0 npx playwright test --grep @demo-critical --workers=1` or inspect the last three rehearsal artifacts.
+5. Start web and worker with `LIVE_PROVIDER_ENABLED=false` and `PHASE4_LIVE_VERIFICATION_ENABLED=false`.
+
+### Presentation
+
+1. Sign in as synthetic user A and open workspace `81000000-0000-4000-8000-000000000002` → **Full-roadmap demo**.
+2. Confirm the `Prepared synthetic demo` banner, fixture `full-roadmap-known-answer-v1`, exact Phase 4 fingerprint, and 24 immutable candidates.
+3. Open Mandatory Form A-1: exact quote is on source page 18. Navigate to the original 22-page RFP.
+4. Show exactly five critical missing forms: A-1/page 18, B-2/page 19, C-3/page 20, D-4/page 21, E-5/page 22. Open the first checklist/evidence view.
+5. Show the eight proposal findings: unsupported fact, delivery contradiction, deadline conflict, insurance mismatch, wrong procurement reference, missing response, company proof, and injection attempt with zero influence. Open proposal page 4 and relevant RFP evidence.
+6. Record one finding review and show append-only resolution history.
+7. Open the executive report: show critical blockers, unresolved findings, missing artifacts, source/review denominators, provenance, and watermark.
+8. Validate a short-lived private download. The UI must say it expires in 300 seconds and audit `demo_fallback_activated`; never copy a URL/token into notes or screenshots.
+9. Switch to fallback only if deliberately rehearsing it. Disclose `Prepared fallback snapshot — synthetic data` and that it is not a new report.
+10. In a separate user-B browser, open the demo URL and confirm uniform Not found.
+
+Expected complete flow is about 20 seconds in the prepared environment; allow five minutes for presentation narration. Afterward, run reset again and close all signed-download tabs. Do not change RLS, storage privacy, provider flags, hashes, or fixture answers during a demo.
