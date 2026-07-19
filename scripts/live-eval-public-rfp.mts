@@ -20,6 +20,8 @@ const FIXTURE = 'sbcounty-security-public-rfp-v1';
 const ROOT = resolve('fixtures/public-rfp/san-bernardino-security-AGENCY23-PURC-5020');
 const SOURCE = resolve(ROOT, 'source');
 const MAX_USD = 3;
+const PHASE3_CEILING_USD = 10;
+const PHASE4_CEILING_USD = 15;
 const EXTRACT_MODEL = 'gpt-5.4-mini-2026-03-17';
 const VERIFY_MODEL = 'gpt-5.5-2026-04-23';
 const expectedHashes: Record<string, string> = {
@@ -82,10 +84,17 @@ if (ledgerError) throw ledgerError;
 const priorPublicSpend = (ledger ?? [])
   .filter((row) => String(row.note ?? '').startsWith(`public-rfp-test:${FIXTURE}:`))
   .reduce((sum, row) => sum + Number(row.estimated_cost_usd ?? 0), 0);
-if (priorPublicSpend > 0)
+const approvedResumeSpend = Number(process.env.PUBLIC_RFP_RESUME_SPEND_USD ?? 0);
+if (priorPublicSpend > 0 && Math.abs(priorPublicSpend - approvedResumeSpend) > 0.0000005)
   throw new Error(
     `This fixture already has $${priorPublicSpend.toFixed(6)} live spend; refusing a repeat`,
   );
+const phase3Spend = (ledger ?? [])
+  .filter((row) => row.phase === 'phase3')
+  .reduce((sum, row) => sum + Number(row.estimated_cost_usd ?? 0), 0);
+const phase4Spend = (ledger ?? [])
+  .filter((row) => row.phase === 'phase4')
+  .reduce((sum, row) => sum + Number(row.estimated_cost_usd ?? 0), 0);
 const cumulativeApiSpend = (ledger ?? []).reduce(
   (sum, row) => sum + Number(row.estimated_cost_usd ?? 0),
   0,
@@ -104,20 +113,28 @@ console.info(
     pages: documents.reduce((sum, document) => sum + document.pages.length, 0),
     cumulativeApiSpendUsd: Number(cumulativeApiSpend.toFixed(6)),
     priorPublicTestSpendUsd: Number(priorPublicSpend.toFixed(6)),
+    phase3SpendUsd: Number(phase3Spend.toFixed(6)),
+    phase4SpendUsd: Number(phase4Spend.toFixed(6)),
     extractionMaximumUsd: Number(extractionMaximum.toFixed(6)),
     completeTestMaximumUsd: MAX_USD,
   }),
 );
 if (process.argv.includes('--preflight-only')) process.exit(0);
 
-let actualCost = 0;
+let actualCost = priorPublicSpend;
+let phase3RunCost = 0;
+let phase4RunCost = 0;
 let calls = 0;
 const usage: Array<Record<string, unknown>> = [];
-const ensureCallFits = (maximum: number) => {
+const ensureCallFits = (maximum: number, phase: 'phase3' | 'phase4') => {
   if (actualCost + maximum > MAX_USD + 1e-9)
     throw new Error(
       `Budget stop before provider call: $${actualCost.toFixed(6)} + $${maximum.toFixed(6)} > $${MAX_USD}`,
     );
+  const phaseTotal = phase === 'phase3' ? phase3Spend + phase3RunCost : phase4Spend + phase4RunCost;
+  const ceiling = phase === 'phase3' ? PHASE3_CEILING_USD : PHASE4_CEILING_USD;
+  if (phaseTotal + maximum > ceiling + 1e-9)
+    throw new Error(`Budget stop before provider call: ${phase} ceiling would be exceeded`);
 };
 const record = async (
   stage: string,
@@ -136,12 +153,15 @@ const record = async (
     refused?: boolean;
   },
 ) => {
+  const phase = stage === 'extract' ? 'phase3' : 'phase4';
   actualCost += call.estimatedCostUsd;
+  if (phase === 'phase3') phase3RunCost += call.estimatedCostUsd;
+  else phase4RunCost += call.estimatedCostUsd;
   calls += 1 + call.retries;
   if (actualCost > MAX_USD + 1e-9)
     throw new Error('Provider cost crossed approved public-test cap');
   const { error } = await admin.from('spend_ledger').insert({
-    phase: null,
+    phase,
     kind: stage === 'extract' ? 'extract' : 'verify',
     estimated_cost_usd: call.estimatedCostUsd,
     note: `public-rfp-test:${FIXTURE}:${stage}`,
@@ -166,7 +186,7 @@ for (const document of documents) {
   const inputTokens =
     document.pages.reduce((sum, page) => sum + Math.ceil(page.text.length / 4), 0) + 1500;
   const maxOutputTokens = document.type === 'primary_rfp' ? 12_000 : 5_000;
-  ensureCallFits(estimateChatCost(inputTokens, maxOutputTokens, EXTRACT_MODEL) * 3);
+  ensureCallFits(estimateChatCost(inputTokens, maxOutputTokens, EXTRACT_MODEL) * 3, 'phase3');
   const output = await provider.extractCandidates({
     workspaceId,
     documentId: document.id,
@@ -229,8 +249,8 @@ for (const candidate of selected) {
     maxContexts: 2,
     entailmentMaxOutputTokens: 1800,
     challengeMaxOutputTokens: 1600,
-    beforeEntailment: () => ensureCallFits(reserveA),
-    beforeChallenge: () => ensureCallFits(reserveB),
+    beforeEntailment: () => ensureCallFits(reserveA, 'phase4'),
+    beforeChallenge: () => ensureCallFits(reserveB, 'phase4'),
     onEntailmentCall: (call) => record(`entailment:${candidate.id}`, call),
     onChallengeCall: (call) => record(`challenge:${candidate.id}`, call),
   });
