@@ -1,0 +1,53 @@
+{
+  "artifactVersion": "public-rfp-live-evaluation-v2-incomplete-summary-v1",
+  "sourceArtifact": "public-rfp-sbcounty-60ac7579-a266-4976-b06f-6a48215f31b4.json",
+  "fixture": "sbcounty-security-public-rfp-v2",
+  "evaluationComplete": false,
+  "reason": "phase4_budget_ceiling_stopped_187_candidate_assessments",
+  "documents": 7,
+  "pages": 81,
+  "extractedCandidates": 252,
+  "uniqueCandidates": 252,
+  "acceptedExactQuoteCandidates": 217,
+  "rejectedPreliminaryQuotes": 35,
+  "verificationCompleted": 28,
+  "verificationFailed": 189,
+  "budgetStoppedCandidates": 187,
+  "semanticContractFailures": 2,
+  "providerCalls": {
+    "total": 74,
+    "extraction": 15,
+    "entailment": 30,
+    "challenge": 29
+  },
+  "usage": {
+    "inputTokens": 253558,
+    "outputTokens": 34408,
+    "reasoningTokens": 2163,
+    "cachedTokens": 6144,
+    "summedLatencyMs": 314457,
+    "costUsd": 1.43245875,
+    "phase3CostUsd": 0.14822175,
+    "phase4CostUsd": 1.284237,
+    "retries": 0,
+    "incompletes": 0,
+    "refusals": 0,
+    "repairsAttemptedAndRejected": 2,
+    "schemaFailures": 2
+  },
+  "knownAnswers": {
+    "total": 19,
+    "acceptedExtractionMatches": 14,
+    "completedPasses": 5,
+    "reportedRecall": 0.2631578947368421,
+    "recallIsQualificationMetric": false,
+    "reason": "the verification population was incomplete"
+  },
+  "authoritativeLedgersAfterRun": {
+    "phase3Usd": 0.618427,
+    "phase4Usd": 14.813639,
+    "cumulativeApiUsd": 15.432066,
+    "publicV2Usd": 1.432462
+  },
+  "safetyDecision": "failed_closed_not_qualified_no_application_persistence"
+}
