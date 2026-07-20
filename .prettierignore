@@ -18,3 +18,7 @@ artifacts/evaluation/phase4-output-budget-prequal-gpt55-20260718a-gpt-5.5-2026-0
 artifacts/evaluation/phase4-output-budget-prequal-gpt55-20260718a-live-results.json
 artifacts/evaluation/phase4-meeting-remediation-prequal-gpt55-20260718a-gpt-5.5-2026-04-23-run-1.json
 artifacts/evaluation/phase4-meeting-remediation-prequal-gpt55-20260718a-live-results.json
+artifacts/evaluation/phase4-production-worker-smoke-a51266f9-f867-4b30-9d50-f3ee0056a112.json
+artifacts/evaluation/public-rfp-sbcounty-7f19a6f7-f5e9-4f86-ac07-9b04c3b74d0f.json
+# Hash-pinned public source downloads must remain byte-for-byte identical.
+fixtures/public-rfp/**/source/**

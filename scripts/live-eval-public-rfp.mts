@@ -8,15 +8,23 @@ import {
   EXTRACTION_PROMPT_VERSION,
   SCHEMA_VERSION,
   OpenAIProvider,
+  addExplicitAmendmentContext,
+  buildPublicExtractionBatches,
   estimateChatCost,
+  findExplicitPortalDeadlineReplacements,
+  gatePreliminaryCandidateQuotes,
+  officialPortalHtmlToText,
+  precedenceForExplicitDeadline,
   runCandidateVerificationPipeline,
+  scorePublicKnownAnswers,
+  selectCandidateContexts,
 } from '../packages/ai/src/index.ts';
 import { PdfJsParserAdapter } from '../packages/documents/src/parser/pdfjs-adapter.ts';
 
 loadEnv({ path: resolve('.env.local'), quiet: true });
 loadEnv({ path: resolve('.env'), quiet: true });
 
-const FIXTURE = 'sbcounty-security-public-rfp-v1';
+const FIXTURE = 'sbcounty-security-public-rfp-v2';
 const ROOT = resolve('fixtures/public-rfp/san-bernardino-security-AGENCY23-PURC-5020');
 const SOURCE = resolve(ROOT, 'source');
 const MAX_USD = 3;
@@ -36,6 +44,8 @@ const expectedHashes: Record<string, string> = {
   'exhibit-b-county-locations.pdf':
     'f857d232af5a24964905345f067e1b9edc2b5bfb06972110b32460704453a33b',
   'main-rfp.pdf': '59c2e6bbdb197afb7a3da20e794fb72b1c9dd753a7d7f69064bc66edddb2c49b',
+  'official-solicitation-page.html':
+    '764f3a6df4135dcd8a0ae549df7c4ca306277f51b696153cb03a9c4b860c8953',
 };
 
 if (process.env.PUBLIC_RFP_LIVE_EVAL !== '1') throw new Error('PUBLIC_RFP_LIVE_EVAL=1 is required');
@@ -76,6 +86,26 @@ for (const [index, name] of files.entries()) {
     pages: parsed.pages.map((page) => ({ pageNumber: page.pageNumber, text: page.text })),
   });
 }
+const portalBytes = new Uint8Array(
+  await readFile(resolve(SOURCE, 'official-solicitation-page.html')),
+);
+if (hash(portalBytes) !== expectedHashes['official-solicitation-page.html'])
+  throw new Error('Public source hash mismatch: official-solicitation-page.html');
+const portalText = officialPortalHtmlToText(new TextDecoder().decode(portalBytes));
+const portalDocument = {
+  id: '70000000-0000-4000-8000-000000000007',
+  name: 'official-solicitation-page.html',
+  type: 'amendment_portal',
+  pages: [{ pageNumber: 1, text: portalText }],
+};
+documents.push(portalDocument);
+const explicitDeadlineReplacements = findExplicitPortalDeadlineReplacements(portalText);
+if (explicitDeadlineReplacements.length !== 2)
+  throw new Error('Expected two explicit portal deadline replacements');
+const extractionBatches = buildPublicExtractionBatches(documents, {
+  maxPages: 8,
+  maxEstimatedTokens: 14_000,
+});
 
 const { data: ledger, error: ledgerError } = await admin
   .from('spend_ledger')
@@ -99,10 +129,10 @@ const cumulativeApiSpend = (ledger ?? []).reduce(
   (sum, row) => sum + Number(row.estimated_cost_usd ?? 0),
   0,
 );
-const extractionMaximum = documents.reduce((sum, document) => {
+const extractionMaximum = extractionBatches.reduce((sum, batch) => {
   const inputTokens =
-    document.pages.reduce((pageSum, page) => pageSum + Math.ceil(page.text.length / 4), 0) + 1500;
-  const outputTokens = document.type === 'primary_rfp' ? 12_000 : 5_000;
+    batch.pages.reduce((pageSum, page) => pageSum + Math.ceil(page.text.length / 4), 0) + 1500;
+  const outputTokens = 5000;
   return sum + estimateChatCost(inputTokens, outputTokens, EXTRACT_MODEL) * 3;
 }, 0);
 console.info(
@@ -116,6 +146,8 @@ console.info(
     phase3SpendUsd: Number(phase3Spend.toFixed(6)),
     phase4SpendUsd: Number(phase4Spend.toFixed(6)),
     extractionMaximumUsd: Number(extractionMaximum.toFixed(6)),
+    extractionBatches: extractionBatches.length,
+    explicitDeadlineReplacements,
     completeTestMaximumUsd: MAX_USD,
   }),
 );
@@ -182,38 +214,42 @@ const workspaceId = '70000000-0000-4000-8000-000000000100';
 const analysisRunId = randomUUID();
 const verificationRunId = randomUUID();
 const candidates = [];
-for (const document of documents) {
+for (const batch of extractionBatches) {
   const inputTokens =
-    document.pages.reduce((sum, page) => sum + Math.ceil(page.text.length / 4), 0) + 1500;
-  const maxOutputTokens = document.type === 'primary_rfp' ? 12_000 : 5_000;
+    batch.pages.reduce((sum, page) => sum + Math.ceil(page.text.length / 4), 0) + 1500;
+  const maxOutputTokens = 5000;
   ensureCallFits(estimateChatCost(inputTokens, maxOutputTokens, EXTRACT_MODEL) * 3, 'phase3');
   const output = await provider.extractCandidates({
     workspaceId,
-    documentId: document.id,
+    documentId: batch.documentId,
     analysisRunId,
-    pages: document.pages,
+    pages: batch.pages,
     promptVersion: EXTRACTION_PROMPT_VERSION,
     schemaVersion: SCHEMA_VERSION,
     maxOutputTokens,
   });
   await record('extract', output);
   if (!output.schemaAdherent || output.incomplete || output.refused || output.repairAttempts > 0)
-    throw new Error(`Extraction failed closed for ${document.name}`);
+    throw new Error(`Extraction failed closed for ${batch.id}`);
   candidates.push(...output.candidates);
 }
 
-const priorityPattern =
-  /deadline|question|proposal|attachment|form|signature|reference|insurance|liability|license|guard card|cost|epro|conference|evaluation|addendum/i;
-const selected = candidates
-  .map((candidate) => ({
-    candidate,
-    score:
-      (candidate.mandatoryClass === 'mandatory' ? 2 : 0) +
-      (priorityPattern.test(`${candidate.title} ${candidate.obligation}`) ? 2 : 0),
-  }))
-  .sort((a, b) => b.score - a.score)
-  .slice(0, 20)
-  .map((item) => item.candidate);
+const uniqueCandidates = [
+  ...new Map(
+    candidates.map((candidate) => [
+      [
+        candidate.documentId,
+        candidate.preliminaryPage,
+        candidate.category,
+        candidate.title.toLowerCase(),
+        candidate.obligation.toLowerCase(),
+      ].join('|'),
+      candidate,
+    ]),
+  ).values(),
+];
+const quoteGate = gatePreliminaryCandidateQuotes(uniqueCandidates, documents);
+const selected = quoteGate.accepted;
 const contexts = documents.flatMap((document) =>
   document.pages.map((page) => ({
     chunkId: `${document.id}:${page.pageNumber}`,
@@ -227,16 +263,17 @@ const contexts = documents.flatMap((document) =>
   })),
 );
 const verification = [];
+const portalContext = contexts.find((context) => context.documentId === portalDocument.id)!;
 for (const candidate of selected) {
-  const own = contexts
-    .filter(
-      (context) =>
-        context.documentId === candidate.documentId &&
-        Math.abs(context.pageNumber - candidate.preliminaryPage) <= 1,
-    )
-    .slice(0, 2);
+  const candidateContexts = addExplicitAmendmentContext(
+    candidate,
+    contexts,
+    portalContext,
+    explicitDeadlineReplacements,
+  );
+  const selectedContexts = selectCandidateContexts(candidate, candidateContexts, 2);
   const inputTokens =
-    own.reduce((sum, context) => sum + Math.ceil(context.text.length / 4), 0) + 2500;
+    selectedContexts.reduce((sum, context) => sum + Math.ceil(context.text.length / 4), 0) + 2500;
   const reserveA = estimateChatCost(inputTokens, 1800, VERIFY_MODEL) * 3;
   const reserveB = estimateChatCost(inputTokens, 1600, VERIFY_MODEL) * 3;
   const result = await runCandidateVerificationPipeline({
@@ -245,7 +282,7 @@ for (const candidate of selected) {
     analysisRunId,
     verificationRunId,
     candidate,
-    availableContexts: contexts,
+    availableContexts: candidateContexts,
     maxContexts: 2,
     entailmentMaxOutputTokens: 1800,
     challengeMaxOutputTokens: 1600,
@@ -254,12 +291,38 @@ for (const candidate of selected) {
     onEntailmentCall: (call) => record(`entailment:${candidate.id}`, call),
     onChallengeCall: (call) => record(`challenge:${candidate.id}`, call),
   });
-  verification.push(result);
+  const explicitPrecedence = precedenceForExplicitDeadline(candidate, explicitDeadlineReplacements);
+  verification.push({
+    ...result,
+    finalAssessment:
+      result.finalAssessment && explicitPrecedence !== 'undetermined'
+        ? { ...result.finalAssessment, precedenceStatus: explicitPrecedence }
+        : result.finalAssessment,
+  });
 }
 
 const expected = JSON.parse(await readFile(resolve(ROOT, 'known-answers.json'), 'utf8'));
+const knownAnswerMatchers = JSON.parse(
+  await readFile(resolve(ROOT, 'known-answer-matchers-v2.json'), 'utf8'),
+);
+const assessmentByCandidateId = new Map(
+  verification.map((result) => [
+    result.candidate.id,
+    {
+      sourceSupportStatus: result.finalAssessment?.sourceSupportStatus ?? 'unsupported',
+      precedenceStatus: result.finalAssessment?.precedenceStatus ?? 'undetermined',
+    },
+  ]),
+);
+const knownAnswerScore = scorePublicKnownAnswers({
+  expected: expected.expected,
+  matchers: knownAnswerMatchers.matchers,
+  candidates: quoteGate.accepted,
+  documents,
+  assessmentByCandidateId,
+});
 const artifact = {
-  artifactVersion: 'public-rfp-live-evaluation-v1',
+  artifactVersion: 'public-rfp-live-evaluation-v2',
   generatedAt: new Date().toISOString(),
   fixture: FIXTURE,
   solicitationId: 'AGENCY23-PURC-5020',
@@ -277,11 +340,21 @@ const artifact = {
     documents: documents.length,
     pages: documents.reduce((n, document) => n + document.pages.length, 0),
     extractedCandidates: candidates.length,
-    verifiedPriorityCandidates: verification.length,
+    uniqueCandidates: uniqueCandidates.length,
+    rejectedPreliminaryQuotes: quoteGate.rejected.length,
+    verifiedCandidates: verification.length,
     providerCalls: calls,
   },
   expectedAnswers: expected.expected,
-  candidates,
+  knownAnswerScore,
+  candidates: uniqueCandidates,
+  quoteGate: {
+    acceptedCandidateIds: quoteGate.accepted.map((candidate) => candidate.id),
+    rejected: quoteGate.rejected.map((item) => ({
+      candidateId: item.candidate.id,
+      matchType: item.matchType,
+    })),
+  },
   verification: verification.map((result) => ({
     candidate: result.candidate,
     contexts: result.contexts.map((context) => ({

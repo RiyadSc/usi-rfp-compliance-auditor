@@ -1,0 +1,66 @@
+{
+  "version": "public-known-answer-matchers-v2",
+  "matchers": [
+    {
+      "id": "question-deadline-final",
+      "patterns": ["question.*August\\s+0?2.*2023", "questions.*due.*August\\s+0?2"]
+    },
+    {
+      "id": "proposal-deadline-final",
+      "patterns": ["proposal.*August\\s+25.*2023", "deadline.*proposal.*August\\s+25"]
+    },
+    {
+      "id": "question-deadline-old",
+      "patterns": ["question.*July\\s+25.*2023", "questions.*due.*July\\s+25"]
+    },
+    {
+      "id": "proposal-deadline-old",
+      "patterns": ["proposal.*August\\s+18.*2023", "deadline.*proposal.*August\\s+18"]
+    },
+    {
+      "id": "proposal-conference",
+      "patterns": ["proposal conference.*July\\s+26", "conference.*July\\s+26"]
+    },
+    { "id": "submission-method", "patterns": ["ePro.*hard copy", "electronically.*hard copy"] },
+    { "id": "epro-registration", "patterns": ["register.*ePro"] },
+    {
+      "id": "authorized-signature",
+      "patterns": ["signed.*authorized", "authorized.*bind.*Proposer"]
+    },
+    { "id": "attachment-a", "patterns": ["Attachment A.*cover page", "cover page.*Attachment A"] },
+    { "id": "attachment-c", "patterns": ["Attachment C.*licenses", "licenses.*Attachment C"] },
+    {
+      "id": "attachment-e",
+      "patterns": ["(?:Attachment|Exhibit) E.*separat", "cost sheet.*separat"]
+    },
+    { "id": "references", "patterns": ["three.*references", "3.*references"] },
+    {
+      "id": "insurance-affidavit",
+      "patterns": ["Attachment J.*insurance", "insurance.*broker.*signature"]
+    },
+    {
+      "id": "general-liability",
+      "patterns": ["general liability.*5.*million", "general liability.*5,000,000"]
+    },
+    {
+      "id": "auto-liability",
+      "patterns": ["automobile liability.*1.*million", "automobile liability.*1,000,000"]
+    },
+    {
+      "id": "professional-liability",
+      "patterns": ["professional liability.*1.*million", "professional liability.*1,000,000"]
+    },
+    {
+      "id": "guard-card",
+      "patterns": ["permanent.*guard.*card", "temporary guard cards.*not acceptable"]
+    },
+    {
+      "id": "evaluation-weights",
+      "patterns": ["qualifications.*35.*technical.*35", "evaluation.*35.*35.*10.*20"]
+    },
+    {
+      "id": "addendum-3-reporting",
+      "patterns": ["guard concerns.*post orders", "post orders.*bi-annual"]
+    }
+  ]
+}
