@@ -1,0 +1,61 @@
+{
+  "reportVersion": "phase4-production-worker-smoke-v1",
+  "generatedAt": "2026-07-19T19:16:24.006Z",
+  "syntheticScope": {
+    "smokeScopeId": "40000000-0000-4000-8000-000000000001",
+    "workspaceId": "10000000-0000-4000-8000-000000000001",
+    "authenticatedUserId": "922727a8-727b-4b9e-a0ff-6e7f7f43d82c",
+    "documentIds": [
+      "10000000-0000-4000-8000-000000000002"
+    ],
+    "analysisRunId": "10000000-0000-4000-8000-000000000003",
+    "fixtureVersion": "verification-cases-v2",
+    "verificationVersion": 3,
+    "candidateSetHash": "531c03afbabe79adb9a490dc0f7e9657ff0f85013bbf0aabe64b505a94a8ac6b",
+    "documentSetHash": "46127bbb348db9374370921876e9adf0a1ca98971e970367e5e142188b04a44b",
+    "expectedAnswersHash": "c67a347cf0c9dccabb8cb50336bd00f72b66bda9ee602e51fd98256cfbe3ba0a"
+  },
+  "verificationRunId": "a51266f9-f867-4b30-9d50-f3ee0056a112",
+  "processingJobId": "15d6ed78-4a9b-4df4-9bf4-7dfe22c3a10f",
+  "model": "gpt-5.5-2026-04-23",
+  "compatibilityFingerprint": "c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b",
+  "budget": {
+    "phase4SpendBefore": 12.100797,
+    "remediationSpendBefore": 9.28319,
+    "smokeMaximum": 0.75,
+    "projectedPhase4Maximum": 12.850797,
+    "projectedRemediationMaximum": 10.03319,
+    "phase4Ceiling": 15,
+    "remediationCeiling": 12
+  },
+  "checks": {
+    "runCompleted": true,
+    "jobCompleted": true,
+    "expectedFindingsMatch": true,
+    "findingCount": 24,
+    "candidateCount": 24,
+    "modelMetadataComplete": true,
+    "noRepairRetryOrIncomplete": true,
+    "contextsBounded": true,
+    "factsComplete": true,
+    "passesPersisted": true,
+    "evidenceValidated": true,
+    "pagesResolve": true,
+    "parentChildPersisted": true,
+    "machineOnly": true,
+    "humanReviewStatusPending": true,
+    "auditEventPersisted": true,
+    "spendLedgerPersisted": true,
+    "unsupportedNeverVerified": true,
+    "sourceNavigationPattern": "/w/{workspaceId}/documents/{documentId}?page={pageNumber}"
+  },
+  "usage": {
+    "calls": 40,
+    "inputTokens": 89872,
+    "outputTokens": 5666,
+    "reasoningTokens": 403,
+    "cachedTokens": 0,
+    "latencyMs": 90758,
+    "costUsd": 0.61934
+  }
+}
