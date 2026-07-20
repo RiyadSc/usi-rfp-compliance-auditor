@@ -286,4 +286,33 @@ describe('public RFP evaluation v2 controls', () => {
       actualStatus: 'superseded',
     });
   });
+
+  it('reports a matched extraction with no final verification assessment as incomplete', () => {
+    const score = scorePublicKnownAnswers({
+      expected: [
+        {
+          id: 'question-final',
+          status: 'active',
+          document: 'source.pdf',
+          page: 1,
+          summary: 'Final question deadline',
+        },
+      ],
+      matchers: [{ id: 'question-final', patterns: ['question deadline'] }],
+      candidates: [baseCandidate],
+      documents: [
+        {
+          id: baseCandidate.documentId,
+          name: 'source.pdf',
+          type: 'primary_rfp',
+          pages: [{ pageNumber: 1, text: baseCandidate.obligation }],
+        },
+      ],
+      assessmentByCandidateId: new Map(),
+    });
+    expect(score.results[0]).toMatchObject({
+      passed: false,
+      reason: 'verification_missing',
+    });
+  });
 });

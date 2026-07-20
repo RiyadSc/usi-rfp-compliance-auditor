@@ -1,5 +1,9 @@
 # Build Status
 
+## San Bernardino public RFP v2 — incomplete, failed closed (2026-07-20)
+
+One authorized live v2 run used 15 bounded extraction batches across seven official sources/81 pages. It extracted 252 unique candidates, rejected 35 invalid preliminary quotes, and accepted 217 candidates for verification. Only 28 final assessments completed; the Phase 4 ceiling stopped 187 before provider access and two strict semantic-contract repairs were rejected. The run cost `$1.43245875` (`$1.432462` ledgered) and remained within all ceilings, but is not a qualified result and did not populate the application. Post-run ledgers are Phase 3 `$0.618427/$10`, Phase 4 `$14.813639/$15`, and cumulative `$15.432066`. The harness now reports missing final assessments as incomplete rather than unsupported and exits unsuccessful instead of printing a misleading completion flag. See `docs/public-rfp-san-bernardino-v2-result.md`.
+
 ## Public RFP evaluator remediation — offline complete (2026-07-19)
 
 The failed San Bernardino public baseline remains unchanged and is not presented as a pass. A versioned offline correction now uses bounded consecutive-page extraction, a hash-pinned official portal source, explicit-only deadline precedence, exact/normalized-exact preliminary quotation gating, verification of every accepted unique candidate, and scoring of all 19 frozen answers with source-support and precedence requirements. Focused tests and repository gates pass; no provider call or spend occurred. General live verification and the qualified Phase 4 production fingerprint are unchanged. See `docs/public-rfp-evaluator-v2.md`.

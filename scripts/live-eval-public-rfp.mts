@@ -306,13 +306,19 @@ const knownAnswerMatchers = JSON.parse(
   await readFile(resolve(ROOT, 'known-answer-matchers-v2.json'), 'utf8'),
 );
 const assessmentByCandidateId = new Map(
-  verification.map((result) => [
-    result.candidate.id,
-    {
-      sourceSupportStatus: result.finalAssessment?.sourceSupportStatus ?? 'unsupported',
-      precedenceStatus: result.finalAssessment?.precedenceStatus ?? 'undetermined',
-    },
-  ]),
+  verification.flatMap((result) =>
+    result.finalAssessment
+      ? [
+          [
+            result.candidate.id,
+            {
+              sourceSupportStatus: result.finalAssessment.sourceSupportStatus,
+              precedenceStatus: result.finalAssessment.precedenceStatus,
+            },
+          ] as const,
+        ]
+      : [],
+  ),
 );
 const knownAnswerScore = scorePublicKnownAnswers({
   expected: expected.expected,
@@ -321,6 +327,12 @@ const knownAnswerScore = scorePublicKnownAnswers({
   documents,
   assessmentByCandidateId,
 });
+const verificationCompleted = verification.filter(
+  (result) => result.finalAssessment && !result.failedStage,
+).length;
+const verificationFailed = verification.length - verificationCompleted;
+const evaluationComplete =
+  verificationFailed === 0 && knownAnswerScore.passed === knownAnswerScore.total;
 const artifact = {
   artifactVersion: 'public-rfp-live-evaluation-v2',
   generatedAt: new Date().toISOString(),
@@ -336,6 +348,13 @@ const artifact = {
     challenge: 'verify-challenge-v4',
   },
   budget: { maximumUsd: MAX_USD, priorPublicSpend, actualCostUsd: actualCost },
+  outcome: {
+    completed: evaluationComplete,
+    verificationCompleted,
+    verificationFailed,
+    knownAnswersPassed: knownAnswerScore.passed,
+    knownAnswersTotal: knownAnswerScore.total,
+  },
   totals: {
     documents: documents.length,
     pages: documents.reduce((n, document) => n + document.pages.length, 0),
@@ -375,5 +394,13 @@ await mkdir(resolve('artifacts/evaluation'), { recursive: true });
 const artifactPath = resolve('artifacts/evaluation', `public-rfp-sbcounty-${analysisRunId}.json`);
 await writeFile(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`, { flag: 'wx' });
 console.info(
-  JSON.stringify({ completed: true, artifactPath, ...artifact.totals, actualCostUsd: actualCost }),
+  JSON.stringify({
+    completed: evaluationComplete,
+    artifactPath,
+    ...artifact.totals,
+    verificationCompleted,
+    verificationFailed,
+    actualCostUsd: actualCost,
+  }),
 );
+if (!evaluationComplete) process.exitCode = 1;
