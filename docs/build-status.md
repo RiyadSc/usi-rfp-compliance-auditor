@@ -1,5 +1,11 @@
 # Build Status
 
+## Public RFP evaluator remediation — offline complete (2026-07-19)
+
+The failed San Bernardino public baseline remains unchanged and is not presented as a pass. A versioned offline correction now uses bounded consecutive-page extraction, a hash-pinned official portal source, explicit-only deadline precedence, exact/normalized-exact preliminary quotation gating, verification of every accepted unique candidate, and scoring of all 19 frozen answers with source-support and precedence requirements. Focused tests and repository gates pass; no provider call or spend occurred. General live verification and the qualified Phase 4 production fingerprint are unchanged. See `docs/public-rfp-evaluator-v2.md`.
+
+The recommended next public fixture is Massachusetts OSD FAC115, scoped to Category 1 Security Guard Services. It is official statewide material with forms, pricing, contract terms, and 14 portal amendment events. No Massachusetts document was ingested or run. See `docs/massachusetts-physical-security-rfp-candidate.md`.
+
 ## Post-Phase 8 executive UX hardening — complete (2026-07-19)
 
 The application now has a director-oriented presentation layer across the opportunity portfolio, workspace command center, RFP files, requirement register, submission plan, draft review, final review, and prepared demo. A shared six-stage workspace navigation, Executive/Analyst view switch, business-language status badges, preset risk views, action-first detail screens, deadline/change signals, and guided demo narrative reduce the need to interpret internal workflow vocabulary.

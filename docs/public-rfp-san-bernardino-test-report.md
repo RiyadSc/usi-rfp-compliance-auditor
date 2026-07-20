@@ -61,3 +61,19 @@ Final authoritative ledger totals:
 ## Required correction before another public run
 
 Use provider-neutral section/page chunk extraction rather than a single 61-page extraction response, include the official portal amendment record as a first-class source document, deterministically connect its explicit old/new deadlines, and validate every preliminary quote before semantic verification. Rerun only after a new provider authorization and a new frozen evaluator version. General live verification remains disabled.
+
+## Offline evaluator remediation (v2)
+
+The required correction is implemented but has **not** been run against a provider. The original v1 result above remains the authoritative public baseline until a separately authorized v2 run completes.
+
+`public-rfp-live-evaluation-v2` now:
+
+- extracts consecutive page batches capped at eight pages and approximately 14,000 input tokens instead of asking one response to cover the 61-page RFP;
+- hash-pins and parses the official solicitation portal as an inert, hostile-data source document;
+- recognizes old and replacement question/proposal deadlines only when the portal contains explicit `changed from ... to ...` evidence;
+- assigns `superseded`/`active` deterministically for those exact old/new dates and otherwise fails closed to `undetermined`;
+- rejects preliminary evidence unless it is `exact` or `normalized_exact` on the cited page;
+- verifies every accepted unique candidate instead of selecting the top 20; and
+- scores all 19 frozen answers independently, requiring source support, the correct document/page, a validated preliminary quotation, and the correct precedence axis.
+
+The Phase 4 qualified production fingerprint and unrestricted-live-verification controls are unchanged. The v2 harness still requires an explicit live flag, a new provider authorization, and a budget preflight before any future call.
