@@ -2,9 +2,13 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   PUBLIC_RFP_EXTRACTION_BATCH_VERSION,
+  PUBLIC_RFP_EXTRACTION_ARTIFACT_VERSION,
   PUBLIC_RFP_PORTAL_SOURCE_VERSION,
+  PUBLIC_RFP_VERIFICATION_PLAN_VERSION,
   addExplicitAmendmentContext,
+  assertPublicVerificationPlanBudget,
   buildPublicExtractionBatches,
+  buildPublicVerificationPlan,
   findExplicitPortalDeadlineReplacements,
   gatePreliminaryCandidateQuotes,
   officialPortalHtmlToText,
@@ -314,5 +318,128 @@ describe('public RFP evaluation v2 controls', () => {
       passed: false,
       reason: 'verification_missing',
     });
+  });
+
+  it('freezes every accepted candidate into a stable, bounded, answer-independent plan', () => {
+    const second = {
+      ...baseCandidate,
+      id: '70000000-0000-4000-8000-000000000208',
+      title: 'Submission deadline',
+      obligation: 'Submit the proposal by August 25, 2023.',
+    };
+    const contexts = [
+      {
+        chunkId: 'source:1',
+        documentId: baseCandidate.documentId,
+        documentType: 'primary_rfp',
+        pageNumber: 1,
+        text: 'Submit questions by July 25, 2023. Submit the proposal by August 25, 2023.',
+        extractionStatus: 'ok',
+        parserWarnings: [],
+        retrievalReason: 'public_fixture_page',
+      },
+      {
+        chunkId: 'source:2',
+        documentId: baseCandidate.documentId,
+        documentType: 'primary_rfp',
+        pageNumber: 2,
+        text: 'Unrelated description.',
+        extractionStatus: 'ok',
+        parserWarnings: [],
+        retrievalReason: 'neighbor',
+      },
+      {
+        chunkId: 'source:3',
+        documentId: baseCandidate.documentId,
+        documentType: 'addendum',
+        pageNumber: 3,
+        text: 'Amendment evidence.',
+        extractionStatus: 'ok',
+        parserWarnings: [],
+        retrievalReason: 'addendum',
+      },
+    ];
+    const build = (candidates: RequirementCandidate[]) =>
+      buildPublicVerificationPlan({
+        candidates,
+        contextsForCandidate: () => contexts,
+        modelId: 'gpt-5.5-2026-04-23',
+      });
+    const plan = build([baseCandidate, second]);
+    const reordered = build([second, baseCandidate]);
+    expect(PUBLIC_RFP_VERIFICATION_PLAN_VERSION).toBe('public-verification-plan-v1');
+    expect(PUBLIC_RFP_EXTRACTION_ARTIFACT_VERSION).toBe('public-extraction-artifact-v1');
+    expect(plan.candidateCount).toBe(2);
+    expect(plan.candidates.map((candidate) => candidate.candidateId).sort()).toEqual(
+      [baseCandidate.id, second.id].sort(),
+    );
+    expect(plan.candidates.every((candidate) => candidate.contextReferences.length <= 2)).toBe(
+      true,
+    );
+    expect(plan.populationHash).toBe(reordered.populationHash);
+    expect(plan.plannedMaximumUsd).toBeGreaterThan(0);
+  });
+
+  it('changes the population hash when a candidate or evidence changes', () => {
+    const context = {
+      chunkId: 'source:1',
+      documentId: baseCandidate.documentId,
+      documentType: 'primary_rfp',
+      pageNumber: 1,
+      text: baseCandidate.obligation,
+      extractionStatus: 'ok',
+      parserWarnings: [],
+      retrievalReason: 'cited_page',
+    };
+    const build = (candidate: RequirementCandidate, text = context.text) =>
+      buildPublicVerificationPlan({
+        candidates: [candidate],
+        contextsForCandidate: () => [{ ...context, text }],
+        modelId: 'gpt-5.5-2026-04-23',
+      });
+    expect(build(baseCandidate).populationHash).not.toBe(
+      build({ ...baseCandidate, obligation: `${baseCandidate.obligation} Material condition.` })
+        .populationHash,
+    );
+    expect(build(baseCandidate).populationHash).not.toBe(
+      build(baseCandidate, `${context.text} Amendment text.`).populationHash,
+    );
+  });
+
+  it('refuses the complete population before verification when either budget cannot fit', () => {
+    const plan = buildPublicVerificationPlan({
+      candidates: [baseCandidate],
+      contextsForCandidate: () => [
+        {
+          chunkId: 'source:1',
+          documentId: baseCandidate.documentId,
+          documentType: 'primary_rfp',
+          pageNumber: 1,
+          text: baseCandidate.obligation,
+          extractionStatus: 'ok',
+          parserWarnings: [],
+          retrievalReason: 'cited_page',
+        },
+      ],
+      modelId: 'gpt-5.5-2026-04-23',
+    });
+    expect(() =>
+      assertPublicVerificationPlanBudget({
+        plan,
+        publicSpendUsd: 2.99,
+        publicCeilingUsd: 3,
+        phaseSpendUsd: 10,
+        phaseCeilingUsd: 15,
+      }),
+    ).toThrow(/Full-population budget stop/);
+    expect(() =>
+      assertPublicVerificationPlanBudget({
+        plan,
+        publicSpendUsd: 0,
+        publicCeilingUsd: 100,
+        phaseSpendUsd: 14.99,
+        phaseCeilingUsd: 15,
+      }),
+    ).toThrow(/phase ceiling/);
   });
 });

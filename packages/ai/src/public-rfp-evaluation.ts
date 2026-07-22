@@ -1,5 +1,8 @@
+import { createHash } from 'node:crypto';
 import type { RequirementCandidate } from './schemas';
 import type { VerificationContext } from './provider';
+import { estimateChatCost } from './cost';
+import { selectCandidateContexts } from './verification-decision-engine';
 import {
   extractTypedDateFacts,
   normalizeEvidenceText,
@@ -10,6 +13,8 @@ export const PUBLIC_RFP_EXTRACTION_BATCH_VERSION = 'public-extraction-batches-v2
 export const PUBLIC_RFP_PORTAL_SOURCE_VERSION = 'public-portal-source-v1';
 export const PUBLIC_RFP_PRECEDENCE_VERSION = 'public-explicit-precedence-v1';
 export const PUBLIC_RFP_QUOTE_GATE_VERSION = 'public-preliminary-quote-gate-v1';
+export const PUBLIC_RFP_VERIFICATION_PLAN_VERSION = 'public-verification-plan-v1';
+export const PUBLIC_RFP_EXTRACTION_ARTIFACT_VERSION = 'public-extraction-artifact-v1';
 
 export type PublicRfpDocument = {
   id: string;
@@ -214,6 +219,176 @@ export function addExplicitAmendmentContext(
     ...contexts.filter((context) => context.chunkId !== portalContext.chunkId),
     portalContext,
   ];
+}
+
+export type PublicVerificationPlanCandidate = {
+  candidateId: string;
+  contextReferences: Array<{
+    chunkId: string;
+    documentId: string;
+    pageNumber: number;
+    contentHash: string;
+  }>;
+  estimatedInputTokens: number;
+  entailmentMaximumUsd: number;
+  challengeMaximumUsd: number;
+  candidateMaximumUsd: number;
+};
+
+export type PublicVerificationPlan = {
+  version: typeof PUBLIC_RFP_VERIFICATION_PLAN_VERSION;
+  populationHash: string;
+  candidateCount: number;
+  modelId: string;
+  maxContexts: number;
+  entailmentMaxOutputTokens: number;
+  challengeMaxOutputTokens: number;
+  retryReserveMultiplier: number;
+  plannedMaximumUsd: number;
+  candidates: PublicVerificationPlanCandidate[];
+};
+
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, item]) => `${JSON.stringify(key)}:${stableJson(item)}`);
+    return `{${entries.join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function sha256(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
+}
+
+/**
+ * Freezes the complete candidate population and its bounded evidence before verification begins.
+ * Expected answers are deliberately not accepted as an input, so they cannot influence selection.
+ */
+export function buildPublicVerificationPlan(input: {
+  candidates: RequirementCandidate[];
+  contextsForCandidate: (candidate: RequirementCandidate) => VerificationContext[];
+  modelId: string;
+  maxContexts?: number;
+  entailmentMaxOutputTokens?: number;
+  challengeMaxOutputTokens?: number;
+  retryReserveMultiplier?: number;
+}): PublicVerificationPlan {
+  const maxContexts = input.maxContexts ?? 2;
+  const entailmentMaxOutputTokens = input.entailmentMaxOutputTokens ?? 1800;
+  const challengeMaxOutputTokens = input.challengeMaxOutputTokens ?? 1600;
+  const retryReserveMultiplier = input.retryReserveMultiplier ?? 3;
+  if (!Number.isInteger(maxContexts) || maxContexts < 1)
+    throw new Error('maxContexts must be a positive integer');
+  if (!Number.isInteger(entailmentMaxOutputTokens) || entailmentMaxOutputTokens < 1)
+    throw new Error('entailmentMaxOutputTokens must be a positive integer');
+  if (!Number.isInteger(challengeMaxOutputTokens) || challengeMaxOutputTokens < 1)
+    throw new Error('challengeMaxOutputTokens must be a positive integer');
+  if (!Number.isInteger(retryReserveMultiplier) || retryReserveMultiplier < 1)
+    throw new Error('retryReserveMultiplier must be a positive integer');
+
+  const ids = new Set<string>();
+  const candidates = input.candidates
+    .map((candidate) => {
+      if (ids.has(candidate.id)) throw new Error(`Duplicate candidate ID: ${candidate.id}`);
+      ids.add(candidate.id);
+      const contexts = selectCandidateContexts(
+        candidate,
+        input.contextsForCandidate(candidate),
+        maxContexts,
+      );
+      if (!contexts.length) throw new Error(`No bounded evidence for candidate: ${candidate.id}`);
+      const estimatedInputTokens =
+        contexts.reduce((sum, context) => sum + Math.ceil(context.text.length / 4), 0) + 2500;
+      const entailmentMaximumUsd =
+        estimateChatCost(estimatedInputTokens, entailmentMaxOutputTokens, input.modelId) *
+        retryReserveMultiplier;
+      const challengeMaximumUsd =
+        estimateChatCost(estimatedInputTokens, challengeMaxOutputTokens, input.modelId) *
+        retryReserveMultiplier;
+      return {
+        candidateId: candidate.id,
+        contextReferences: contexts.map((context) => ({
+          chunkId: context.chunkId,
+          documentId: context.documentId,
+          pageNumber: context.pageNumber,
+          contentHash: sha256(context.text),
+        })),
+        estimatedInputTokens,
+        entailmentMaximumUsd,
+        challengeMaximumUsd,
+        candidateMaximumUsd: entailmentMaximumUsd + challengeMaximumUsd,
+        populationMaterial: {
+          candidate: {
+            id: candidate.id,
+            documentId: candidate.documentId,
+            preliminaryPage: candidate.preliminaryPage,
+            category: candidate.category,
+            title: candidate.title,
+            obligation: candidate.obligation,
+            evidenceQuote: candidate.evidenceQuote,
+          },
+          contextReferences: contexts.map((context) => ({
+            chunkId: context.chunkId,
+            documentId: context.documentId,
+            pageNumber: context.pageNumber,
+            contentHash: sha256(context.text),
+          })),
+        },
+      };
+    })
+    .sort((left, right) => left.candidateId.localeCompare(right.candidateId));
+
+  const populationHash = sha256(
+    stableJson({
+      version: PUBLIC_RFP_VERIFICATION_PLAN_VERSION,
+      modelId: input.modelId,
+      maxContexts,
+      entailmentMaxOutputTokens,
+      challengeMaxOutputTokens,
+      retryReserveMultiplier,
+      population: candidates.map((candidate) => candidate.populationMaterial),
+    }),
+  );
+  const publicCandidates: PublicVerificationPlanCandidate[] = candidates.map(
+    ({ populationMaterial: _populationMaterial, ...candidate }) => candidate,
+  );
+  return {
+    version: PUBLIC_RFP_VERIFICATION_PLAN_VERSION,
+    populationHash,
+    candidateCount: publicCandidates.length,
+    modelId: input.modelId,
+    maxContexts,
+    entailmentMaxOutputTokens,
+    challengeMaxOutputTokens,
+    retryReserveMultiplier,
+    plannedMaximumUsd: publicCandidates.reduce(
+      (sum, candidate) => sum + candidate.candidateMaximumUsd,
+      0,
+    ),
+    candidates: publicCandidates,
+  };
+}
+
+/** Fails before verification provider construction unless the full frozen population fits. */
+export function assertPublicVerificationPlanBudget(input: {
+  plan: PublicVerificationPlan;
+  publicSpendUsd: number;
+  publicCeilingUsd: number;
+  phaseSpendUsd: number;
+  phaseCeilingUsd: number;
+}): void {
+  const planned = input.plan.plannedMaximumUsd;
+  if (input.publicSpendUsd + planned > input.publicCeilingUsd + 1e-9)
+    throw new Error(
+      `Full-population budget stop: public evaluation would require up to $${planned.toFixed(6)} more`,
+    );
+  if (input.phaseSpendUsd + planned > input.phaseCeilingUsd + 1e-9)
+    throw new Error(
+      `Full-population budget stop: phase ceiling would require up to $${planned.toFixed(6)} more`,
+    );
 }
 
 export type PublicKnownAnswer = {

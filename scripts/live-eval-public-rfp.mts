@@ -6,10 +6,13 @@ import { config as loadEnv } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import {
   EXTRACTION_PROMPT_VERSION,
+  PUBLIC_RFP_EXTRACTION_ARTIFACT_VERSION,
   SCHEMA_VERSION,
   OpenAIProvider,
   addExplicitAmendmentContext,
+  assertPublicVerificationPlanBudget,
   buildPublicExtractionBatches,
+  buildPublicVerificationPlan,
   estimateChatCost,
   findExplicitPortalDeadlineReplacements,
   gatePreliminaryCandidateQuotes,
@@ -202,7 +205,7 @@ const record = async (
   usage.push({ stage, ...call });
 };
 
-const provider = new OpenAIProvider({
+const extractionProvider = new OpenAIProvider({
   apiKey,
   extractModel: EXTRACT_MODEL,
   verifyModel: VERIFY_MODEL,
@@ -219,7 +222,7 @@ for (const batch of extractionBatches) {
     batch.pages.reduce((sum, page) => sum + Math.ceil(page.text.length / 4), 0) + 1500;
   const maxOutputTokens = 5000;
   ensureCallFits(estimateChatCost(inputTokens, maxOutputTokens, EXTRACT_MODEL) * 3, 'phase3');
-  const output = await provider.extractCandidates({
+  const output = await extractionProvider.extractCandidates({
     workspaceId,
     documentId: batch.documentId,
     analysisRunId,
@@ -262,22 +265,78 @@ const contexts = documents.flatMap((document) =>
     retrievalReason: 'public_fixture_page',
   })),
 );
-const verification = [];
 const portalContext = contexts.find((context) => context.documentId === portalDocument.id)!;
+const contextsForCandidate = (candidate: (typeof selected)[number]) =>
+  addExplicitAmendmentContext(candidate, contexts, portalContext, explicitDeadlineReplacements);
+const verificationPlan = buildPublicVerificationPlan({
+  candidates: selected,
+  contextsForCandidate,
+  modelId: VERIFY_MODEL,
+  maxContexts: 2,
+  entailmentMaxOutputTokens: 1800,
+  challengeMaxOutputTokens: 1600,
+  retryReserveMultiplier: 3,
+});
+await mkdir(resolve('artifacts/evaluation'), { recursive: true });
+const populationArtifactPath = resolve(
+  'artifacts/evaluation',
+  `public-rfp-sbcounty-population-${analysisRunId}.json`,
+);
+await writeFile(
+  populationArtifactPath,
+  `${JSON.stringify(
+    {
+      artifactVersion: PUBLIC_RFP_EXTRACTION_ARTIFACT_VERSION,
+      generatedAt: new Date().toISOString(),
+      fixture: FIXTURE,
+      analysisRunId,
+      sourceHashes: expectedHashes,
+      extractionVersions: {
+        prompt: EXTRACTION_PROMPT_VERSION,
+        schema: SCHEMA_VERSION,
+      },
+      candidates: uniqueCandidates,
+      quoteGate: {
+        acceptedCandidateIds: selected.map((candidate) => candidate.id),
+        rejected: quoteGate.rejected.map((item) => ({
+          candidateId: item.candidate.id,
+          matchType: item.matchType,
+        })),
+      },
+      verificationPlan,
+    },
+    null,
+    2,
+  )}\n`,
+  { flag: 'wx' },
+);
+assertPublicVerificationPlanBudget({
+  plan: verificationPlan,
+  publicSpendUsd: actualCost,
+  publicCeilingUsd: MAX_USD,
+  phaseSpendUsd: phase4Spend + phase4RunCost,
+  phaseCeilingUsd: PHASE4_CEILING_USD,
+});
+
+// Verification provider construction is intentionally after the full-population budget assertion.
+const verificationProvider = new OpenAIProvider({
+  apiKey,
+  extractModel: EXTRACT_MODEL,
+  verifyModel: VERIFY_MODEL,
+  reasoningEffort: 'low',
+  verifyReasoningEffort: 'low',
+  timeoutMs: 90_000,
+});
+const verification = [];
 for (const candidate of selected) {
-  const candidateContexts = addExplicitAmendmentContext(
-    candidate,
-    contexts,
-    portalContext,
-    explicitDeadlineReplacements,
-  );
+  const candidateContexts = contextsForCandidate(candidate);
   const selectedContexts = selectCandidateContexts(candidate, candidateContexts, 2);
   const inputTokens =
     selectedContexts.reduce((sum, context) => sum + Math.ceil(context.text.length / 4), 0) + 2500;
   const reserveA = estimateChatCost(inputTokens, 1800, VERIFY_MODEL) * 3;
   const reserveB = estimateChatCost(inputTokens, 1600, VERIFY_MODEL) * 3;
   const result = await runCandidateVerificationPipeline({
-    provider,
+    provider: verificationProvider,
     workspaceId,
     analysisRunId,
     verificationRunId,
