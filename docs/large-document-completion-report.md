@@ -53,7 +53,7 @@ Status: complete for the authorized development workstream; not deployed; no pai
 
 31. **Documentation.** Updated architecture, data flow, normalized model, parser/table/OCR/job/cache/cost/provider restrictions, security/threat controls, risk, assumptions, decisions, testing, performance, demo, contingency, build status, invariant result, deployment constraint, and the operator guide.
 32. **Residual risks.** Production OCR is deliberately unconfigured; DOCX exact pagination requires a rendered artifact; spreadsheet cached formula values may be stale; PDF table geometry can remain uncertain; large ZIP/worker memory and throughput require target-environment capacity tests; all live/provider and confidential-data paths remain separately gated.
-33. **Git commits.** Recorded in the final handoff and repository history after logical schema/core, worker/UI/evaluation, and documentation commits.
+33. **Git commits.** `5590e32` adds the normalized model, adapters, controls, security pins, and migrations; `fe6a317` adds worker/UI/demo/evaluation/test behavior; `5255bbe` adds the completion documentation and operator guide. The final metadata-only report commit is the clean repository `HEAD` reported at delivery.
 34. **Worktree.** Required clean at handoff after the commits below are created.
 35. **Completion status.** Every authorized large-document completion gate is satisfied in development. This does not authorize deployment, production/customer data, paid OCR/model calls, or another workstream.
 
