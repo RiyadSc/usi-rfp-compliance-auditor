@@ -5,6 +5,7 @@ import { serverEnv } from '@/lib/env';
 export const PARSE_QUEUE = 'document-parse';
 export const EXTRACT_QUEUE = 'document-extract';
 export const VERIFY_QUEUE = 'requirements-verify';
+export const LARGE_DOCUMENT_WORK_QUEUE = 'large-document-work';
 
 export type ParseJobPayload = {
   workspaceId: string;
@@ -12,6 +13,7 @@ export type ParseJobPayload = {
   processingJobId: string;
   objectKey: string;
   inputHash: string;
+  largeDocumentJobId?: string;
 };
 
 export type ExtractJobPayload = {
@@ -27,6 +29,7 @@ export type VerifyJobPayload = {
   verificationRunId: string;
   processingJobId: string;
 };
+export type LargeDocumentWorkPayload = { workspaceId: string; jobId: string; workUnitId: string };
 
 async function withBoss<T>(fn: (boss: PgBoss) => Promise<T>): Promise<T> {
   const env = serverEnv();
@@ -77,6 +80,18 @@ export async function enqueueVerifyJob(payload: VerifyJobPayload): Promise<strin
       retryLimit: 2,
       retryDelay: 30,
       expireInSeconds: 60 * 60,
+    });
+  });
+}
+
+export async function enqueueLargeDocumentWork(
+  payload: LargeDocumentWorkPayload,
+): Promise<string | null> {
+  return withBoss(async (boss) => {
+    await boss.createQueue(LARGE_DOCUMENT_WORK_QUEUE);
+    return boss.send(LARGE_DOCUMENT_WORK_QUEUE, payload, {
+      retryLimit: 0,
+      expireInSeconds: 60 * 15,
     });
   });
 }

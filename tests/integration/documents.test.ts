@@ -199,7 +199,7 @@ describe('privileged upload path and isolation', () => {
   });
 
   it('rejects oversized declared size against configured limit', async () => {
-    const max = Number(process.env.MAX_UPLOAD_BYTES ?? 25 * 1024 * 1024);
+    const max = Number(process.env.MAX_UPLOAD_BYTES ?? 100 * 1024 * 1024);
     expect(() => {
       if (max + 1 > max) throw Object.assign(new Error('oversized'), { code: 'oversized' });
     }).toThrow();

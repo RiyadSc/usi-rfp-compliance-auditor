@@ -22,11 +22,11 @@ export function UploadForm({ workspaceId, supabaseUrl, supabaseAnonKey, maxUploa
     setStatus(null);
     const file = formData.get('file');
     if (!(file instanceof File) || file.size === 0) {
-      setError('Choose a PDF file');
+      setError('Choose a supported document');
       return;
     }
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
-      setError('Only PDF files are accepted');
+    if (!/\.(pdf|docx|xlsx|html?|txt|png|jpe?g|tiff?|webp|zip)$/i.test(file.name)) {
+      setError('Choose PDF, DOCX, XLSX, HTML, TXT, an approved image, or ZIP package');
       return;
     }
     if (file.size > maxUploadBytes) {
@@ -40,7 +40,7 @@ export function UploadForm({ workspaceId, supabaseUrl, supabaseAnonKey, maxUploa
         const intent = await createUploadIntent({
           workspaceId,
           filename: file.name,
-          mimeType: file.type || 'application/pdf',
+          mimeType: file.type || inferMime(file.name),
           byteSize: file.size,
           documentType: String(formData.get('documentType') || 'primary_rfp'),
         });
@@ -57,7 +57,7 @@ export function UploadForm({ workspaceId, supabaseUrl, supabaseAnonKey, maxUploa
         const { error: uploadError } = await supabase.storage
           .from('workspace-documents')
           .uploadToSignedUrl(intent.path, intent.token, file, {
-            contentType: 'application/pdf',
+            contentType: file.type || inferMime(file.name),
           });
         if (uploadError) {
           setError('Upload failed. Try again.');
@@ -88,10 +88,10 @@ export function UploadForm({ workspaceId, supabaseUrl, supabaseAnonKey, maxUploa
 
   return (
     <form action={onSubmit} className="space-y-3 rounded border border-slate-200 bg-white p-4">
-      <h2 className="text-base font-medium">Upload PDF</h2>
+      <h2 className="text-base font-medium">Upload solicitation files</h2>
       <p className="text-sm text-slate-600">
-        PDF only. Contents are untrusted data. Maximum size is {maxUploadBytes} bytes (enforced
-        server-side).
+        PDF, DOCX, XLSX, HTML, TXT, approved images, or a safe ZIP package. Contents are untrusted
+        data. Maximum size is {maxUploadBytes} bytes (enforced server-side).
       </p>
       {error ? (
         <p
@@ -125,13 +125,13 @@ export function UploadForm({ workspaceId, supabaseUrl, supabaseAnonKey, maxUploa
       </div>
       <div>
         <label htmlFor="file" className="block text-sm font-medium mb-1">
-          PDF file
+          Document or package
         </label>
         <input
           id="file"
           name="file"
           type="file"
-          accept="application/pdf,.pdf"
+          accept=".pdf,.docx,.xlsx,.html,.htm,.txt,.png,.jpg,.jpeg,.tif,.tiff,.webp,.zip"
           required
           className="block w-full text-sm"
         />
@@ -144,5 +144,28 @@ export function UploadForm({ workspaceId, supabaseUrl, supabaseAnonKey, maxUploa
         {pending ? 'Working…' : 'Upload'}
       </button>
     </form>
+  );
+}
+
+function inferMime(filename: string): string {
+  const extension = filename.toLowerCase().split('.').pop();
+  return (
+    (
+      {
+        pdf: 'application/pdf',
+        docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        html: 'text/html',
+        htm: 'text/html',
+        txt: 'text/plain',
+        png: 'image/png',
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        tif: 'image/tiff',
+        tiff: 'image/tiff',
+        webp: 'image/webp',
+        zip: 'application/zip',
+      } as Record<string, string>
+    )[extension ?? ''] ?? 'application/octet-stream'
   );
 }

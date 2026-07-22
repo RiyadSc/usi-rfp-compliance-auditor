@@ -8,6 +8,7 @@ import { enqueueExtractJob } from '@/lib/jobs';
 import { serverEnv } from '@/lib/env';
 import { checkBudget } from '@usi/ai';
 import { enforceRateLimit } from '@/lib/hardening/service';
+import { analysisModeSchema, sha256Hex } from '@usi/documents';
 
 async function requireMember(workspaceId: string) {
   const supabase = await createSupabaseServerClient();
@@ -27,12 +28,14 @@ async function requireMember(workspaceId: string) {
 export async function startExtraction(input: {
   workspaceId: string;
   documentId: string;
+  mode: 'quick_scan' | 'standard_analysis' | 'deep_audit';
 }): Promise<{ ok: true; analysisRunId: string } | { ok: false; error: string }> {
   try {
     const { supabase, user, workspaceId } = await requireMember(input.workspaceId);
     await enforceRateLimit({ operation: 'extraction_request', actorId: user.id, workspaceId });
     const admin = createSupabaseAdminClient();
     const env = serverEnv();
+    const mode = analysisModeSchema.parse(input.mode);
 
     const { data: doc } = await admin
       .from('documents')
@@ -66,8 +69,8 @@ export async function startExtraction(input: {
       status: 'queued',
       stage: 'index',
       created_by: user.id,
-      input_hash: doc.sha256,
-      provider_name: env.OPENAI_API_KEY ? 'openai' : 'mock',
+      input_hash: sha256Hex(`${doc.sha256}:${mode}:whole-document-selection-v1`),
+      provider_name: 'mock',
     });
     if (runErr) return { ok: false, error: 'Could not create analysis run' };
 
@@ -100,7 +103,7 @@ export async function startExtraction(input: {
       p_event_type: 'analysis_started',
       p_entity_type: 'analysis_run',
       p_entity_id: analysisRunId,
-      p_payload: { document_id: doc.id },
+      p_payload: { document_id: doc.id, analysis_mode: mode, provider: 'mock' },
     });
 
     revalidatePath(`/w/${workspaceId}/documents/${doc.id}`);

@@ -435,8 +435,13 @@ test('Phase 6 proposal audit keeps evidence, findings, human decisions, and work
   await page.goto(`/w/${workspaceId}`);
   await page.getByRole('link', { name: 'Open proposal audit →' }).click();
   await expect(page.getByRole('heading', { name: 'Proposal draft audit' })).toBeVisible();
-  await page.getByRole('link', { name: 'phase6-proposal.pdf' }).click();
-  await expect(page.getByRole('heading', { name: 'phase6-proposal.pdf' })).toBeVisible();
+  await Promise.all([
+    page.waitForURL(new RegExp(`/proposal-audit/${ids.auditRun}$`), { timeout: 30_000 }),
+    page.getByRole('link', { name: 'phase6-proposal.pdf' }).click(),
+  ]);
+  await expect(page.getByRole('heading', { name: 'phase6-proposal.pdf' })).toBeVisible({
+    timeout: 30_000,
+  });
   await expect(page.getByRole('cell', { name: 'addressed' })).toBeVisible();
   await expect(page.getByText(claim, { exact: true })).toBeVisible();
   await expect(page.getByRole('blockquote').filter({ hasText: quote })).toBeVisible();
@@ -454,7 +459,10 @@ test('Phase 6 proposal audit keeps evidence, findings, human decisions, and work
   await page.getByLabel('Reason').fill('Synthetic reviewer accepted this machine assessment.');
   await page.getByRole('button', { name: 'Record decision' }).click();
   await expect(page.getByText('Human decision appended.')).toBeVisible();
-  await expect(page.locator('span').filter({ hasText: /^Resolved$/ })).toBeVisible();
+  await page.goto(`/w/${workspaceId}/proposal-audit/${ids.auditRun}`);
+  await expect(page.locator('span').filter({ hasText: /^Resolved$/ })).toBeVisible({
+    timeout: 30_000,
+  });
   await expect(page.getByText('Source assessment accepted', { exact: true })).toBeVisible();
   await expect(page.locator('body')).not.toContainText(
     /\bCompliant\b|\bApproved\b|Safe to submit|Guaranteed complete/i,

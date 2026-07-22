@@ -17,19 +17,30 @@ const executable =
   process.platform === 'win32'
     ? 'node_modules/.bin/playwright.cmd'
     : 'node_modules/.bin/playwright';
+const isolatedEnvironment = {
+  ...process.env,
+  E2E_ISOLATED_BUILD: '1',
+  E2E_WEB_PORT: process.env.E2E_WEB_PORT ?? '3100',
+  E2E_WORKER_HEALTH_PORT: process.env.E2E_WORKER_HEALTH_PORT ?? '3101',
+  PLAYWRIGHT_REUSE: '0',
+  PHASE3_LIVE_EVAL: '0',
+  PHASE4_LIVE_EVAL: '0',
+  PHASE4_LIVE_VERIFICATION_ENABLED: 'false',
+  LIVE_PROVIDER_ENABLED: 'false',
+};
+
+console.info('[playwright-isolated] building isolated production server');
+execFileSync('npm', ['run', 'build', '--workspace', 'apps/web'], {
+  cwd: process.cwd(),
+  env: isolatedEnvironment,
+  stdio: 'inherit',
+});
 
 for (const spec of specs) {
   console.info(`\n[playwright-isolated] ${spec}`);
   execFileSync(executable, ['test', spec, '--workers=1', '--reporter=dot'], {
     cwd: process.cwd(),
-    env: {
-      ...process.env,
-      PLAYWRIGHT_REUSE: '0',
-      PHASE3_LIVE_EVAL: '0',
-      PHASE4_LIVE_EVAL: '0',
-      PHASE4_LIVE_VERIFICATION_ENABLED: 'false',
-      LIVE_PROVIDER_ENABLED: 'false',
-    },
+    env: isolatedEnvironment,
     stdio: 'inherit',
   });
 }

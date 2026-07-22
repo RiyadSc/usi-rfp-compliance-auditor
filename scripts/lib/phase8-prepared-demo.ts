@@ -82,7 +82,9 @@ function wrap(value: string, width = 88): string[] {
   return lines;
 }
 
-export function buildPhase8Pdf(pages: readonly { pageNumber: number; text: string }[]): Buffer {
+export function buildPhase8Pdf(
+  pages: readonly { pageNumber: number; text: string; scanned?: boolean }[],
+): Buffer {
   const pageObject = (index: number) => 4 + index * 2;
   const contentObject = (index: number) => 5 + index * 2;
   const objects = new Map<number, string>();
@@ -93,10 +95,14 @@ export function buildPhase8Pdf(pages: readonly { pageNumber: number; text: strin
   );
   objects.set(3, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
   pages.forEach((page, index) => {
-    const lines = [`SYNTHETIC DEMO - PAGE ${page.pageNumber}`, ...wrap(page.text)];
-    const stream = `BT\n/F1 9 Tf\n48 748 Td\n12 TL\n${lines
-      .map((line, lineIndex) => `${lineIndex ? 'T*\n' : ''}(${line}) Tj`)
-      .join('\n')}\nET`;
+    const lines = page.scanned
+      ? []
+      : [`SYNTHETIC DEMO - PAGE ${page.pageNumber}`, ...wrap(page.text)];
+    const stream = page.scanned
+      ? ''
+      : `BT\n/F1 9 Tf\n48 748 Td\n12 TL\n${lines
+          .map((line, lineIndex) => `${lineIndex ? 'T*\n' : ''}(${line}) Tj`)
+          .join('\n')}\nET`;
     objects.set(
       pageObject(index),
       `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents ${contentObject(index)} 0 R >>`,

@@ -6,6 +6,8 @@ import {
   createProvider,
   estimateEmbedCost,
 } from '@usi/ai';
+import type { ExtractOutput } from '@usi/ai';
+import { selectWholeDocumentPages } from '@usi/documents';
 import { adminClient } from './db.js';
 import { env } from './env.js';
 
@@ -22,12 +24,6 @@ function toVectorLiteral(vec: number[]): string {
 
 export async function handleExtractJob(payload: ExtractJobPayload): Promise<void> {
   const admin = adminClient();
-  const provider = createProvider({
-    ...(env.OPENAI_API_KEY ? { OPENAI_API_KEY: env.OPENAI_API_KEY } : {}),
-    OPENAI_EXTRACT_MODEL: env.OPENAI_EXTRACT_MODEL,
-    OPENAI_EMBED_MODEL: env.OPENAI_EMBED_MODEL,
-  });
-
   const { data: run } = await admin
     .from('analysis_runs')
     .select('*')
@@ -75,6 +71,15 @@ export async function handleExtractJob(payload: ExtractJobPayload): Promise<void
     return;
   }
 
+  // Construct the provider only after scope and budget checks. In ordinary
+  // application operation this remains MockProvider unless an explicitly
+  // protected live route enables another provider.
+  const provider = createProvider({
+    ...(env.OPENAI_API_KEY ? { OPENAI_API_KEY: env.OPENAI_API_KEY } : {}),
+    OPENAI_EXTRACT_MODEL: env.OPENAI_EXTRACT_MODEL,
+    OPENAI_EMBED_MODEL: env.OPENAI_EMBED_MODEL,
+  });
+
   await admin
     .from('analysis_runs')
     .update({
@@ -106,9 +111,29 @@ export async function handleExtractJob(payload: ExtractJobPayload): Promise<void
       throw new Error('No parsed pages available for extraction');
     }
 
-    const limitedPages = pages.slice(0, env.MAX_EXTRACT_PAGES_PER_RUN);
+    const selection = selectWholeDocumentPages(
+      pages.map((page) => ({ pageNumber: page.page_number, text: page.text ?? '' })),
+    );
+    if (selection.selectedPages.length > env.MAX_EXTRACT_PAGES_PER_RUN) {
+      throw Object.assign(
+        new Error(
+          `Whole-document selection produced ${selection.selectedPages.length} pages; the configured auditable limit is ${env.MAX_EXTRACT_PAGES_PER_RUN}`,
+        ),
+        { category: 'complexity_limit' },
+      );
+    }
+    if (selection.batches.length > env.MAX_MODEL_CALLS_PER_RUN) {
+      throw Object.assign(
+        new Error(
+          `Whole-document selection requires ${selection.batches.length} extraction calls; the configured run limit is ${env.MAX_MODEL_CALLS_PER_RUN}`,
+        ),
+        { category: 'complexity_limit' },
+      );
+    }
+    const selectedPageNumbers = new Set(selection.selectedPages.map((page) => page.pageNumber));
+    const selectedPages = pages.filter((page) => selectedPageNumbers.has(page.page_number));
     const chunks = chunkPages(
-      limitedPages.map((p) => ({
+      selectedPages.map((p) => ({
         pageNumber: p.page_number,
         text: p.text ?? '',
         parseRunId: p.parse_run_id ?? undefined,
@@ -189,21 +214,42 @@ export async function handleExtractJob(payload: ExtractJobPayload): Promise<void
 
     await admin.from('analysis_runs').update({ stage: 'extract' }).eq('id', run.id);
 
-    const extractOut = await provider.extractCandidates({
-      workspaceId: payload.workspaceId,
-      documentId: payload.documentId,
-      analysisRunId: run.id,
-      pages: limitedPages.map((p) => ({ pageNumber: p.page_number, text: p.text ?? '' })),
-      promptVersion: EXTRACTION_PROMPT_VERSION,
-      schemaVersion: SCHEMA_VERSION,
-      maxOutputTokens: env.MAX_OUTPUT_TOKENS,
-    });
-
-    const spentAfterEmbed = spent + embedded.estimatedCostUsd;
-    if (
-      checkBudget(spentAfterEmbed, extractOut.estimatedCostUsd, env.PHASE3_SPEND_CEILING_USD) ===
-      'exceeded'
-    ) {
+    const extractionOutputs: ExtractOutput[] = [];
+    let committedExtractionCost = 0;
+    for (let batchIndex = 0; batchIndex < selection.batches.length; batchIndex += 1) {
+      const batch = selection.batches[batchIndex]!;
+      const extractOut = await provider.extractCandidates({
+        workspaceId: payload.workspaceId,
+        documentId: payload.documentId,
+        analysisRunId: run.id,
+        pages: batch,
+        promptVersion: EXTRACTION_PROMPT_VERSION,
+        schemaVersion: SCHEMA_VERSION,
+        maxOutputTokens: env.MAX_OUTPUT_TOKENS,
+      });
+      const spentBeforeCall = spent + embedded.estimatedCostUsd + committedExtractionCost;
+      if (
+        checkBudget(spentBeforeCall, extractOut.estimatedCostUsd, env.PHASE3_SPEND_CEILING_USD) ===
+        'exceeded'
+      ) {
+        await admin.from('model_calls').insert({
+          workspace_id: payload.workspaceId,
+          analysis_run_id: run.id,
+          stage: 'extract',
+          provider: provider.name,
+          model: extractOut.modelId,
+          provider_request_id: extractOut.providerRequestId,
+          prompt_version: EXTRACTION_PROMPT_VERSION,
+          schema_version: SCHEMA_VERSION,
+          input_tokens: extractOut.promptTokens,
+          output_tokens: extractOut.completionTokens,
+          latency_ms: extractOut.latencyMs,
+          estimated_cost_usd: extractOut.estimatedCostUsd,
+          status: 'cancelled',
+          error_category: 'budget',
+        });
+        throw Object.assign(new Error('budget exceeded after extract'), { category: 'budget' });
+      }
       await admin.from('model_calls').insert({
         workspace_id: payload.workspaceId,
         analysis_run_id: run.id,
@@ -217,40 +263,36 @@ export async function handleExtractJob(payload: ExtractJobPayload): Promise<void
         output_tokens: extractOut.completionTokens,
         latency_ms: extractOut.latencyMs,
         estimated_cost_usd: extractOut.estimatedCostUsd,
-        status: 'cancelled',
-        error_category: 'budget',
+        status: extractOut.refused ? 'refused' : extractOut.incomplete ? 'incomplete' : 'succeeded',
       });
-      throw Object.assign(new Error('budget exceeded after extract'), { category: 'budget' });
+      if (extractOut.estimatedCostUsd > 0) {
+        await admin.from('spend_ledger').insert({
+          workspace_id: payload.workspaceId,
+          analysis_run_id: run.id,
+          kind: 'extract',
+          estimated_cost_usd: extractOut.estimatedCostUsd,
+        });
+      }
+      committedExtractionCost += extractOut.estimatedCostUsd;
+      extractionOutputs.push(extractOut);
     }
 
-    await admin.from('model_calls').insert({
-      workspace_id: payload.workspaceId,
-      analysis_run_id: run.id,
-      stage: 'extract',
-      provider: provider.name,
-      model: extractOut.modelId,
-      provider_request_id: extractOut.providerRequestId,
-      prompt_version: EXTRACTION_PROMPT_VERSION,
-      schema_version: SCHEMA_VERSION,
-      input_tokens: extractOut.promptTokens,
-      output_tokens: extractOut.completionTokens,
-      latency_ms: extractOut.latencyMs,
-      estimated_cost_usd: extractOut.estimatedCostUsd,
-      status: extractOut.refused ? 'refused' : extractOut.incomplete ? 'incomplete' : 'succeeded',
-    });
-    if (extractOut.estimatedCostUsd > 0) {
-      await admin.from('spend_ledger').insert({
-        workspace_id: payload.workspaceId,
-        analysis_run_id: run.id,
-        kind: 'extract',
-        estimated_cost_usd: extractOut.estimatedCostUsd,
-      });
-    }
+    const candidates = extractionOutputs.flatMap((output) => output.candidates);
+    const uniqueCandidates = candidates.filter(
+      (candidate, index, all) =>
+        all.findIndex(
+          (item) =>
+            item.category === candidate.category &&
+            item.title === candidate.title &&
+            item.preliminaryPage === candidate.preliminaryPage &&
+            item.evidenceQuote === candidate.evidenceQuote,
+        ) === index,
+    );
 
     await admin.from('requirement_candidates').delete().eq('analysis_run_id', run.id);
-    if (extractOut.candidates.length) {
+    if (uniqueCandidates.length) {
       const { error: candErr } = await admin.from('requirement_candidates').insert(
-        extractOut.candidates.map((c) => ({
+        uniqueCandidates.map((c) => ({
           id: c.id,
           workspace_id: c.workspaceId,
           analysis_run_id: c.analysisRunId,
@@ -267,7 +309,9 @@ export async function handleExtractJob(payload: ExtractJobPayload): Promise<void
           prompt_version: c.promptVersion,
           schema_version: c.schemaVersion,
           model_id: c.modelId,
-          provider_request_id: extractOut.providerRequestId,
+          provider_request_id:
+            extractionOutputs.find((output) => output.candidates.some((item) => item.id === c.id))
+              ?.providerRequestId ?? null,
         })),
       );
       if (candErr) throw candErr;
@@ -278,11 +322,17 @@ export async function handleExtractJob(payload: ExtractJobPayload): Promise<void
       .update({
         status: 'completed',
         stage: 'complete',
-        candidate_count: extractOut.candidates.length,
-        estimated_cost_usd: embedded.estimatedCostUsd + extractOut.estimatedCostUsd,
+        candidate_count: uniqueCandidates.length,
+        estimated_cost_usd: embedded.estimatedCostUsd + committedExtractionCost,
         completed_at: new Date().toISOString(),
         error_category: null,
-        error_detail: extractOut.notes ?? null,
+        error_detail: JSON.stringify({
+          selectionVersion: 'whole-document-selection-v1',
+          selectedPages: selection.selectedPages.length,
+          excludedPages: selection.excludedPageNumbers.length,
+          batches: selection.batches.length,
+          notes: extractionOutputs.flatMap((output) => (output.notes ? [output.notes] : [])),
+        }).slice(0, 500),
       })
       .eq('id', run.id);
 

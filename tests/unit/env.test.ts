@@ -13,7 +13,8 @@ describe('parseServerEnv', () => {
   it('accepts a valid environment and applies defaults', () => {
     const env = parseServerEnv(valid);
     expect(env.DEMO_MODE).toBe(true);
-    expect(env.MAX_PAGES_PER_WORKSPACE).toBe(100);
+    expect(env.MAX_PAGES_PER_WORKSPACE).toBe(500);
+    expect(env.MAX_UPLOAD_BYTES).toBe(100 * 1024 * 1024);
     expect(env.MAX_MODEL_COST_USD_PER_RUN).toBe(10);
     expect(env.PHASE3_SPEND_CEILING_USD).toBe(10);
     expect(env.PHASE4_SPEND_CEILING_USD).toBe(15);

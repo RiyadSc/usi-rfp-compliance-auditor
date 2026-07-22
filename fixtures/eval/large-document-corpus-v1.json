@@ -1,0 +1,59 @@
+{
+  "version": "large-document-corpus-v1",
+  "redistributionPolicy": "Only repository-created synthetic files are committed. Public sources with uncertain redistribution use metadata/retrieval instructions.",
+  "cases": [
+    {
+      "id": "small-native-pdf",
+      "kind": "synthetic",
+      "path": "fixtures/demo-rfp/minimal-two-page.pdf"
+    },
+    {
+      "id": "large-420-native-hybrid-pdf",
+      "kind": "synthetic_generated",
+      "generator": "fixtures/eval/large-document-known-answer.ts"
+    },
+    {
+      "id": "scanned-pdf-pages",
+      "kind": "synthetic_generated",
+      "generator": "fixtures/eval/large-document-known-answer.ts",
+      "pages": [101, 102, 103, 104, 105, 106, 107, 108, 109, 110]
+    },
+    {
+      "id": "table-heavy-pdf",
+      "kind": "synthetic_generated",
+      "generator": "fixtures/eval/large-document-known-answer.ts"
+    },
+    {
+      "id": "docx-solicitation",
+      "kind": "synthetic_in_memory",
+      "test": "packages/documents/src/large-document.test.ts"
+    },
+    {
+      "id": "xlsx-pricing",
+      "kind": "public_metadata",
+      "metadata": "fixtures/public-rfp/massachusetts-fac115-BD-22-1080-OSD03-SRC01-70375/source-manifest.json"
+    },
+    {
+      "id": "html-solicitation",
+      "kind": "synthetic_in_memory",
+      "test": "packages/documents/src/large-document.test.ts"
+    },
+    {
+      "id": "zip-package",
+      "kind": "synthetic_in_memory",
+      "test": "packages/documents/src/large-document.test.ts"
+    },
+    {
+      "id": "addendum-chain",
+      "kind": "synthetic_generated",
+      "generator": "fixtures/eval/large-document-known-answer.ts"
+    },
+    { "id": "malformed-pdf", "kind": "synthetic", "path": "fixtures/demo-rfp/malformed.pdf" },
+    {
+      "id": "encrypted-pdf",
+      "kind": "metadata_only",
+      "reason": "Generated during parser tests; no password-bearing file committed."
+    },
+    { "id": "unsupported-file", "kind": "synthetic", "path": "fixtures/demo-rfp/fake.pdf" }
+  ]
+}

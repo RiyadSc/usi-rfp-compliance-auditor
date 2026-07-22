@@ -52,8 +52,10 @@ for (const file of repositoryFiles) {
 }
 
 // 2. Client-visible build output (browser bundle).
-const staticDir = 'apps/web/.next/static';
-if (existsSync(staticDir)) {
+const staticDirs = ['apps/web/.next/static', 'apps/web/.next-e2e/static'].filter((dir) =>
+  existsSync(dir),
+);
+for (const staticDir of staticDirs) {
   const stack = [staticDir];
   while (stack.length > 0) {
     const dir = stack.pop();
@@ -82,7 +84,8 @@ if (existsSync(staticDir)) {
       }
     }
   }
-} else {
+}
+if (staticDirs.length === 0) {
   console.info('note: apps/web/.next/static not found; run build first for bundle scan');
 }
 

@@ -128,22 +128,26 @@ test.describe('document ingestion', () => {
     await expect(page).toHaveURL(/\/documents\/[0-9a-f-]{36}/, { timeout: 60_000 });
     await waitForStatus(page, /\bparsed\b/i);
     await expect(page.getByText('Parser warnings', { exact: true })).toBeVisible();
-    await expect(page.getByText('page 1: no extractable text', { exact: true })).toBeVisible();
     await expect(
-      page.getByText(/No extractable text on this page\. It may be blank or image-only/i),
+      page.getByText(/page 1: (no extractable text|ocr_required)/i).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByText(/No dependable native text is available|No extractable text on this page/i),
     ).toBeVisible();
   });
 
-  test('rejects non-pdf extension', async ({ page }) => {
+  test('rejects a MIME-spoofed DOCX while advertising approved formats', async ({ page }) => {
     await signIn(page, 'A');
     await createWorkspace(page, `Ext ${Date.now()}`);
     await openDocuments(page);
-    await expect(page.locator('input[type="file"]')).toHaveAttribute('accept', /pdf/i);
+    await expect(page.locator('input[type="file"]')).toHaveAttribute('accept', /docx/i);
     await page
       .locator('input[type="file"]')
       .setInputFiles(resolve('fixtures/demo-rfp/not-a-pdf.docx'));
     await page.getByRole('button', { name: 'Upload' }).click();
-    await expect(page.getByText(/Only PDF files are accepted/i)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/not declared docx|unsupported or unrecognized/i)).toBeVisible({
+      timeout: 30_000,
+    });
   });
 
   test('rejects fake PDF renamed to .pdf', async ({ page }) => {
@@ -151,7 +155,7 @@ test.describe('document ingestion', () => {
     await createWorkspace(page, `Fake PDF ${Date.now()}`);
     await openDocuments(page);
     await uploadPdf(page, 'fixtures/demo-rfp/fake.pdf');
-    await expect(page.getByText(/File does not begin with PDF magic bytes/i)).toBeVisible({
+    await expect(page.getByText(/not declared pdf|unsupported or unrecognized/i)).toBeVisible({
       timeout: 30_000,
     });
   });

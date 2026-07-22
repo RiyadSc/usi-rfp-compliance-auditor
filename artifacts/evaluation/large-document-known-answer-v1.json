@@ -1,0 +1,141 @@
+{
+  "artifactVersion": "large-document-evaluation-v1",
+  "fixtureVersion": "large-document-known-answer-v1",
+  "generatedAt": "2026-07-22T05:57:03.406Z",
+  "sourceHash": "4e450adb8090f88d0855d0f3c4a7ce2f6083656f69705617c2b54ef5c9e13a29",
+  "cacheKey": "b1abf329d5db4b50f4deb3a52fd9532cc711ee8944cef07a414aac2682ea020d",
+  "normalizedHash": "17a4d0f72f1b818b0119162ec3b0d48f5b4ccc60a24d5142d988730e6a6ab0e6",
+  "statistics": {
+    "pageCount": 420,
+    "blockCount": 820,
+    "tableCount": 8,
+    "imageCount": 0,
+    "nativeTextPages": 410,
+    "ocrPages": 0,
+    "uncertainPages": 10,
+    "characterCount": 33255
+  },
+  "parseDurationMs": 1598,
+  "nativeParsePagesPerSecond": 262.83,
+  "tablePages": [40, 50, 51, 80, 120, 160, 200, 240],
+  "scannedPages": [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],
+  "boundedContext": {
+    "recordCount": 8,
+    "estimatedTokens": 113,
+    "truncated": true,
+    "omittedReasons": ["max_blocks"]
+  },
+  "mockTiers": [
+    {
+      "tier": "tier_1_classification",
+      "status": "completed",
+      "output": {
+        "task": "classify blocks",
+        "contextRecords": 8,
+        "machineOnly": true
+      },
+      "providerCalls": 0,
+      "costUsd": 0
+    },
+    {
+      "tier": "tier_2_extraction",
+      "status": "completed",
+      "output": {
+        "task": "extract candidates",
+        "contextRecords": 8,
+        "machineOnly": true
+      },
+      "providerCalls": 0,
+      "costUsd": 0
+    },
+    {
+      "tier": "tier_3_verification",
+      "status": "completed",
+      "output": {
+        "task": "independent verification",
+        "contextRecords": 8,
+        "machineOnly": true
+      },
+      "providerCalls": 0,
+      "costUsd": 0
+    }
+  ],
+  "costEstimate": {
+    "lowUsd": 1.9011,
+    "highUsd": 2.5348,
+    "hardMaximumUsd": 5.0696,
+    "estimatedCallsLow": 45,
+    "estimatedCallsHigh": 120,
+    "estimatedTimeMs": 480000,
+    "largestCostStage": "verification",
+    "stages": {
+      "ocr": 0,
+      "embeddings": 0.0028,
+      "classification": 0.56,
+      "extraction": 0.78,
+      "verification": 1.062,
+      "ambiguity": 0.13
+    }
+  },
+  "metrics": {
+    "parsing": {
+      "formatDetectionAccuracy": 1,
+      "pageCountAccuracy": 1,
+      "blockOrderAccuracy": 1,
+      "tableDetectionPrecision": 1,
+      "tableDetectionRecall": 1,
+      "cellAssociationAccuracy": 1,
+      "ocrSelectionPrecision": 1,
+      "ocrSelectionRecall": 1,
+      "parserWarningAccuracy": 1
+    },
+    "requirementDiscovery": {
+      "criticalRequirementRecall": 1,
+      "criticalRequirementPrecision": 1,
+      "mandatoryFormRecall": 1,
+      "deadlineRecall": 1,
+      "insuranceValueAccuracy": 1,
+      "addendumPrecedenceAccuracy": 1,
+      "citationValidity": 1
+    },
+    "cost": {
+      "providerCallsPer100Pages": 0,
+      "estimatedVersusSimulatedActualCost": 1,
+      "cacheHitSavingsUsd": 2.5348,
+      "blocksExcludedBeforeAi": 0.9452380952380952,
+      "pagesRequiringOcr": 0.023809523809523808,
+      "costByStage": {
+        "ocr": 0,
+        "embeddings": 0.0028,
+        "classification": 0.56,
+        "extraction": 0.78,
+        "verification": 1.062,
+        "ambiguity": 0.13
+      },
+      "worstCaseBoundedCost": 5.0696
+    },
+    "reliability": {
+      "successfulResumeRate": 1,
+      "duplicateJobPrevention": 1,
+      "pageLevelRetrySuccess": 1,
+      "staleCacheRejection": 1,
+      "crossWorkspaceLeakCount": 0,
+      "destructiveOverwriteCount": 0,
+      "invariantViolations": 0
+    },
+    "dangerousCounts": {
+      "unsupportedVerifiedFindings": 0,
+      "crossWorkspaceLeaks": 0,
+      "tableValueScopeMisassociation": 0,
+      "lowConfidenceOcrDefinitive": 0,
+      "silentTruncation": 0,
+      "destructiveCacheOverwrite": 0,
+      "unauthorizedProviderCall": 0,
+      "unboundedCostExecution": 0,
+      "duplicateProviderAccounting": 0
+    }
+  },
+  "providerCalls": 0,
+  "providerSpendUsd": 0,
+  "passed": true
+}

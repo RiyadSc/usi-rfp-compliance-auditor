@@ -4,10 +4,12 @@ import { env } from './env.js';
 import { handleParseJob, type ParseJobPayload } from './parse-document.js';
 import { handleExtractJob, type ExtractJobPayload } from './extract-document.js';
 import { handleVerifyJob, type VerifyJobPayload } from './verify-requirements.js';
+import { handleLargeDocumentWork, type LargeDocumentWorkPayload } from './large-document-work.js';
 
 const PARSE_QUEUE = 'document-parse';
 const EXTRACT_QUEUE = 'document-extract';
 const VERIFY_QUEUE = 'requirements-verify';
+const LARGE_DOCUMENT_WORK_QUEUE = 'large-document-work';
 const HEALTH_PORT = Number(process.env.WORKER_HEALTH_PORT ?? 3001);
 
 async function main() {
@@ -29,6 +31,7 @@ async function main() {
   await boss.createQueue(PARSE_QUEUE);
   await boss.createQueue(EXTRACT_QUEUE);
   await boss.createQueue(VERIFY_QUEUE);
+  await boss.createQueue(LARGE_DOCUMENT_WORK_QUEUE);
 
   await boss.work(
     PARSE_QUEUE,
@@ -64,6 +67,14 @@ async function main() {
       console.info(`[worker] verify done run=${payload.verificationRunId}`);
     }
   });
+
+  await boss.work(
+    LARGE_DOCUMENT_WORK_QUEUE,
+    { batchSize: 1, localConcurrency: env.PARSE_CONCURRENCY },
+    async (jobs) => {
+      for (const job of jobs) await handleLargeDocumentWork(job.data as LargeDocumentWorkPayload);
+    },
+  );
 
   const health = createServer((_req, res) => {
     res.writeHead(200, { 'content-type': 'text/plain' });
