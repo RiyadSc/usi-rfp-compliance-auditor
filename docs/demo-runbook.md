@@ -1,5 +1,9 @@
 # Demo Runbook
 
+## Role-based director walkthrough
+
+Start at Home, leave **View for: Director**, and open the Harbor City Full-Roadmap Synthetic Demo. On Overview, explain the six readiness signals, three decision signals, and recommended next action. Follow the nine-step journey to Requirements; open one requirement, its exact quote, and the original PDF page. In Submission Checklist, show the five items under **Blocking submission**. Switch to **Proposal manager** for requirements/checklist depth, **Contributor** for My Work, and **Technical reviewer** only when showing provenance. End in Reports. Never describe a workflow status as compliance or approval.
+
 1. Use only the protected synthetic/public demo accounts and workspace.
 2. Open the requirement register and show that source support, precedence, proof, and human review are separate.
 3. Open **Checklist and blockers**. Confirm the readiness banner says `Blocked by 5 required items` and exactly five mandatory-form rows are blocked.

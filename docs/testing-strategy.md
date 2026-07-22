@@ -1,5 +1,9 @@
 # Testing Strategy
 
+## Role-based UX coverage
+
+`tests/e2e/ux-personas.spec.ts` adds `@ux-director`, `@ux-proposal-manager`, `@ux-contributor`, and `@ux-admin` scenarios plus fifteen screenshot baselines. The complete isolated browser runner preserves `@demo-critical` and runs with live-provider flags disabled. `tests/unit/role-based-ux.test.ts` locks navigation, persona, workflow, terminology, and version contracts.
+
 ## Phase 8 final matrix
 
 `npm run test:unit` contains domain, schema, deterministic engine, service helper, component-state, adversarial parser/injection/malformed-output, rate, cost, cache, reset, contingency, and provenance coverage. `npm run eval:mock:phase8` recomputes and gates the Phase 4–7 known-answer artifacts without a provider.

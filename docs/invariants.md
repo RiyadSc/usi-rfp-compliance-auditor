@@ -138,3 +138,15 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] Phase 8 provisioning is repeatable for three consecutive identical runs.
 - [x] Unit, integration, isolated mock browser, deterministic evaluation, lint, formatting, type, build, dependency, lockfile, and secret gates pass.
 - [x] Provider calls and spend for this workstream are zero; general live verification remains disabled.
+
+## Post-roadmap role-based UX invariant result — 2026-07-22
+
+- [x] Role view is presentation-only; membership, server authorization, and RLS remain authoritative.
+- [x] Source support, precedence, proof, parser uncertainty, workflow, blocker, artifact, and human review remain separate and visible.
+- [x] Requirements, checklist work, proposal findings, reports, and search results retain direct workspace-scoped provenance/evidence navigation.
+- [x] No verification, deterministic decision, checklist, audit, report, model, provider, storage, RLS, or live-rollout contract changed.
+- [x] Home and account routes use only existing RLS-protected reads; no cross-workspace index or service-role UI path was introduced.
+- [x] Prohibited approval/compliance language remains absent; machine-generated and human-reviewed states remain distinct.
+- [x] The prepared demo, five missing-form blockers, evidence viewer, original-page navigation, and `@demo-critical` workflow remain functional.
+- [x] Unit, sequential Supabase integration, isolated mock browser, persona, visual, deterministic evaluation, lint, formatting, type, build, dependency, lockfile, secret, and invariant gates pass.
+- [x] Fixtures remain synthetic/public; provider calls and spend are zero; general live verification remains disabled.

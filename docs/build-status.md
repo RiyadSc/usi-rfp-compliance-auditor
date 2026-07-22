@@ -1,5 +1,13 @@
 # Build Status
 
+## Post-roadmap role-based UX and information architecture — complete (2026-07-22)
+
+`role-based-ux-v1` adds a five-destination global shell, Director/Proposal manager/Contributor/Technical reviewer presentation views, separate Home/Opportunities/My Work/Reports/Search surfaces, a six-destination opportunity navigation, a nine-step business/processing/review journey, bounded executive summaries, business search, action-group checklists, guided document upload, progressive technical disclosure, responsive behavior, and a versioned `business-terminology-v2` map. The view selector is never authorization; membership, RLS, and controlled server/RPC paths remain authoritative.
+
+No migration, provider call, paid spend, deployment, confidential data, qualified model change, or live-verification rollout occurred. The Phase 4 fingerprint and every Phase 4–8/large-document invariant remain unchanged. General live verification remains disabled.
+
+Final gates: 364 unit tests in 29 files; 82 sequential Supabase integration tests in 9 files; 27 isolated mock Playwright tests across 11 spec files with one explicit live-only audit skipped; four tagged persona scenarios; 15 visual baselines; `@demo-critical`; deterministic Phase 8 and large-document evaluations; lint; Prettier; full TypeScript; production build; lockfile dry-run; dependency audit with zero vulnerabilities; secret/client-bundle scan; and invariant review all pass. See `docs/role-based-ux-completion-report.md` and `docs/rfp-product-ux-guide.md`.
+
 ## FAC115 expected-budget verification complete — not a qualified pass (2026-07-21)
 
 Under an authorized `$9.27` expected-budget verification ceiling (effective `$9.248816` Phase 3 headroom), all 209 frozen accepted candidates were attempted. Actual verification spend was `$8.512031` (402 ledgered verify calls). Results: 201 completed assessments, 8 semantic-contract failures, 0 budget-stopped incompletes. Known answers scored 5/22. Extraction earlier cost `$0.132757`. FAC115 total `$8.644788`. Artifact: `artifacts/evaluation/public-rfp-fac115-5d2401ea-f042-4c3c-a6f8-f6c3dfb94fd0.json`. This is not presented as a qualified pass.

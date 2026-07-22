@@ -144,6 +144,10 @@ local (dev, unit/integration), preview (mock/sandbox model), demo (frozen fixtur
 
 `phase8-consolidated-evaluation-v1` recomputes the provider-free Phase 4–7 known answers and one strict consolidated gate. The Phase 8 control plane adds fixed database-atomic rate buckets, advisory-locked budget reservations before provider construction, privacy-safe performance events, immutable synthetic scope/cache/fallback records, and an idempotent presentation-state reset. The prepared route is `/w/:id/demo`; it requires the exact validated cache rather than merely a membership.
 
+## Role-based presentation architecture
+
+`role-based-ux-v1` is a presentation layer over the stable Phase 4–8 data contracts. `AppHeader` supplies five global destinations and a local role-view preference; workspace RLS and controlled server/RPC paths remain authoritative. Home, My Work, Reports, and Search derive only from existing tenant-scoped reads. No role-view value is used as authorization or persisted as a permission. Opportunity pages share a six-destination local navigation and a nine-step business/processing/review journey. See `docs/rfp-product-ux-guide.md`.
+
 The prepared scope binds every Phase 4–7 run/document/hash/version and the qualified Phase 4 fingerprint. Prepared, cached, fallback, and offline-read-only modes remain authorized and visibly labeled. The fallback reuses one immutable private Phase 7 artifact via a transient five-minute grant. See `docs/phase8-data-flow.md` and `docs/demo-reset-cache-fallback.md`.
 
 ## Executive presentation layer
