@@ -358,7 +358,9 @@ test('Phase 5 checklist detects five missing forms and preserves evidence, workf
     page.getByRole('heading', { name: 'Deterministic checklist and blockers' }),
   ).toBeVisible();
   await expect(page.getByText('Blocked by 5 required items')).toBeVisible();
-  await expect(page.getByRole('cell', { name: 'Blocked' })).toHaveCount(5);
+  const blockingGroup = page.getByRole('region', { name: /Blocking submission/ });
+  await expect(blockingGroup).toBeVisible();
+  await expect(blockingGroup.getByText('Blocked', { exact: true })).toHaveCount(5);
   await page.getByRole('link', { name: 'Mandatory Form A-1' }).click();
   await expect(page.getByRole('blockquote')).toHaveText(quotes[0]);
   const sourceLink = page.getByRole('link', { name: 'Open original page 1 →' });

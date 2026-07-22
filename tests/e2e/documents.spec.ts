@@ -107,7 +107,7 @@ test.describe('document ingestion', () => {
     await expect(page.getByRole('heading', { name: 'Documents', exact: true })).toBeVisible();
     const listLink = page.getByRole('link', { name: /minimal-two-page\.pdf/i });
     await expect(listLink).toBeVisible();
-    await expect(listLink.getByText(/parsed/i)).toBeVisible();
+    await expect(listLink.getByText('Ready', { exact: true })).toBeVisible();
     await listLink.click();
     await expect(page.getByText(/\bparsed\b/i)).toBeVisible();
 

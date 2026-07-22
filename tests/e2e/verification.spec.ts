@@ -512,7 +512,7 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
 
     await page.goto(`/w/${workspaceId}/requirements`);
     await expect(page.getByRole('heading', { name: 'Requirement register' })).toBeVisible();
-    await page.getByRole('button', { name: 'analyst' }).click();
+    await page.getByLabel('Role view').selectOption('technical');
     const requirementsTable = page.getByRole('table');
     await expect(requirementsTable.getByText('Backed by the RFP').first()).toBeVisible();
     await expect(requirementsTable.getByText('Conflicts with the RFP').first()).toBeVisible();
