@@ -1,0 +1,49 @@
+{
+  "version": "massachusetts-fac115-rendition-manifest-v1",
+  "generator": "LibreOffice 26.2.4.2 soffice --headless --convert-to pdf via space-free temp paths",
+  "note": "Except the COMMBUYS job-aid PDF, these are read-only deterministic PDF renditions of official Office originals and are not Commonwealth-native PDFs.",
+  "renditions": [
+    {
+      "file": "FAC115_Attachment_A_Bidder_Response_Form_03.29.2022.pdf",
+      "bytes": 221012,
+      "sha256": "2ef6db115d55dd755872315ba56dae95ccb5154e0c1f2f5eadd51b36b0f0f5c0",
+      "kind": "libreoffice-rendition"
+    },
+    {
+      "file": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.pdf",
+      "bytes": 70694,
+      "sha256": "670b7bcc0d5f52e872453b54b4232341061a0d49bfc5a5457211353da114250b",
+      "kind": "libreoffice-rendition"
+    },
+    {
+      "file": "FAC115_Attachment_D_SDP_Form_03.29.2022.pdf",
+      "bytes": 111452,
+      "sha256": "66d629ece0a2350505aa7fb33d05f4cb3375ceceba330704a368ce129165236b",
+      "kind": "libreoffice-rendition"
+    },
+    {
+      "file": "FAC115_Attachment_E_Prompt_Pay_Discount_Form_03.29.2022.pdf",
+      "bytes": 104092,
+      "sha256": "595254c02397e139d753a6e5712a496d0a1a3320af2682980d2800c1e01d9553",
+      "kind": "libreoffice-rendition"
+    },
+    {
+      "file": "FAC115_Creating_a_Quote_in_COMMBUYS_Job_Aid_03.29.2022.pdf",
+      "bytes": 1404045,
+      "sha256": "f7d5baa5a549358d601542622b512821e30126b2008f8402c80e506012c383ce",
+      "kind": "official-native-pdf"
+    },
+    {
+      "file": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "bytes": 938527,
+      "sha256": "5d58ed0dbda1592e93e3ed41f3ab98f1277c288a43e9fe7227785589f06e19f3",
+      "kind": "libreoffice-rendition"
+    },
+    {
+      "file": "Intent_to_Bid_Notice_FAC115.pdf",
+      "bytes": 528279,
+      "sha256": "c24c8c21f24799d1e4c12cd49b78fcfd738bf3d881d0a850173513021221de95",
+      "kind": "libreoffice-rendition"
+    }
+  ]
+}

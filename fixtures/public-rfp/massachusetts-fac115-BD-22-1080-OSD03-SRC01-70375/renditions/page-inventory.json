@@ -1,0 +1,40 @@
+{
+  "version": "massachusetts-fac115-page-inventory-v1",
+  "documents": [
+    {
+      "file": "FAC115_Attachment_A_Bidder_Response_Form_03.29.2022.pdf",
+      "pages": 27,
+      "previewDir": "renditions/page-previews/FAC115_Attachment_A_Bidder_Response_Form_03.29.2022"
+    },
+    {
+      "file": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.pdf",
+      "pages": 6,
+      "previewDir": "renditions/page-previews/FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022"
+    },
+    {
+      "file": "FAC115_Attachment_D_SDP_Form_03.29.2022.pdf",
+      "pages": 6,
+      "previewDir": "renditions/page-previews/FAC115_Attachment_D_SDP_Form_03.29.2022"
+    },
+    {
+      "file": "FAC115_Attachment_E_Prompt_Pay_Discount_Form_03.29.2022.pdf",
+      "pages": 1,
+      "previewDir": "renditions/page-previews/FAC115_Attachment_E_Prompt_Pay_Discount_Form_03.29.2022"
+    },
+    {
+      "file": "FAC115_Creating_a_Quote_in_COMMBUYS_Job_Aid_03.29.2022.pdf",
+      "pages": 8,
+      "previewDir": "renditions/page-previews/FAC115_Creating_a_Quote_in_COMMBUYS_Job_Aid_03.29.2022"
+    },
+    {
+      "file": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "pages": 35,
+      "previewDir": "renditions/page-previews/FAC115_Request_for_Response_03.29.2022"
+    },
+    {
+      "file": "Intent_to_Bid_Notice_FAC115.pdf",
+      "pages": 1,
+      "previewDir": "renditions/page-previews/Intent_to_Bid_Notice_FAC115"
+    }
+  ]
+}

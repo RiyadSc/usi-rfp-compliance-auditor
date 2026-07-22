@@ -1,5 +1,27 @@
 # Build Status
 
+## FAC115 expected-budget verification complete — not a qualified pass (2026-07-21)
+
+Under an authorized `$9.27` expected-budget verification ceiling (effective `$9.248816` Phase 3 headroom), all 209 frozen accepted candidates were attempted. Actual verification spend was `$8.512031` (402 ledgered verify calls). Results: 201 completed assessments, 8 semantic-contract failures, 0 budget-stopped incompletes. Known answers scored 5/22. Extraction earlier cost `$0.132757`. FAC115 total `$8.644788`. Artifact: `artifacts/evaluation/public-rfp-fac115-5d2401ea-f042-4c3c-a6f8-f6c3dfb94fd0.json`. This is not presented as a qualified pass.
+
+## FAC115 extraction complete — verification not started (2026-07-21)
+
+Authorized public-evaluation extraction ran under `$1.20`. Fifteen batches over eight sources / 85 pages extracted 248 unique candidates, rejected 39 invalid preliminary quotes, and froze 209 accepted candidates in `public-extraction-artifact-v1` / `public-verification-plan-v1` (`artifacts/evaluation/public-rfp-fac115-population-5d2401ea-f042-4c3c-a6f8-f6c3dfb94fd0.json`). Population hash `f4e4c37056de810a475852fa8816403a65c661c03a2c269fbfb8662d871a9348`. Actual extraction spend `$0.132757` (15 ledger rows). Complete verification reserve `$88.814280`. Verification provider was not constructed.
+
+Post-extraction ledgers: Phase 3 `$0.751184/$10`, Phase 4 `$14.813639/$15`. Next authorization needed: a separate public-evaluation verification ceiling of at least `$88.82` (Phase 4 remaining `$0.186361` is insufficient).
+
+## FAC115 tooling + extraction budget gate (2026-07-21)
+
+LibreOffice 26.2.4.2, poppler/pdf2image, and openpyxl produced hash-pinned PDF renditions, page previews, and workbook inspection for Massachusetts FAC115. `@oai/artifact-tool` remains unavailable outside Codex. Draft known answers have stable page citations for all 22 facts. The first `$0.50` extraction authorization was refused by the complete 3× reserve gate (`$1.163074`); extraction later proceeded under `$1.20`.
+
+## Public RFP full-population budget remediation and FAC115 preparation (2026-07-20)
+
+The public evaluator now freezes every accepted extracted candidate and its no-more-than-two bounded evidence contexts in `public-extraction-artifact-v1`. `public-verification-plan-v1` hashes the complete population and calculates its complete worst-case verification reserve before a verification provider is constructed. If the whole population cannot fit both the public evaluation cap and the applicable phase ceiling, verification never starts. This prevents another misleading partial run like San Bernardino v2; per-call checks remain in place.
+
+The official Massachusetts COMMBUYS FAC115 solicitation `BD-22-1080-OSD03-SRC01-70375` is preserved as a public-only, hash-pinned Category 1 Security Services fixture. Eight official sources include the portal/amendment log, RFR, bidder form, amended price workbook, SDP form, prompt-pay form, submission job aid, and superseded intent notice. A provider-unseen structural answer draft covers 22 planted facts, including the explicitly superseded March 31 bidder conference, active April 5 replacement, deadlines, submission, licenses, staffing, references, pricing, forms, and evaluation criteria.
+
+FAC115 was not sent to a provider. It remains intentionally not live-ready because this environment lacks the approved spreadsheet inspection runtime and trusted DOCX/XLSX-to-PDF rendering needed for stable page citations. The last repository-recorded authoritative Phase 4 total is `$14.813639/$15`, leaving only `$0.186361`; a ledger refresh was attempted but the execution environment could not reach Supabase. No live call or new spend occurred. See `fixtures/public-rfp/massachusetts-fac115-BD-22-1080-OSD03-SRC01-70375/README.md`.
+
 ## San Bernardino public RFP v2 — incomplete, failed closed (2026-07-20)
 
 One authorized live v2 run used 15 bounded extraction batches across seven official sources/81 pages. It extracted 252 unique candidates, rejected 35 invalid preliminary quotes, and accepted 217 candidates for verification. Only 28 final assessments completed; the Phase 4 ceiling stopped 187 before provider access and two strict semantic-contract repairs were rejected. The run cost `$1.43245875` (`$1.432462` ledgered) and remained within all ceilings, but is not a qualified result and did not populate the application. Post-run ledgers are Phase 3 `$0.618427/$10`, Phase 4 `$14.813639/$15`, and cumulative `$15.432066`. The harness now reports missing final assessments as incomplete rather than unsupported and exits unsuccessful instead of printing a misleading completion flag. See `docs/public-rfp-san-bernardino-v2-result.md`.
@@ -8,7 +30,7 @@ One authorized live v2 run used 15 bounded extraction batches across seven offic
 
 The failed San Bernardino public baseline remains unchanged and is not presented as a pass. A versioned offline correction now uses bounded consecutive-page extraction, a hash-pinned official portal source, explicit-only deadline precedence, exact/normalized-exact preliminary quotation gating, verification of every accepted unique candidate, and scoring of all 19 frozen answers with source-support and precedence requirements. Focused tests and repository gates pass; no provider call or spend occurred. General live verification and the qualified Phase 4 production fingerprint are unchanged. See `docs/public-rfp-evaluator-v2.md`.
 
-The recommended next public fixture is Massachusetts OSD FAC115, scoped to Category 1 Security Guard Services. It is official statewide material with forms, pricing, contract terms, and 14 portal amendment events. No Massachusetts document was ingested or run. See `docs/massachusetts-physical-security-rfp-candidate.md`.
+The recommended next public fixture is Massachusetts OSD FAC115, scoped to Category 1 Security Guard Services. Its official sources are now preserved and structurally preflighted, but it has not been ingested into the app or sent to a provider. See `docs/massachusetts-physical-security-rfp-candidate.md`.
 
 ## Post-Phase 8 executive UX hardening — complete (2026-07-19)
 

@@ -1,0 +1,96 @@
+{
+  "version": "public-known-answer-matchers-v2",
+  "matchers": [
+    {
+      "id": "conference-old-date",
+      "patterns": ["March\\s+31.*2022", "Pre-Bid Conference.*March\\s+31"]
+    },
+    {
+      "id": "conference-active-date",
+      "patterns": ["April\\s+5.*2022", "Tuesday,\\s+April\\s+5"]
+    },
+    {
+      "id": "conference-attendance-not-mandatory",
+      "patterns": ["Attendance is strongly suggested"]
+    },
+    {
+      "id": "question-deadline",
+      "patterns": ["written questions.*April\\s+7", "April\\s+7,\\s+2022.*2:00"]
+    },
+    {
+      "id": "submission-deadline",
+      "patterns": ["05/03/2022", "May\\s+3.*2022"]
+    },
+    {
+      "id": "submission-method",
+      "patterns": ["Create Quote.*COMMBUYS", "Responses must be sent via the .Create Quote"]
+    },
+    {
+      "id": "electronic-signature",
+      "patterns": ["signed electronically", "Terms & Conditions.*tab"]
+    },
+    {
+      "id": "narrative-page-limit",
+      "patterns": ["ten \\(10\\) double-sided pages", "no more than ten"]
+    },
+    {
+      "id": "original-form-format",
+      "patterns": ["original formats", "NOT scanned and submitted as PDF"]
+    },
+    {
+      "id": "security-company-experience",
+      "patterns": ["Security Services for a minimum of three", "three \\(3\\) years"]
+    },
+    {
+      "id": "watch-guard-license-attachment",
+      "patterns": ["Watch Guard Manager License", "Mass Certification Unit"]
+    },
+    {
+      "id": "armed-personnel-license",
+      "patterns": ["Massachusetts Firearms License", "Armed personnel must hold"]
+    },
+    {
+      "id": "replacement-guard-pool",
+      "patterns": ["pool of trained", "replacement security guards"]
+    },
+    {
+      "id": "references-three-to-five",
+      "patterns": [
+        "three \\(3\\) and five \\(5\\) business references",
+        "between three .* and five"
+      ]
+    },
+    {
+      "id": "geographic-coverage",
+      "patterns": ["Attachment A.*counties", "cover the entire State"]
+    },
+    {
+      "id": "price-sheet-v2",
+      "patterns": ["Update to Attachment B", "Attachment B"]
+    },
+    {
+      "id": "price-components",
+      "patterns": ["Attachment B Price Sheet", "Hourly rates are inclusive ceiling rates"]
+    },
+    {
+      "id": "prompt-payment-form",
+      "patterns": ["Prompt Payment Discount Form", "Attachment E"]
+    },
+    {
+      "id": "sdp-form-and-minimum",
+      "patterns": ["SDP Commitment.*1%", "minimum total SDP Commitment"]
+    },
+    {
+      "id": "sdp-evaluation-weight",
+      "patterns": ["25% of the total available evaluation points", "evaluation of the SDP Plan"]
+    },
+    {
+      "id": "quote-duration",
+      "patterns": ["at least 90 days", "90 days from the date of Quote"]
+    },
+    {
+      "id": "post-award-forms-not-bid-attachments",
+      "patterns": ["DO NOT SUBMIT THESE FORMS UNTIL INSTRUCTED"]
+    }
+  ]
+}

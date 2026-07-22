@@ -1,0 +1,1930 @@
+{
+  "version": "massachusetts-fac115-xlsx-inspection-v1",
+  "runtime": "openpyxl-3.1.5",
+  "runtimeNote": "@oai/artifact-tool is private/unavailable outside Codex primary runtime; openpyxl used for structural cell inspection; LibreOffice PDF used for visual sheet pages.",
+  "workbooks": [
+    {
+      "file": "FAC115_Attachment_A_Bidder_Response_Form_03.29.2022.xlsx",
+      "sheetCount": 7,
+      "sheets": [
+        {
+          "name": "NOTE TO BIDDER",
+          "dimensions": "A1:G26",
+          "maxRow": 26,
+          "maxColumn": 7,
+          "nonEmptyCells": 1,
+          "formulaCells": 0,
+          "sampleCells": [
+            {
+              "cell": "A7",
+              "value": "\nNOTE TO BIDDER:\nThis is the Bidder Response Form for the FAC115 Security Services, Private Investigative Services & Fence Rental RFR. Use the tabs below to move through each portion of the response form. Bidders must complete the \"Bidder Information\" tab, \"Staff Qualifications\" tab, \"Bidder References\" tab, and the EPP Form tab. Failure to provide all of the requested information may result in your response being disqualified. Any questions must be posted to COMMBUYS through the \u201cBid Q&A\u201d tab.\n\nThank you\n-The FAC115 Strategic Sourcing Team",
+              "valueType": "str",
+              "dataOnly": "\nNOTE TO BIDDER:\nThis is the Bidder Response Form for the FAC115 Security Services, Private Investigative Services & Fence Rental RFR. Use the tabs below to move through each portion of the response form. Bidders must complete the \"Bidder Information\" tab, \"Staff Qualifications\" tab, \"Bidder References\" tab, and the EPP Form tab. Failure to provide all of the requested information may result in your response being disqualified. Any questions must be posted to COMMBUYS through the \u201cBid Q&A\u201d tab.\n\nThank you\n-The FAC115 Strategic Sourcing Team",
+              "isFormula": false
+            }
+          ]
+        },
+        {
+          "name": "Bidder Submission Checklist",
+          "dimensions": "A1:E7",
+          "maxRow": 7,
+          "maxColumn": 5,
+          "nonEmptyCells": 22,
+          "formulaCells": 0,
+          "sampleCells": [
+            {
+              "cell": "A1",
+              "value": "Are you submitting item with bid (Yes/No)",
+              "valueType": "str",
+              "dataOnly": "Are you submitting item with bid (Yes/No)",
+              "isFormula": false
+            },
+            {
+              "cell": "B1",
+              "value": "Required/Mandatory Documents",
+              "valueType": "str",
+              "dataOnly": "Required/Mandatory Documents",
+              "isFormula": false
+            },
+            {
+              "cell": "C1",
+              "value": "File format",
+              "valueType": "str",
+              "dataOnly": "File format",
+              "isFormula": false
+            },
+            {
+              "cell": "D1",
+              "value": "File Name",
+              "valueType": "str",
+              "dataOnly": "File Name",
+              "isFormula": false
+            },
+            {
+              "cell": "B2",
+              "value": "Completed Attachment A Bidder Response Form  Must be in the original format, do not further protect this document.\nBidder Information                                                                                                                                                                                                                                                                                                                                                             Certifiations & Licenses (RFR Section 3.2 and 4.1.1)\nBidder References (RFR Section 3.6)\nEnvironmentally Preferable Products (EPP) Practices Form (RFR Section 4.9 -4.9.4)",
+              "valueType": "str",
+              "dataOnly": "Completed Attachment A Bidder Response Form  Must be in the original format, do not further protect this document.\nBidder Information                                                                                                                                                                                                                                                                                                                                                             Certifiations & Licenses (RFR Section 3.2 and 4.1.1)\nBidder References (RFR Section 3.6)\nEnvironmentally Preferable Products (EPP) Practices Form (RFR Section 4.9 -4.9.4)",
+              "isFormula": false
+            },
+            {
+              "cell": "C2",
+              "value": ".xlsx",
+              "valueType": "str",
+              "dataOnly": ".xlsx",
+              "isFormula": false
+            },
+            {
+              "cell": "D2",
+              "value": "CompanyName_FAC115BidderResponseForm",
+              "valueType": "str",
+              "dataOnly": "CompanyName_FAC115BidderResponseForm",
+              "isFormula": false
+            },
+            {
+              "cell": "B3",
+              "value": "Completed Attachment B Price Sheet/Cost Table Secuirty/PI Services",
+              "valueType": "str",
+              "dataOnly": "Completed Attachment B Price Sheet/Cost Table Secuirty/PI Services",
+              "isFormula": false
+            },
+            {
+              "cell": "C3",
+              "value": ".xlsx",
+              "valueType": "str",
+              "dataOnly": ".xlsx",
+              "isFormula": false
+            },
+            {
+              "cell": "D3",
+              "value": "CompanyName_FAC115Price",
+              "valueType": "str",
+              "dataOnly": "CompanyName_FAC115Price",
+              "isFormula": false
+            },
+            {
+              "cell": "B4",
+              "value": "Completed Attachment C Price Sheet/Cost Table Fence Rentals",
+              "valueType": "str",
+              "dataOnly": "Completed Attachment C Price Sheet/Cost Table Fence Rentals",
+              "isFormula": false
+            },
+            {
+              "cell": "C4",
+              "value": ".xlsx",
+              "valueType": "str",
+              "dataOnly": ".xlsx",
+              "isFormula": false
+            },
+            {
+              "cell": "D4",
+              "value": "CompanyName_FAC115PriceFence",
+              "valueType": "str",
+              "dataOnly": "CompanyName_FAC115PriceFence",
+              "isFormula": false
+            },
+            {
+              "cell": "B5",
+              "value": "Completed Attachment D Supplier Diversity Program (SDP)  (RFR Section 5) ",
+              "valueType": "str",
+              "dataOnly": "Completed Attachment D Supplier Diversity Program (SDP)  (RFR Section 5) ",
+              "isFormula": false
+            },
+            {
+              "cell": "C5",
+              "value": ".xlsx",
+              "valueType": "str",
+              "dataOnly": ".xlsx",
+              "isFormula": false
+            },
+            {
+              "cell": "D5",
+              "value": "CompanyName_FAC115SDPform1",
+              "valueType": "str",
+              "dataOnly": "CompanyName_FAC115SDPform1",
+              "isFormula": false
+            },
+            {
+              "cell": "B6",
+              "value": "Completed Attachment E Prompt Pay Discount (PPD) Form (RFR Section 4.10.8)",
+              "valueType": "str",
+              "dataOnly": "Completed Attachment E Prompt Pay Discount (PPD) Form (RFR Section 4.10.8)",
+              "isFormula": false
+            },
+            {
+              "cell": "C6",
+              "value": ".doc or .pdf",
+              "valueType": "str",
+              "dataOnly": ".doc or .pdf",
+              "isFormula": false
+            },
+            {
+              "cell": "D6",
+              "value": "CompanyName_FAC115PPD",
+              "valueType": "str",
+              "dataOnly": "CompanyName_FAC115PPD",
+              "isFormula": false
+            },
+            {
+              "cell": "B7",
+              "value": "Organizational Chart as Attachement G",
+              "valueType": "str",
+              "dataOnly": "Organizational Chart as Attachement G",
+              "isFormula": false
+            },
+            {
+              "cell": "C7",
+              "value": ".doc or .pdf",
+              "valueType": "str",
+              "dataOnly": ".doc or .pdf",
+              "isFormula": false
+            },
+            {
+              "cell": "D7",
+              "value": "CompanyName_FAC115OrgChart",
+              "valueType": "str",
+              "dataOnly": "CompanyName_FAC115OrgChart",
+              "isFormula": false
+            }
+          ]
+        },
+        {
+          "name": "Bidder Information",
+          "dimensions": "A1:D107",
+          "maxRow": 107,
+          "maxColumn": 4,
+          "nonEmptyCells": 82,
+          "formulaCells": 0,
+          "sampleCells": [
+            {
+              "cell": "B1",
+              "value": "FAC115 Security Guard Services, Private Investigative Services, and Fence Rentals",
+              "valueType": "str",
+              "dataOnly": "FAC115 Security Guard Services, Private Investigative Services, and Fence Rentals",
+              "isFormula": false
+            },
+            {
+              "cell": "B2",
+              "value": "BIDDER RESPONSE FORM - BIDDER INFORMATION",
+              "valueType": "str",
+              "dataOnly": "BIDDER RESPONSE FORM - BIDDER INFORMATION",
+              "isFormula": false
+            },
+            {
+              "cell": "B3",
+              "value": "Bidder must respond to all questions in the sections below unless stated otherwise.",
+              "valueType": "str",
+              "dataOnly": "Bidder must respond to all questions in the sections below unless stated otherwise.",
+              "isFormula": false
+            },
+            {
+              "cell": "B5",
+              "value": "Each gray box is a response field                                                 Example: ",
+              "valueType": "str",
+              "dataOnly": "Each gray box is a response field                                                 Example: ",
+              "isFormula": false
+            },
+            {
+              "cell": "D5",
+              "value": "Company Name, Inc.",
+              "valueType": "str",
+              "dataOnly": "Company Name, Inc.",
+              "isFormula": false
+            },
+            {
+              "cell": "A7",
+              "value": "1. Bidder Information (type answers into the outlined boxes below)",
+              "valueType": "str",
+              "dataOnly": "1. Bidder Information (type answers into the outlined boxes below)",
+              "isFormula": false
+            },
+            {
+              "cell": "A8",
+              "value": "Legal Company Name:  ",
+              "valueType": "str",
+              "dataOnly": "Legal Company Name:  ",
+              "isFormula": false
+            },
+            {
+              "cell": "C8",
+              "value": "Years in Business:  ",
+              "valueType": "str",
+              "dataOnly": "Years in Business:  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A9",
+              "value": "Legal Company Address:  ",
+              "valueType": "str",
+              "dataOnly": "Legal Company Address:  ",
+              "isFormula": false
+            },
+            {
+              "cell": "C9",
+              "value": "Days/Hours of Operation:  ",
+              "valueType": "str",
+              "dataOnly": "Days/Hours of Operation:  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A10",
+              "value": "Company Phone :  ",
+              "valueType": "str",
+              "dataOnly": "Company Phone :  ",
+              "isFormula": false
+            },
+            {
+              "cell": "C10",
+              "value": "Company Website (optional):  ",
+              "valueType": "str",
+              "dataOnly": "Company Website (optional):  ",
+              "isFormula": false
+            },
+            {
+              "cell": "C11",
+              "value": "Office/Physical Presence in MA:",
+              "valueType": "str",
+              "dataOnly": "Office/Physical Presence in MA:",
+              "isFormula": false
+            },
+            {
+              "cell": "A12",
+              "value": "Company Email:  ",
+              "valueType": "str",
+              "dataOnly": "Company Email:  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A14",
+              "value": "2. Contact Person(s) (provide at least one contact person and list additional contacts where applicable)\n\nAwarded Contractors are responsible for reporting quarterly sales and diversity spending as well as ensuring payment of the 1% OSD Administration Fee. Any changes to any Contractor contacts must be communicated to the FAC117 Contract Manager.",
+              "valueType": "str",
+              "dataOnly": "2. Contact Person(s) (provide at least one contact person and list additional contacts where applicable)\n\nAwarded Contractors are responsible for reporting quarterly sales and diversity spending as well as ensuring payment of the 1% OSD Administration Fee. Any changes to any Contractor contacts must be communicated to the FAC117 Contract Manager.",
+              "isFormula": false
+            },
+            {
+              "cell": "B15",
+              "value": "Name (First Last)",
+              "valueType": "str",
+              "dataOnly": "Name (First Last)",
+              "isFormula": false
+            },
+            {
+              "cell": "C15",
+              "value": "Phone (###) ###-####",
+              "valueType": "str",
+              "dataOnly": "Phone (###) ###-####",
+              "isFormula": false
+            },
+            {
+              "cell": "D15",
+              "value": "Email",
+              "valueType": "str",
+              "dataOnly": "Email",
+              "isFormula": false
+            },
+            {
+              "cell": "A16",
+              "value": "Primary Account Manager:  ",
+              "valueType": "str",
+              "dataOnly": "Primary Account Manager:  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A17",
+              "value": "Contract Sales & SDP Reporting Contact (if not primary):  ",
+              "valueType": "str",
+              "dataOnly": "Contract Sales & SDP Reporting Contact (if not primary):  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A18",
+              "value": "Admin Fee Reporting Contact (if not primary):  ",
+              "valueType": "str",
+              "dataOnly": "Admin Fee Reporting Contact (if not primary):  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A19",
+              "value": "Customer Contact (if not primary):  \nThis name should be same as COMMBUYS contact and will be listed in the Contract User Guide.",
+              "valueType": "str",
+              "dataOnly": "Customer Contact (if not primary):  \nThis name should be same as COMMBUYS contact and will be listed in the Contract User Guide.",
+              "isFormula": false
+            },
+            {
+              "cell": "A21",
+              "value": "3. Emergency Contact Person (provide a contact who can be available 24 hours a day or as close to 24 hours as possible)",
+              "valueType": "str",
+              "dataOnly": "3. Emergency Contact Person (provide a contact who can be available 24 hours a day or as close to 24 hours as possible)",
+              "isFormula": false
+            },
+            {
+              "cell": "B22",
+              "value": "Name",
+              "valueType": "str",
+              "dataOnly": "Name",
+              "isFormula": false
+            },
+            {
+              "cell": "C22",
+              "value": "Phone",
+              "valueType": "str",
+              "dataOnly": "Phone",
+              "isFormula": false
+            },
+            {
+              "cell": "D22",
+              "value": "Email",
+              "valueType": "str",
+              "dataOnly": "Email",
+              "isFormula": false
+            },
+            {
+              "cell": "A23",
+              "value": "Emergency Contact Person:  ",
+              "valueType": "str",
+              "dataOnly": "Emergency Contact Person:  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A25",
+              "value": "4. Categories Being Bid (answer Yes/No - Bidder may respond to one or multiple categories) RFR Section 3",
+              "valueType": "str",
+              "dataOnly": "4. Categories Being Bid (answer Yes/No - Bidder may respond to one or multiple categories) RFR Section 3",
+              "isFormula": false
+            },
+            {
+              "cell": "A26",
+              "value": "Category 1 - Security Guard Services",
+              "valueType": "str",
+              "dataOnly": "Category 1 - Security Guard Services",
+              "isFormula": false
+            },
+            {
+              "cell": "A27",
+              "value": "Category 2 -Private Investigative Services ",
+              "valueType": "str",
+              "dataOnly": "Category 2 -Private Investigative Services ",
+              "isFormula": false
+            },
+            {
+              "cell": "A28",
+              "value": "Category 3 - Fence Rentals ",
+              "valueType": "str",
+              "dataOnly": "Category 3 - Fence Rentals ",
+              "isFormula": false
+            },
+            {
+              "cell": "A31",
+              "value": "6. Is your company compliant with both state and federal taxes?",
+              "valueType": "str",
+              "dataOnly": "6. Is your company compliant with both state and federal taxes?",
+              "isFormula": false
+            },
+            {
+              "cell": "A32",
+              "value": "Answer (Yes/No):  ",
+              "valueType": "str",
+              "dataOnly": "Answer (Yes/No):  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A34",
+              "value": "7. Continuity of Operations Plan for employee PTO absences (RFR Section 2.3). Also, Emergency Preparedness: COOP Plan. Indicate whether there is a written Continuity of Operations Plan (COOP) that describes how the company will continue to do business in case of an emergency. (RFR Section 2.4)",
+              "valueType": "str",
+              "dataOnly": "7. Continuity of Operations Plan for employee PTO absences (RFR Section 2.3). Also, Emergency Preparedness: COOP Plan. Indicate whether there is a written Continuity of Operations Plan (COOP) that describes how the company will continue to do business in case of an emergency. (RFR Section 2.4)",
+              "isFormula": false
+            },
+            {
+              "cell": "A35",
+              "value": "Answer (Yes/No):  ",
+              "valueType": "str",
+              "dataOnly": "Answer (Yes/No):  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A37",
+              "value": "8. Geographic Coverage (answer Yes/No) RFR Section (3.7)\n\nBidders must respond to indicate what type of geographic service they will offer on contract. Respond below to indicate if you are offering Statewide Service or select the counties you can service. If awarded, the bidder must service all cities and towns in the chosen service area(s). ",
+              "valueType": "str",
+              "dataOnly": "8. Geographic Coverage (answer Yes/No) RFR Section (3.7)\n\nBidders must respond to indicate what type of geographic service they will offer on contract. Respond below to indicate if you are offering Statewide Service or select the counties you can service. If awarded, the bidder must service all cities and towns in the chosen service area(s). ",
+              "isFormula": false
+            },
+            {
+              "cell": "B38",
+              "value": "County",
+              "valueType": "str",
+              "dataOnly": "County",
+              "isFormula": false
+            },
+            {
+              "cell": "C38",
+              "value": "Exceptions/Added Info",
+              "valueType": "str",
+              "dataOnly": "Exceptions/Added Info",
+              "isFormula": false
+            },
+            {
+              "cell": "A39",
+              "value": "Statewide Service (with islands):  ",
+              "valueType": "str",
+              "dataOnly": "Statewide Service (with islands):  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A40",
+              "value": "Barnstable  ",
+              "valueType": "str",
+              "dataOnly": "Barnstable  ",
+              "isFormula": false
+            }
+          ]
+        },
+        {
+          "name": "Certifications & Licenses",
+          "dimensions": "A1:E51",
+          "maxRow": 51,
+          "maxColumn": 5,
+          "nonEmptyCells": 31,
+          "formulaCells": 0,
+          "sampleCells": [
+            {
+              "cell": "B1",
+              "value": "FAC115 Security Guard Services, Private Investigative Services, and Fence Rentals",
+              "valueType": "str",
+              "dataOnly": "FAC115 Security Guard Services, Private Investigative Services, and Fence Rentals",
+              "isFormula": false
+            },
+            {
+              "cell": "B2",
+              "value": "BIDDER RESPONSE FORM - STAFF QUALIFICATIONS",
+              "valueType": "str",
+              "dataOnly": "BIDDER RESPONSE FORM - STAFF QUALIFICATIONS",
+              "isFormula": false
+            },
+            {
+              "cell": "B3",
+              "value": "Completing all fields in this section is mandatory",
+              "valueType": "str",
+              "dataOnly": "Completing all fields in this section is mandatory",
+              "isFormula": false
+            },
+            {
+              "cell": "B5",
+              "value": "Each gray box is a response field                                                 Example: ",
+              "valueType": "str",
+              "dataOnly": "Each gray box is a response field                                                 Example: ",
+              "isFormula": false
+            },
+            {
+              "cell": "D5",
+              "value": "Company Name, Inc.",
+              "valueType": "str",
+              "dataOnly": "Company Name, Inc.",
+              "isFormula": false
+            },
+            {
+              "cell": "A7",
+              "value": "1. Training Standards. Provide detailed information on the staff qualifications and measures that are in place to ensure that a new employee is ready to perform/provide basic security guard services or PI services.  Use the box below for the answer.  The box will expand to accommodate your response. (RFR Section 3.1.1)",
+              "valueType": "str",
+              "dataOnly": "1. Training Standards. Provide detailed information on the staff qualifications and measures that are in place to ensure that a new employee is ready to perform/provide basic security guard services or PI services.  Use the box below for the answer.  The box will expand to accommodate your response. (RFR Section 3.1.1)",
+              "isFormula": false
+            },
+            {
+              "cell": "A13",
+              "value": "2. Training Standards and Professional Development. How does your organization track an employee's training and continued development? What is the minimum standard?",
+              "valueType": "str",
+              "dataOnly": "2. Training Standards and Professional Development. How does your organization track an employee's training and continued development? What is the minimum standard?",
+              "isFormula": false
+            },
+            {
+              "cell": "A14",
+              "value": "Answer:  ",
+              "valueType": "str",
+              "dataOnly": "Answer:  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A16",
+              "value": "3. What is your company process by which you verify an employee's employement history, current licensing and certifications (both security and PI)? (RFR Sections 2.2 and 3.2) ",
+              "valueType": "str",
+              "dataOnly": "3. What is your company process by which you verify an employee's employement history, current licensing and certifications (both security and PI)? (RFR Sections 2.2 and 3.2) ",
+              "isFormula": false
+            },
+            {
+              "cell": "B18",
+              "value": "Questions",
+              "valueType": "str",
+              "dataOnly": "Questions",
+              "isFormula": false
+            },
+            {
+              "cell": "C18",
+              "value": "Use this column for the answer",
+              "valueType": "str",
+              "dataOnly": "Use this column for the answer",
+              "isFormula": false
+            },
+            {
+              "cell": "B19",
+              "value": "Job experience?",
+              "valueType": "str",
+              "dataOnly": "Job experience?",
+              "isFormula": false
+            },
+            {
+              "cell": "B20",
+              "value": "What licenses/ certifications?",
+              "valueType": "str",
+              "dataOnly": "What licenses/ certifications?",
+              "isFormula": false
+            },
+            {
+              "cell": "B21",
+              "value": "Background checks/CORI/SORI?",
+              "valueType": "str",
+              "dataOnly": "Background checks/CORI/SORI?",
+              "isFormula": false
+            },
+            {
+              "cell": "B22",
+              "value": "Weapons/Firearems?",
+              "valueType": "str",
+              "dataOnly": "Weapons/Firearems?",
+              "isFormula": false
+            },
+            {
+              "cell": "A24",
+              "value": "4. Submit a detailed description of how your maintain your employee's training in the following areas.  Can you certify that all employees assigned to this contract have received training and subsequent training in the folllwing areas?",
+              "valueType": "str",
+              "dataOnly": "4. Submit a detailed description of how your maintain your employee's training in the following areas.  Can you certify that all employees assigned to this contract have received training and subsequent training in the folllwing areas?",
+              "isFormula": false
+            },
+            {
+              "cell": "B26",
+              "value": "Experience/Trained in:",
+              "valueType": "str",
+              "dataOnly": "Experience/Trained in:",
+              "isFormula": false
+            },
+            {
+              "cell": "C26",
+              "value": "Certify staff is trained Yes/No?",
+              "valueType": "str",
+              "dataOnly": "Certify staff is trained Yes/No?",
+              "isFormula": false
+            },
+            {
+              "cell": "D26",
+              "value": "How is training maintained?",
+              "valueType": "str",
+              "dataOnly": "How is training maintained?",
+              "isFormula": false
+            },
+            {
+              "cell": "B27",
+              "value": "CPR",
+              "valueType": "str",
+              "dataOnly": "CPR",
+              "isFormula": false
+            },
+            {
+              "cell": "B28",
+              "value": "First Aid",
+              "valueType": "str",
+              "dataOnly": "First Aid",
+              "isFormula": false
+            },
+            {
+              "cell": "B29",
+              "value": "AED (defribulator)",
+              "valueType": "str",
+              "dataOnly": "AED (defribulator)",
+              "isFormula": false
+            },
+            {
+              "cell": "B30",
+              "value": "Valid Driver's License",
+              "valueType": "str",
+              "dataOnly": "Valid Driver's License",
+              "isFormula": false
+            },
+            {
+              "cell": "B31",
+              "value": "Other:",
+              "valueType": "str",
+              "dataOnly": "Other:",
+              "isFormula": false
+            },
+            {
+              "cell": "A37",
+              "value": "5. Does your company have a Supervisor or Manager readily available 24/7 in case of an emegency or urgent need? Does your security team know how to contact these Supervisors, if necessary?  Are these Supervisor's local or able to get to a worksite in a reasonable amount of time?",
+              "valueType": "str",
+              "dataOnly": "5. Does your company have a Supervisor or Manager readily available 24/7 in case of an emegency or urgent need? Does your security team know how to contact these Supervisors, if necessary?  Are these Supervisor's local or able to get to a worksite in a reasonable amount of time?",
+              "isFormula": false
+            },
+            {
+              "cell": "B39",
+              "value": "Staff Name",
+              "valueType": "str",
+              "dataOnly": "Staff Name",
+              "isFormula": false
+            },
+            {
+              "cell": "C39",
+              "value": "Office or Area they Manage",
+              "valueType": "str",
+              "dataOnly": "Office or Area they Manage",
+              "isFormula": false
+            },
+            {
+              "cell": "A45",
+              "value": "6. Is it clearly stated that Security Guards may need to take additional training depending on the location of their worksite or requirements of the job, Agency or Buyer?",
+              "valueType": "str",
+              "dataOnly": "6. Is it clearly stated that Security Guards may need to take additional training depending on the location of their worksite or requirements of the job, Agency or Buyer?",
+              "isFormula": false
+            },
+            {
+              "cell": "A47",
+              "value": "Answer Yes/No: ",
+              "valueType": "str",
+              "dataOnly": "Answer Yes/No: ",
+              "isFormula": false
+            },
+            {
+              "cell": "A49",
+              "value": "7. Certify below that all employees on this contract will receive training  on the Commonwealth of Massachusetts Executive Order 504.  Refer to RFR Section 3.1.1.1 ",
+              "valueType": "str",
+              "dataOnly": "7. Certify below that all employees on this contract will receive training  on the Commonwealth of Massachusetts Executive Order 504.  Refer to RFR Section 3.1.1.1 ",
+              "isFormula": false
+            },
+            {
+              "cell": "A51",
+              "value": "Answer Yes/No:",
+              "valueType": "str",
+              "dataOnly": "Answer Yes/No:",
+              "isFormula": false
+            }
+          ]
+        },
+        {
+          "name": "Bidder References",
+          "dimensions": "A1:D13",
+          "maxRow": 13,
+          "maxColumn": 4,
+          "nonEmptyCells": 4,
+          "formulaCells": 0,
+          "sampleCells": [
+            {
+              "cell": "A8",
+              "value": "Reference Company/Entity Name",
+              "valueType": "str",
+              "dataOnly": "Reference Company/Entity Name",
+              "isFormula": false
+            },
+            {
+              "cell": "B8",
+              "value": "Contact Person Name (First Last)",
+              "valueType": "str",
+              "dataOnly": "Contact Person Name (First Last)",
+              "isFormula": false
+            },
+            {
+              "cell": "C8",
+              "value": "Phone (###) ###-####",
+              "valueType": "str",
+              "dataOnly": "Phone (###) ###-####",
+              "isFormula": false
+            },
+            {
+              "cell": "D8",
+              "value": "Email",
+              "valueType": "str",
+              "dataOnly": "Email",
+              "isFormula": false
+            }
+          ]
+        },
+        {
+          "name": "Sheet1",
+          "dimensions": "A1:A1",
+          "maxRow": 1,
+          "maxColumn": 1,
+          "nonEmptyCells": 0,
+          "formulaCells": 0,
+          "sampleCells": []
+        },
+        {
+          "name": "EPP Form",
+          "dimensions": "A1:D56",
+          "maxRow": 56,
+          "maxColumn": 4,
+          "nonEmptyCells": 55,
+          "formulaCells": 0,
+          "sampleCells": [
+            {
+              "cell": "B1",
+              "value": "FAC115 Security Guard Services, Private Investigative Services, and Fence Rentals",
+              "valueType": "str",
+              "dataOnly": "FAC115 Security Guard Services, Private Investigative Services, and Fence Rentals",
+              "isFormula": false
+            },
+            {
+              "cell": "B2",
+              "value": "Bidder Current Environmentally Preferable Products And Practices Form",
+              "valueType": "str",
+              "dataOnly": "Bidder Current Environmentally Preferable Products And Practices Form",
+              "isFormula": false
+            },
+            {
+              "cell": "B3",
+              "value": "The primary purpose of this form is to encourage potential Bidders to communicate existing business practices that foster a sustainable approach to conducting their operations. This may include one that has a reduced impact on the environment or public health, such as, but not limited to, creating less waste by using less packaging; eliminating the use substances and/or materials that are considered toxic; or using alternative fuel vehicles in the delivery fleet for the purpose of reducing air pollution and greenhouse gas emissions. \n\nThe Commonwealth considers such initiatives part of the \u201cbest value\u201d of procurement.  Bidders have an opportunity to receive additional points in the evaluation phase of the RFR for the environmental initiatives they have identified.   However, bidders must substantiate all answers in the space provided below or in an attachment in order to receive any additional points.  If reference is made to an attached document, or a website, list the specific page and line to which information is referenced. ",
+              "valueType": "str",
+              "dataOnly": "The primary purpose of this form is to encourage potential Bidders to communicate existing business practices that foster a sustainable approach to conducting their operations. This may include one that has a reduced impact on the environment or public health, such as, but not limited to, creating less waste by using less packaging; eliminating the use substances and/or materials that are considered toxic; or using alternative fuel vehicles in the delivery fleet for the purpose of reducing air pollution and greenhouse gas emissions. \n\nThe Commonwealth considers such initiatives part of the \u201cbest value\u201d of procurement.  Bidders have an opportunity to receive additional points in the evaluation phase of the RFR for the environmental initiatives they have identified.   However, bidders must substantiate all answers in the space provided below or in an attachment in order to receive any additional points.  If reference is made to an attached document, or a website, list the specific page and line to which information is referenced. ",
+              "isFormula": false
+            },
+            {
+              "cell": "A6",
+              "value": "BIDDER NAME: ",
+              "valueType": "str",
+              "dataOnly": "BIDDER NAME: ",
+              "isFormula": false
+            },
+            {
+              "cell": "A8",
+              "value": "Bidder questions",
+              "valueType": "str",
+              "dataOnly": "Bidder questions",
+              "isFormula": false
+            },
+            {
+              "cell": "B8",
+              "value": "To be responsive, bidder must provide answers to questions below.  If no answer, indicate \"none\".  If not applicable, indicate N/A.  ",
+              "valueType": "str",
+              "dataOnly": "To be responsive, bidder must provide answers to questions below.  If no answer, indicate \"none\".  If not applicable, indicate N/A.  ",
+              "isFormula": false
+            },
+            {
+              "cell": "C8",
+              "value": "Identify any links or names of attached documents required to substantiate any claims below",
+              "valueType": "str",
+              "dataOnly": "Identify any links or names of attached documents required to substantiate any claims below",
+              "isFormula": false
+            },
+            {
+              "cell": "B9",
+              "value": "(box will expand as you add text)",
+              "valueType": "str",
+              "dataOnly": "(box will expand as you add text)",
+              "isFormula": false
+            },
+            {
+              "cell": "A10",
+              "value": "Bidder Sustainability Program/Environmental Business Practices",
+              "valueType": "str",
+              "dataOnly": "Bidder Sustainability Program/Environmental Business Practices",
+              "isFormula": false
+            },
+            {
+              "cell": "A11",
+              "value": "Indicate to the right and attach (or provide link) any of the following corporate sustainablity policies/plans: ",
+              "valueType": "str",
+              "dataOnly": "Indicate to the right and attach (or provide link) any of the following corporate sustainablity policies/plans: ",
+              "isFormula": false
+            },
+            {
+              "cell": "A12",
+              "value": "Corporate Wide Sustainability Policy",
+              "valueType": "str",
+              "dataOnly": "Corporate Wide Sustainability Policy",
+              "isFormula": false
+            },
+            {
+              "cell": "A13",
+              "value": "Climate Action Plan",
+              "valueType": "str",
+              "dataOnly": "Climate Action Plan",
+              "isFormula": false
+            },
+            {
+              "cell": "A14",
+              "value": "Zero Waste Policy",
+              "valueType": "str",
+              "dataOnly": "Zero Waste Policy",
+              "isFormula": false
+            },
+            {
+              "cell": "A15",
+              "value": "Toxics Reduction Strategy",
+              "valueType": "str",
+              "dataOnly": "Toxics Reduction Strategy",
+              "isFormula": false
+            },
+            {
+              "cell": "A16",
+              "value": "Green Fleet Policy ",
+              "valueType": "str",
+              "dataOnly": "Green Fleet Policy ",
+              "isFormula": false
+            },
+            {
+              "cell": "A17",
+              "value": "Sustainable Procurement Policy or Environmentally Preferable Purchasing Policy ",
+              "valueType": "str",
+              "dataOnly": "Sustainable Procurement Policy or Environmentally Preferable Purchasing Policy ",
+              "isFormula": false
+            },
+            {
+              "cell": "A18",
+              "value": "Anti-Idling Policy",
+              "valueType": "str",
+              "dataOnly": "Anti-Idling Policy",
+              "isFormula": false
+            },
+            {
+              "cell": "A19",
+              "value": "Waste Prevention and/or recycling policy/program ",
+              "valueType": "str",
+              "dataOnly": "Waste Prevention and/or recycling policy/program ",
+              "isFormula": false
+            },
+            {
+              "cell": "A20",
+              "value": "Other:",
+              "valueType": "str",
+              "dataOnly": "Other:",
+              "isFormula": false
+            },
+            {
+              "cell": "A21",
+              "value": "Briefly describe and list sustainable procurement practices and achievements as a result of the policies checked above (if no policies checked, leave blank):",
+              "valueType": "str",
+              "dataOnly": "Briefly describe and list sustainable procurement practices and achievements as a result of the policies checked above (if no policies checked, leave blank):",
+              "isFormula": false
+            },
+            {
+              "cell": "A22",
+              "value": "Does your company publish an annual Sustainability Report?   If yes, provide your latest report as a link or attach, and briefly describe key elements and accomplishments.  The sustainability report may include reference to policies but should include specific and measurable accomplishments over the last year. ",
+              "valueType": "str",
+              "dataOnly": "Does your company publish an annual Sustainability Report?   If yes, provide your latest report as a link or attach, and briefly describe key elements and accomplishments.  The sustainability report may include reference to policies but should include specific and measurable accomplishments over the last year. ",
+              "isFormula": false
+            },
+            {
+              "cell": "A23",
+              "value": "Do you have specific measurable targets for reducing your use of energy, water and chemicals? Describe targets:",
+              "valueType": "str",
+              "dataOnly": "Do you have specific measurable targets for reducing your use of energy, water and chemicals? Describe targets:",
+              "isFormula": false
+            },
+            {
+              "cell": "A24",
+              "value": "Decarbonization",
+              "valueType": "str",
+              "dataOnly": "Decarbonization",
+              "isFormula": false
+            },
+            {
+              "cell": "A25",
+              "value": "What commitments and efforts has the company made to cut its carbon footprint?  Describe:",
+              "valueType": "str",
+              "dataOnly": "What commitments and efforts has the company made to cut its carbon footprint?  Describe:",
+              "isFormula": false
+            },
+            {
+              "cell": "A26",
+              "value": "Company reports Greenhouse Gas emissions and climate change strategy to the Carbon Disclosure Project (CDP) or publicly disclose an equivalent amount and type of information on an annual basis (provide proof of reporting): ",
+              "valueType": "str",
+              "dataOnly": "Company reports Greenhouse Gas emissions and climate change strategy to the Carbon Disclosure Project (CDP) or publicly disclose an equivalent amount and type of information on an annual basis (provide proof of reporting): ",
+              "isFormula": false
+            },
+            {
+              "cell": "A27",
+              "value": "Bidder Facility Sustainability Practices: List individual steps not indicated above that your firm has taken to improve the sustainability at your own operations:",
+              "valueType": "str",
+              "dataOnly": "Bidder Facility Sustainability Practices: List individual steps not indicated above that your firm has taken to improve the sustainability at your own operations:",
+              "isFormula": false
+            },
+            {
+              "cell": "A28",
+              "value": "Uses at least 50% remanufactured toner cartridges in printers (provide total annual spend on remanufactured and Original Equipment Manufacturer cartridges):  ",
+              "valueType": "str",
+              "dataOnly": "Uses at least 50% remanufactured toner cartridges in printers (provide total annual spend on remanufactured and Original Equipment Manufacturer cartridges):  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A29",
+              "value": "Implemented a green cleaning program at our own facilities (describe program and provide a list of third-party certified products used):  ",
+              "valueType": "str",
+              "dataOnly": "Implemented a green cleaning program at our own facilities (describe program and provide a list of third-party certified products used):  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A30",
+              "value": "Purchases appliances and equipment (printers, copiers, microwaves, etc.), that are Energy Star or EPEAT certified models (provide a list certified products):  ",
+              "valueType": "str",
+              "dataOnly": "Purchases appliances and equipment (printers, copiers, microwaves, etc.), that are Energy Star or EPEAT certified models (provide a list certified products):  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A31",
+              "value": "Incorporates green building design elements into all construction and renovation projects.  (list green design elements and provide supporting documentation to substantiate):",
+              "valueType": "str",
+              "dataOnly": "Incorporates green building design elements into all construction and renovation projects.  (list green design elements and provide supporting documentation to substantiate):",
+              "isFormula": false
+            },
+            {
+              "cell": "A32",
+              "value": "Owns or leases buildings certified to LEED or other green building standard (describe any data collected and provide link to any published reports):  ",
+              "valueType": "str",
+              "dataOnly": "Owns or leases buildings certified to LEED or other green building standard (describe any data collected and provide link to any published reports):  ",
+              "isFormula": false
+            },
+            {
+              "cell": "A33",
+              "value": "Purchases or creates renewable electricity onsite (e.g., solar or wind systems) (describe and indicate the % of energy that is derived from renewable sources):",
+              "valueType": "str",
+              "dataOnly": "Purchases or creates renewable electricity onsite (e.g., solar or wind systems) (describe and indicate the % of energy that is derived from renewable sources):",
+              "isFormula": false
+            },
+            {
+              "cell": "A34",
+              "value": "Has internal recycling (list all materials included in the program): ",
+              "valueType": "str",
+              "dataOnly": "Has internal recycling (list all materials included in the program): ",
+              "isFormula": false
+            },
+            {
+              "cell": "A35",
+              "value": "Has a composting program (describe): ",
+              "valueType": "str",
+              "dataOnly": "Has a composting program (describe): ",
+              "isFormula": false
+            },
+            {
+              "cell": "A36",
+              "value": "Has received a 3d party waste audit and implemented recommendations (attach proof of implemented recommendations):",
+              "valueType": "str",
+              "dataOnly": "Has received a 3d party waste audit and implemented recommendations (attach proof of implemented recommendations):",
+              "isFormula": false
+            },
+            {
+              "cell": "A37",
+              "value": "Other sustainable initiatives not listed above (provide documentation to substantiate claims):",
+              "valueType": "str",
+              "dataOnly": "Other sustainable initiatives not listed above (provide documentation to substantiate claims):",
+              "isFormula": false
+            },
+            {
+              "cell": "A38",
+              "value": "Packaging: Has your company implemented any environmental packaging initiatives?",
+              "valueType": "str",
+              "dataOnly": "Packaging: Has your company implemented any environmental packaging initiatives?",
+              "isFormula": false
+            },
+            {
+              "cell": "A39",
+              "value": "Do you incorporate packaging reduction, reuse, and recycling in purchasing practices (describe all practices that apply): ",
+              "valueType": "str",
+              "dataOnly": "Do you incorporate packaging reduction, reuse, and recycling in purchasing practices (describe all practices that apply): ",
+              "isFormula": false
+            },
+            {
+              "cell": "A40",
+              "value": "Other (describe):",
+              "valueType": "str",
+              "dataOnly": "Other (describe):",
+              "isFormula": false
+            },
+            {
+              "cell": "A41",
+              "value": "Shipping/Transportation: Has your company implemented any of the following environmentally sound shipping and transportation practices?",
+              "valueType": "str",
+              "dataOnly": "Shipping/Transportation: Has your company implemented any of the following environmentally sound shipping and transportation practices?",
+              "isFormula": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.xlsx",
+      "sheetCount": 2,
+      "sheets": [
+        {
+          "name": "Guard Services",
+          "dimensions": "A1:L57",
+          "maxRow": 57,
+          "maxColumn": 12,
+          "nonEmptyCells": 69,
+          "formulaCells": 0,
+          "sampleCells": [
+            {
+              "cell": "A1",
+              "value": "Attachment B Price Sheet/Cost Table",
+              "valueType": "str",
+              "dataOnly": "Attachment B Price Sheet/Cost Table",
+              "isFormula": false
+            },
+            {
+              "cell": "A3",
+              "value": "FAC115 Security Services and PI Services",
+              "valueType": "str",
+              "dataOnly": "FAC115 Security Services and PI Services",
+              "isFormula": false
+            },
+            {
+              "cell": "A4",
+              "value": "Bidder Contact Name:",
+              "valueType": "str",
+              "dataOnly": "Bidder Contact Name:",
+              "isFormula": false
+            },
+            {
+              "cell": "A5",
+              "value": "Company Name:",
+              "valueType": "str",
+              "dataOnly": "Company Name:",
+              "isFormula": false
+            },
+            {
+              "cell": "A6",
+              "value": "Address:",
+              "valueType": "str",
+              "dataOnly": "Address:",
+              "isFormula": false
+            },
+            {
+              "cell": "A7",
+              "value": "Telephone(s):",
+              "valueType": "str",
+              "dataOnly": "Telephone(s):",
+              "isFormula": false
+            },
+            {
+              "cell": "A8",
+              "value": "Email:",
+              "valueType": "str",
+              "dataOnly": "Email:",
+              "isFormula": false
+            },
+            {
+              "cell": "A10",
+              "value": "Security Guard Services",
+              "valueType": "str",
+              "dataOnly": "Security Guard Services",
+              "isFormula": false
+            },
+            {
+              "cell": "A11",
+              "value": "Weekdays",
+              "valueType": "str",
+              "dataOnly": "Weekdays",
+              "isFormula": false
+            },
+            {
+              "cell": "B11",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "C11",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "D11",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "E11",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "F11",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "G11",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "I11",
+              "value": "Union Rate Markup % (must list, even if 0%)",
+              "valueType": "str",
+              "dataOnly": "Union Rate Markup % (must list, even if 0%)",
+              "isFormula": false
+            },
+            {
+              "cell": "A12",
+              "value": "County of Service (please list)",
+              "valueType": "str",
+              "dataOnly": "County of Service (please list)",
+              "isFormula": false
+            },
+            {
+              "cell": "A13",
+              "value": "Basic Guard",
+              "valueType": "str",
+              "dataOnly": "Basic Guard",
+              "isFormula": false
+            },
+            {
+              "cell": "A14",
+              "value": "Wanding",
+              "valueType": "str",
+              "dataOnly": "Wanding",
+              "isFormula": false
+            },
+            {
+              "cell": "A15",
+              "value": "Armed*",
+              "valueType": "str",
+              "dataOnly": "Armed*",
+              "isFormula": false
+            },
+            {
+              "cell": "A16",
+              "value": "Patrol Car",
+              "valueType": "str",
+              "dataOnly": "Patrol Car",
+              "isFormula": false
+            },
+            {
+              "cell": "A17",
+              "value": "Supervisor*",
+              "valueType": "str",
+              "dataOnly": "Supervisor*",
+              "isFormula": false
+            },
+            {
+              "cell": "A18",
+              "value": "Special Event",
+              "valueType": "str",
+              "dataOnly": "Special Event",
+              "isFormula": false
+            },
+            {
+              "cell": "A20",
+              "value": "Nights",
+              "valueType": "str",
+              "dataOnly": "Nights",
+              "isFormula": false
+            },
+            {
+              "cell": "B20",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "C20",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "D20",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "E20",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "F20",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "G20",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "A21",
+              "value": "County of Service ",
+              "valueType": "str",
+              "dataOnly": "County of Service ",
+              "isFormula": false
+            },
+            {
+              "cell": "A22",
+              "value": "Basic Guard",
+              "valueType": "str",
+              "dataOnly": "Basic Guard",
+              "isFormula": false
+            },
+            {
+              "cell": "A23",
+              "value": "Wanding",
+              "valueType": "str",
+              "dataOnly": "Wanding",
+              "isFormula": false
+            },
+            {
+              "cell": "A24",
+              "value": "Armed*",
+              "valueType": "str",
+              "dataOnly": "Armed*",
+              "isFormula": false
+            },
+            {
+              "cell": "A25",
+              "value": "Patrol Car",
+              "valueType": "str",
+              "dataOnly": "Patrol Car",
+              "isFormula": false
+            },
+            {
+              "cell": "A26",
+              "value": "Supervisor*",
+              "valueType": "str",
+              "dataOnly": "Supervisor*",
+              "isFormula": false
+            },
+            {
+              "cell": "A27",
+              "value": "Special Event",
+              "valueType": "str",
+              "dataOnly": "Special Event",
+              "isFormula": false
+            },
+            {
+              "cell": "A29",
+              "value": "Weekends",
+              "valueType": "str",
+              "dataOnly": "Weekends",
+              "isFormula": false
+            },
+            {
+              "cell": "B29",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "C29",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            }
+          ]
+        },
+        {
+          "name": "PI Services",
+          "dimensions": "A1:I28",
+          "maxRow": 28,
+          "maxColumn": 9,
+          "nonEmptyCells": 47,
+          "formulaCells": 0,
+          "sampleCells": [
+            {
+              "cell": "A1",
+              "value": "Attachment B Price Sheet/Cost Table",
+              "valueType": "str",
+              "dataOnly": "Attachment B Price Sheet/Cost Table",
+              "isFormula": false
+            },
+            {
+              "cell": "A3",
+              "value": "FAC115 Security Services and PI Services",
+              "valueType": "str",
+              "dataOnly": "FAC115 Security Services and PI Services",
+              "isFormula": false
+            },
+            {
+              "cell": "A4",
+              "value": "Bidder Contact Name:",
+              "valueType": "str",
+              "dataOnly": "Bidder Contact Name:",
+              "isFormula": false
+            },
+            {
+              "cell": "A5",
+              "value": "Company Name:",
+              "valueType": "str",
+              "dataOnly": "Company Name:",
+              "isFormula": false
+            },
+            {
+              "cell": "A6",
+              "value": "Address:",
+              "valueType": "str",
+              "dataOnly": "Address:",
+              "isFormula": false
+            },
+            {
+              "cell": "A7",
+              "value": "Telephone(s):",
+              "valueType": "str",
+              "dataOnly": "Telephone(s):",
+              "isFormula": false
+            },
+            {
+              "cell": "A8",
+              "value": "Email:",
+              "valueType": "str",
+              "dataOnly": "Email:",
+              "isFormula": false
+            },
+            {
+              "cell": "A10",
+              "value": "Private  Investigator Services",
+              "valueType": "str",
+              "dataOnly": "Private  Investigator Services",
+              "isFormula": false
+            },
+            {
+              "cell": "A11",
+              "value": "Weekdays",
+              "valueType": "str",
+              "dataOnly": "Weekdays",
+              "isFormula": false
+            },
+            {
+              "cell": "B11",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "C11",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "D11",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "E11",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "F11",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "G11",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "I11",
+              "value": "Union Rate Markup % (must list, even if 0%)",
+              "valueType": "str",
+              "dataOnly": "Union Rate Markup % (must list, even if 0%)",
+              "isFormula": false
+            },
+            {
+              "cell": "A12",
+              "value": "County of Service",
+              "valueType": "str",
+              "dataOnly": "County of Service",
+              "isFormula": false
+            },
+            {
+              "cell": "A13",
+              "value": "Private Investigator",
+              "valueType": "str",
+              "dataOnly": "Private Investigator",
+              "isFormula": false
+            },
+            {
+              "cell": "A15",
+              "value": "Nights",
+              "valueType": "str",
+              "dataOnly": "Nights",
+              "isFormula": false
+            },
+            {
+              "cell": "B15",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "C15",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "D15",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "E15",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "F15",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "G15",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "A16",
+              "value": "County of Service",
+              "valueType": "str",
+              "dataOnly": "County of Service",
+              "isFormula": false
+            },
+            {
+              "cell": "A17",
+              "value": "Private Investigator",
+              "valueType": "str",
+              "dataOnly": "Private Investigator",
+              "isFormula": false
+            },
+            {
+              "cell": "A19",
+              "value": "Weekends",
+              "valueType": "str",
+              "dataOnly": "Weekends",
+              "isFormula": false
+            },
+            {
+              "cell": "B19",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "C19",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "D19",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "E19",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "F19",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "G19",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "A20",
+              "value": "County of Service",
+              "valueType": "str",
+              "dataOnly": "County of Service",
+              "isFormula": false
+            },
+            {
+              "cell": "A21",
+              "value": "Private Investigator",
+              "valueType": "str",
+              "dataOnly": "Private Investigator",
+              "isFormula": false
+            },
+            {
+              "cell": "A23",
+              "value": "Holidays",
+              "valueType": "str",
+              "dataOnly": "Holidays",
+              "isFormula": false
+            },
+            {
+              "cell": "B23",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "C23",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            },
+            {
+              "cell": "D23",
+              "value": "Rate Per Hour",
+              "valueType": "str",
+              "dataOnly": "Rate Per Hour",
+              "isFormula": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "FAC115_Attachment_D_SDP_Form_03.29.2022.xlsx",
+      "sheetCount": 1,
+      "sheets": [
+        {
+          "name": "SDP Plan Form",
+          "dimensions": "A1:J134",
+          "maxRow": 134,
+          "maxColumn": 10,
+          "nonEmptyCells": 92,
+          "formulaCells": 5,
+          "sampleCells": [
+            {
+              "cell": "A1",
+              "value": "Supplier Diversity Program (SDP) Plan Form",
+              "valueType": "str",
+              "dataOnly": "Supplier Diversity Program (SDP) Plan Form",
+              "isFormula": false
+            },
+            {
+              "cell": "F1",
+              "value": "Required for All Bidders",
+              "valueType": "str",
+              "dataOnly": "Required for All Bidders",
+              "isFormula": false
+            },
+            {
+              "cell": "A3",
+              "value": "This form is required for all Bidders to complete and submit as an Excel attachment with their responses. No contract shall be awarded to a Bidder without an SDP commitment (Part III of the form) that meets RFR requirements. All parts marked as \"Required\" must be completed. Bidders may be awarded additional evaluation points for providing information marked as \u201cOptional.\u201d",
+              "valueType": "str",
+              "dataOnly": "This form is required for all Bidders to complete and submit as an Excel attachment with their responses. No contract shall be awarded to a Bidder without an SDP commitment (Part III of the form) that meets RFR requirements. All parts marked as \"Required\" must be completed. Bidders may be awarded additional evaluation points for providing information marked as \u201cOptional.\u201d",
+              "isFormula": false
+            },
+            {
+              "cell": "A4",
+              "value": "Required fields are shaded in yellow.",
+              "valueType": "str",
+              "dataOnly": "Required fields are shaded in yellow.",
+              "isFormula": false
+            },
+            {
+              "cell": "B4",
+              "value": "Optional (desirable) fields are shaded in green.",
+              "valueType": "str",
+              "dataOnly": "Optional (desirable) fields are shaded in green.",
+              "isFormula": false
+            },
+            {
+              "cell": "E4",
+              "value": "Please do not convert to PDF. Attach to your Quote as an Excel file.",
+              "valueType": "str",
+              "dataOnly": "Please do not convert to PDF. Attach to your Quote as an Excel file.",
+              "isFormula": false
+            },
+            {
+              "cell": "A6",
+              "value": "Part I",
+              "valueType": "str",
+              "dataOnly": "Part I",
+              "isFormula": false
+            },
+            {
+              "cell": "B6",
+              "value": "Bidder and Contact Information (Required)",
+              "valueType": "str",
+              "dataOnly": "Bidder and Contact Information (Required)",
+              "isFormula": false
+            },
+            {
+              "cell": "A8",
+              "value": "Bidder Company Name",
+              "valueType": "str",
+              "dataOnly": "Bidder Company Name",
+              "isFormula": false
+            },
+            {
+              "cell": "A9",
+              "value": "Annual Gross Revenue (3-year average)",
+              "valueType": "str",
+              "dataOnly": "Annual Gross Revenue (3-year average)",
+              "isFormula": false
+            },
+            {
+              "cell": "B9",
+              "value": 0,
+              "valueType": "int",
+              "dataOnly": 0,
+              "isFormula": false
+            },
+            {
+              "cell": "B11",
+              "value": "Name",
+              "valueType": "str",
+              "dataOnly": "Name",
+              "isFormula": false
+            },
+            {
+              "cell": "C11",
+              "value": "Phone",
+              "valueType": "str",
+              "dataOnly": "Phone",
+              "isFormula": false
+            },
+            {
+              "cell": "D11",
+              "value": "Email",
+              "valueType": "str",
+              "dataOnly": "Email",
+              "isFormula": false
+            },
+            {
+              "cell": "A12",
+              "value": "Main Contact for this Bid",
+              "valueType": "str",
+              "dataOnly": "Main Contact for this Bid",
+              "isFormula": false
+            },
+            {
+              "cell": "A13",
+              "value": "SDP Reporting Contact (if awarded)",
+              "valueType": "str",
+              "dataOnly": "SDP Reporting Contact (if awarded)",
+              "isFormula": false
+            },
+            {
+              "cell": "A15",
+              "value": "Part II",
+              "valueType": "str",
+              "dataOnly": "Part II",
+              "isFormula": false
+            },
+            {
+              "cell": "B15",
+              "value": "SDP Focus Statement (Optional)",
+              "valueType": "str",
+              "dataOnly": "SDP Focus Statement (Optional)",
+              "isFormula": false
+            },
+            {
+              "cell": "A17",
+              "value": "Describe your company's overall approach to increasing the participation of diverse businesses in the provision of products and services under this proposal/contract (subcontracting) and in your company's general business operations (ancillary products and services).",
+              "valueType": "str",
+              "dataOnly": "Describe your company's overall approach to increasing the participation of diverse businesses in the provision of products and services under this proposal/contract (subcontracting) and in your company's general business operations (ancillary products and services).",
+              "isFormula": false
+            },
+            {
+              "cell": "A18",
+              "value": "Does your company have an internal supplier diversity policy? (Y/N)",
+              "valueType": "str",
+              "dataOnly": "Does your company have an internal supplier diversity policy? (Y/N)",
+              "isFormula": false
+            },
+            {
+              "cell": "A19",
+              "value": "Please provide a link to the company supplier diversity policy. If not online, attach to proposal.",
+              "valueType": "str",
+              "dataOnly": "Please provide a link to the company supplier diversity policy. If not online, attach to proposal.",
+              "isFormula": false
+            },
+            {
+              "cell": "A21",
+              "value": "Part III",
+              "valueType": "str",
+              "dataOnly": "Part III",
+              "isFormula": false
+            },
+            {
+              "cell": "B21",
+              "value": "SDP Spending Commitment (Required)",
+              "valueType": "str",
+              "dataOnly": "SDP Spending Commitment (Required)",
+              "isFormula": false
+            },
+            {
+              "cell": "A22",
+              "value": "What percentage of your company\u2019s contract sales do you propose to spend with certified diverse businesses (SDP Partners)? After contract award (if any), the Total SDP Commitment will become a contract requirement to be met annually on a Massachusetts fiscal year basis (July 1 \u2013 June 30) for the duration of the contract. See the RFR for any additional commitment specifications.",
+              "valueType": "str",
+              "dataOnly": "What percentage of your company\u2019s contract sales do you propose to spend with certified diverse businesses (SDP Partners)? After contract award (if any), the Total SDP Commitment will become a contract requirement to be met annually on a Massachusetts fiscal year basis (July 1 \u2013 June 30) for the duration of the contract. See the RFR for any additional commitment specifications.",
+              "isFormula": false
+            },
+            {
+              "cell": "A23",
+              "value": "Relationship Type",
+              "valueType": "str",
+              "dataOnly": "Relationship Type",
+              "isFormula": false
+            },
+            {
+              "cell": "B23",
+              "value": "Proposed Commitment %",
+              "valueType": "str",
+              "dataOnly": "Proposed Commitment %",
+              "isFormula": false
+            },
+            {
+              "cell": "A24",
+              "value": "Subcontracting",
+              "valueType": "str",
+              "dataOnly": "Subcontracting",
+              "isFormula": false
+            },
+            {
+              "cell": "B24",
+              "value": 0,
+              "valueType": "int",
+              "dataOnly": 0,
+              "isFormula": false
+            },
+            {
+              "cell": "A25",
+              "value": "Ancillary products and services",
+              "valueType": "str",
+              "dataOnly": "Ancillary products and services",
+              "isFormula": false
+            },
+            {
+              "cell": "B25",
+              "value": 1e-5,
+              "valueType": "float",
+              "dataOnly": 1e-5,
+              "isFormula": false
+            },
+            {
+              "cell": "A26",
+              "value": "Total SDP Commitment (calculated)",
+              "valueType": "str",
+              "dataOnly": "Total SDP Commitment (calculated)",
+              "isFormula": false
+            },
+            {
+              "cell": "B26",
+              "value": "=SUM(B24:B25)",
+              "valueType": "str",
+              "dataOnly": 1e-5,
+              "isFormula": true
+            },
+            {
+              "cell": "A27",
+              "value": "Minimum Total SDP Commitment Required",
+              "valueType": "str",
+              "dataOnly": "Minimum Total SDP Commitment Required",
+              "isFormula": false
+            },
+            {
+              "cell": "B27",
+              "value": 0.01,
+              "valueType": "float",
+              "dataOnly": 0.01,
+              "isFormula": false
+            },
+            {
+              "cell": "A29",
+              "value": "Part IV",
+              "valueType": "str",
+              "dataOnly": "Part IV",
+              "isFormula": false
+            },
+            {
+              "cell": "B29",
+              "value": "Proposed SDP Partners (Required)",
+              "valueType": "str",
+              "dataOnly": "Proposed SDP Partners (Required)",
+              "isFormula": false
+            },
+            {
+              "cell": "A30",
+              "value": "Name the certified diverse businesses (SDP Partners) your company proposes to utilize in order to meet its Total SDP Commitment. If your company has previously purchased from these SDP Partners, provide prior year spending information. All partners must be certified in one or more of the eligible certification categories.* After contract award, only spending with SDP Partners that appear in the SDO Directory or in the U.S. Dept of Veterans Affairs directory will be counted toward a Contractor's compliance with their SDP commitment.** See FORM INSTRUCTIONS for additional information on acceptable proposed SDP Partners.",
+              "valueType": "str",
+              "dataOnly": "Name the certified diverse businesses (SDP Partners) your company proposes to utilize in order to meet its Total SDP Commitment. If your company has previously purchased from these SDP Partners, provide prior year spending information. All partners must be certified in one or more of the eligible certification categories.* After contract award, only spending with SDP Partners that appear in the SDO Directory or in the U.S. Dept of Veterans Affairs directory will be counted toward a Contractor's compliance with their SDP commitment.** See FORM INSTRUCTIONS for additional information on acceptable proposed SDP Partners.",
+              "isFormula": false
+            },
+            {
+              "cell": "A31",
+              "value": "Proposed SDP Partner Company Name",
+              "valueType": "str",
+              "dataOnly": "Proposed SDP Partner Company Name",
+              "isFormula": false
+            },
+            {
+              "cell": "B31",
+              "value": "Relationship Type",
+              "valueType": "str",
+              "dataOnly": "Relationship Type",
+              "isFormula": false
+            },
+            {
+              "cell": "C31",
+              "value": "Certification Category*",
+              "valueType": "str",
+              "dataOnly": "Certification Category*",
+              "isFormula": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

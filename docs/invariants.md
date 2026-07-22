@@ -112,3 +112,16 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] No member UUID is rendered as an owner label; roles or neutral team-member labels are used until authorized profiles exist.
 - [x] The prepared synthetic demo remains visibly labeled and provider-free; general live verification remains disabled.
 - [x] Unit, integration, browser, known-answer, formatting, type, build, dependency, secret, and invariant checks pass.
+
+## Public RFP population-planning and FAC115 preparation result — 2026-07-20 / updated 2026-07-21
+
+- [x] Every quote-validated public candidate is frozen before verification with its bounded contexts, content hashes, model limits, and a stable population hash.
+- [x] Complete-population cost is checked against both ceilings before verification provider construction; a run cannot degrade into a knowingly partial verification.
+- [x] Expected answers cannot influence population planning or context selection.
+- [x] Exact/normalized quotation gating, explicit-only precedence, two-context retrieval, strict schemas, and fail-closed outcomes remain unchanged.
+- [x] FAC115 sources are official, public, hash-pinned, Category 1 scoped, and contain no vendor submissions, customer information, or confidential security material.
+- [x] LibreOffice PDF renditions, page previews, openpyxl workbook inspection, and draft page citations are complete; `@oai/artifact-tool` remains unavailable and is recorded as substituted.
+- [x] FAC115 extraction completed under `$1.20`: 209 accepted candidates frozen; actual spend `$0.132757`.
+- [x] FAC115 expected-budget verification completed under `$9.27`: all 209 attempted for `$8.512031`; 201 completed, 8 semantic-contract failures; known answers 5/22; not a qualified pass.
+- [x] General live verification remains disabled outside this explicit public harness.
+- [x] Unit, formatting, lint, type, secret, offline dependency, and webpack production-build checks pass; the sandbox-only Turbopack helper-port restriction is documented rather than waived.

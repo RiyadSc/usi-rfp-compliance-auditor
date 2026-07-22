@@ -1,0 +1,234 @@
+{
+  "version": "massachusetts-fac115-category1-known-answers-draft-v1",
+  "status": "citations_assigned_extraction_not_run",
+  "fixture": "massachusetts-fac115-category1-public-rfp-v1",
+  "scope": "Category 1 — Security Services",
+  "notes": [
+    "These answers were frozen before any FAC115 provider result was seen.",
+    "Page citations were assigned from LibreOffice PDF renditions and the official portal page after visual/structural review, still before any provider result.",
+    "Evidence strings for question-deadline and original-form-format were aligned to the exact PDF text layer after rendering.",
+    "Do not rename to known-answers.json or use for live scoring until extraction/verification are separately authorized and completed."
+  ],
+  "expected": [
+    {
+      "id": "conference-old-date",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "superseded",
+      "source": "official-solicitation-page.html",
+      "page": 1,
+      "section": "Amendment 4",
+      "summary": "The March 31, 2022 bidder conference date was replaced.",
+      "evidence": "Pre-Bid Conference changed from \"Thursday, March 31, 2022; 1:00- 2:00 PM."
+    },
+    {
+      "id": "conference-active-date",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "official-solicitation-page.html",
+      "page": 1,
+      "section": "Amendment 4",
+      "summary": "The bidder conference was moved to April 5, 2022 from 1:00 to 2:00 PM.",
+      "evidence": "to \"Tuesday, April 5, 2022; 1:00 - 2:00 PM (updated from 3/31/22 date)."
+    },
+    {
+      "id": "conference-attendance-not-mandatory",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 8,
+      "section": "1.2.3 Bidders' Conference",
+      "summary": "Attendance was strongly suggested rather than mandatory.",
+      "evidence": "Attendance is strongly suggested."
+    },
+    {
+      "id": "question-deadline",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 6,
+      "section": "1.2 Estimated Procurement Calendar",
+      "summary": "Written questions were due through COMMBUYS on April 7, 2022 at 2:00 PM EST.",
+      "evidence": "Deadline for submission of written questions through COMMBUYS “Bid Q&A” April 7, 2022, 2:00 PM EST"
+    },
+    {
+      "id": "submission-deadline",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "official-solicitation-page.html",
+      "page": 1,
+      "section": "Header",
+      "summary": "The bid opening deadline was May 3, 2022 at 3:00 PM.",
+      "evidence": "05/03/2022 03:00:00 PM"
+    },
+    {
+      "id": "submission-method",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 22,
+      "section": "7 Instructions for Submission of Responses",
+      "summary": "Responses had to be sent through COMMBUYS Create Quote.",
+      "evidence": "Responses must be sent via the “Create Quote” functionality contained in COMMBUYS."
+    },
+    {
+      "id": "electronic-signature",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 22,
+      "section": "7.1 Electronic Signatures",
+      "summary": "The quote had to be signed electronically through acceptance on the Terms & Conditions tab.",
+      "evidence": "Quotes submitted via COMMBUYS must be signed electronically by the Bidder or the Bidder’s Agent by accepting the terms and conditions of the bid on the “Terms & Conditions” tab of the Bid in COMMBUYS."
+    },
+    {
+      "id": "narrative-page-limit",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 22,
+      "section": "7.2.1 Document Pages",
+      "summary": "Narrative responses should not exceed ten double-sided pages, excluding forms and attachments.",
+      "evidence": "Bidders should submit no more than ten (10) double-sided pages (excluding the required forms and attachments) of narrative"
+    },
+    {
+      "id": "original-form-format",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 23,
+      "section": "7.2.2 File Format Restrictions",
+      "summary": "Provided forms had to remain in their original formats and not be converted to PDF.",
+      "evidence": "must be completed, and submitted in their original formats, NOT scanned and submitted as PDF or other file types."
+    },
+    {
+      "id": "security-company-experience",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 9,
+      "section": "3.1 Company Experience",
+      "summary": "Security Services bidders needed at least three years in that business.",
+      "evidence": "Bidders must have been in the business of providing Security Services for a minimum of three (3) years"
+    },
+    {
+      "id": "watch-guard-license-attachment",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 10,
+      "section": "3.2 Certifications and Licenses",
+      "summary": "Category 1 bidders had to attach a PDF of a current Watch Guard Manager License or Massachusetts Certification Unit certification.",
+      "evidence": "Bidders for Security Services must include a pdf attachment of their current Watch Guard Manager License or certification(s) by the Mass Certification Unit with their bid."
+    },
+    {
+      "id": "armed-personnel-license",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 10,
+      "section": "3.2 Certifications and Licenses",
+      "summary": "Armed personnel needed a current Massachusetts Firearms License and training.",
+      "evidence": "Armed personnel must hold a current Massachusetts Firearms License and attend training"
+    },
+    {
+      "id": "replacement-guard-pool",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 10,
+      "section": "3.2.2 Capacity Plan",
+      "summary": "Bidders needed a pool of trained or cross-trained replacement guards for emergencies or extra coverage.",
+      "evidence": "Bidder’s must have a pool of trained and/or cross-trained replacement security guards or PI’s who can be called upon in an emergency situation or for extra coverage as needed."
+    },
+    {
+      "id": "references-three-to-five",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 11,
+      "section": "3.6 References",
+      "summary": "Bidders had to list three to five business references; fewer than three valid-email references could cause disqualification.",
+      "evidence": "Bidders must list between three (3) and five (5) business references."
+    },
+    {
+      "id": "geographic-coverage",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 14,
+      "section": "4.7 Geographic Coverage",
+      "summary": "Attachment A had to identify covered counties or statewide coverage.",
+      "evidence": "Each Bidder must indicate on their Attachment A Bidder Response Form in their bid, the counties that their service will cover or alternatively if they will provide services to cover the entire State."
+    },
+    {
+      "id": "price-sheet-v2",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "official-solicitation-page.html",
+      "page": 1,
+      "section": "Amendment 13",
+      "summary": "The active price workbook was Attachment B v2 dated April 8, 2022.",
+      "evidence": "Update to Attachment B"
+    },
+    {
+      "id": "price-components",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 17,
+      "section": "4.10.2 Security and Private Investigative Services",
+      "summary": "Attachment B pricing covered weekday/night/weekend, holiday, basic guard, wanding, armed, supervisor, and volume discount components.",
+      "evidence": "Hourly rates are inclusive ceiling rates. Use Attachment B Price Sheet Cost Table"
+    },
+    {
+      "id": "prompt-payment-form",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 18,
+      "section": "4.10.8 Prompt Pay Discount",
+      "summary": "Bidders had to submit Attachment E prompt-payment terms unless the requirement was waived for documented hardship.",
+      "evidence": "Bidders must submit agreeable terms on the Prompt Payment Discount Form (Attachment E), included on the Bid"
+    },
+    {
+      "id": "sdp-form-and-minimum",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 19,
+      "section": "5 Supplier Diversity Plan",
+      "summary": "Attachment D was required and the minimum acceptable SDP commitment was 1 percent.",
+      "evidence": "The minimum total SDP Commitment acceptable in responses to this solicitation shall be 1%."
+    },
+    {
+      "id": "sdp-evaluation-weight",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 20,
+      "section": "5 Evaluation of SDP Forms",
+      "summary": "At least 25 percent of the 100 evaluation points were allocated to SDP Plan submissions.",
+      "evidence": "at least 25% of the total available evaluation points (100) for this bid solicitation shall be allocated to the evaluation of the SDP Plan submissions"
+    },
+    {
+      "id": "quote-duration",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 23,
+      "section": "7.3.4 Minimum Quote Duration",
+      "summary": "Quotes had to remain in effect for at least 90 days after submission.",
+      "evidence": "Bidders’ Quotes to this RFR must remain in effect for at least 90 days from the date of Quote submission."
+    },
+    {
+      "id": "post-award-forms-not-bid-attachments",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "source": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "page": 24,
+      "section": "8.1 Required Forms",
+      "summary": "Standard contract, terms, CASL, W-9, and EFT forms were post-award forms and were not to be submitted until requested.",
+      "evidence": "DO NOT SUBMIT THESE FORMS UNTIL INSTRUCTED TO DO SO."
+    }
+  ]
+}

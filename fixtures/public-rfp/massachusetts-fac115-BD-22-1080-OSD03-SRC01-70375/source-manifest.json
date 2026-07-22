@@ -1,0 +1,108 @@
+{
+  "version": "massachusetts-fac115-source-manifest-v1",
+  "solicitationId": "BD-22-1080-OSD03-SRC01-70375",
+  "title": "FAC115 — Security Services, Private Investigative Services, and Fence Rental",
+  "issuer": "Commonwealth of Massachusetts Operational Services Division",
+  "officialPortalUrl": "https://www.commbuys.com/bso/external/bidDetail.sdo?docId=BD-22-1080-OSD03-SRC01-70375&external=true&parentUrl=close",
+  "evaluationScope": {
+    "category": "Category 1 — Security Services",
+    "unspsc": "92-12-15",
+    "publicOnly": true,
+    "historicalClosedSolicitation": true,
+    "liveReady": false,
+    "blockers": [
+      "Live verification attempted all 209 accepted candidates under the $9.27 expected-budget authorization; 8 semantic-contract failures and 5/22 known-answer matches mean it is not a qualified pass.",
+      "Known-answer matchers need tightening against extracted candidate text/document alignment before rescored qualification."
+    ]
+  },
+  "sources": [
+    {
+      "file": "official-solicitation-page.html",
+      "type": "official_portal_and_amendment_log",
+      "attachmentId": null,
+      "sha256": "9139363fdac80b38ffb325930a1e6227b2f0f7965280c6bf0a492e3bde2d22e8",
+      "bytes": 93385,
+      "activeForCategory1": true,
+      "url": "https://www.commbuys.com/bso/external/bidDetail.sdo?docId=BD-22-1080-OSD03-SRC01-70375&external=true&parentUrl=close"
+    },
+    {
+      "file": "FAC115_Request_for_Response_03.29.2022.docx",
+      "type": "primary_rfr",
+      "attachmentId": "1733161",
+      "sha256": "50422cff4f3234e4297ce09bd6ff4917dff2fb13604c80bb0aa62245fe545f22",
+      "bytes": 748296,
+      "activeForCategory1": true
+    },
+    {
+      "file": "FAC115_Attachment_A_Bidder_Response_Form_03.29.2022.xlsx",
+      "type": "bidder_response_form",
+      "attachmentId": "1733163",
+      "sha256": "4358a05dc7f10b9a0388308d060b6a7c2afd939330c9133828e454fb7d5bfbc2",
+      "bytes": 111782,
+      "activeForCategory1": true
+    },
+    {
+      "file": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.xlsx",
+      "type": "amended_price_sheet",
+      "attachmentId": "1737524",
+      "sha256": "7bc83ab773f63a5415f10d76a15aeb3ba362d2cfffe0b2b411023d40eee5a3d1",
+      "bytes": 24628,
+      "activeForCategory1": true,
+      "precedenceEvidence": "Portal amendment 13 states: Update to Attachment B. The portal exposes the v2 04.08.2022 workbook."
+    },
+    {
+      "file": "FAC115_Attachment_D_SDP_Form_03.29.2022.xlsx",
+      "type": "supplier_diversity_form",
+      "attachmentId": "1733133",
+      "sha256": "ad563c299cba5a1cae4f4c6970da81a048c8ace6717e077eef652f3a518f6bb5",
+      "bytes": 28929,
+      "activeForCategory1": true
+    },
+    {
+      "file": "FAC115_Attachment_E_Prompt_Pay_Discount_Form_03.29.2022.docx",
+      "type": "prompt_payment_form",
+      "attachmentId": "1733130",
+      "sha256": "558115d5d9cac7a7b74ef5ffb7d62bfb01b8460ef50c9bef8951b2b856bec163",
+      "bytes": 31197,
+      "activeForCategory1": true
+    },
+    {
+      "file": "FAC115_Creating_a_Quote_in_COMMBUYS_Job_Aid_03.29.2022.pdf",
+      "type": "submission_job_aid",
+      "attachmentId": "1733169",
+      "sha256": "f7d5baa5a549358d601542622b512821e30126b2008f8402c80e506012c383ce",
+      "bytes": 1404045,
+      "activeForCategory1": true
+    },
+    {
+      "file": "Intent_to_Bid_Notice_FAC115.docx",
+      "type": "superseded_intent_notice",
+      "attachmentId": "1712141",
+      "sha256": "8f7dfb7d2fa9bbf810dae9831661c5335806404a198eef53c7360e17a7c4101c",
+      "bytes": 292450,
+      "activeForCategory1": false,
+      "precedenceEvidence": "Portal amendment 4 changed the description from Intent to Post to the issued FAC115 solicitation."
+    }
+  ],
+  "excludedOfficialAttachments": [
+    {
+      "attachmentId": "1733126",
+      "name": "FAC115 Attachment C Price Sheet Cost Table Fence Rental Services",
+      "reason": "Category 3 fence-rental-only content is outside the frozen Category 1 evaluation scope."
+    },
+    {
+      "attachmentId": "1733149",
+      "name": "Reference Docs 1 and 2 Standard Contract Form and Terms and Conditions",
+      "reason": "Generic post-award reference forms are explicitly marked DO NOT SUBMIT until instructed; excluded from the first Category 1 bid-response baseline."
+    }
+  ],
+  "officeDocumentReview": {
+    "structuralTextExtraction": "completed_for_docx_with_macos_textutil_and_pdfjs_on_renditions",
+    "visualRendering": "completed_libreoffice_26_2_4_2_pdf_renditions_and_pdf2image_page_previews",
+    "xlsxInspection": "completed_openpyxl_structural_inspection_plus_libreoffice_sheet_pdf_previews",
+    "xlsxRuntimeNote": "@oai/artifact-tool is private to Codex primary runtime and unavailable here; openpyxl + LibreOffice PDF used instead.",
+    "pageCitationFreeze": "draft_citations_assigned_in_known-answers-draft_json",
+    "renditionManifest": "renditions/rendition-manifest.json",
+    "xlsxInspectionArtifact": "inspection/xlsx-inspection.json"
+  }
+}

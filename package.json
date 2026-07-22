@@ -30,6 +30,7 @@
     "demo:provision:phase8": "node --import tsx scripts/provision-phase8-demo.mts",
     "demo:reset:phase8": "node --import tsx scripts/reset-phase8-demo.mts",
     "eval:live:verification": "npx tsx scripts/live-eval-verification.mjs",
+    "eval:live:public-rfp:fac115-extract": "npx tsx scripts/live-eval-public-rfp-fac115-extract.mts",
     "worker": "npm run start --workspace apps/worker",
     "worker:dev": "npm run dev --workspace apps/worker",
     "build": "npm run build --workspace apps/web",
