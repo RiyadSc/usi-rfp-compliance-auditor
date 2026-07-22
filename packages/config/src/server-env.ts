@@ -16,16 +16,23 @@ export const serverEnvSchema = z.object({
     .enum(['true', 'false'])
     .default('true')
     .transform((v) => v === 'true'),
-  MAX_PAGES_PER_WORKSPACE: z.coerce.number().int().positive().default(100),
+  MAX_PAGES_PER_WORKSPACE: z.coerce.number().int().positive().max(2_000).default(500),
   MAX_UPLOAD_BYTES: z.coerce
     .number()
     .int()
     .positive()
-    .default(25 * 1024 * 1024),
+    .max(250 * 1024 * 1024)
+    .default(100 * 1024 * 1024),
   MAX_MODEL_COST_USD_PER_RUN: z.coerce.number().positive().default(10),
   PHASE3_SPEND_CEILING_USD: z.coerce.number().positive().max(10).default(10),
   PHASE4_SPEND_CEILING_USD: z.coerce.number().positive().max(15).default(15),
-  MAX_EXTRACT_PAGES_PER_RUN: z.coerce.number().int().positive().default(40),
+  MAX_EXTRACT_PAGES_PER_RUN: z.coerce.number().int().positive().max(500).default(500),
+  OCR_CONCURRENCY: z.coerce.number().int().positive().max(2).default(1),
+  EMBED_CONCURRENCY: z.coerce.number().int().positive().max(4).default(2),
+  CLASSIFICATION_CONCURRENCY: z.coerce.number().int().positive().max(4).default(2),
+  EXTRACTION_CONCURRENCY: z.coerce.number().int().positive().max(2).default(1),
+  VERIFICATION_CONCURRENCY: z.coerce.number().int().positive().max(2).default(1),
+  REPORT_CONCURRENCY: z.coerce.number().int().positive().max(2).default(1),
   MAX_MODEL_CALLS_PER_RUN: z.coerce.number().int().positive().default(20),
   MAX_INPUT_TOKENS_PER_CALL: z.coerce.number().int().positive().default(12000),
   MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().default(4000),
