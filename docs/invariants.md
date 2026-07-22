@@ -125,3 +125,16 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] FAC115 expected-budget verification completed under `$9.27`: all 209 attempted for `$8.512031`; 201 completed, 8 semantic-contract failures; known answers 5/22; not a qualified pass.
 - [x] General live verification remains disabled outside this explicit public harness.
 - [x] Unit, formatting, lint, type, secret, offline dependency, and webpack production-build checks pass; the sandbox-only Turbopack helper-port restriction is documented rather than waived.
+
+## Post-roadmap large-document invariant result — 2026-07-22
+
+- [x] Uploaded sources remain immutable, private, hashed, workspace-scoped, and non-authoritative.
+- [x] Mixed-format normalization preserves exact native provenance and never invents PDF pagination.
+- [x] Tables retain row/column/header/cell scope; ambiguous values remain uncertain.
+- [x] OCR is selective; unavailable or low-confidence OCR cannot create a definitive finding.
+- [x] Extraction stays candidate/unverified and independent verification remains separately gated.
+- [x] Durable jobs, leases, retries, cache entries, dependencies, and costs are server-controlled and RLS protected.
+- [x] Whole-document selection does not silently discard later requirement-bearing pages.
+- [x] Phase 8 provisioning is repeatable for three consecutive identical runs.
+- [x] Unit, integration, isolated mock browser, deterministic evaluation, lint, formatting, type, build, dependency, lockfile, and secret gates pass.
+- [x] Provider calls and spend for this workstream are zero; general live verification remains disabled.

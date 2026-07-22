@@ -39,3 +39,13 @@
 | Partial interruption                                      | Resume only from a visibly validated prepared/cached screen or restart from reset                                  | Explain the restart; do not represent a partial run as complete                  |
 
 For every case preserve auditability, authorization, private storage, uncertainty, and the language policy. If exact provenance cannot be re-established, stop the demo.
+
+## Large-document recovery
+
+- Format disagreement: stop; never rename or relax signature/MIME checks.
+- Archive rejection: inspect bounded metadata only; never disable traversal, ratio, size, nesting, or type controls.
+- Failed PDF page: retry that unit; the worker revalidates scope/hash and decodes only that page.
+- Expired lease: let the service worker reclaim it; never hand-edit ownership/attempt limits.
+- OCR/parser uncertainty: show original source and require review; do not infer support or absence.
+- Cost blocked: use quick scan/reduce scope or seek approval; do not bypass the hard maximum.
+- Cache miss: honor its reason; changed sources/addenda/versions must not reuse stale output.

@@ -138,7 +138,7 @@ UI state model: every async view supports empty/loading/progress/success/termina
 
 ## Environments & CI (Design §13)
 
-local (dev, unit/integration), preview (mock/sandbox model), demo (frozen fixture, stable URL). Env vars per Design §13.2 (`DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `MODEL_PROVIDER`, `MODEL_API_KEY`, `EXTRACTION_MODEL`, `VERIFICATION_MODEL`, `JOB_SIGNING_SECRET`, `DEMO_MODE`, `MAX_PAGES_PER_WORKSPACE=100`, `MAX_MODEL_COST_USD_PER_RUN=10`, …) validated at boot, server-side only. CI gates: typecheck, lint, unit tests, migration validation, secret scan, fixture-evaluation thresholds, Playwright smoke.
+local (dev, unit/integration), preview (mock/sandbox model), demo (frozen fixture, stable URL). Server-only environment validation includes database/storage secrets, `MAX_PAGES_PER_WORKSPACE=500`, `MAX_UPLOAD_BYTES=104857600`, model-cost limits, and bounded stage concurrency. CI gates: typecheck, lint, unit tests, migration validation, secret scan, fixture-evaluation thresholds, Playwright smoke.
 
 ## Phase 8 final hardening layer
 
@@ -151,3 +151,9 @@ The prepared scope binds every Phase 4–7 run/document/hash/version and the qua
 The web application projects the unchanged Phase 4–8 records into two display modes. Executive view is the default and emphasizes deadlines, decision signals, next actions, blockers, ownership, missing proof, and human review. Analyst view reveals model/run/schema/hash and detailed filtering controls. The preference is browser-local presentation state; it is not an authorization boundary and never changes persisted findings or calculations.
 
 `WorkspaceNavigation` supplies the shared journey: Overview → RFP files → RFP requirements → Submission plan → Draft review → Final review. `presentation.ts` centralizes business labels, tone, deadlines, and event names so technical enum values remain stable in storage and APIs. Detail pages remain provenance-first: every simplified status links back to exact evidence, original page, and the separate machine/human axes.
+
+## Post-roadmap mixed-format and large-document layer
+
+`document-parser-adapters-v1` routes PDF, DOCX, XLSX, HTML, TXT, approved images, and safe ZIP packages into `normalized-document-v1` and `normalized-table-v1`. It preserves native provenance, structured cells, heading hierarchy, parser confidence, selective-OCR state, and hashes. `large-document-jobs-v1` persists stage/work-unit progress and leases; one PDF page can be retried without replacing completed pages.
+
+`requirement-prefilter-v1` and `whole-document-selection-v1` inspect the complete document before bounded evidence-coherent batching. Cache keys bind every material input/version; `targeted-cache-invalidation-v1` invalidates downstream addendum-dependent analysis while retaining unchanged normalization. Cost estimates and server-capped concurrency are visible before analysis. See `docs/large-document-data-flow.md` and `docs/large-document-normalized-model.md`.

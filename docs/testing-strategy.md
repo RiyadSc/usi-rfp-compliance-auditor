@@ -84,3 +84,5 @@ Two workspaces (A, B) with distinct users: A cannot read B's rows (each app tabl
 ## Quality gates (run per phase; CI-ready scripts)
 
 `typecheck` → `lint` → `test:unit` → `test:integration` → migration validation → secret scan → `test:e2e` → (from Phase 3) fixture evaluation thresholds. A phase does not close with red gates.
+
+Large-document coverage includes adapters/signatures, structured tables/merged ranges, OCR selection, archive attacks, source hierarchy, whole-document selection, scoped facts, cache/invalidation, costs/modes/leases, bounded AI contexts, RLS/composite FKs/cache isolation, worker recovery, the prepared browser path, and the measured 420-page fixture. Commands: `npm run eval:mock:large-document`, `npm run demo:provision:large-document`, and `npm run test:phase8:provision-idempotency`.

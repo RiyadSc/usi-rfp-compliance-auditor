@@ -11,3 +11,7 @@ Three clean rehearsals completed in 19.735, 20.361, and 19.733 seconds (mean 19.
 After client instrumentation was enabled, prepared-workspace rows recorded page loads at 689–1,724 ms, server response at 530–1,552 ms, evidence viewer at 1,704–1,724 ms, document viewer at 865–1,724 ms, checklist rendering at 909–1,157 ms, and report rendering at 689–690 ms. These are bounded metadata only and fall within the applicable prepared-route budgets. The beacon batches at most three events into one authenticated action to avoid concurrent SSR session-cookie refresh races.
 
 The monolithic long-lived Next development-server browser run showed session/server instability after several specs. The controlled gate therefore starts a fresh server and authentication boundary for each spec, sequentially, via `npm run test:e2e:isolated`. This is an execution-isolation control, not a product fallback; all tests still use the real application, worker, and development Supabase paths.
+
+## 420-page deterministic benchmark
+
+`large-document-known-answer-v1` parsed 420 pages, 820 blocks, eight table pages, and ten OCR-selected pages in 1.598 seconds (262.83 pages/second on the development Mac). It detected the split table and re-decoded one requested page. The deterministic prefilter excluded 94.52% of blocks. Hypothetical standard-analysis cost was $1.9011 low, $2.5348 high, and $5.0696 hard maximum; actual provider calls/spend were zero. These local measurements are not a production SLA. See `artifacts/evaluation/large-document-known-answer-v1.json`.

@@ -44,3 +44,10 @@ Phase 4 accepted risk posture: the verification implementation is complete for t
 - **R-32 — Snapshot reports can become stale after a human decision.** Source snapshot time, input hash, run IDs, review denominators, and generation history are visible. Users must generate a new immutable snapshot to include later decisions; old snapshots remain audit records.
 - **R-33 — Spreadsheet applications have evolving formula heuristics.** All cells with leading `=`, `+`, `-`, or `@` after whitespace are neutralized and fixture-tested. Maintain the policy and regression corpus as spreadsheet behavior changes.
 - **R-34 — Retention cleanup requires the server-maintenance path to run.** Objects deny grants after `retention_until`; `purgeExpiredReportExportsForMaintenance` removes them and preserves audit history. Deployment scheduling remains an operational rollout task.
+- **R-35 — Complex tables exceed deterministic inference.** Preserve cells/geometry/warnings and require review; pixel-perfect arbitrary reconstruction is not claimed.
+- **R-36 — DOCX/XLSX rendered pagination is unstable.** Use paragraph/sheet/cell provenance and never invent PDF page coordinates.
+- **R-37 — XLSX cached formula values may be stale.** Store formulas and cached values separately with a warning.
+- **R-38 — Selective OCR may miss unusual damage.** Fail closed as parser uncertain; production OCR requires separate approval.
+- **R-39 — Archive traversal/expansion attack.** Enforce strict names, entry/count/ratio/expanded-size limits, approved types, and no nesting.
+- **R-40 — Cost estimates differ from invoices.** Version pricing, persist ranges/hard maximum, and keep paid paths reservation-gated.
+- **R-41 — New addenda stale downstream analysis.** Targeted dependency invalidation preserves unchanged normalization and invalidates downstream cache.

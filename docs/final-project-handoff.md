@@ -1,5 +1,9 @@
 # Final Project Handoff
 
+## Post-roadmap large-document deployment constraint
+
+Migrations `20260722000024` and `20260722000025` are additive and applied only to development project `uxmxkdjschbekkbnweby`. Before any production deployment, operators must review storage/worker capacity, set server-owned complexity and concurrency ceilings, select and security-review an OCR adapter, validate model pricing, and rerun RLS, archive-security, dependency, secret, performance, and 400-page recovery gates in the target environment. General live verification and confidential-document processing remain disabled until separately approved.
+
 The product is a synthetic/demo RFP decision-support application that privately ingests PDFs, extracts immutable unverified candidates, independently verifies exact source evidence, generates a deterministic checklist/readiness view, audits a proposal draft against verified requirements, and produces deterministic private reports/exports with human review and append-only provenance.
 
 Phases 0–8 are implemented. The current deployment target is the development Supabase project `uxmxkdjschbekkbnweby`; no production rollout is included. The selected Phase 4 verification configuration is pinned `gpt-5.5-2026-04-23`, low reasoning, fingerprint `c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b`. General live verification is disabled and `MockProvider` remains default. Only a separately controlled synthetic harness may ever enable the selected live path.
@@ -15,6 +19,6 @@ Prepared demo:
 
 Tests: `npm run test:unit`, then `npm run test:integration` sequentially, then `npm run test:e2e:isolated`, `npm run eval:mock:phase8`, and `npm run gates`. Reports/exports are generated from the protected report UI; CSV/HTML artifacts stay in private storage and download grants last 300 seconds.
 
-Known limits and restrictions are in the Phase 8 completion/security/performance reports. In particular: synthetic/public data only; no general live provider; no claim of compliance, approval, legal sufficiency, or formal WCAG certification; parser uncertainty requires humans; HTML/CSV only; signed grants remain bearer capabilities until expiry; retention scheduling is operational work; and the moderate PostCSS advisory is accepted pending a compatible upgrade.
+Known limits and restrictions are in the Phase 8 and large-document completion/security/performance reports. In particular: synthetic/public data only; no general live provider; no claim of compliance, approval, legal sufficiency, or formal WCAG certification; parser uncertainty requires humans; report exports remain HTML/CSV; signed grants remain bearer capabilities until expiry; and retention scheduling is operational work. The prior PostCSS/sharp advisories are resolved by audited exact security pins.
 
 Phase 8 implementation is `f1614e39d58691187981adf59fa7685552f097f9`; evaluation/demo/test evidence is `97aee01e4264827273d0c8b2e8e44320b85ca725`. The exact documentation/handoff commit is the final `HEAD` reported with this handoff.

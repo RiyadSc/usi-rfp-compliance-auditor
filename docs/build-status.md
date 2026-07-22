@@ -313,3 +313,7 @@ See prior entries. Migrations 0001–0004; auth; workspaces; secret scan.
 ## Phase 0 — Read, inspect, plan (COMPLETE)
 
 See `docs/implementation-plan.md`.
+
+## Post-roadmap — Large-document ingestion (COMPLETE)
+
+Mixed-format normalization, structured tables, selective OCR state, durable jobs/work units, targeted page retry, bounded whole-document selection, caching/invalidation, cost estimates/modes, progress/recovery UI, and structured evidence are implemented. Migrations 24–25 are applied to development project `uxmxkdjschbekkbnweby`; all 16 new tables retain RLS. The idempotent 420-page prepared demo and mock evaluation pass with zero provider calls. Unit, integration, isolated mock browser, lint, formatting, type, production-build, dependency, lockfile, secret, and invariant gates pass. General live verification remains disabled.

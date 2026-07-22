@@ -59,3 +59,7 @@ Expected complete flow is about 20 seconds in the prepared environment; allow fi
 The live smoke requires an explicit `--verification-version`. The requested value must be exactly one greater than the highest existing version for the immutable analysis-run/input-hash pair. The dry-run provider-boundary check validates this before provider construction. Duplicate, stale, skipped, fractional, or missing versions fail closed; the database uniqueness constraint remains the final race-condition guard. Never delete an earlier verification run to make a version reusable.
 
 Processing-job identities also include the verification version, preventing a fresh immutable run from colliding with an earlier job. If setup fails after creating a run but before provider construction, the harness records a failed setup audit. The explicit `--reconcile-setup-only` mode may close an older queued setup row only after proving it has no model calls, findings, pass results, job, spend, or completion audit; it cannot resume or erase provider work.
+
+### Prepared 420-page demonstration
+
+Run `npm run demo:provision:large-document`, start web/worker with live flags disabled, and open **Harbor City 420-page Large RFP Demo**. Show exact progress/cost, page 40 table evidence, pages 50–51 split table, page 275 uncertainty, and pages 390/409–411 addendum changes. The script asserts exactly 420 pages, 8 tables, 48 cells, 430 work units, one cost estimate, and one cache entry. Disclose that the history is prepared and provider-free.

@@ -41,3 +41,9 @@ Last updated: 2026-07-18 after Phase 4 closure.
 - A Phase 4 immutable synthetic marker is the only trusted source for demo watermarking. Other workspaces are classified `internal_authorized` unless a future reviewed public-data marker is added.
 - Export objects use seven-day retention and five-minute signed grants. Deployment must schedule the provided maintenance purge before a broader rollout.
 - Phase 7 uses no model provider. The selected Phase 4 model and its rollout restriction are unchanged.
+- The mixed-format development target remains project `uxmxkdjschbekkbnweby`; only additive migrations 24–25 are authorized.
+- Default practical limits are 100 MiB and 500 pages/logical units; deployments may lower them.
+- DOCX and XLSX evidence uses native coordinates rather than unreliable rendered pagination.
+- `MockOcrAdapter` is fixture-only. No production or paid OCR service is approved.
+- Quick scan is provider-free; ordinary standard/deep use remains MockProvider while general live verification is disabled.
+- Only synthetic/public material is used for this workstream.

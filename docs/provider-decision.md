@@ -342,3 +342,7 @@ Phase 7 report aggregation, CSV/HTML rendering, export storage, and access contr
 ## Phase 8 provider decision
 
 Phase 8 evaluation, hardening, caching, reset, fallback, and rehearsal use deterministic fixtures, completed synthetic records, and `MockProvider`. They made zero provider calls and spent `$0.00`. Provider construction now additionally requires explicit `LIVE_PROVIDER_ENABLED=true`; an API key by itself remains inert. The selected Phase 4 model/fingerprint are unchanged, and general live verification, customer documents, and production rollout remain disabled.
+
+## Large-document provider and OCR decision
+
+Mixed-format parsing, structural tables, deterministic prefiltering, cost estimation, caching, and the 420-page evaluation are provider-free. Quick scan forbids provider use. Standard/deep tiers are implemented with MockProvider for this workstream and do not alter the qualified Phase 4 model or fingerprint. No paid OCR provider was adopted; `MockOcrAdapter` is fixture-only and production image/OCR uncertainty remains human-review required. Provider calls and spend for this workstream are `$0.00`.

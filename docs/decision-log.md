@@ -177,3 +177,10 @@ Append-only. Each entry: date, decision, rationale, reversibility, source.
 - 2026-07-17 zero-live diagnostic: no new external documentation was required; remediation was limited to repository-owned deterministic parsing, decision, schema, evaluator, and artifact-compatibility behavior.
 - 2026-07-18: Official OpenAI Responses API documentation confirms that `max_output_tokens` covers the response output budget and usage separately reports reasoning tokens; official reasoning guidance states that lower reasoning effort reduces reasoning tokens and latency. Structured Outputs documentation also requires a root object rather than a root `anyOf`. These constraints informed D-062 and D-063; no provider request was made.
 - 2026-07-18 complete-scope provisioning: Context7 `/supabase/supabase` confirmed that service-role setup paths bypass RLS while service credentials must remain server-only; the new scope retains deny-by-default ordinary-user RLS and an immutable trigger. No provider documentation or call was needed.
+- 2026-07-22: Adopt `normalized-document-v1` / `normalized-table-v1` additively and retain the Phase 2 page projection.
+- 2026-07-22: Use native source coordinates; invented page numbers for DOCX/XLSX/HTML/TXT are prohibited.
+- 2026-07-22: Adopt `selective-ocr-v1`; only fixture OCR is included and uncertain output fails closed.
+- 2026-07-22: Adopt leased `large-document-jobs-v1`, bounded stage concurrency, and targeted PDF page retry.
+- 2026-07-22: Replace the leading-page slice with complete deterministic inspection plus `whole-document-selection-v1` bounded batches.
+- 2026-07-22: Adopt complete version-bound cache keys and `targeted-cache-invalidation-v1`; conflicting cache provenance is rejected.
+- 2026-07-22: Context7 documentation for `yauzl` and `fast-xml-parser` informed lazy/strict archive reading and inert OOXML parsing. No provider call occurred.

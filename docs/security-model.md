@@ -123,3 +123,7 @@ Sources: Engineering Design §10, build-brief AI security rules, Phase 0 threat 
 - The report fallback remains a private original Phase 7 artifact, explicitly labeled and watermarked, with a transient grant of at most 300 seconds.
 - Privacy-safe performance events contain only bounded categories/timings/counts. Observability failures cannot replace successful application actions.
 - The final repository-owned security review and residual risks are in `docs/security-review-phase8.md`.
+- Mixed-format routing verifies signature, extension, MIME, and OOXML container. HTML is inert; ZIPs are lazy and bounded by strict paths, count, entry/expanded size, ratio, nesting, and approved member types.
+- Nested normalized evidence uses workspace-and-source composite foreign keys. Ordinary users have SELECT-only RLS and cannot fabricate machine records or claim work.
+- OCR is deterministic and selective; uncertain output cannot become definitive evidence. No paid OCR engine is configured.
+- Whole-document selection reports complexity/truncation rather than silently ignoring later pages. General provider access remains disabled.
