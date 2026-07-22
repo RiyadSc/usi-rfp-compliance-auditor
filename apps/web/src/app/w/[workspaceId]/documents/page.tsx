@@ -65,9 +65,9 @@ export default async function DocumentsPage({
         current="documents"
       />
       <div className="mb-6">
-        <p className="section-kicker">Stage 1</p>
+        <p className="section-kicker">Opportunity source library</p>
         <h1 aria-label="Documents" className="mt-1 text-3xl font-semibold tracking-tight">
-          RFP files
+          Documents
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-slate-600">
           Keep the main RFP, addenda, forms, and proposal drafts clearly separated. Processing
@@ -81,6 +81,26 @@ export default async function DocumentsPage({
           <span className="ml-2 text-sm font-normal text-slate-500">PDF files only</span>
         </summary>
         <div className="border-t border-slate-200 p-4">
+          <ol className="mb-5 grid gap-3 text-sm sm:grid-cols-3" aria-label="Document upload steps">
+            <li className="rounded-lg bg-slate-50 p-3">
+              <strong>1. Choose its purpose</strong>
+              <span className="mt-1 block text-slate-600">
+                Main RFP, addendum, attachment, form, or proposal draft.
+              </span>
+            </li>
+            <li className="rounded-lg bg-slate-50 p-3">
+              <strong>2. Select the PDF</strong>
+              <span className="mt-1 block text-slate-600">
+                The file stays private and workspace-scoped.
+              </span>
+            </li>
+            <li className="rounded-lg bg-slate-50 p-3">
+              <strong>3. Review processing</strong>
+              <span className="mt-1 block text-slate-600">
+                Resolve parser warnings before trusting source text.
+              </span>
+            </li>
+          </ol>
           <UploadForm
             workspaceId={workspaceId}
             supabaseUrl={env.NEXT_PUBLIC_SUPABASE_URL}
@@ -127,10 +147,12 @@ export default async function DocumentsPage({
                             {d.created_at ? ` · added ${formatDate(d.created_at)}` : ''}
                           </span>
                         </span>
-                        <StatusBadge
-                          value={d.status}
-                          label={`${businessLabel(d.status)} (${d.status})`}
-                        />
+                        <span className="text-right">
+                          <StatusBadge value={d.status} label={businessLabel(d.status)} />
+                          <code className="analyst-only mt-1 block text-[10px] text-slate-400">
+                            {d.status}
+                          </code>
+                        </span>
                       </Link>
                     </li>
                   ))}

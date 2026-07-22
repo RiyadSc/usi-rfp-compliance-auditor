@@ -103,6 +103,60 @@ export default async function ChecklistPage({
       (!filters.proof || item.proof_requirement !== 'none_identified') &&
       (!filters.due || Boolean(item.due_at)),
   );
+  const remaining = new Set(selected.map((item) => item.id));
+  const take = (predicate: (item: (typeof selected)[number]) => boolean) => {
+    const rows = selected.filter((item) => remaining.has(item.id) && predicate(item));
+    rows.forEach((item) => remaining.delete(item.id));
+    return rows;
+  };
+  const actionGroups = [
+    {
+      key: 'blocked',
+      title: 'Blocking submission',
+      description: 'Resolve these first.',
+      items: take((item) => blocked.has(item.id)),
+    },
+    {
+      key: 'unassigned',
+      title: 'Needs an owner',
+      description: 'Assign accountability before work begins.',
+      items: take(
+        (item) =>
+          !item.owner_id &&
+          !['completed', 'waived', 'not_applicable'].includes(item.workflow_status),
+      ),
+    },
+    {
+      key: 'proof',
+      title: 'Company evidence needed',
+      description: 'Collect and review certificates, licenses, or internal proof.',
+      items: take(
+        (item) =>
+          item.proof_requirement !== 'none_identified' &&
+          !['completed', 'waived', 'not_applicable'].includes(item.workflow_status),
+      ),
+    },
+    {
+      key: 'due',
+      title: 'Dated work',
+      description: 'Tasks with an explicit source deadline.',
+      items: take((item) => Boolean(item.due_at)),
+    },
+    {
+      key: 'active',
+      title: 'In progress and next up',
+      description: 'Remaining active submission work.',
+      items: take(
+        (item) => !['completed', 'waived', 'not_applicable'].includes(item.workflow_status),
+      ),
+    },
+    {
+      key: 'complete',
+      title: 'Completed or resolved',
+      description: 'Preserved for audit history.',
+      items: take(() => true),
+    },
+  ].filter((group) => group.items.length);
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
       <WorkspaceNavigation
@@ -112,12 +166,12 @@ export default async function ChecklistPage({
       />
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="section-kicker">Stage 3</p>
+          <p className="section-kicker">Team submission work</p>
           <h1
             aria-label="Deterministic checklist and blockers"
             className="mt-1 text-3xl font-semibold tracking-tight"
           >
-            Submission plan
+            Submission Checklist
           </h1>
           <p className="mt-1 text-sm text-slate-600">
             Assign work, resolve blockers, collect company evidence, and prepare the response for
@@ -289,87 +343,64 @@ export default async function ChecklistPage({
         </button>
       </form>
       {selected.length ? (
-        <div className="overflow-x-auto rounded border border-slate-200 bg-white">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-100">
-              <tr>
-                {[
-                  'Requirement',
-                  'Category',
-                  'Source / precedence',
-                  'Workflow',
-                  'Owner',
-                  'Due',
-                  'Blocker',
-                ].map((heading) => (
-                  <th key={heading} className="px-3 py-2">
-                    {heading}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {selected.map((item) => (
-                <tr key={item.id} className="border-t border-slate-200">
-                  <td className="px-3 py-3">
-                    <Link
-                      className="font-medium text-blue-700 hover:underline"
-                      href={`/w/${workspaceId}/checklist/${item.id}`}
-                    >
-                      {item.title}
-                    </Link>
-                    <span className="mt-1 block text-xs text-slate-500">
-                      {item.machine_status === 'machine_assessment_only'
-                        ? 'Machine-generated'
-                        : item.machine_status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-3">{label(item.category)}</td>
-                  <td className="px-3 py-3">
-                    <div className="space-y-1">
-                      <StatusBadge value={item.source_support_status} />
-                      <span className="block">
-                        <StatusBadge value={item.precedence_status} />
+        <div className="space-y-7">
+          {actionGroups.map((group) => (
+            <section key={group.key} aria-labelledby={`checklist-${group.key}`}>
+              <div className="mb-3">
+                <h2 id={`checklist-${group.key}`} className="text-lg font-semibold">
+                  {group.title}{' '}
+                  <span className="text-sm font-normal text-slate-500">({group.items.length})</span>
+                </h2>
+                <p className="text-sm text-slate-600">{group.description}</p>
+              </div>
+              <ul className="surface-card divide-y divide-slate-200">
+                {group.items.map((item) => (
+                  <li
+                    key={item.id}
+                    className="grid gap-3 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                  >
+                    <div>
+                      <Link
+                        className="font-medium text-blue-700 hover:underline"
+                        href={`/w/${workspaceId}/checklist/${item.id}`}
+                      >
+                        {item.title}
+                      </Link>
+                      <span className="mt-1 block text-xs text-slate-500">
+                        {label(item.category)} ·{' '}
+                        {item.machine_status === 'machine_assessment_only'
+                          ? 'Machine-generated from a verified requirement'
+                          : item.machine_status}
                       </span>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <StatusBadge value={item.source_support_status} />
+                        <StatusBadge value={item.precedence_status} />
+                        {blocked.has(item.id) ? <StatusBadge value="blocked" /> : null}
+                      </div>
                     </div>
-                  </td>
-                  <td className="px-3 py-3">
-                    <StatusBadge value={item.workflow_status} />
-                    <span className="mt-1 block text-xs text-slate-500">
-                      Artifact: {label(item.artifact_state)} · Team:{' '}
-                      {label(item.source_human_review_status)}
-                    </span>
-                  </td>
-                  <td className="px-3 py-3">
-                    {item.owner_id ? (
-                      (memberNames.get(item.owner_id) ?? 'Workspace member')
-                    ) : (
-                      <StatusBadge value="unresolved" label="Unassigned" tone="warning" />
-                    )}
-                  </td>
-                  <td className="px-3 py-3">
-                    {item.due_at ? (
-                      <>
-                        <time dateTime={item.due_at}>{formatDate(item.due_at)}</time>
-                        <span className="block text-xs">
-                          {item.due_timezone ?? 'Timezone not stated'}
-                        </span>
-                      </>
-                    ) : (
-                      '—'
-                    )}
-                  </td>
-                  <td className="px-3 py-3">
-                    {blocked.has(item.id) ? (
-                      <StatusBadge value="blocked" />
-                    ) : (
-                      <span className="text-slate-500">No active blocker</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <div className="min-w-52 text-sm sm:text-right">
+                      <StatusBadge value={item.workflow_status} />
+                      <p className="mt-2 text-xs text-slate-600">
+                        {item.owner_id
+                          ? (memberNames.get(item.owner_id) ?? 'Workspace member')
+                          : 'Unassigned'}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {item.due_at ? (
+                          <>
+                            <time dateTime={item.due_at}>{formatDate(item.due_at)}</time> ·{' '}
+                            {item.due_timezone ?? 'Timezone not stated'}
+                          </>
+                        ) : (
+                          `Artifact: ${label(item.artifact_state)}`
+                        )}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
         </div>
       ) : (
         <p className="rounded border border-slate-200 bg-white p-5 text-sm text-slate-600">

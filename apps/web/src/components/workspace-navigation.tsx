@@ -1,17 +1,17 @@
 import Link from 'next/link';
-import { ViewModeToggle } from './view-mode-toggle';
+import { AppHeader } from './app-header';
 
 export type WorkspaceStage =
   'overview' | 'documents' | 'requirements' | 'checklist' | 'proposal-audit' | 'reports';
 
-const stages: Array<{ id: WorkspaceStage; label: string; short: string; href: string }> = [
+export const opportunityNavigation = [
   { id: 'overview', label: 'Overview', short: 'Overview', href: '' },
-  { id: 'documents', label: 'RFP files', short: 'Files', href: '/documents' },
-  { id: 'requirements', label: 'RFP requirements', short: 'Requirements', href: '/requirements' },
-  { id: 'checklist', label: 'Submission plan', short: 'Plan', href: '/checklist' },
-  { id: 'proposal-audit', label: 'Draft review', short: 'Draft', href: '/proposal-audit' },
-  { id: 'reports', label: 'Final review', short: 'Report', href: '/reports' },
-];
+  { id: 'requirements', label: 'Requirements', short: 'Requirements', href: '/requirements' },
+  { id: 'checklist', label: 'Submission Checklist', short: 'Checklist', href: '/checklist' },
+  { id: 'proposal-audit', label: 'Proposal Review', short: 'Proposal', href: '/proposal-audit' },
+  { id: 'documents', label: 'Documents', short: 'Documents', href: '/documents' },
+  { id: 'reports', label: 'Reports', short: 'Reports', href: '/reports' },
+] satisfies Array<{ id: WorkspaceStage; label: string; short: string; href: string }>;
 
 export function WorkspaceNavigation({
   workspaceId,
@@ -26,6 +26,7 @@ export function WorkspaceNavigation({
 }) {
   return (
     <>
+      <AppHeader />
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <nav aria-label="Breadcrumb" className="text-sm">
           <Link href="/" className="font-medium text-blue-700 hover:underline">
@@ -42,14 +43,19 @@ export function WorkspaceNavigation({
             </>
           ) : null}
         </nav>
-        <ViewModeToggle />
+        <Link
+          href={`/w/${workspaceId}#activity`}
+          className="text-sm text-slate-600 hover:text-blue-800 hover:underline"
+        >
+          Activity
+        </Link>
       </div>
       <nav
         aria-label="Opportunity stages"
         className={`mb-7 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm ${compact ? 'text-sm' : ''}`}
       >
         <ol className="flex min-w-max items-center gap-1">
-          {stages.map((stage, index) => {
+          {opportunityNavigation.map((stage) => {
             const active = stage.id === current;
             return (
               <li key={stage.id} className="flex items-center">
@@ -62,14 +68,6 @@ export function WorkspaceNavigation({
                       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <span
-                    className={`grid h-5 w-5 place-items-center rounded-full text-[11px] ${
-                      active ? 'bg-white/20' : 'bg-slate-100'
-                    }`}
-                    aria-hidden="true"
-                  >
-                    {index + 1}
-                  </span>
                   <span className="hidden sm:inline">{stage.label}</span>
                   <span className="sm:hidden">{stage.short}</span>
                 </Link>

@@ -83,9 +83,9 @@ export default async function ReportsPage({
         workspaceName={workspace.name}
         current="reports"
       />
-      <p className="section-kicker">Stage 5</p>
+      <p className="section-kicker">Executive decision support</p>
       <h1 aria-label="Reports and exports" className="mt-1 text-3xl font-semibold tracking-tight">
-        Final review and reports
+        Reports
       </h1>
       <p className="mt-1 mb-6 text-sm text-slate-600">
         Bring submission blockers, missing evidence, proposal issues, and human decisions into one

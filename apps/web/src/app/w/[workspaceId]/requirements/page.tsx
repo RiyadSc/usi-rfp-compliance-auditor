@@ -85,6 +85,8 @@ export default async function RequirementsPage({
   const categoryFilter = typeof filters.category === 'string' ? filters.category : '';
   const mandatoryFilter = typeof filters.mandatory === 'string' ? filters.mandatory : '';
   const reviewFilter = typeof filters.review === 'string' ? filters.review : '';
+  const queryFilter =
+    typeof filters.q === 'string' ? filters.q.trim().toLowerCase().slice(0, 120) : '';
   const attentionOnly = filters.attention === 'yes';
   const rows = (candidates ?? []).filter((candidate) => {
     const finding = latest.get(candidate.id);
@@ -96,6 +98,10 @@ export default async function RequirementsPage({
       (!categoryFilter || candidate.category === categoryFilter) &&
       (!mandatoryFilter || candidate.mandatory_class === mandatoryFilter) &&
       (!reviewFilter || review === reviewFilter) &&
+      (!queryFilter ||
+        candidate.title.toLowerCase().includes(queryFilter) ||
+        candidate.obligation.toLowerCase().includes(queryFilter) ||
+        candidate.category.toLowerCase().includes(queryFilter)) &&
       (!attentionOnly ||
         !finding ||
         finding.source_support_status !== 'supported' ||
@@ -133,12 +139,12 @@ export default async function RequirementsPage({
       />
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="section-kicker">Stage 2</p>
+          <p className="section-kicker">Opportunity requirements</p>
           <h1
             aria-label="Requirement register"
             className="mt-1 text-3xl font-semibold tracking-tight"
           >
-            RFP requirements
+            Requirements
           </h1>
           <p className="mt-1 text-sm text-slate-600">
             Understand what the RFP requires, whether it is still current, what company evidence is
@@ -221,8 +227,17 @@ export default async function RequirementsPage({
       </div>
       <form
         method="get"
-        className="analyst-only mb-5 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-3 lg:grid-cols-6"
+        className="mb-5 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-3 lg:grid-cols-6"
       >
+        <label className="text-xs font-medium text-slate-700 sm:col-span-3 lg:col-span-6">
+          Search requirements
+          <input
+            name="q"
+            defaultValue={queryFilter}
+            placeholder="Form number, deadline, insurance, meeting…"
+            className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          />
+        </label>
         <Filter
           name="category"
           label="Category"

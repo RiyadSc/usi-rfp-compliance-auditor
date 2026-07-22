@@ -58,12 +58,12 @@ export default async function ProposalAuditPage({
         current="proposal-audit"
       />
       <div className="mb-6">
-        <p className="section-kicker">Stage 4</p>
+        <p className="section-kicker">Proposal quality review</p>
         <h1
           aria-label="Proposal draft audit"
           className="mt-1 text-3xl font-semibold tracking-tight"
         >
-          Draft review
+          Proposal Review
         </h1>
         <p className="mt-1 text-sm text-slate-600">
           Compare the proposal against the RFP-backed submission plan and focus the team on material

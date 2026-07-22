@@ -218,7 +218,10 @@ export default async function WorkspaceOverviewPage({
         </div>
       </header>
 
-      <section aria-label="Opportunity health" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section
+        aria-label="Opportunity health"
+        className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
+      >
         <Metric
           label="Required work complete"
           value={
@@ -231,6 +234,22 @@ export default async function WorkspaceOverviewPage({
               ? `${completion}% of required checklist work`
               : 'Generate a submission plan after verification'
           }
+        />
+        <Metric
+          label="RFP requirements"
+          value={requirementCount}
+          note={`${unresolvedSources} need source attention`}
+          warning={unresolvedSources > 0}
+        />
+        <Metric
+          label="Latest proposal review"
+          value={proposalAudit ? `${proposalAudit.finding_count} issues` : 'Not run'}
+          note={
+            proposalAudit
+              ? `${proposalAudit.claim_count} claims checked`
+              : 'Upload a proposal draft when ready'
+          }
+          warning={Boolean(proposalAudit?.finding_count)}
         />
         <Metric
           label="Submission blockers"
@@ -307,15 +326,39 @@ export default async function WorkspaceOverviewPage({
         <div className="grid gap-3 md:grid-cols-3">
           <StageCard
             number="1"
-            title="RFP files"
+            kind="Business"
+            title="Create opportunity"
+            summary="Customer, deadline, and response context are established"
+            status="ready"
+            href={`/w/${workspaceId}`}
+            action="Review opportunity"
+          />
+          <StageCard
+            number="2"
+            kind="Business"
+            title="Collect RFP files"
             summary={`${documentCount} document${documentCount === 1 ? '' : 's'} in this opportunity`}
             status={documentCount ? 'ready' : 'not_started'}
             href={`/w/${workspaceId}/documents`}
             action="Open documents"
           />
           <StageCard
-            number="2"
-            title="RFP requirements"
+            number="3"
+            kind="Processing"
+            title="Read and organize documents"
+            summary={
+              documentCount
+                ? 'Documents are available for processing review'
+                : 'Waiting for source documents'
+            }
+            status={documentCount ? 'ready' : 'not_started'}
+            href={`/w/${workspaceId}/documents`}
+            action="Check processing"
+          />
+          <StageCard
+            number="4"
+            kind="Review"
+            title="Review RFP requirements"
             summary={`${requirementCount} requirement${requirementCount === 1 ? '' : 's'} identified`}
             status={
               unresolvedSources ? 'needs_follow_up' : requirementCount ? 'ready' : 'not_started'
@@ -324,16 +367,31 @@ export default async function WorkspaceOverviewPage({
             action="Review requirements"
           />
           <StageCard
-            number="3"
-            title="Submission plan"
+            number="5"
+            kind="Business"
+            title="Build submission checklist"
             summary={readiness?.summary ?? 'Plan not generated'}
             status={blockerCount ? 'blocked' : readiness ? 'ready' : 'not_started'}
             href={`/w/${workspaceId}/checklist`}
             action="Open submission plan"
           />
           <StageCard
-            number="4"
-            title="Draft review"
+            number="6"
+            kind="Business"
+            title="Assign and complete work"
+            summary={
+              readiness
+                ? `${readiness.completed_required} required tasks completed`
+                : 'Checklist ownership has not started'
+            }
+            status={blockerCount ? 'blocked' : readiness ? 'in_progress' : 'not_started'}
+            href={`/w/${workspaceId}/checklist`}
+            action="Open team work"
+          />
+          <StageCard
+            number="7"
+            kind="Review"
+            title="Review proposal draft"
             summary={
               proposalAudit
                 ? `${proposalAudit.finding_count} issue${proposalAudit.finding_count === 1 ? '' : 's'} found in latest review`
@@ -350,8 +408,28 @@ export default async function WorkspaceOverviewPage({
             action="Open proposal audit"
           />
           <StageCard
-            number="5"
-            title="Final review"
+            number="8"
+            kind="Review"
+            title="Resolve issues and decisions"
+            summary={
+              proposalAudit
+                ? `${proposalAudit.finding_count} draft issues require review context`
+                : 'Begins after a proposal review'
+            }
+            status={
+              proposalAudit?.finding_count
+                ? 'needs_follow_up'
+                : proposalAudit
+                  ? 'ready'
+                  : 'not_started'
+            }
+            href={`/w/${workspaceId}/proposal-audit`}
+            action="Review issues"
+          />
+          <StageCard
+            number="9"
+            kind="Business"
+            title="Prepare final human review"
             summary={
               latestReport
                 ? `Latest report generated ${formatDate(latestReport.generated_at)}`
@@ -365,18 +443,15 @@ export default async function WorkspaceOverviewPage({
             }
             action="Open final review"
           />
-          <div className="surface-card border-dashed p-4">
-            <p className="section-kicker">Important distinction</p>
-            <p className="mt-2 text-sm font-medium">Workflow progress is not source approval.</p>
-            <p className="mt-1 text-xs text-slate-600">
-              The app keeps RFP evidence, task completion, company proof, and human decisions
-              separate.
-            </p>
-          </div>
         </div>
+        <p className="mt-3 text-xs text-slate-500">
+          Business steps coordinate the response. Processing steps prepare source material. Review
+          steps require human judgment. Workflow progress never means automatic approval.
+        </p>
       </section>
 
       <section
+        id="activity"
         className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.7fr]"
         aria-labelledby="activity-heading"
       >
@@ -483,6 +558,7 @@ function Signal({ danger, text }: { danger: boolean; text: string }) {
 
 function StageCard({
   number,
+  kind,
   title,
   summary,
   status,
@@ -490,6 +566,7 @@ function StageCard({
   action,
 }: {
   number: string;
+  kind: 'Business' | 'Processing' | 'Review';
   title: string;
   summary: string;
   status: string;
@@ -499,9 +576,14 @@ function StageCard({
   return (
     <article className="surface-card p-4">
       <div className="flex items-start justify-between gap-3">
-        <span className="grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-sm font-semibold">
-          {number}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-sm font-semibold">
+            {number}
+          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+            {kind}
+          </span>
+        </div>
         <StatusBadge value={status} />
       </div>
       <h3 className="mt-4 font-semibold">{title}</h3>

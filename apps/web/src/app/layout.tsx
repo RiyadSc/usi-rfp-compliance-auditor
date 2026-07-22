@@ -13,6 +13,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <PerformanceBeacon />
         <div
           role="note"
@@ -22,7 +25,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           DEMO — synthetic/public data only. Outputs are decision support, not legal, insurance, or
           contractual advice.
         </div>
-        {children}
+        <div id="main-content" tabIndex={-1}>
+          {children}
+        </div>
       </body>
     </html>
   );

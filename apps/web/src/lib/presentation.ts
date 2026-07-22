@@ -1,3 +1,5 @@
+export const BUSINESS_TERMINOLOGY_VERSION = 'business-terminology-v2';
+
 export const businessLabels: Record<string, string> = {
   supported: 'Backed by the RFP',
   partially_supported: 'Partially backed by the RFP',
@@ -50,6 +52,21 @@ export const businessLabels: Record<string, string> = {
   parsed: 'Ready',
   processing: 'Processing',
   failed: 'Needs attention',
+};
+
+export const businessDefinitions: Record<string, string> = {
+  supported:
+    'The cited active source backs the complete material requirement. Human review is still separate.',
+  partially_supported:
+    'The source backs the central obligation, but a material condition, scope, date, amount, or party differs.',
+  active: 'The available source relationships establish that this instruction currently applies.',
+  superseded:
+    'An explicit amendment replaces this earlier instruction. It remains visible for history.',
+  conflicting: 'Authoritative sources disagree and do not establish which instruction controls.',
+  requires_company_artifact:
+    'The RFP requires a company document such as a certificate, license, or insurance record.',
+  pending: 'An authorized person has not yet accepted or disputed the machine assessment.',
+  blocked: 'A deterministic rule found work that must be resolved before final review.',
 };
 
 export function businessLabel(value: string | null | undefined): string {
