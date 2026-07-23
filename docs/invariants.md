@@ -150,3 +150,15 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] The prepared demo, five missing-form blockers, evidence viewer, original-page navigation, and `@demo-critical` workflow remain functional.
 - [x] Unit, sequential Supabase integration, isolated mock browser, persona, visual, deterministic evaluation, lint, formatting, type, build, dependency, lockfile, secret, and invariant gates pass.
 - [x] Fixtures remain synthetic/public; provider calls and spend are zero; general live verification remains disabled.
+
+## Phase 9 FAC115 provider-free preparation result — 2026-07-23
+
+- [x] The evaluation uses only the frozen official Massachusetts FAC115 public-source package; no bidder submission, confidential company material, or USI information is present.
+- [x] All official source and rendition byte counts and SHA-256 hashes pass before evaluation work proceeds.
+- [x] PDF, DOCX, and XLSX evidence retains exact native provenance; spreadsheet evidence includes workbook, sheet, and cell range rather than relying on flattened PDF text.
+- [x] The historical expected answers remain unchanged; the versioned Phase 9 overlay adds separate source, precedence, proof, scope, date, number, and native-provenance expectations.
+- [x] Candidate-to-answer binding requires the same document, rendered page, and exact or normalized-exact quotation; fuzzy or printed-page recovery cannot silently become scored evidence.
+- [x] Missing candidate mappings and absent source-native conflict, parser-uncertainty, and prompt-injection cases remain visible blockers rather than fabricated Commonwealth content.
+- [x] The Stage 0 harness fails closed before provider construction when live flags are present, candidate bindings are incomplete, coverage is absent, or budget authorization is insufficient.
+- [x] Workspace authorization, RLS, cross-workspace isolation, deterministic evaluator, citation, date, number, and secret checks pass.
+- [x] No provider was constructed, no paid call or spend occurred, general live verification remains disabled, and `MockProvider` remains the default.

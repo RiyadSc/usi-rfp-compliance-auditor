@@ -1,6 +1,6 @@
 # Risk Register
 
-Last updated: 2026-07-19 for Phase 8 closure.
+Last updated: 2026-07-23 for Phase 9 FAC115 Stage 0.
 
 ## Phase 8 final residual risks
 
@@ -54,3 +54,7 @@ Phase 4 accepted risk posture: the verification implementation is complete for t
 - **R-39 — Archive traversal/expansion attack.** Enforce strict names, entry/count/ratio/expanded-size limits, approved types, and no nesting.
 - **R-40 — Cost estimates differ from invoices.** Version pricing, persist ranges/hard maximum, and keep paid paths reservation-gated.
 - **R-41 — New addenda stale downstream analysis.** Targeted dependency invalidation preserves unchanged normalization and invalidates downstream cache.
+- **R-42 — Office documents expose printed page labels that differ from rendered pages.** Phase 9 accepts only rendered-page exact/normalized-exact evidence and records native DOCX section or XLSX sheet/cell provenance. Historical candidates are never silently rebased; 6/23 FAC115 answers currently fail for this reason.
+- **R-43 — A public fixture may not naturally contain every adversarial control case.** FAC115 contains no genuine unresolved amendment conflict, planted parser-uncertain obligation, or malicious prompt injection. The preflight records the coverage gap instead of modifying official source bytes. A separately labeled synthetic companion requires an explicit evaluation-design decision.
+- **R-44 — Historical extraction recall can make verification metrics misleading.** Phase 9 maps frozen answers to the exact accepted population before calls. Only 8/23 currently bind; a completed verification run cannot hide missing extraction candidates.
+- **R-45 — Public evaluation spend can consume unrelated phase headroom.** The Stage 0 reader paginates the full ledger, reports phase/public/cumulative totals separately, and reserves the entire planned stage before provider construction. A dedicated Phase 9/public ceiling and explicit call authorization remain required.

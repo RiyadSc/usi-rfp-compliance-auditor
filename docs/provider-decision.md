@@ -346,3 +346,11 @@ Phase 8 evaluation, hardening, caching, reset, fallback, and rehearsal use deter
 ## Large-document provider and OCR decision
 
 Mixed-format parsing, structural tables, deterministic prefiltering, cost estimation, caching, and the 420-page evaluation are provider-free. Quick scan forbids provider use. Standard/deep tiers are implemented with MockProvider for this workstream and do not alter the qualified Phase 4 model or fingerprint. No paid OCR provider was adopted; `MockOcrAdapter` is fixture-only and production image/OCR uncertainty remains human-review required. Provider calls and spend for this workstream are `$0.00`.
+
+## Phase 9 Massachusetts FAC115 preflight decision
+
+Date: 2026-07-23. No model was called or selected for the Massachusetts public-RFP evaluation. Stage 0 confirms that the official source/rendition package and 23 exact citations are ready, including workbook-native `Guard Services!I11` provenance. It also confirms that the historical extraction population is not a valid fresh pilot population: only 8/23 expected answers bind to an accepted candidate on the same document, rendered page, and exact quotation.
+
+The proposed pilot configuration remains the already selected Phase 4 verification configuration: `gpt-5.5-2026-04-23`, low reasoning, two contexts, 1,800/1,600 output limits, 90 seconds, `store:false`, and no tools. No provider construction occurred because the strict pilot reserve is `$4.727970`, existing Phase 3/4 headroom is insufficient, no separate Phase 9/public ceiling exists, the user did not authorize a provider call, and the FAC115 source itself lacks the required genuine conflict/parser-uncertain/injection cases.
+
+`MockProvider` remains the normal fallback and unrestricted live verification remains disabled. A later pilot requires an offline rendered-page-binding correction, a separately documented non-Commonwealth security-control companion or changed coverage instruction, a newly frozen pilot hash, and explicit provider/budget authorization.

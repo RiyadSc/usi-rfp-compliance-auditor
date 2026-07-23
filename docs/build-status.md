@@ -1,5 +1,15 @@
 # Build Status
 
+## Phase 9 FAC115 Stage 0 — source ready, pilot blocked (2026-07-23)
+
+The provider-free Massachusetts FAC115 preflight validates all eight official public sources, seven hash-pinned renditions, 23 exact/normalized-exact rendered citations, DOCX section provenance, and native workbook evidence at `Guard Services!I11`. The frozen historical 22 answers remain unchanged; a versioned overlay adds separate source/precedence/proof axes, typed facts, scopes, stable IDs, and one workbook-native pricing case. Expected-answer hash: `8f97d2df60b5b82fbf126520f08b1c5684b1edeaa81f46e37f944c7723274db5`.
+
+Stage 1 did not start. Only 8/23 answers bind to an accepted historical candidate on the same document, rendered page, and exact quotation. The official fixture also contains no genuine unresolved-conflict, parser-uncertain, or malicious prompt-injection case. The strict eleven-case reserve is `$4.727970`; current Phase 3/4 headroom is `$0.736785`/`$0.186361`, and no Phase 9 public-evaluation ceiling or provider call is authorized. Authoritative ledgers are Phase 3 `$9.263215`, Phase 4 `$14.813639`, public evaluation `$10.948176`, remediation `$9.283190`, and cumulative API `$24.076854`.
+
+Provider calls/spend for this preparation are `0`/`$0.00`. General live verification remains disabled, `MockProvider` remains the ordinary fallback, and no application smoke or later product phase began. See `docs/phase9-fac115-source-readiness-report.md`, `docs/phase9-fac115-pilot-preflight.md`, and `docs/phase9-fac115-pilot-metrics.md`.
+
+Provider-free gates pass: 368 unit tests, 82 sequential Supabase integration tests across 9 files, focused Phase 9 citation/native-provenance checks, the deterministic mock verification evaluation, lint, formatting, type-check, unrestricted production build, offline dependency audit, secret scan, and the invariant checklist.
+
 ## Post-roadmap role-based UX and information architecture — complete (2026-07-22)
 
 `role-based-ux-v1` adds a five-destination global shell, Director/Proposal manager/Contributor/Technical reviewer presentation views, separate Home/Opportunities/My Work/Reports/Search surfaces, a six-destination opportunity navigation, a nine-step business/processing/review journey, bounded executive summaries, business search, action-group checklists, guided document upload, progressive technical disclosure, responsive behavior, and a versioned `business-terminology-v2` map. The view selector is never authorization; membership, RLS, and controlled server/RPC paths remain authoritative.

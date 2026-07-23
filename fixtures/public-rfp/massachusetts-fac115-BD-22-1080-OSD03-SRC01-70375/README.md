@@ -2,6 +2,24 @@
 
 This fixture preserves the official closed COMMBUYS solicitation `BD-22-1080-OSD03-SRC01-70375` for a Category 1 security-guard evaluation. It contains only official public procurement materials; no bidder proposals, confidential security plans, or USI information are included.
 
+## Phase 9 provider-free readiness (2026-07-23)
+
+The official sources and renditions are hash-valid and ready for deterministic citation work. The Phase 9 live pilot is **not ready** and was stopped before provider construction:
+
+- all `23/23` Phase 9 expected quotations resolve on the exact rendered page;
+- the native workbook citation resolves to `Guard Services!I11` and rendered page `3`;
+- only `8/23` expected answers currently have an accepted historical candidate with the same document, rendered page, and exact or normalized-exact quote;
+- the official package has no genuine unresolved conflict, parser-uncertain planted requirement, or malicious prompt-injection passage;
+- the reserved pilot cost does not fit the existing Phase 3 or Phase 4 headroom, and no separate Phase 9 provider-call budget is authorized.
+
+Phase 9 artifacts:
+
+- Expected answers: `phase9-expected-answers-v1.json`
+- Readiness: `artifacts/evaluation/phase9-fac115-stage0-readiness-v1.json`
+- Mapping failures: `artifacts/evaluation/phase9-fac115-candidate-mapping-failures-v1.json`
+
+The Phase 9 overlay does not rewrite the historical expected answers or accept fuzzy/printed-page recovery as scored evidence.
+
 ## Live result (2026-07-21)
 
 Extraction and expected-budget verification both completed against the frozen population.
