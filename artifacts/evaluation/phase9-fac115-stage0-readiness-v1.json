@@ -1,0 +1,935 @@
+{
+  "version": "massachusetts-fac115-phase9-stage0-v1",
+  "generatedAt": "2026-07-23T04:41:41.109Z",
+  "providerCalls": 0,
+  "providerConstructed": false,
+  "fixture": "massachusetts-fac115-category1-public-rfp-v1",
+  "solicitationId": "BD-22-1080-OSD03-SRC01-70375",
+  "categoryScope": "Category 1 — Security Services",
+  "publicOnly": true,
+  "officialPortalUrl": "https://www.commbuys.com/bso/external/bidDetail.sdo?docId=BD-22-1080-OSD03-SRC01-70375&external=true&parentUrl=close",
+  "supabaseProjectRef": "uxmxkdjschbekkbnweby",
+  "source": {
+    "manifestVersion": "massachusetts-fac115-source-manifest-v1",
+    "exactSet": true,
+    "checks": [
+      {
+        "file": "official-solicitation-page.html",
+        "expectedSha256": "9139363fdac80b38ffb325930a1e6227b2f0f7965280c6bf0a492e3bde2d22e8",
+        "actualSha256": "9139363fdac80b38ffb325930a1e6227b2f0f7965280c6bf0a492e3bde2d22e8",
+        "expectedBytes": 93385,
+        "actualBytes": 93385,
+        "officialAttachmentId": null,
+        "activeForCategory1": true,
+        "valid": true
+      },
+      {
+        "file": "FAC115_Request_for_Response_03.29.2022.docx",
+        "expectedSha256": "50422cff4f3234e4297ce09bd6ff4917dff2fb13604c80bb0aa62245fe545f22",
+        "actualSha256": "50422cff4f3234e4297ce09bd6ff4917dff2fb13604c80bb0aa62245fe545f22",
+        "expectedBytes": 748296,
+        "actualBytes": 748296,
+        "officialAttachmentId": "1733161",
+        "activeForCategory1": true,
+        "valid": true
+      },
+      {
+        "file": "FAC115_Attachment_A_Bidder_Response_Form_03.29.2022.xlsx",
+        "expectedSha256": "4358a05dc7f10b9a0388308d060b6a7c2afd939330c9133828e454fb7d5bfbc2",
+        "actualSha256": "4358a05dc7f10b9a0388308d060b6a7c2afd939330c9133828e454fb7d5bfbc2",
+        "expectedBytes": 111782,
+        "actualBytes": 111782,
+        "officialAttachmentId": "1733163",
+        "activeForCategory1": true,
+        "valid": true
+      },
+      {
+        "file": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.xlsx",
+        "expectedSha256": "7bc83ab773f63a5415f10d76a15aeb3ba362d2cfffe0b2b411023d40eee5a3d1",
+        "actualSha256": "7bc83ab773f63a5415f10d76a15aeb3ba362d2cfffe0b2b411023d40eee5a3d1",
+        "expectedBytes": 24628,
+        "actualBytes": 24628,
+        "officialAttachmentId": "1737524",
+        "activeForCategory1": true,
+        "valid": true
+      },
+      {
+        "file": "FAC115_Attachment_D_SDP_Form_03.29.2022.xlsx",
+        "expectedSha256": "ad563c299cba5a1cae4f4c6970da81a048c8ace6717e077eef652f3a518f6bb5",
+        "actualSha256": "ad563c299cba5a1cae4f4c6970da81a048c8ace6717e077eef652f3a518f6bb5",
+        "expectedBytes": 28929,
+        "actualBytes": 28929,
+        "officialAttachmentId": "1733133",
+        "activeForCategory1": true,
+        "valid": true
+      },
+      {
+        "file": "FAC115_Attachment_E_Prompt_Pay_Discount_Form_03.29.2022.docx",
+        "expectedSha256": "558115d5d9cac7a7b74ef5ffb7d62bfb01b8460ef50c9bef8951b2b856bec163",
+        "actualSha256": "558115d5d9cac7a7b74ef5ffb7d62bfb01b8460ef50c9bef8951b2b856bec163",
+        "expectedBytes": 31197,
+        "actualBytes": 31197,
+        "officialAttachmentId": "1733130",
+        "activeForCategory1": true,
+        "valid": true
+      },
+      {
+        "file": "FAC115_Creating_a_Quote_in_COMMBUYS_Job_Aid_03.29.2022.pdf",
+        "expectedSha256": "f7d5baa5a549358d601542622b512821e30126b2008f8402c80e506012c383ce",
+        "actualSha256": "f7d5baa5a549358d601542622b512821e30126b2008f8402c80e506012c383ce",
+        "expectedBytes": 1404045,
+        "actualBytes": 1404045,
+        "officialAttachmentId": "1733169",
+        "activeForCategory1": true,
+        "valid": true
+      },
+      {
+        "file": "Intent_to_Bid_Notice_FAC115.docx",
+        "expectedSha256": "8f7dfb7d2fa9bbf810dae9831661c5335806404a198eef53c7360e17a7c4101c",
+        "actualSha256": "8f7dfb7d2fa9bbf810dae9831661c5335806404a198eef53c7360e17a7c4101c",
+        "expectedBytes": 292450,
+        "actualBytes": 292450,
+        "officialAttachmentId": "1712141",
+        "activeForCategory1": false,
+        "valid": true
+      }
+    ],
+    "officialAttachmentBindings": [
+      {
+        "file": "FAC115_Request_for_Response_03.29.2022.docx",
+        "attachmentId": "1733161",
+        "presentInPreservedOfficialPortal": true
+      },
+      {
+        "file": "FAC115_Attachment_A_Bidder_Response_Form_03.29.2022.xlsx",
+        "attachmentId": "1733163",
+        "presentInPreservedOfficialPortal": true
+      },
+      {
+        "file": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.xlsx",
+        "attachmentId": "1737524",
+        "presentInPreservedOfficialPortal": true
+      },
+      {
+        "file": "FAC115_Attachment_D_SDP_Form_03.29.2022.xlsx",
+        "attachmentId": "1733133",
+        "presentInPreservedOfficialPortal": true
+      },
+      {
+        "file": "FAC115_Attachment_E_Prompt_Pay_Discount_Form_03.29.2022.docx",
+        "attachmentId": "1733130",
+        "presentInPreservedOfficialPortal": true
+      },
+      {
+        "file": "FAC115_Creating_a_Quote_in_COMMBUYS_Job_Aid_03.29.2022.pdf",
+        "attachmentId": "1733169",
+        "presentInPreservedOfficialPortal": true
+      },
+      {
+        "file": "Intent_to_Bid_Notice_FAC115.docx",
+        "attachmentId": "1712141",
+        "presentInPreservedOfficialPortal": true
+      }
+    ],
+    "containsVendorSubmission": false,
+    "containsUsiMaterial": false
+  },
+  "rendering": {
+    "manifestVersion": "massachusetts-fac115-rendition-manifest-v1",
+    "exactSet": true,
+    "checks": [
+      {
+        "file": "FAC115_Attachment_A_Bidder_Response_Form_03.29.2022.pdf",
+        "kind": "libreoffice-rendition",
+        "expectedSha256": "2ef6db115d55dd755872315ba56dae95ccb5154e0c1f2f5eadd51b36b0f0f5c0",
+        "actualSha256": "2ef6db115d55dd755872315ba56dae95ccb5154e0c1f2f5eadd51b36b0f0f5c0",
+        "expectedBytes": 221012,
+        "actualBytes": 221012,
+        "pages": 27,
+        "valid": true
+      },
+      {
+        "file": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.pdf",
+        "kind": "libreoffice-rendition",
+        "expectedSha256": "670b7bcc0d5f52e872453b54b4232341061a0d49bfc5a5457211353da114250b",
+        "actualSha256": "670b7bcc0d5f52e872453b54b4232341061a0d49bfc5a5457211353da114250b",
+        "expectedBytes": 70694,
+        "actualBytes": 70694,
+        "pages": 6,
+        "valid": true
+      },
+      {
+        "file": "FAC115_Attachment_D_SDP_Form_03.29.2022.pdf",
+        "kind": "libreoffice-rendition",
+        "expectedSha256": "66d629ece0a2350505aa7fb33d05f4cb3375ceceba330704a368ce129165236b",
+        "actualSha256": "66d629ece0a2350505aa7fb33d05f4cb3375ceceba330704a368ce129165236b",
+        "expectedBytes": 111452,
+        "actualBytes": 111452,
+        "pages": 6,
+        "valid": true
+      },
+      {
+        "file": "FAC115_Attachment_E_Prompt_Pay_Discount_Form_03.29.2022.pdf",
+        "kind": "libreoffice-rendition",
+        "expectedSha256": "595254c02397e139d753a6e5712a496d0a1a3320af2682980d2800c1e01d9553",
+        "actualSha256": "595254c02397e139d753a6e5712a496d0a1a3320af2682980d2800c1e01d9553",
+        "expectedBytes": 104092,
+        "actualBytes": 104092,
+        "pages": 1,
+        "valid": true
+      },
+      {
+        "file": "FAC115_Creating_a_Quote_in_COMMBUYS_Job_Aid_03.29.2022.pdf",
+        "kind": "official-native-pdf",
+        "expectedSha256": "f7d5baa5a549358d601542622b512821e30126b2008f8402c80e506012c383ce",
+        "actualSha256": "f7d5baa5a549358d601542622b512821e30126b2008f8402c80e506012c383ce",
+        "expectedBytes": 1404045,
+        "actualBytes": 1404045,
+        "pages": 8,
+        "valid": true
+      },
+      {
+        "file": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "kind": "libreoffice-rendition",
+        "expectedSha256": "5d58ed0dbda1592e93e3ed41f3ab98f1277c288a43e9fe7227785589f06e19f3",
+        "actualSha256": "5d58ed0dbda1592e93e3ed41f3ab98f1277c288a43e9fe7227785589f06e19f3",
+        "expectedBytes": 938527,
+        "actualBytes": 938527,
+        "pages": 35,
+        "valid": true
+      },
+      {
+        "file": "Intent_to_Bid_Notice_FAC115.pdf",
+        "kind": "libreoffice-rendition",
+        "expectedSha256": "c24c8c21f24799d1e4c12cd49b78fcfd738bf3d881d0a850173513021221de95",
+        "actualSha256": "c24c8c21f24799d1e4c12cd49b78fcfd738bf3d881d0a850173513021221de95",
+        "expectedBytes": 528279,
+        "actualBytes": 528279,
+        "pages": 1,
+        "valid": true
+      }
+    ],
+    "parserWarnings": [
+      {
+        "file": "FAC115_Attachment_A_Bidder_Response_Form_03.29.2022.pdf",
+        "warnings": [
+          "page 10: no extractable text",
+          "page 11: no extractable text",
+          "page 16: no extractable text",
+          "page 24: no extractable text",
+          "page 27: no extractable text"
+        ],
+        "emptyPages": 5
+      },
+      {
+        "file": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.pdf",
+        "warnings": [],
+        "emptyPages": 0
+      },
+      {
+        "file": "FAC115_Attachment_D_SDP_Form_03.29.2022.pdf",
+        "warnings": [],
+        "emptyPages": 0
+      },
+      {
+        "file": "FAC115_Attachment_E_Prompt_Pay_Discount_Form_03.29.2022.pdf",
+        "warnings": [],
+        "emptyPages": 0
+      },
+      {
+        "file": "FAC115_Creating_a_Quote_in_COMMBUYS_Job_Aid_03.29.2022.pdf",
+        "warnings": [],
+        "emptyPages": 0
+      },
+      {
+        "file": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "warnings": [],
+        "emptyPages": 0
+      },
+      {
+        "file": "Intent_to_Bid_Notice_FAC115.pdf",
+        "warnings": [],
+        "emptyPages": 0
+      }
+    ],
+    "nativeDocx": [
+      {
+        "file": "FAC115_Request_for_Response_03.29.2022.docx",
+        "contentHash": "b3480b8c736fc0a7509e821b04a9ea84a65c0916d72f3b9781d756c41c517692",
+        "blocks": 726,
+        "warnings": ["page_navigation_unavailable"]
+      },
+      {
+        "file": "FAC115_Attachment_E_Prompt_Pay_Discount_Form_03.29.2022.docx",
+        "contentHash": "2e0ba8ab3f74b66126e6165e3c48f4d6d8ceff132700e23f65182775d0421ddd",
+        "blocks": 21,
+        "warnings": ["page_navigation_unavailable"]
+      },
+      {
+        "file": "Intent_to_Bid_Notice_FAC115.docx",
+        "contentHash": "0a2cd177de20546b0b0c926742e6cf090bfb4e43be6b055179721f75f16c18b2",
+        "blocks": 21,
+        "warnings": ["page_navigation_unavailable"]
+      }
+    ],
+    "nativeXlsx": [
+      {
+        "file": "FAC115_Attachment_A_Bidder_Response_Form_03.29.2022.xlsx",
+        "contentHash": "5fdbffed79509ed486207d632b263a2d07d2524a57b691768f53e141b6ac006a",
+        "sheets": [
+          {
+            "sheetName": "NOTE TO BIDDER",
+            "parserState": "native",
+            "populatedCells": 1
+          },
+          {
+            "sheetName": "Bidder Submission Checklist",
+            "parserState": "native",
+            "populatedCells": 22
+          },
+          {
+            "sheetName": "Bidder Information",
+            "parserState": "native",
+            "populatedCells": 82
+          },
+          {
+            "sheetName": "Certifications &amp; Licenses",
+            "parserState": "native",
+            "populatedCells": 31
+          },
+          {
+            "sheetName": "Bidder References",
+            "parserState": "native",
+            "populatedCells": 4
+          },
+          {
+            "sheetName": "Sheet1",
+            "parserState": "native",
+            "populatedCells": 0
+          },
+          {
+            "sheetName": "EPP Form",
+            "parserState": "native",
+            "populatedCells": 55
+          }
+        ]
+      },
+      {
+        "file": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.xlsx",
+        "contentHash": "4aff14bddb4f5b4b39dcde5088b804d3824b4f0b15afd814d34b896cfb22aab7",
+        "sheets": [
+          {
+            "sheetName": "Guard Services",
+            "parserState": "native",
+            "populatedCells": 69
+          },
+          {
+            "sheetName": "PI Services",
+            "parserState": "native",
+            "populatedCells": 47
+          }
+        ]
+      },
+      {
+        "file": "FAC115_Attachment_D_SDP_Form_03.29.2022.xlsx",
+        "contentHash": "51679dffbf1e7b0dfd364918a0ac065494d507096c234939356d0f0eee3ddbfb",
+        "sheets": [
+          {
+            "sheetName": "SDP Plan Form",
+            "parserState": "native",
+            "populatedCells": 88
+          }
+        ]
+      }
+    ]
+  },
+  "expectedAnswers": {
+    "version": "massachusetts-fac115-phase9-expected-v1",
+    "policyVersion": "massachusetts-fac115-phase9-policy-v1",
+    "hash": "8f97d2df60b5b82fbf126520f08b1c5684b1edeaa81f46e37f944c7723274db5",
+    "count": 23,
+    "previousFrozenAnswerCount": 22,
+    "supplementalAnswerIds": ["price-workbook-union-markup"],
+    "citationChecks": [
+      {
+        "id": "conference-old-date",
+        "sourceFile": "official-solicitation-page.html",
+        "renderedPage": 1,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "conference-active-date",
+        "sourceFile": "official-solicitation-page.html",
+        "renderedPage": 1,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "conference-attendance-not-mandatory",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 8,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "question-deadline",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 6,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "submission-deadline",
+        "sourceFile": "official-solicitation-page.html",
+        "renderedPage": 1,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "submission-method",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 22,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "electronic-signature",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 22,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "narrative-page-limit",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 22,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "original-form-format",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 23,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "security-company-experience",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 9,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "watch-guard-license-attachment",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 10,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "armed-personnel-license",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 10,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "replacement-guard-pool",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 10,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "references-three-to-five",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 11,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "geographic-coverage",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 14,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "price-sheet-v2",
+        "sourceFile": "official-solicitation-page.html",
+        "renderedPage": 1,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "price-components",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 17,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "prompt-payment-form",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 18,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "sdp-form-and-minimum",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 19,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "sdp-evaluation-weight",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 20,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "quote-duration",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 23,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "post-award-forms-not-bid-attachments",
+        "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 24,
+        "matchType": "exact",
+        "valid": true
+      },
+      {
+        "id": "price-workbook-union-markup",
+        "sourceFile": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.pdf",
+        "renderedPage": 3,
+        "matchType": "exact",
+        "valid": true
+      }
+    ],
+    "nativeSpreadsheetChecks": [
+      {
+        "id": "price-workbook-union-markup",
+        "originalFile": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.xlsx",
+        "sheetName": "Guard Services",
+        "cellRange": "I11",
+        "renderedPage": 3,
+        "nativeText": "Union Rate Markup % (must list, even if 0%)",
+        "exactNativeMatch": true
+      }
+    ],
+    "coverage": {
+      "genuineUnresolvedConflictCaseIds": [],
+      "parserUncertainCaseIds": [],
+      "promptInjectionCaseIds": []
+    },
+    "coverageGaps": [
+      "no_genuine_unresolved_conflict_case",
+      "no_parser_uncertain_expected_case",
+      "no_source_native_prompt_injection_case"
+    ]
+  },
+  "deterministic": {
+    "dateChecks": [
+      {
+        "answerId": "conference-old-date",
+        "role": "meeting_date",
+        "expected": "2022-03-31",
+        "parsed": "2022-03-31",
+        "expectedTime": null,
+        "parsedTime": null,
+        "ambiguousTime": true,
+        "valid": true
+      },
+      {
+        "answerId": "conference-active-date",
+        "role": "meeting_date",
+        "expected": "2022-04-05",
+        "parsed": "2022-04-05",
+        "expectedTime": null,
+        "parsedTime": "2:00 PM",
+        "ambiguousTime": true,
+        "valid": true
+      },
+      {
+        "answerId": "question-deadline",
+        "role": "question_deadline",
+        "expected": "2022-04-07",
+        "parsed": "2022-04-07",
+        "expectedTime": "2:00 PM",
+        "parsedTime": "2:00 PM",
+        "ambiguousTime": false,
+        "valid": true
+      },
+      {
+        "answerId": "submission-deadline",
+        "role": "submission_deadline",
+        "expected": "2022-05-03",
+        "parsed": "2022-05-03",
+        "expectedTime": "03:00 PM",
+        "parsedTime": "3:00 PM",
+        "ambiguousTime": false,
+        "valid": true
+      }
+    ],
+    "numberChecks": [
+      {
+        "answerId": "narrative-page-limit",
+        "role": "page_limit",
+        "expected": 10,
+        "parsed": 10,
+        "typedRoles": [],
+        "valid": true
+      },
+      {
+        "answerId": "security-company-experience",
+        "role": "experience_minimum",
+        "expected": 3,
+        "parsed": 3,
+        "typedRoles": [],
+        "valid": true
+      },
+      {
+        "answerId": "references-three-to-five",
+        "role": "reference_count",
+        "expected": 3,
+        "parsed": 3,
+        "typedRoles": [],
+        "valid": true
+      },
+      {
+        "answerId": "sdp-form-and-minimum",
+        "role": "percentage",
+        "expected": 0.01,
+        "parsed": 0.01,
+        "typedRoles": ["percentage", "percentage"],
+        "valid": true
+      },
+      {
+        "answerId": "sdp-evaluation-weight",
+        "role": "percentage",
+        "expected": 0.25,
+        "parsed": 0.25,
+        "typedRoles": ["percentage", "percentage"],
+        "valid": true
+      },
+      {
+        "answerId": "quote-duration",
+        "role": "duration",
+        "expected": 90,
+        "parsed": 90,
+        "typedRoles": ["staffing_minimum"],
+        "valid": true
+      },
+      {
+        "answerId": "price-workbook-union-markup",
+        "role": "percentage",
+        "expected": 0,
+        "parsed": 0,
+        "typedRoles": ["percentage", "percentage"],
+        "valid": true
+      }
+    ],
+    "conferenceSupersessionEvidence": true,
+    "priceWorkbookReplacementEvidence": true,
+    "promptInjectionSourceHits": []
+  },
+  "candidatePopulation": {
+    "analysisRunId": "5d2401ea-f042-4c3c-a6f8-f6c3dfb94fd0",
+    "populationHash": "f4e4c37056de810a475852fa8816403a65c661c03a2c269fbfb8662d871a9348",
+    "extractedCandidates": 248,
+    "acceptedCandidates": 209,
+    "plannedCandidates": 209,
+    "exactExpectedAnswerBindings": 8,
+    "expectedAnswerCount": 23,
+    "bindings": [
+      {
+        "answerId": "conference-old-date",
+        "expectedCandidateId": "fac115-phase9-conference-old-date",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "conference-active-date",
+        "expectedCandidateId": "fac115-phase9-conference-active-date",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "conference-attendance-not-mandatory",
+        "expectedCandidateId": "fac115-phase9-conference-attendance-not-mandatory",
+        "historicalCandidateIds": ["92657c12-b3e4-42f9-a80d-29e7454e5f41"],
+        "exactBinding": true,
+        "reason": "exact_document_page_quote"
+      },
+      {
+        "answerId": "question-deadline",
+        "expectedCandidateId": "fac115-phase9-question-deadline",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "submission-deadline",
+        "expectedCandidateId": "fac115-phase9-submission-deadline",
+        "historicalCandidateIds": ["6c417e3f-c14c-461d-9f72-79517649fcab"],
+        "exactBinding": true,
+        "reason": "exact_document_page_quote"
+      },
+      {
+        "answerId": "submission-method",
+        "expectedCandidateId": "fac115-phase9-submission-method",
+        "historicalCandidateIds": ["7c7890d9-d24f-416c-b949-ad40629fda09"],
+        "exactBinding": true,
+        "reason": "exact_document_page_quote"
+      },
+      {
+        "answerId": "electronic-signature",
+        "expectedCandidateId": "fac115-phase9-electronic-signature",
+        "historicalCandidateIds": ["06ce57a7-1142-4bda-a317-572b7881292e"],
+        "exactBinding": true,
+        "reason": "exact_document_page_quote"
+      },
+      {
+        "answerId": "narrative-page-limit",
+        "expectedCandidateId": "fac115-phase9-narrative-page-limit",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "original-form-format",
+        "expectedCandidateId": "fac115-phase9-original-form-format",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "security-company-experience",
+        "expectedCandidateId": "fac115-phase9-security-company-experience",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "watch-guard-license-attachment",
+        "expectedCandidateId": "fac115-phase9-watch-guard-license-attachment",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "armed-personnel-license",
+        "expectedCandidateId": "fac115-phase9-armed-personnel-license",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "replacement-guard-pool",
+        "expectedCandidateId": "fac115-phase9-replacement-guard-pool",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "references-three-to-five",
+        "expectedCandidateId": "fac115-phase9-references-three-to-five",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "geographic-coverage",
+        "expectedCandidateId": "fac115-phase9-geographic-coverage",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "price-sheet-v2",
+        "expectedCandidateId": "fac115-phase9-price-sheet-v2",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "price-components",
+        "expectedCandidateId": "fac115-phase9-price-components",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "prompt-payment-form",
+        "expectedCandidateId": "fac115-phase9-prompt-payment-form",
+        "historicalCandidateIds": ["22f77536-7f06-462a-9ddb-7cfd59408e41"],
+        "exactBinding": true,
+        "reason": "exact_document_page_quote"
+      },
+      {
+        "answerId": "sdp-form-and-minimum",
+        "expectedCandidateId": "fac115-phase9-sdp-form-and-minimum",
+        "historicalCandidateIds": ["9698c198-fb77-4f35-a9f2-e61f4f1a593a"],
+        "exactBinding": true,
+        "reason": "exact_document_page_quote"
+      },
+      {
+        "answerId": "sdp-evaluation-weight",
+        "expectedCandidateId": "fac115-phase9-sdp-evaluation-weight",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "quote-duration",
+        "expectedCandidateId": "fac115-phase9-quote-duration",
+        "historicalCandidateIds": ["1df59cc9-e0c0-4077-a102-f8330f962789"],
+        "exactBinding": true,
+        "reason": "exact_document_page_quote"
+      },
+      {
+        "answerId": "post-award-forms-not-bid-attachments",
+        "expectedCandidateId": "fac115-phase9-post-award-forms-not-bid-attachments",
+        "historicalCandidateIds": [],
+        "exactBinding": false,
+        "reason": "not_extracted_or_page_mismatch"
+      },
+      {
+        "answerId": "price-workbook-union-markup",
+        "expectedCandidateId": "fac115-phase9-price-workbook-union-markup",
+        "historicalCandidateIds": ["9e639948-6e29-4e89-afc4-cc7d49511d22"],
+        "exactBinding": true,
+        "reason": "exact_document_page_quote"
+      }
+    ],
+    "failureTraceArtifact": "artifacts/evaluation/phase9-fac115-candidate-mapping-failures-v1.json"
+  },
+  "budget": {
+    "ledgers": {
+      "rows": 1341,
+      "phase3Usd": 9.263215,
+      "phase4Usd": 14.813639,
+      "publicEvaluationUsd": 10.948176,
+      "remediationUsd": 9.28319,
+      "cumulativeApiUsd": 24.076854
+    },
+    "ceilings": {
+      "phase3Usd": 10,
+      "phase4Usd": 15
+    },
+    "currentHeadroom": {
+      "phase3Usd": 0.736785,
+      "phase4Usd": 0.186361
+    },
+    "pilotCandidateCount": 11,
+    "pilotMaximumUsd": 4.72797,
+    "pilotReserveCandidates": [
+      {
+        "answerId": "submission-deadline",
+        "contextCount": 1,
+        "estimatedInputTokens": 4420,
+        "maximumUsd": 0.4386
+      },
+      {
+        "answerId": "question-deadline",
+        "contextCount": 2,
+        "estimatedInputTokens": 4038,
+        "maximumUsd": 0.42714
+      },
+      {
+        "answerId": "conference-old-date",
+        "contextCount": 1,
+        "estimatedInputTokens": 4420,
+        "maximumUsd": 0.4386
+      },
+      {
+        "answerId": "conference-active-date",
+        "contextCount": 1,
+        "estimatedInputTokens": 4420,
+        "maximumUsd": 0.4386
+      },
+      {
+        "answerId": "prompt-payment-form",
+        "contextCount": 2,
+        "estimatedInputTokens": 4145,
+        "maximumUsd": 0.43035
+      },
+      {
+        "answerId": "price-workbook-union-markup",
+        "contextCount": 2,
+        "estimatedInputTokens": 2526,
+        "maximumUsd": 0.38178
+      },
+      {
+        "answerId": "replacement-guard-pool",
+        "contextCount": 2,
+        "estimatedInputTokens": 4117,
+        "maximumUsd": 0.42951
+      },
+      {
+        "answerId": "watch-guard-license-attachment",
+        "contextCount": 2,
+        "estimatedInputTokens": 4117,
+        "maximumUsd": 0.42951
+      },
+      {
+        "answerId": "sdp-form-and-minimum",
+        "contextCount": 2,
+        "estimatedInputTokens": 4300,
+        "maximumUsd": 0.435
+      },
+      {
+        "answerId": "original-form-format",
+        "contextCount": 2,
+        "estimatedInputTokens": 4491,
+        "maximumUsd": 0.44073
+      },
+      {
+        "answerId": "submission-method",
+        "contextCount": 2,
+        "estimatedInputTokens": 4405,
+        "maximumUsd": 0.43815
+      }
+    ],
+    "fullEvaluationMaximumUsd": 88.81428,
+    "projectedWithPilot": {
+      "phase3Usd": 13.991185,
+      "phase4Usd": 19.541609,
+      "publicEvaluationUsd": 15.676146,
+      "cumulativeApiUsd": 28.804824
+    },
+    "projectedWithFullEvaluation": {
+      "phase3Usd": 98.077495,
+      "phase4Usd": 103.627919,
+      "publicEvaluationUsd": 99.762456,
+      "cumulativeApiUsd": 112.891134
+    }
+  },
+  "workspaceAndRls": {
+    "projectRef": "uxmxkdjschbekkbnweby",
+    "dedicatedFac115WorkspaceProvisioned": false,
+    "status": "repository_integration_gate_required_before_pilot"
+  },
+  "readiness": {
+    "sourceReady": true,
+    "pilotReady": false,
+    "fullEvaluationReady": false,
+    "blockers": [
+      "historical_candidate_to_answer_mapping_incomplete",
+      "no_genuine_unresolved_conflict_case",
+      "no_parser_uncertain_expected_case",
+      "no_source_native_prompt_injection_case",
+      "pilot_reserve_exceeds_existing_phase_headroom",
+      "separate_explicit_pilot_budget_authorization_required"
+    ]
+  }
+}

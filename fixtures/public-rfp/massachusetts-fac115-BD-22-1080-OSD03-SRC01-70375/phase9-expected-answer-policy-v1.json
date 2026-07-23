@@ -1,0 +1,212 @@
+{
+  "version": "massachusetts-fac115-phase9-policy-v1",
+  "proofById": {
+    "conference-old-date": "none_identified",
+    "conference-active-date": "none_identified",
+    "conference-attendance-not-mandatory": "none_identified",
+    "question-deadline": "none_identified",
+    "submission-deadline": "none_identified",
+    "submission-method": "none_identified",
+    "electronic-signature": "requires_human_confirmation",
+    "narrative-page-limit": "none_identified",
+    "original-form-format": "requires_human_confirmation",
+    "security-company-experience": "requires_company_artifact",
+    "watch-guard-license-attachment": "requires_company_artifact",
+    "armed-personnel-license": "requires_company_artifact",
+    "replacement-guard-pool": "requires_human_confirmation",
+    "references-three-to-five": "requires_company_artifact",
+    "geographic-coverage": "requires_human_confirmation",
+    "price-sheet-v2": "requires_company_artifact",
+    "price-components": "requires_company_artifact",
+    "prompt-payment-form": "requires_company_artifact",
+    "sdp-form-and-minimum": "requires_company_artifact",
+    "sdp-evaluation-weight": "none_identified",
+    "quote-duration": "requires_human_confirmation",
+    "post-award-forms-not-bid-attachments": "none_identified"
+  },
+  "scopeById": {
+    "conference-old-date": "FAC115 bidder conference amendment",
+    "conference-active-date": "FAC115 bidder conference amendment",
+    "conference-attendance-not-mandatory": "all FAC115 bidders",
+    "question-deadline": "written bidder questions through COMMBUYS",
+    "submission-deadline": "FAC115 electronic quote",
+    "submission-method": "FAC115 electronic quote",
+    "electronic-signature": "FAC115 electronic quote",
+    "narrative-page-limit": "bidder narrative excluding forms and attachments",
+    "original-form-format": "Commonwealth-provided response forms",
+    "security-company-experience": "Category 1 security-services bidder",
+    "watch-guard-license-attachment": "Category 1 security-services bidder",
+    "armed-personnel-license": "armed security personnel",
+    "replacement-guard-pool": "Category 1 security guards and applicable PI coverage",
+    "references-three-to-five": "bidder business references",
+    "geographic-coverage": "Attachment A service counties or statewide coverage",
+    "price-sheet-v2": "active Attachment B price workbook",
+    "price-components": "Category 1 security-services price components",
+    "prompt-payment-form": "Attachment E bidder response",
+    "sdp-form-and-minimum": "Supplier Diversity Plan response",
+    "sdp-evaluation-weight": "Supplier Diversity Plan evaluation",
+    "quote-duration": "FAC115 quote validity",
+    "post-award-forms-not-bid-attachments": "post-award Commonwealth forms"
+  },
+  "datesById": {
+    "conference-old-date": [
+      {
+        "role": "meeting_date",
+        "raw": "Thursday, March 31, 2022; 1:00-2:00 PM",
+        "normalized": "2022-03-31",
+        "time": null,
+        "ambiguousTime": true,
+        "timezone": null,
+        "comparisonOperator": "equal"
+      }
+    ],
+    "conference-active-date": [
+      {
+        "role": "meeting_date",
+        "raw": "Tuesday, April 5, 2022; 1:00-2:00 PM",
+        "normalized": "2022-04-05",
+        "time": null,
+        "ambiguousTime": true,
+        "timezone": null,
+        "comparisonOperator": "equal"
+      }
+    ],
+    "question-deadline": [
+      {
+        "role": "question_deadline",
+        "raw": "April 7, 2022, 2:00 PM EST",
+        "normalized": "2022-04-07",
+        "time": "2:00 PM",
+        "ambiguousTime": false,
+        "timezone": "EST",
+        "comparisonOperator": "equal"
+      }
+    ],
+    "submission-deadline": [
+      {
+        "role": "submission_deadline",
+        "raw": "05/03/2022 03:00:00 PM",
+        "normalized": "2022-05-03",
+        "time": "03:00 PM",
+        "ambiguousTime": false,
+        "timezone": null,
+        "comparisonOperator": "equal"
+      }
+    ]
+  },
+  "numbersById": {
+    "narrative-page-limit": [
+      {
+        "role": "page_limit",
+        "raw": "ten (10) double-sided pages",
+        "normalized": 10,
+        "unit": "double_sided_pages",
+        "comparisonOperator": "maximum",
+        "scope": "bidder narrative excluding required forms and attachments"
+      }
+    ],
+    "security-company-experience": [
+      {
+        "role": "experience_minimum",
+        "raw": "minimum of three (3) years",
+        "normalized": 3,
+        "unit": "years",
+        "comparisonOperator": "minimum",
+        "scope": "Category 1 security-services business experience"
+      }
+    ],
+    "references-three-to-five": [
+      {
+        "role": "reference_count",
+        "raw": "between three (3) and five (5)",
+        "normalized": 3,
+        "unit": "business_references",
+        "comparisonOperator": "range",
+        "scope": "bidder references; upper bound is 5"
+      }
+    ],
+    "sdp-form-and-minimum": [
+      {
+        "role": "percentage",
+        "raw": "1%",
+        "normalized": 0.01,
+        "unit": "fraction",
+        "comparisonOperator": "minimum",
+        "scope": "total SDP commitment"
+      }
+    ],
+    "sdp-evaluation-weight": [
+      {
+        "role": "percentage",
+        "raw": "at least 25% of 100 evaluation points",
+        "normalized": 0.25,
+        "unit": "fraction_of_total_points",
+        "comparisonOperator": "minimum",
+        "scope": "SDP Plan evaluation allocation"
+      }
+    ],
+    "quote-duration": [
+      {
+        "role": "duration",
+        "raw": "at least 90 days",
+        "normalized": 90,
+        "unit": "days",
+        "comparisonOperator": "minimum",
+        "scope": "quote validity after submission"
+      }
+    ]
+  },
+  "supplementalExpected": [
+    {
+      "id": "price-workbook-union-markup",
+      "candidateId": "fac115-phase9-price-workbook-union-markup",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_company_artifact",
+      "sourceFile": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.pdf",
+      "renderedPage": 3,
+      "section": "Guard Services pricing grid",
+      "exactQuotation": "Union Rate Markup % (must list, even if 0%)",
+      "summary": "The amended Category 1 price workbook requires a union-rate markup percentage, including zero.",
+      "scope": "Guard Services pricing workbook",
+      "comparisonOperator": "minimum",
+      "materialDates": [],
+      "materialNumbers": [
+        {
+          "role": "percentage",
+          "raw": "0%",
+          "normalized": 0,
+          "unit": "fraction",
+          "comparisonOperator": "minimum",
+          "scope": "union rate markup entry; a value must be listed even when zero"
+        }
+      ],
+      "nativeReference": {
+        "kind": "xlsx",
+        "originalFile": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.xlsx",
+        "renditionFile": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.pdf",
+        "renderedPage": 3,
+        "sheetName": "Guard Services",
+        "cellRange": "I11"
+      }
+    }
+  ],
+  "pilotAnswerIds": [
+    "submission-deadline",
+    "question-deadline",
+    "conference-old-date",
+    "conference-active-date",
+    "prompt-payment-form",
+    "price-workbook-union-markup",
+    "replacement-guard-pool",
+    "watch-guard-license-attachment",
+    "sdp-form-and-minimum",
+    "original-form-format",
+    "submission-method"
+  ],
+  "coverage": {
+    "genuineUnresolvedConflictCaseIds": [],
+    "parserUncertainCaseIds": [],
+    "promptInjectionCaseIds": []
+  }
+}

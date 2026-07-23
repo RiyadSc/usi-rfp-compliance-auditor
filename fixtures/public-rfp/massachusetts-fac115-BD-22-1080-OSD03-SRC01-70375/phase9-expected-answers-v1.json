@@ -1,0 +1,644 @@
+{
+  "version": "massachusetts-fac115-phase9-expected-v1",
+  "policyVersion": "massachusetts-fac115-phase9-policy-v1",
+  "fixtureVersion": "massachusetts-fac115-category1-public-rfp-v1",
+  "solicitationId": "BD-22-1080-OSD03-SRC01-70375",
+  "publicOnly": true,
+  "frozenBeforePhase9ProviderAccess": true,
+  "expected": [
+    {
+      "id": "conference-old-date",
+      "candidateId": "fac115-phase9-conference-old-date",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "superseded",
+      "expectedProofRequirement": "none_identified",
+      "sourceFile": "official-solicitation-page.html",
+      "renderedPage": 1,
+      "section": "Amendment 4",
+      "exactQuotation": "Pre-Bid Conference changed from \"Thursday, March 31, 2022; 1:00- 2:00 PM.",
+      "summary": "The March 31, 2022 bidder conference date was replaced.",
+      "scope": "FAC115 bidder conference amendment",
+      "comparisonOperator": "equal",
+      "materialDates": [
+        {
+          "role": "meeting_date",
+          "raw": "Thursday, March 31, 2022; 1:00-2:00 PM",
+          "normalized": "2022-03-31",
+          "time": null,
+          "ambiguousTime": true,
+          "timezone": null,
+          "comparisonOperator": "equal"
+        }
+      ],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "html",
+        "originalFile": "official-solicitation-page.html",
+        "renderedPage": 1,
+        "location": "Amendment 4"
+      }
+    },
+    {
+      "id": "conference-active-date",
+      "candidateId": "fac115-phase9-conference-active-date",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "none_identified",
+      "sourceFile": "official-solicitation-page.html",
+      "renderedPage": 1,
+      "section": "Amendment 4",
+      "exactQuotation": "to \"Tuesday, April 5, 2022; 1:00 - 2:00 PM (updated from 3/31/22 date).",
+      "summary": "The bidder conference was moved to April 5, 2022 from 1:00 to 2:00 PM.",
+      "scope": "FAC115 bidder conference amendment",
+      "comparisonOperator": "equal",
+      "materialDates": [
+        {
+          "role": "meeting_date",
+          "raw": "Tuesday, April 5, 2022; 1:00-2:00 PM",
+          "normalized": "2022-04-05",
+          "time": null,
+          "ambiguousTime": true,
+          "timezone": null,
+          "comparisonOperator": "equal"
+        }
+      ],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "html",
+        "originalFile": "official-solicitation-page.html",
+        "renderedPage": 1,
+        "location": "Amendment 4"
+      }
+    },
+    {
+      "id": "conference-attendance-not-mandatory",
+      "candidateId": "fac115-phase9-conference-attendance-not-mandatory",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "none_identified",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 8,
+      "section": "1.2.3 Bidders' Conference",
+      "exactQuotation": "Attendance is strongly suggested.",
+      "summary": "Attendance was strongly suggested rather than mandatory.",
+      "scope": "all FAC115 bidders",
+      "comparisonOperator": "not_applicable",
+      "materialDates": [],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 8,
+        "section": "1.2.3 Bidders' Conference"
+      }
+    },
+    {
+      "id": "question-deadline",
+      "candidateId": "fac115-phase9-question-deadline",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "none_identified",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 6,
+      "section": "1.2 Estimated Procurement Calendar",
+      "exactQuotation": "Deadline for submission of written questions through COMMBUYS “Bid Q&A” April 7, 2022, 2:00 PM EST",
+      "summary": "Written questions were due through COMMBUYS on April 7, 2022 at 2:00 PM EST.",
+      "scope": "written bidder questions through COMMBUYS",
+      "comparisonOperator": "equal",
+      "materialDates": [
+        {
+          "role": "question_deadline",
+          "raw": "April 7, 2022, 2:00 PM EST",
+          "normalized": "2022-04-07",
+          "time": "2:00 PM",
+          "ambiguousTime": false,
+          "timezone": "EST",
+          "comparisonOperator": "equal"
+        }
+      ],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 6,
+        "section": "1.2 Estimated Procurement Calendar"
+      }
+    },
+    {
+      "id": "submission-deadline",
+      "candidateId": "fac115-phase9-submission-deadline",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "none_identified",
+      "sourceFile": "official-solicitation-page.html",
+      "renderedPage": 1,
+      "section": "Header",
+      "exactQuotation": "05/03/2022 03:00:00 PM",
+      "summary": "The bid opening deadline was May 3, 2022 at 3:00 PM.",
+      "scope": "FAC115 electronic quote",
+      "comparisonOperator": "equal",
+      "materialDates": [
+        {
+          "role": "submission_deadline",
+          "raw": "05/03/2022 03:00:00 PM",
+          "normalized": "2022-05-03",
+          "time": "03:00 PM",
+          "ambiguousTime": false,
+          "timezone": null,
+          "comparisonOperator": "equal"
+        }
+      ],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "html",
+        "originalFile": "official-solicitation-page.html",
+        "renderedPage": 1,
+        "location": "Header"
+      }
+    },
+    {
+      "id": "submission-method",
+      "candidateId": "fac115-phase9-submission-method",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "none_identified",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 22,
+      "section": "7 Instructions for Submission of Responses",
+      "exactQuotation": "Responses must be sent via the “Create Quote” functionality contained in COMMBUYS.",
+      "summary": "Responses had to be sent through COMMBUYS Create Quote.",
+      "scope": "FAC115 electronic quote",
+      "comparisonOperator": "not_applicable",
+      "materialDates": [],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 22,
+        "section": "7 Instructions for Submission of Responses"
+      }
+    },
+    {
+      "id": "electronic-signature",
+      "candidateId": "fac115-phase9-electronic-signature",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_human_confirmation",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 22,
+      "section": "7.1 Electronic Signatures",
+      "exactQuotation": "Quotes submitted via COMMBUYS must be signed electronically by the Bidder or the Bidder’s Agent by accepting the terms and conditions of the bid on the “Terms & Conditions” tab of the Bid in COMMBUYS.",
+      "summary": "The quote had to be signed electronically through acceptance on the Terms & Conditions tab.",
+      "scope": "FAC115 electronic quote",
+      "comparisonOperator": "not_applicable",
+      "materialDates": [],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 22,
+        "section": "7.1 Electronic Signatures"
+      }
+    },
+    {
+      "id": "narrative-page-limit",
+      "candidateId": "fac115-phase9-narrative-page-limit",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "none_identified",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 22,
+      "section": "7.2.1 Document Pages",
+      "exactQuotation": "Bidders should submit no more than ten (10) double-sided pages (excluding the required forms and attachments) of narrative",
+      "summary": "Narrative responses should not exceed ten double-sided pages, excluding forms and attachments.",
+      "scope": "bidder narrative excluding forms and attachments",
+      "comparisonOperator": "maximum",
+      "materialDates": [],
+      "materialNumbers": [
+        {
+          "role": "page_limit",
+          "raw": "ten (10) double-sided pages",
+          "normalized": 10,
+          "unit": "double_sided_pages",
+          "comparisonOperator": "maximum",
+          "scope": "bidder narrative excluding required forms and attachments"
+        }
+      ],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 22,
+        "section": "7.2.1 Document Pages"
+      }
+    },
+    {
+      "id": "original-form-format",
+      "candidateId": "fac115-phase9-original-form-format",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_human_confirmation",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 23,
+      "section": "7.2.2 File Format Restrictions",
+      "exactQuotation": "must be completed, and submitted in their original formats, NOT scanned and submitted as PDF or other file types.",
+      "summary": "Provided forms had to remain in their original formats and not be converted to PDF.",
+      "scope": "Commonwealth-provided response forms",
+      "comparisonOperator": "not_applicable",
+      "materialDates": [],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 23,
+        "section": "7.2.2 File Format Restrictions"
+      }
+    },
+    {
+      "id": "security-company-experience",
+      "candidateId": "fac115-phase9-security-company-experience",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_company_artifact",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 9,
+      "section": "3.1 Company Experience",
+      "exactQuotation": "Bidders must have been in the business of providing Security Services for a minimum of three (3) years",
+      "summary": "Security Services bidders needed at least three years in that business.",
+      "scope": "Category 1 security-services bidder",
+      "comparisonOperator": "minimum",
+      "materialDates": [],
+      "materialNumbers": [
+        {
+          "role": "experience_minimum",
+          "raw": "minimum of three (3) years",
+          "normalized": 3,
+          "unit": "years",
+          "comparisonOperator": "minimum",
+          "scope": "Category 1 security-services business experience"
+        }
+      ],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 9,
+        "section": "3.1 Company Experience"
+      }
+    },
+    {
+      "id": "watch-guard-license-attachment",
+      "candidateId": "fac115-phase9-watch-guard-license-attachment",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_company_artifact",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 10,
+      "section": "3.2 Certifications and Licenses",
+      "exactQuotation": "Bidders for Security Services must include a pdf attachment of their current Watch Guard Manager License or certification(s) by the Mass Certification Unit with their bid.",
+      "summary": "Category 1 bidders had to attach a PDF of a current Watch Guard Manager License or Massachusetts Certification Unit certification.",
+      "scope": "Category 1 security-services bidder",
+      "comparisonOperator": "not_applicable",
+      "materialDates": [],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 10,
+        "section": "3.2 Certifications and Licenses"
+      }
+    },
+    {
+      "id": "armed-personnel-license",
+      "candidateId": "fac115-phase9-armed-personnel-license",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_company_artifact",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 10,
+      "section": "3.2 Certifications and Licenses",
+      "exactQuotation": "Armed personnel must hold a current Massachusetts Firearms License and attend training",
+      "summary": "Armed personnel needed a current Massachusetts Firearms License and training.",
+      "scope": "armed security personnel",
+      "comparisonOperator": "not_applicable",
+      "materialDates": [],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 10,
+        "section": "3.2 Certifications and Licenses"
+      }
+    },
+    {
+      "id": "replacement-guard-pool",
+      "candidateId": "fac115-phase9-replacement-guard-pool",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_human_confirmation",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 10,
+      "section": "3.2.2 Capacity Plan",
+      "exactQuotation": "Bidder’s must have a pool of trained and/or cross-trained replacement security guards or PI’s who can be called upon in an emergency situation or for extra coverage as needed.",
+      "summary": "Bidders needed a pool of trained or cross-trained replacement guards for emergencies or extra coverage.",
+      "scope": "Category 1 security guards and applicable PI coverage",
+      "comparisonOperator": "not_applicable",
+      "materialDates": [],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 10,
+        "section": "3.2.2 Capacity Plan"
+      }
+    },
+    {
+      "id": "references-three-to-five",
+      "candidateId": "fac115-phase9-references-three-to-five",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_company_artifact",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 11,
+      "section": "3.6 References",
+      "exactQuotation": "Bidders must list between three (3) and five (5) business references.",
+      "summary": "Bidders had to list three to five business references; fewer than three valid-email references could cause disqualification.",
+      "scope": "bidder business references",
+      "comparisonOperator": "range",
+      "materialDates": [],
+      "materialNumbers": [
+        {
+          "role": "reference_count",
+          "raw": "between three (3) and five (5)",
+          "normalized": 3,
+          "unit": "business_references",
+          "comparisonOperator": "range",
+          "scope": "bidder references; upper bound is 5"
+        }
+      ],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 11,
+        "section": "3.6 References"
+      }
+    },
+    {
+      "id": "geographic-coverage",
+      "candidateId": "fac115-phase9-geographic-coverage",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_human_confirmation",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 14,
+      "section": "4.7 Geographic Coverage",
+      "exactQuotation": "Each Bidder must indicate on their Attachment A Bidder Response Form in their bid, the counties that their service will cover or alternatively if they will provide services to cover the entire State.",
+      "summary": "Attachment A had to identify covered counties or statewide coverage.",
+      "scope": "Attachment A service counties or statewide coverage",
+      "comparisonOperator": "not_applicable",
+      "materialDates": [],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 14,
+        "section": "4.7 Geographic Coverage"
+      }
+    },
+    {
+      "id": "price-sheet-v2",
+      "candidateId": "fac115-phase9-price-sheet-v2",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_company_artifact",
+      "sourceFile": "official-solicitation-page.html",
+      "renderedPage": 1,
+      "section": "Amendment 13",
+      "exactQuotation": "Update to Attachment B",
+      "summary": "The active price workbook was Attachment B v2 dated April 8, 2022.",
+      "scope": "active Attachment B price workbook",
+      "comparisonOperator": "not_applicable",
+      "materialDates": [],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "html",
+        "originalFile": "official-solicitation-page.html",
+        "renderedPage": 1,
+        "location": "Amendment 13"
+      }
+    },
+    {
+      "id": "price-components",
+      "candidateId": "fac115-phase9-price-components",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_company_artifact",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 17,
+      "section": "4.10.2 Security and Private Investigative Services",
+      "exactQuotation": "Hourly rates are inclusive ceiling rates. Use Attachment B Price Sheet Cost Table",
+      "summary": "Attachment B pricing covered weekday/night/weekend, holiday, basic guard, wanding, armed, supervisor, and volume discount components.",
+      "scope": "Category 1 security-services price components",
+      "comparisonOperator": "not_applicable",
+      "materialDates": [],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 17,
+        "section": "4.10.2 Security and Private Investigative Services"
+      }
+    },
+    {
+      "id": "prompt-payment-form",
+      "candidateId": "fac115-phase9-prompt-payment-form",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_company_artifact",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 18,
+      "section": "4.10.8 Prompt Pay Discount",
+      "exactQuotation": "Bidders must submit agreeable terms on the Prompt Payment Discount Form (Attachment E), included on the Bid",
+      "summary": "Bidders had to submit Attachment E prompt-payment terms unless the requirement was waived for documented hardship.",
+      "scope": "Attachment E bidder response",
+      "comparisonOperator": "not_applicable",
+      "materialDates": [],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 18,
+        "section": "4.10.8 Prompt Pay Discount"
+      }
+    },
+    {
+      "id": "sdp-form-and-minimum",
+      "candidateId": "fac115-phase9-sdp-form-and-minimum",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_company_artifact",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 19,
+      "section": "5 Supplier Diversity Plan",
+      "exactQuotation": "The minimum total SDP Commitment acceptable in responses to this solicitation shall be 1%.",
+      "summary": "Attachment D was required and the minimum acceptable SDP commitment was 1 percent.",
+      "scope": "Supplier Diversity Plan response",
+      "comparisonOperator": "minimum",
+      "materialDates": [],
+      "materialNumbers": [
+        {
+          "role": "percentage",
+          "raw": "1%",
+          "normalized": 0.01,
+          "unit": "fraction",
+          "comparisonOperator": "minimum",
+          "scope": "total SDP commitment"
+        }
+      ],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 19,
+        "section": "5 Supplier Diversity Plan"
+      }
+    },
+    {
+      "id": "sdp-evaluation-weight",
+      "candidateId": "fac115-phase9-sdp-evaluation-weight",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "none_identified",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 20,
+      "section": "5 Evaluation of SDP Forms",
+      "exactQuotation": "at least 25% of the total available evaluation points (100) for this bid solicitation shall be allocated to the evaluation of the SDP Plan submissions",
+      "summary": "At least 25 percent of the 100 evaluation points were allocated to SDP Plan submissions.",
+      "scope": "Supplier Diversity Plan evaluation",
+      "comparisonOperator": "minimum",
+      "materialDates": [],
+      "materialNumbers": [
+        {
+          "role": "percentage",
+          "raw": "at least 25% of 100 evaluation points",
+          "normalized": 0.25,
+          "unit": "fraction_of_total_points",
+          "comparisonOperator": "minimum",
+          "scope": "SDP Plan evaluation allocation"
+        }
+      ],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 20,
+        "section": "5 Evaluation of SDP Forms"
+      }
+    },
+    {
+      "id": "quote-duration",
+      "candidateId": "fac115-phase9-quote-duration",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_human_confirmation",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 23,
+      "section": "7.3.4 Minimum Quote Duration",
+      "exactQuotation": "Bidders’ Quotes to this RFR must remain in effect for at least 90 days from the date of Quote submission.",
+      "summary": "Quotes had to remain in effect for at least 90 days after submission.",
+      "scope": "FAC115 quote validity",
+      "comparisonOperator": "minimum",
+      "materialDates": [],
+      "materialNumbers": [
+        {
+          "role": "duration",
+          "raw": "at least 90 days",
+          "normalized": 90,
+          "unit": "days",
+          "comparisonOperator": "minimum",
+          "scope": "quote validity after submission"
+        }
+      ],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 23,
+        "section": "7.3.4 Minimum Quote Duration"
+      }
+    },
+    {
+      "id": "post-award-forms-not-bid-attachments",
+      "candidateId": "fac115-phase9-post-award-forms-not-bid-attachments",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "none_identified",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 24,
+      "section": "8.1 Required Forms",
+      "exactQuotation": "DO NOT SUBMIT THESE FORMS UNTIL INSTRUCTED TO DO SO.",
+      "summary": "Standard contract, terms, CASL, W-9, and EFT forms were post-award forms and were not to be submitted until requested.",
+      "scope": "post-award Commonwealth forms",
+      "comparisonOperator": "not_applicable",
+      "materialDates": [],
+      "materialNumbers": [],
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 24,
+        "section": "8.1 Required Forms"
+      }
+    },
+    {
+      "id": "price-workbook-union-markup",
+      "candidateId": "fac115-phase9-price-workbook-union-markup",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "active",
+      "expectedProofRequirement": "requires_company_artifact",
+      "sourceFile": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.pdf",
+      "renderedPage": 3,
+      "section": "Guard Services pricing grid",
+      "exactQuotation": "Union Rate Markup % (must list, even if 0%)",
+      "summary": "The amended Category 1 price workbook requires a union-rate markup percentage, including zero.",
+      "scope": "Guard Services pricing workbook",
+      "comparisonOperator": "minimum",
+      "materialDates": [],
+      "materialNumbers": [
+        {
+          "role": "percentage",
+          "raw": "0%",
+          "normalized": 0,
+          "unit": "fraction",
+          "comparisonOperator": "minimum",
+          "scope": "union rate markup entry; a value must be listed even when zero"
+        }
+      ],
+      "nativeReference": {
+        "kind": "xlsx",
+        "originalFile": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.xlsx",
+        "renditionFile": "FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.pdf",
+        "renderedPage": 3,
+        "sheetName": "Guard Services",
+        "cellRange": "I11"
+      }
+    }
+  ],
+  "coverage": {
+    "genuineUnresolvedConflictCaseIds": [],
+    "parserUncertainCaseIds": [],
+    "promptInjectionCaseIds": []
+  }
+}

@@ -1,0 +1,574 @@
+{
+  "version": "massachusetts-fac115-candidate-mapping-failures-v1",
+  "generatedAt": "2026-07-23T04:41:41.109Z",
+  "providerCalls": 0,
+  "expectedAnswerHash": "8f97d2df60b5b82fbf126520f08b1c5684b1edeaa81f46e37f944c7723274db5",
+  "populationHash": "f4e4c37056de810a475852fa8816403a65c661c03a2c269fbfb8662d871a9348",
+  "failedBindings": 15,
+  "traces": [
+    {
+      "answerId": "conference-old-date",
+      "expectedCandidateId": "fac115-phase9-conference-old-date",
+      "sourceFile": "official-solicitation-page.html",
+      "renderedPage": 1,
+      "exactQuotation": "Pre-Bid Conference changed from \"Thursday, March 31, 2022; 1:00- 2:00 PM.",
+      "category": "no_exact_extracted_candidate",
+      "quotationMatches": [],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "04eac4d3-9e80-4105-8d06-8bed89d7886c",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 1,
+          "title": "Pre-Bid Conference",
+          "overlap": 2
+        },
+        {
+          "candidateId": "6c417e3f-c14c-461d-9f72-79517649fcab",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 1,
+          "title": "Bid Opening Date",
+          "overlap": 2
+        },
+        {
+          "candidateId": "b0ca3b44-1e10-49f1-95a6-7a62a269ec96",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 1,
+          "title": "FAC115_Attachment_A_Bidder Response Form_03.29.2022",
+          "overlap": 2
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    },
+    {
+      "answerId": "conference-active-date",
+      "expectedCandidateId": "fac115-phase9-conference-active-date",
+      "sourceFile": "official-solicitation-page.html",
+      "renderedPage": 1,
+      "exactQuotation": "to \"Tuesday, April 5, 2022; 1:00 - 2:00 PM (updated from 3/31/22 date).",
+      "category": "no_exact_extracted_candidate",
+      "quotationMatches": [],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "04eac4d3-9e80-4105-8d06-8bed89d7886c",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 1,
+          "title": "Pre-Bid Conference",
+          "overlap": 4
+        },
+        {
+          "candidateId": "6c417e3f-c14c-461d-9f72-79517649fcab",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 1,
+          "title": "Bid Opening Date",
+          "overlap": 2
+        },
+        {
+          "candidateId": "b0ca3b44-1e10-49f1-95a6-7a62a269ec96",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 1,
+          "title": "FAC115_Attachment_A_Bidder Response Form_03.29.2022",
+          "overlap": 2
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    },
+    {
+      "answerId": "question-deadline",
+      "expectedCandidateId": "fac115-phase9-question-deadline",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 6,
+      "exactQuotation": "Deadline for submission of written questions through COMMBUYS “Bid Q&A” April 7, 2022, 2:00 PM EST",
+      "category": "no_exact_extracted_candidate",
+      "quotationMatches": [],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "9c65dcf6-6fd0-4ffe-8148-d9af83211d7c",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 7,
+          "title": "Submit written questions by Q&A deadline",
+          "overlap": 4
+        },
+        {
+          "candidateId": "71a3abc5-9927-4896-8833-96528479c7a3",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 7,
+          "title": "Use COMMBUYS Bid Q&A only for questions",
+          "overlap": 3
+        },
+        {
+          "candidateId": "d894667c-4634-4891-9157-99c5c3b067bf",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 8,
+          "title": "Allow sufficient upload time before deadline",
+          "overlap": 3
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    },
+    {
+      "answerId": "narrative-page-limit",
+      "expectedCandidateId": "fac115-phase9-narrative-page-limit",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 22,
+      "exactQuotation": "Bidders should submit no more than ten (10) double-sided pages (excluding the required forms and attachments) of narrative",
+      "category": "no_exact_extracted_candidate",
+      "quotationMatches": [],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "5cf97f33-d73d-4ec9-9ae2-6aa1881e4fab",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 24,
+          "title": "Submit post-award forms within seven days of award notification",
+          "overlap": 4
+        },
+        {
+          "candidateId": "d894667c-4634-4891-9157-99c5c3b067bf",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 8,
+          "title": "Allow sufficient upload time before deadline",
+          "overlap": 4
+        },
+        {
+          "candidateId": "fa9f8691-4af5-4dcc-a99f-6e64e12f06c3",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 24,
+          "title": "Submit required post-award forms if successful",
+          "overlap": 4
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    },
+    {
+      "answerId": "original-form-format",
+      "expectedCandidateId": "fac115-phase9-original-form-format",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 23,
+      "exactQuotation": "must be completed, and submitted in their original formats, NOT scanned and submitted as PDF or other file types.",
+      "category": "no_exact_extracted_candidate",
+      "quotationMatches": [],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "fa9f8691-4af5-4dcc-a99f-6e64e12f06c3",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 24,
+          "title": "Submit required post-award forms if successful",
+          "overlap": 4
+        },
+        {
+          "candidateId": "14972e42-4763-4a6a-a50f-f190804ef9bb",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 17,
+          "title": "Do not convert fence rental pricing to PDF",
+          "overlap": 3
+        },
+        {
+          "candidateId": "a869d5b7-1653-4e18-bb35-3788c20ec139",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 4,
+          "title": "Completed Bidder Response Form",
+          "overlap": 3
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    },
+    {
+      "answerId": "security-company-experience",
+      "expectedCandidateId": "fac115-phase9-security-company-experience",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 9,
+      "exactQuotation": "Bidders must have been in the business of providing Security Services for a minimum of three (3) years",
+      "category": "candidate_rejected_after_printed_page_label",
+      "quotationMatches": [
+        {
+          "candidateId": "1b00643a-c3fb-4316-a942-7fb01526753e",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 5,
+          "expectedRenderedPage": 9,
+          "title": "Business duration requirement for security, PI, and fencing rental services",
+          "evidenceQuote": "must have been in the business of providing Security Services for a minimum of three (3) years"
+        }
+      ],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "1b00643a-c3fb-4316-a942-7fb01526753e",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 5,
+          "title": "Business duration requirement for security, PI, and fencing rental services",
+          "overlap": 12
+        },
+        {
+          "candidateId": "fbf9b1e5-c946-48ae-84a9-4c45cd487a41",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 6,
+          "title": "Minimum business references",
+          "overlap": 6
+        },
+        {
+          "candidateId": "521c133b-8953-4f90-b0f1-b4e3662e742e",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 7,
+          "title": "Bidder qualifications description for Security Services",
+          "overlap": 5
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    },
+    {
+      "answerId": "watch-guard-license-attachment",
+      "expectedCandidateId": "fac115-phase9-watch-guard-license-attachment",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 10,
+      "exactQuotation": "Bidders for Security Services must include a pdf attachment of their current Watch Guard Manager License or certification(s) by the Mass Certification Unit with their bid.",
+      "category": "candidate_rejected_after_printed_page_label",
+      "quotationMatches": [
+        {
+          "candidateId": "2240a5f3-8dd5-4ff6-b2db-d6ad704759ee",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 5,
+          "expectedRenderedPage": 10,
+          "title": "Watch Guard Manager License or certification attachment",
+          "evidenceQuote": "must include a pdf attachment of their current Watch Guard Manager License"
+        }
+      ],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "2240a5f3-8dd5-4ff6-b2db-d6ad704759ee",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 5,
+          "title": "Watch Guard Manager License or certification attachment",
+          "overlap": 16
+        },
+        {
+          "candidateId": "038120c6-2939-4711-bc8c-b2e1747e8d52",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 17,
+          "title": "Use Attachment B Price Sheet/Cost Table for security services pricing",
+          "overlap": 8
+        },
+        {
+          "candidateId": "d1be741f-456e-45d9-93e4-ee1c13ee28f2",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 5,
+          "title": "Private Investigator’s License attachment",
+          "overlap": 8
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    },
+    {
+      "answerId": "armed-personnel-license",
+      "expectedCandidateId": "fac115-phase9-armed-personnel-license",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 10,
+      "exactQuotation": "Armed personnel must hold a current Massachusetts Firearms License and attend training",
+      "category": "candidate_rejected_after_printed_page_label",
+      "quotationMatches": [
+        {
+          "candidateId": "354cb20a-f810-4cc1-9d10-13212badc058",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 5,
+          "expectedRenderedPage": 10,
+          "title": "Armed personnel firearms license and training",
+          "evidenceQuote": "Armed personnel must hold a current Massachusetts Firearms License and attend training"
+        }
+      ],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "354cb20a-f810-4cc1-9d10-13212badc058",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 5,
+          "title": "Armed personnel firearms license and training",
+          "overlap": 10
+        },
+        {
+          "candidateId": "2240a5f3-8dd5-4ff6-b2db-d6ad704759ee",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 5,
+          "title": "Watch Guard Manager License or certification attachment",
+          "overlap": 3
+        },
+        {
+          "candidateId": "484baad2-bb76-4407-a382-9e301357936e",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 17,
+          "title": "Include specified security service price components",
+          "overlap": 3
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    },
+    {
+      "answerId": "replacement-guard-pool",
+      "expectedCandidateId": "fac115-phase9-replacement-guard-pool",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 10,
+      "exactQuotation": "Bidder’s must have a pool of trained and/or cross-trained replacement security guards or PI’s who can be called upon in an emergency situation or for extra coverage as needed.",
+      "category": "no_exact_extracted_candidate",
+      "quotationMatches": [],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "3ef45fb1-0c3d-4fe0-b6fc-bf248a4075ba",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 5,
+          "title": "Capacity plan and replacement personnel pool",
+          "overlap": 13
+        },
+        {
+          "candidateId": "1b00643a-c3fb-4316-a942-7fb01526753e",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 5,
+          "title": "Business duration requirement for security, PI, and fencing rental services",
+          "overlap": 5
+        },
+        {
+          "candidateId": "521c133b-8953-4f90-b0f1-b4e3662e742e",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 7,
+          "title": "Bidder qualifications description for Security Services",
+          "overlap": 5
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    },
+    {
+      "answerId": "references-three-to-five",
+      "expectedCandidateId": "fac115-phase9-references-three-to-five",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 11,
+      "exactQuotation": "Bidders must list between three (3) and five (5) business references.",
+      "category": "candidate_rejected_after_printed_page_label",
+      "quotationMatches": [
+        {
+          "candidateId": "fbf9b1e5-c946-48ae-84a9-4c45cd487a41",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 6,
+          "expectedRenderedPage": 11,
+          "title": "Minimum business references",
+          "evidenceQuote": "Bidders must list between three (3) and five (5) business references"
+        }
+      ],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "fbf9b1e5-c946-48ae-84a9-4c45cd487a41",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 6,
+          "title": "Minimum business references",
+          "overlap": 11
+        },
+        {
+          "candidateId": "1b00643a-c3fb-4316-a942-7fb01526753e",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 5,
+          "title": "Business duration requirement for security, PI, and fencing rental services",
+          "overlap": 4
+        },
+        {
+          "candidateId": "521c133b-8953-4f90-b0f1-b4e3662e742e",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 7,
+          "title": "Bidder qualifications description for Security Services",
+          "overlap": 4
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    },
+    {
+      "answerId": "geographic-coverage",
+      "expectedCandidateId": "fac115-phase9-geographic-coverage",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 14,
+      "exactQuotation": "Each Bidder must indicate on their Attachment A Bidder Response Form in their bid, the counties that their service will cover or alternatively if they will provide services to cover the entire State.",
+      "category": "candidate_rejected_after_printed_page_label",
+      "quotationMatches": [
+        {
+          "candidateId": "49e5cd3c-53d8-4402-b510-f13c5de0aa5b",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 9,
+          "expectedRenderedPage": 14,
+          "title": "Geographic coverage selection",
+          "evidenceQuote": "Each Bidder must indicate on their Attachment A Bidder Response Form"
+        }
+      ],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "49e5cd3c-53d8-4402-b510-f13c5de0aa5b",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 9,
+          "title": "Geographic coverage selection",
+          "overlap": 18
+        },
+        {
+          "candidateId": "3ef45fb1-0c3d-4fe0-b6fc-bf248a4075ba",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 5,
+          "title": "Capacity plan and replacement personnel pool",
+          "overlap": 8
+        },
+        {
+          "candidateId": "038120c6-2939-4711-bc8c-b2e1747e8d52",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 17,
+          "title": "Use Attachment B Price Sheet/Cost Table for security services pricing",
+          "overlap": 7
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    },
+    {
+      "answerId": "price-sheet-v2",
+      "expectedCandidateId": "fac115-phase9-price-sheet-v2",
+      "sourceFile": "official-solicitation-page.html",
+      "renderedPage": 1,
+      "exactQuotation": "Update to Attachment B",
+      "category": "no_exact_extracted_candidate",
+      "quotationMatches": [],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "04eac4d3-9e80-4105-8d06-8bed89d7886c",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 1,
+          "title": "Pre-Bid Conference",
+          "overlap": 2
+        },
+        {
+          "candidateId": "1bb80fec-8418-4c7d-9c4f-0921f2dd513c",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 1,
+          "title": "FAC115_Attachment_E_Prompt_Pay_Discount_Form_03.29.2022",
+          "overlap": 2
+        },
+        {
+          "candidateId": "24d0154a-93d6-4187-9993-a05c4f9b67ec",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 1,
+          "title": "FAC115_Attachment_D_SDP_Form_03.29.2022",
+          "overlap": 2
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    },
+    {
+      "answerId": "price-components",
+      "expectedCandidateId": "fac115-phase9-price-components",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 17,
+      "exactQuotation": "Hourly rates are inclusive ceiling rates. Use Attachment B Price Sheet Cost Table",
+      "category": "no_exact_extracted_candidate",
+      "quotationMatches": [],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "484baad2-bb76-4407-a382-9e301357936e",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 17,
+          "title": "Include specified security service price components",
+          "overlap": 15
+        },
+        {
+          "candidateId": "038120c6-2939-4711-bc8c-b2e1747e8d52",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 17,
+          "title": "Use Attachment B Price Sheet/Cost Table for security services pricing",
+          "overlap": 7
+        },
+        {
+          "candidateId": "4faa5726-372e-48d8-b166-4d1fabfdae5a",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 17,
+          "title": "Complete Attachment C for fence rental",
+          "overlap": 5
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    },
+    {
+      "answerId": "sdp-evaluation-weight",
+      "expectedCandidateId": "fac115-phase9-sdp-evaluation-weight",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 20,
+      "exactQuotation": "at least 25% of the total available evaluation points (100) for this bid solicitation shall be allocated to the evaluation of the SDP Plan submissions",
+      "category": "no_exact_extracted_candidate",
+      "quotationMatches": [],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "9698c198-fb77-4f35-a9f2-e61f4f1a593a",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 19,
+          "title": "Minimum SDP commitment is 1 percent",
+          "overlap": 6
+        },
+        {
+          "candidateId": "88b4cc13-f62d-4aa6-a253-d8e96b156636",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 19,
+          "title": "Complete and attach SDP Plan Form Attachment D",
+          "overlap": 3
+        },
+        {
+          "candidateId": "323110dd-f17f-4934-b06b-d6d2089502ce",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 18,
+          "title": "Employees must meet appearance and background check requirements",
+          "overlap": 2
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    },
+    {
+      "answerId": "post-award-forms-not-bid-attachments",
+      "expectedCandidateId": "fac115-phase9-post-award-forms-not-bid-attachments",
+      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 24,
+      "exactQuotation": "DO NOT SUBMIT THESE FORMS UNTIL INSTRUCTED TO DO SO.",
+      "category": "accepted_candidate_wrong_rendered_page",
+      "quotationMatches": [
+        {
+          "candidateId": "59176913-88e3-4c8f-bc64-e935e75fa6fc",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 34,
+          "expectedRenderedPage": 24,
+          "title": "Do not submit certain standard forms until instructed",
+          "evidenceQuote": "DO NOT SUBMIT THESE FORMS UNTIL INSTRUCTED TO DO SO"
+        }
+      ],
+      "lexicalRecoveryCandidates": [
+        {
+          "candidateId": "59176913-88e3-4c8f-bc64-e935e75fa6fc",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 34,
+          "title": "Do not submit certain standard forms until instructed",
+          "overlap": 9
+        },
+        {
+          "candidateId": "fa9f8691-4af5-4dcc-a99f-6e64e12f06c3",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 24,
+          "title": "Submit required post-award forms if successful",
+          "overlap": 9
+        },
+        {
+          "candidateId": "5cf97f33-d73d-4ec9-9ae2-6aa1881e4fab",
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 24,
+          "title": "Submit post-award forms within seven days of award notification",
+          "overlap": 4
+        }
+      ],
+      "acceptedAsBinding": false,
+      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
+    }
+  ]
+}

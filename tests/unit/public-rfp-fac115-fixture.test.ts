@@ -28,6 +28,23 @@ const answers = JSON.parse(readFileSync(resolve(root, 'known-answers-draft.json'
     expectedPrecedenceStatus: string;
   }>;
 };
+const phase9Policy = JSON.parse(
+  readFileSync(resolve(root, 'phase9-expected-answer-policy-v1.json'), 'utf8'),
+) as {
+  version: string;
+  pilotAnswerIds: string[];
+  supplementalExpected: Array<{
+    id: string;
+    sourceFile: string;
+    renderedPage: number;
+    nativeReference: { kind: string; sheetName?: string; cellRange?: string };
+  }>;
+  coverage: {
+    genuineUnresolvedConflictCaseIds: string[];
+    parserUncertainCaseIds: string[];
+    promptInjectionCaseIds: string[];
+  };
+};
 
 describe('Massachusetts FAC115 public fixture preflight', () => {
   it('pins the exact official public source bytes', () => {
@@ -87,5 +104,27 @@ describe('Massachusetts FAC115 public fixture preflight', () => {
         expect.objectContaining({ id: 'post-award-forms-not-bid-attachments' }),
       ]),
     );
+  });
+
+  it('adds a Phase 9 native-workbook contract without changing the historical expected answers', () => {
+    expect(phase9Policy.version).toBe('massachusetts-fac115-phase9-policy-v1');
+    expect(phase9Policy.pilotAnswerIds).toHaveLength(11);
+    expect(phase9Policy.supplementalExpected).toEqual([
+      expect.objectContaining({
+        id: 'price-workbook-union-markup',
+        sourceFile: 'FAC115_Attachment_B_Price_Sheet_Cost_Table_v2_04.08.2022.pdf',
+        renderedPage: 3,
+        nativeReference: expect.objectContaining({
+          kind: 'xlsx',
+          sheetName: 'Guard Services',
+          cellRange: 'I11',
+        }),
+      }),
+    ]);
+    expect(phase9Policy.coverage).toEqual({
+      genuineUnresolvedConflictCaseIds: [],
+      parserUncertainCaseIds: [],
+      promptInjectionCaseIds: [],
+    });
   });
 });

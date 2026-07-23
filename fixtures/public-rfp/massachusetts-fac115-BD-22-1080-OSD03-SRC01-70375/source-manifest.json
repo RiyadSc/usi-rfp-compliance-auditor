@@ -11,8 +11,9 @@
     "historicalClosedSolicitation": true,
     "liveReady": false,
     "blockers": [
-      "Live verification attempted all 209 accepted candidates under the $9.27 expected-budget authorization; 8 semantic-contract failures and 5/22 known-answer matches mean it is not a qualified pass.",
-      "Known-answer matchers need tightening against extracted candidate text/document alignment before rescored qualification."
+      "Phase 9 exact historical candidate binding succeeds for only 8 of 23 answers; missing and printed-page mappings fail closed and are not fuzzily rebased.",
+      "The official source has no genuine unresolved conflict, parser-uncertain planted obligation, or malicious prompt-injection passage required by the proposed pilot coverage.",
+      "The reserved pilot maximum does not fit existing Phase 3 or Phase 4 headroom, and no separate Phase 9 provider-call budget is authorized."
     ]
   },
   "sources": [
