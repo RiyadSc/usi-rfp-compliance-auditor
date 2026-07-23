@@ -51,8 +51,24 @@ The historical 22 answers remain unchanged. `massachusetts-fac115-phase9-policy-
 
 The official package contains no genuine unresolved amendment conflict, parser-uncertain planted requirement, or malicious prompt-injection passage. Those absences are recorded as coverage gaps. They are not filled with invented source text.
 
+A separate `phase9-security-control-companion-v1` points to the already frozen synthetic `verification-cases-v2` conflict, parser-uncertainty, and injection controls. It is explicitly marked as non-Massachusetts, ineligible for FAC115 source metrics, and ineligible for the FAC115 live pilot.
+
+## Provider-free rendered-page correction
+
+`massachusetts-fac115-rendered-page-reanchor-v1` validates every historical candidate's own quotation against every rendered page in the same document. It:
+
+- does not read or use expected answers;
+- changes a page only when one exact or normalized-exact match exists;
+- refuses zero-match and multiple-match cases;
+- preserves the historical extraction artifact;
+- records the original page, resolved page, all matching pages, and a stable manifest hash.
+
+This correction recovers five expected-answer bindings, increasing exact mappings from `8/23` to `13/23`. Ten expected requirements remain extraction misses or ambiguous. No candidate was generated from an expected answer.
+
 ## Artifacts
 
 - `fixtures/public-rfp/massachusetts-fac115-BD-22-1080-OSD03-SRC01-70375/phase9-expected-answers-v1.json`
 - `artifacts/evaluation/phase9-fac115-stage0-readiness-v1.json`
 - `artifacts/evaluation/phase9-fac115-candidate-mapping-failures-v1.json`
+- `artifacts/evaluation/phase9-fac115-rendered-page-reanchor-v1.json`
+- `fixtures/public-rfp/massachusetts-fac115-BD-22-1080-OSD03-SRC01-70375/phase9-security-control-companion-v1.json`

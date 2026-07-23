@@ -158,6 +158,8 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] PDF, DOCX, and XLSX evidence retains exact native provenance; spreadsheet evidence includes workbook, sheet, and cell range rather than relying on flattened PDF text.
 - [x] The historical expected answers remain unchanged; the versioned Phase 9 overlay adds separate source, precedence, proof, scope, date, number, and native-provenance expectations.
 - [x] Candidate-to-answer binding requires the same document, rendered page, and exact or normalized-exact quotation; fuzzy or printed-page recovery cannot silently become scored evidence.
+- [x] Rendered-page remediation uses only each candidate's own quote, accepts only a unique exact/normalized-exact page, records every resolution, and never consults expected answers.
+- [x] Synthetic conflict, parser-uncertainty, and prompt-injection controls are explicitly ineligible for FAC115 source metrics and cannot be represented as Commonwealth content.
 - [x] Missing candidate mappings and absent source-native conflict, parser-uncertainty, and prompt-injection cases remain visible blockers rather than fabricated Commonwealth content.
 - [x] The Stage 0 harness fails closed before provider construction when live flags are present, candidate bindings are incomplete, coverage is absent, or budget authorization is insufficient.
 - [x] Workspace authorization, RLS, cross-workspace isolation, deterministic evaluator, citation, date, number, and secret checks pass.

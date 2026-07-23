@@ -8,7 +8,8 @@ The official sources and renditions are hash-valid and ready for deterministic c
 
 - all `23/23` Phase 9 expected quotations resolve on the exact rendered page;
 - the native workbook citation resolves to `Guard Services!I11` and rendered page `3`;
-- only `8/23` expected answers currently have an accepted historical candidate with the same document, rendered page, and exact or normalized-exact quote;
+- a provider-free own-quote re-anchor recovered five printed-page failures; `13/23` expected answers now have an accepted historical candidate with the same document, rendered page, and exact or normalized-exact quote;
+- ten expected answers remain extraction misses or ambiguous and are not synthesized from the answer sheet;
 - the official package has no genuine unresolved conflict, parser-uncertain planted requirement, or malicious prompt-injection passage;
 - the reserved pilot cost does not fit the existing Phase 3 or Phase 4 headroom, and no separate Phase 9 provider-call budget is authorized.
 
@@ -17,6 +18,8 @@ Phase 9 artifacts:
 - Expected answers: `phase9-expected-answers-v1.json`
 - Readiness: `artifacts/evaluation/phase9-fac115-stage0-readiness-v1.json`
 - Mapping failures: `artifacts/evaluation/phase9-fac115-candidate-mapping-failures-v1.json`
+- Rendered-page resolutions: `artifacts/evaluation/phase9-fac115-rendered-page-reanchor-v1.json`
+- Synthetic-only security controls: `phase9-security-control-companion-v1.json`
 
 The Phase 9 overlay does not rewrite the historical expected answers or accept fuzzy/printed-page recovery as scored evidence.
 

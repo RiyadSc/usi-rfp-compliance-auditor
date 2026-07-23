@@ -20,13 +20,12 @@ Result: **stopped before provider construction**
 
 ### Historical candidate-to-answer binding
 
-Only `8/23` Phase 9 answers have an accepted historical candidate with the same source document, rendered page, and exact/normalized quotation. Fifteen fail closed:
+The source-driven own-quote correction recovers five uniquely resolvable printed-page candidates. `13/23` Phase 9 answers now have an accepted historical candidate with the same source document, rendered page, and exact/normalized quotation. Ten still fail closed:
 
 - Nine have no exact extracted candidate: `conference-old-date`, `conference-active-date`, `question-deadline`, `narrative-page-limit`, `original-form-format`, `replacement-guard-pool`, `price-sheet-v2`, `price-components`, and `sdp-evaluation-weight`.
-- Five were extracted using the RFR's printed internal page label and then correctly rejected by the rendered-page quote gate: `security-company-experience`, `watch-guard-license-attachment`, `armed-personnel-license`, `references-three-to-five`, and `geographic-coverage`.
-- One accepted candidate uses printed page `34` while the frozen citation is rendered page `24`: `post-award-forms-not-bid-attachments`. It is not silently rebased.
+- One accepted candidate's quotation occurs on both rendered pages `24` and `34`: `post-award-forms-not-bid-attachments`. The correction cannot select one without consulting the expected answer, so it remains ambiguous.
 
-The structured per-candidate trace is `artifacts/evaluation/phase9-fac115-candidate-mapping-failures-v1.json`. Lexical recovery candidates are diagnostic only and never become scored evidence.
+The structured per-candidate trace is `artifacts/evaluation/phase9-fac115-candidate-mapping-failures-v1.json`. The source-driven re-anchor manifest is `artifacts/evaluation/phase9-fac115-rendered-page-reanchor-v1.json`. Lexical recovery candidates are diagnostic only and never become scored evidence.
 
 ### Required pilot coverage
 
@@ -36,7 +35,7 @@ The official source does not contain:
 - a planted parser-uncertain obligation; or
 - a malicious prompt-injection attempt.
 
-The existing synthetic security fixtures test all three provider-free, but Phase 9 says the live pilot must use only the frozen FAC115 fixture. Adding hostile or conflicting text would alter that fixture. The preflight therefore stops rather than pretending those controls are FAC115 cases.
+The existing synthetic security fixture tests all three provider-free. `phase9-security-control-companion-v1` now binds those cases explicitly while marking them non-Massachusetts and ineligible for FAC115 metrics or the live pilot. Phase 9 says the live pilot must use only the frozen FAC115 fixture, so the preflight still stops rather than pretending synthetic controls are FAC115 cases.
 
 ### Budget
 
@@ -63,9 +62,9 @@ Existing Phase 3 headroom is `$0.736785`; Phase 4 headroom is `$0.186361`. Neith
 
 A future pilot needs all of the following:
 
-1. A provider-neutral correction for rendered-page binding that does not rewrite the frozen answers or accept fuzzy citations.
-2. A documented resolution of the impossible source-native conflict/parser/injection coverage requirement, such as a separately labeled synthetic security-control companion that is not represented as Commonwealth content.
-3. A new frozen pilot candidate set and hash after those offline corrections.
+1. A fresh extraction or an explicitly verification-only pilot design for the nine missing requirements and one ambiguous citation.
+2. A documented decision changing the source-native conflict/parser/injection requirement if the separately labeled synthetic companion is acceptable.
+3. A new frozen pilot candidate set and hash after that decision.
 4. A separate explicit Phase 9/public-evaluation budget and provider-call authorization large enough for the complete reserved pilot.
 
 No historical provider output may be resumed or rescored as the new pilot.
