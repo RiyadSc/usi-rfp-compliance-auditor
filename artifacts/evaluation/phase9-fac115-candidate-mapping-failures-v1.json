@@ -1,10 +1,10 @@
 {
   "version": "massachusetts-fac115-candidate-mapping-failures-v1",
-  "generatedAt": "2026-07-23T04:41:41.109Z",
+  "generatedAt": "2026-07-23T05:01:21.133Z",
   "providerCalls": 0,
   "expectedAnswerHash": "8f97d2df60b5b82fbf126520f08b1c5684b1edeaa81f46e37f944c7723274db5",
   "populationHash": "f4e4c37056de810a475852fa8816403a65c661c03a2c269fbfb8662d871a9348",
-  "failedBindings": 15,
+  "failedBindings": 10,
   "traces": [
     {
       "answerId": "conference-old-date",
@@ -167,138 +167,9 @@
         },
         {
           "candidateId": "a869d5b7-1653-4e18-bb35-3788c20ec139",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 4,
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 9,
           "title": "Completed Bidder Response Form",
-          "overlap": 3
-        }
-      ],
-      "acceptedAsBinding": false,
-      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
-    },
-    {
-      "answerId": "security-company-experience",
-      "expectedCandidateId": "fac115-phase9-security-company-experience",
-      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
-      "renderedPage": 9,
-      "exactQuotation": "Bidders must have been in the business of providing Security Services for a minimum of three (3) years",
-      "category": "candidate_rejected_after_printed_page_label",
-      "quotationMatches": [
-        {
-          "candidateId": "1b00643a-c3fb-4316-a942-7fb01526753e",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 5,
-          "expectedRenderedPage": 9,
-          "title": "Business duration requirement for security, PI, and fencing rental services",
-          "evidenceQuote": "must have been in the business of providing Security Services for a minimum of three (3) years"
-        }
-      ],
-      "lexicalRecoveryCandidates": [
-        {
-          "candidateId": "1b00643a-c3fb-4316-a942-7fb01526753e",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 5,
-          "title": "Business duration requirement for security, PI, and fencing rental services",
-          "overlap": 12
-        },
-        {
-          "candidateId": "fbf9b1e5-c946-48ae-84a9-4c45cd487a41",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 6,
-          "title": "Minimum business references",
-          "overlap": 6
-        },
-        {
-          "candidateId": "521c133b-8953-4f90-b0f1-b4e3662e742e",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 7,
-          "title": "Bidder qualifications description for Security Services",
-          "overlap": 5
-        }
-      ],
-      "acceptedAsBinding": false,
-      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
-    },
-    {
-      "answerId": "watch-guard-license-attachment",
-      "expectedCandidateId": "fac115-phase9-watch-guard-license-attachment",
-      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
-      "renderedPage": 10,
-      "exactQuotation": "Bidders for Security Services must include a pdf attachment of their current Watch Guard Manager License or certification(s) by the Mass Certification Unit with their bid.",
-      "category": "candidate_rejected_after_printed_page_label",
-      "quotationMatches": [
-        {
-          "candidateId": "2240a5f3-8dd5-4ff6-b2db-d6ad704759ee",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 5,
-          "expectedRenderedPage": 10,
-          "title": "Watch Guard Manager License or certification attachment",
-          "evidenceQuote": "must include a pdf attachment of their current Watch Guard Manager License"
-        }
-      ],
-      "lexicalRecoveryCandidates": [
-        {
-          "candidateId": "2240a5f3-8dd5-4ff6-b2db-d6ad704759ee",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 5,
-          "title": "Watch Guard Manager License or certification attachment",
-          "overlap": 16
-        },
-        {
-          "candidateId": "038120c6-2939-4711-bc8c-b2e1747e8d52",
-          "acceptedByHistoricalQuoteGate": true,
-          "preliminaryPage": 17,
-          "title": "Use Attachment B Price Sheet/Cost Table for security services pricing",
-          "overlap": 8
-        },
-        {
-          "candidateId": "d1be741f-456e-45d9-93e4-ee1c13ee28f2",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 5,
-          "title": "Private Investigator’s License attachment",
-          "overlap": 8
-        }
-      ],
-      "acceptedAsBinding": false,
-      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
-    },
-    {
-      "answerId": "armed-personnel-license",
-      "expectedCandidateId": "fac115-phase9-armed-personnel-license",
-      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
-      "renderedPage": 10,
-      "exactQuotation": "Armed personnel must hold a current Massachusetts Firearms License and attend training",
-      "category": "candidate_rejected_after_printed_page_label",
-      "quotationMatches": [
-        {
-          "candidateId": "354cb20a-f810-4cc1-9d10-13212badc058",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 5,
-          "expectedRenderedPage": 10,
-          "title": "Armed personnel firearms license and training",
-          "evidenceQuote": "Armed personnel must hold a current Massachusetts Firearms License and attend training"
-        }
-      ],
-      "lexicalRecoveryCandidates": [
-        {
-          "candidateId": "354cb20a-f810-4cc1-9d10-13212badc058",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 5,
-          "title": "Armed personnel firearms license and training",
-          "overlap": 10
-        },
-        {
-          "candidateId": "2240a5f3-8dd5-4ff6-b2db-d6ad704759ee",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 5,
-          "title": "Watch Guard Manager License or certification attachment",
-          "overlap": 3
-        },
-        {
-          "candidateId": "484baad2-bb76-4407-a382-9e301357936e",
-          "acceptedByHistoricalQuoteGate": true,
-          "preliminaryPage": 17,
-          "title": "Include specified security service price components",
           "overlap": 3
         }
       ],
@@ -316,110 +187,24 @@
       "lexicalRecoveryCandidates": [
         {
           "candidateId": "3ef45fb1-0c3d-4fe0-b6fc-bf248a4075ba",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 5,
+          "acceptedByHistoricalQuoteGate": true,
+          "preliminaryPage": 10,
           "title": "Capacity plan and replacement personnel pool",
           "overlap": 13
         },
         {
           "candidateId": "1b00643a-c3fb-4316-a942-7fb01526753e",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 5,
-          "title": "Business duration requirement for security, PI, and fencing rental services",
-          "overlap": 5
-        },
-        {
-          "candidateId": "521c133b-8953-4f90-b0f1-b4e3662e742e",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 7,
-          "title": "Bidder qualifications description for Security Services",
-          "overlap": 5
-        }
-      ],
-      "acceptedAsBinding": false,
-      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
-    },
-    {
-      "answerId": "references-three-to-five",
-      "expectedCandidateId": "fac115-phase9-references-three-to-five",
-      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
-      "renderedPage": 11,
-      "exactQuotation": "Bidders must list between three (3) and five (5) business references.",
-      "category": "candidate_rejected_after_printed_page_label",
-      "quotationMatches": [
-        {
-          "candidateId": "fbf9b1e5-c946-48ae-84a9-4c45cd487a41",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 6,
-          "expectedRenderedPage": 11,
-          "title": "Minimum business references",
-          "evidenceQuote": "Bidders must list between three (3) and five (5) business references"
-        }
-      ],
-      "lexicalRecoveryCandidates": [
-        {
-          "candidateId": "fbf9b1e5-c946-48ae-84a9-4c45cd487a41",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 6,
-          "title": "Minimum business references",
-          "overlap": 11
-        },
-        {
-          "candidateId": "1b00643a-c3fb-4316-a942-7fb01526753e",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 5,
-          "title": "Business duration requirement for security, PI, and fencing rental services",
-          "overlap": 4
-        },
-        {
-          "candidateId": "521c133b-8953-4f90-b0f1-b4e3662e742e",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 7,
-          "title": "Bidder qualifications description for Security Services",
-          "overlap": 4
-        }
-      ],
-      "acceptedAsBinding": false,
-      "recoveryRule": "Recovery candidates are diagnostic only. No fuzzy or lexical match becomes a scored citation."
-    },
-    {
-      "answerId": "geographic-coverage",
-      "expectedCandidateId": "fac115-phase9-geographic-coverage",
-      "sourceFile": "FAC115_Request_for_Response_03.29.2022.pdf",
-      "renderedPage": 14,
-      "exactQuotation": "Each Bidder must indicate on their Attachment A Bidder Response Form in their bid, the counties that their service will cover or alternatively if they will provide services to cover the entire State.",
-      "category": "candidate_rejected_after_printed_page_label",
-      "quotationMatches": [
-        {
-          "candidateId": "49e5cd3c-53d8-4402-b510-f13c5de0aa5b",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 9,
-          "expectedRenderedPage": 14,
-          "title": "Geographic coverage selection",
-          "evidenceQuote": "Each Bidder must indicate on their Attachment A Bidder Response Form"
-        }
-      ],
-      "lexicalRecoveryCandidates": [
-        {
-          "candidateId": "49e5cd3c-53d8-4402-b510-f13c5de0aa5b",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 9,
-          "title": "Geographic coverage selection",
-          "overlap": 18
-        },
-        {
-          "candidateId": "3ef45fb1-0c3d-4fe0-b6fc-bf248a4075ba",
-          "acceptedByHistoricalQuoteGate": false,
-          "preliminaryPage": 5,
-          "title": "Capacity plan and replacement personnel pool",
-          "overlap": 8
-        },
-        {
-          "candidateId": "038120c6-2939-4711-bc8c-b2e1747e8d52",
           "acceptedByHistoricalQuoteGate": true,
-          "preliminaryPage": 17,
-          "title": "Use Attachment B Price Sheet/Cost Table for security services pricing",
-          "overlap": 7
+          "preliminaryPage": 9,
+          "title": "Business duration requirement for security, PI, and fencing rental services",
+          "overlap": 5
+        },
+        {
+          "candidateId": "521c133b-8953-4f90-b0f1-b4e3662e742e",
+          "acceptedByHistoricalQuoteGate": false,
+          "preliminaryPage": 7,
+          "title": "Bidder qualifications description for Security Services",
+          "overlap": 5
         }
       ],
       "acceptedAsBinding": false,

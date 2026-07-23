@@ -11,7 +11,7 @@
     "historicalClosedSolicitation": true,
     "liveReady": false,
     "blockers": [
-      "Phase 9 exact historical candidate binding succeeds for only 8 of 23 answers; missing and printed-page mappings fail closed and are not fuzzily rebased.",
+      "Phase 9 own-quote rendered-page remediation improves exact historical candidate binding to 13 of 23 answers; ten missing or ambiguous mappings fail closed and are not synthesized or fuzzily rebased.",
       "The official source has no genuine unresolved conflict, parser-uncertain planted obligation, or malicious prompt-injection passage required by the proposed pilot coverage.",
       "The reserved pilot maximum does not fit existing Phase 3 or Phase 4 headroom, and no separate Phase 9 provider-call budget is authorized."
     ]

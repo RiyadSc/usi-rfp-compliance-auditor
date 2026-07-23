@@ -14,6 +14,7 @@ import {
   normalizeEvidenceText,
   officialPortalHtmlToText,
   parseDeterministicNumbers,
+  reanchorCandidatesToRenderedPages,
   sha256Stable,
   validateEvidenceQuote,
   type Phase9AnswerPolicy,
@@ -34,10 +35,13 @@ const POPULATION_PATH = resolve(
   'public-rfp-fac115-population-5d2401ea-f042-4c3c-a6f8-f6c3dfb94fd0.json',
 );
 const EXPECTED_PATH = resolve(ROOT, 'phase9-expected-answers-v1.json');
+const SECURITY_CONTROL_PATH = resolve(ROOT, 'phase9-security-control-companion-v1.json');
 const REPORT_PATH = resolve(ARTIFACTS, 'phase9-fac115-stage0-readiness-v1.json');
 const FAILURE_TRACE_RELATIVE =
   'artifacts/evaluation/phase9-fac115-candidate-mapping-failures-v1.json';
 const FAILURE_TRACE_PATH = resolve(FAILURE_TRACE_RELATIVE);
+const REANCHOR_RELATIVE = 'artifacts/evaluation/phase9-fac115-rendered-page-reanchor-v1.json';
+const REANCHOR_PATH = resolve(REANCHOR_RELATIVE);
 const VERIFY_MODEL = 'gpt-5.5-2026-04-23';
 const PHASE3_CEILING_USD = 10;
 const PHASE4_CEILING_USD = 15;
@@ -94,6 +98,20 @@ const frozenAnswers = JSON.parse(
 const policy = JSON.parse(
   await readFile(resolve(ROOT, 'phase9-expected-answer-policy-v1.json'), 'utf8'),
 ) as Phase9AnswerPolicy;
+const securityControlCompanion = JSON.parse(await readFile(SECURITY_CONTROL_PATH, 'utf8')) as {
+  version: string;
+  sourceFixture: string;
+  sourceType: string;
+  partOfMassachusettsSource: false;
+  eligibleForFac115SourceMetrics: false;
+  eligibleForFac115LivePilot: false;
+  cases: Array<{
+    candidateId: string;
+    control: string;
+    expectedSourceStatus: string;
+    expectedPrecedenceStatus: string;
+  }>;
+};
 const population = JSON.parse(await readFile(POPULATION_PATH, 'utf8')) as {
   analysisRunId: string;
   candidates: RequirementCandidate[];
@@ -270,13 +288,37 @@ const documentIdBySourceFile: Record<string, string> = {
   'Intent_to_Bid_Notice_FAC115.pdf': '80000000-0000-4000-8000-000000000007',
   'official-solicitation-page.html': '80000000-0000-4000-8000-000000000008',
 };
+const renderedCandidatePages = Object.entries(documentIdBySourceFile).flatMap(
+  ([sourceFile, documentId]) => {
+    if (sourceFile === 'official-solicitation-page.html') {
+      return [{ documentId, pageNumber: 1, text: portalText }];
+    }
+    return (pdfPages.get(sourceFile) ?? []).map((page) => ({
+      documentId,
+      pageNumber: page.pageNumber,
+      text: page.text,
+    }));
+  },
+);
+const renderedPageResolution = reanchorCandidatesToRenderedPages({
+  candidates: population.candidates,
+  pages: renderedCandidatePages,
+});
+const remediatedAcceptedCandidateIds = [
+  ...new Set([
+    ...population.quoteGate.acceptedCandidateIds,
+    ...renderedPageResolution.reanchors
+      .filter((reanchor) => reanchor.status === 'reanchored_unique_exact')
+      .map((reanchor) => reanchor.candidateId),
+  ]),
+].sort();
 const candidateBindings = mapFac115HistoricalCandidates({
   answers: expectedArtifact.expected,
-  candidates: population.candidates,
-  acceptedCandidateIds: population.quoteGate.acceptedCandidateIds,
+  candidates: renderedPageResolution.candidates,
+  acceptedCandidateIds: remediatedAcceptedCandidateIds,
   documentIdBySourceFile,
 });
-const acceptedCandidateIds = new Set(population.quoteGate.acceptedCandidateIds);
+const acceptedCandidateIds = new Set(remediatedAcceptedCandidateIds);
 const normalizedForBinding = (value: string) =>
   normalizeEvidenceText(value).toLowerCase().replace(/[“”]/g, '"');
 const candidateFailureTraces = candidateBindings
@@ -285,7 +327,7 @@ const candidateFailureTraces = candidateBindings
     const answer = expectedArtifact.expected.find((item) => item.id === binding.answerId)!;
     const expectedDocumentId = documentIdBySourceFile[answer.sourceFile];
     const expectedQuote = normalizedForBinding(answer.exactQuotation);
-    const quotationMatches = population.candidates
+    const quotationMatches = renderedPageResolution.candidates
       .filter((candidate) => candidate.documentId === expectedDocumentId)
       .filter((candidate) => {
         const quote = normalizedForBinding(candidate.evidenceQuote);
@@ -304,7 +346,7 @@ const candidateFailureTraces = candidateBindings
         .split(/[^a-z0-9%]+/)
         .filter((token) => token.length >= 4),
     );
-    const lexicalRecoveryCandidates = population.candidates
+    const lexicalRecoveryCandidates = renderedPageResolution.candidates
       .filter((candidate) => candidate.documentId === expectedDocumentId)
       .map((candidate) => {
         const text = normalizedForBinding(
@@ -494,6 +536,32 @@ const coverageGaps = [
     : ['no_source_native_prompt_injection_case']),
 ];
 const exactBindings = candidateBindings.filter((binding) => binding.exactBinding).length;
+const reanchoredCandidates = renderedPageResolution.reanchors.filter(
+  (reanchor) => reanchor.status === 'reanchored_unique_exact',
+);
+const reanchorManifestBase = {
+  version: 'massachusetts-fac115-rendered-page-reanchor-v1',
+  source: 'candidate_own_quote_only',
+  expectedAnswersConsulted: false,
+  populationHash: population.verificationPlan.populationHash,
+  acceptedCandidateCount: population.quoteGate.acceptedCandidateIds.length,
+  remediatedAcceptedCandidateCount: remediatedAcceptedCandidateIds.length,
+  newlyAcceptedCandidateIds: remediatedAcceptedCandidateIds.filter(
+    (candidateId) => !population.quoteGate.acceptedCandidateIds.includes(candidateId),
+  ),
+  reanchoredCandidateCount: reanchoredCandidates.length,
+  ambiguousCandidateCount: renderedPageResolution.reanchors.filter(
+    (reanchor) => reanchor.status === 'ambiguous_multiple_pages',
+  ).length,
+  unresolvedCandidateCount: renderedPageResolution.reanchors.filter(
+    (reanchor) => reanchor.status === 'not_found',
+  ).length,
+  reanchors: renderedPageResolution.reanchors,
+};
+const reanchorManifest = {
+  ...reanchorManifestBase,
+  hash: sha256Stable(reanchorManifestBase),
+};
 const currentHeadroom = {
   phase3Usd: round(PHASE3_CEILING_USD - ledgers.phase3Usd),
   phase4Usd: round(PHASE4_CEILING_USD - ledgers.phase4Usd),
@@ -576,6 +644,16 @@ const report = {
     nativeSpreadsheetChecks,
     coverage: expectedArtifact.coverage,
     coverageGaps,
+    syntheticSecurityControlCompanion: {
+      version: securityControlCompanion.version,
+      hash: sha256Stable(securityControlCompanion),
+      sourceFixture: securityControlCompanion.sourceFixture,
+      sourceType: securityControlCompanion.sourceType,
+      caseCount: securityControlCompanion.cases.length,
+      partOfMassachusettsSource: securityControlCompanion.partOfMassachusettsSource,
+      eligibleForFac115SourceMetrics: securityControlCompanion.eligibleForFac115SourceMetrics,
+      eligibleForFac115LivePilot: securityControlCompanion.eligibleForFac115LivePilot,
+    },
   },
   deterministic: {
     dateChecks,
@@ -589,11 +667,22 @@ const report = {
     analysisRunId: population.analysisRunId,
     populationHash: population.verificationPlan.populationHash,
     extractedCandidates: population.candidates.length,
-    acceptedCandidates: population.quoteGate.acceptedCandidateIds.length,
+    historicalAcceptedCandidates: population.quoteGate.acceptedCandidateIds.length,
+    remediatedAcceptedCandidates: remediatedAcceptedCandidateIds.length,
     plannedCandidates: population.verificationPlan.candidateCount,
     exactExpectedAnswerBindings: exactBindings,
     expectedAnswerCount: expectedArtifact.expected.length,
     bindings: candidateBindings,
+    renderedPageReanchor: {
+      version: reanchorManifest.version,
+      hash: reanchorManifest.hash,
+      artifact: REANCHOR_RELATIVE,
+      candidateOwnQuoteOnly: true,
+      expectedAnswersConsulted: false,
+      reanchoredCandidates: reanchoredCandidates.length,
+      ambiguousCandidates: reanchorManifest.ambiguousCandidateCount,
+      unresolvedCandidates: reanchorManifest.unresolvedCandidateCount,
+    },
     failureTraceArtifact: FAILURE_TRACE_RELATIVE,
   },
   budget: {
@@ -648,6 +737,7 @@ const report = {
 await mkdir(ARTIFACTS, { recursive: true });
 await writeFile(EXPECTED_PATH, `${JSON.stringify(expectedArtifact, null, 2)}\n`);
 await writeFile(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`);
+await writeFile(REANCHOR_PATH, `${JSON.stringify(reanchorManifest, null, 2)}\n`);
 await writeFile(
   FAILURE_TRACE_PATH,
   `${JSON.stringify(
@@ -682,6 +772,7 @@ console.info(
       expectedArtifact: EXPECTED_PATH,
       reportArtifact: REPORT_PATH,
       failureTraceArtifact: FAILURE_TRACE_PATH,
+      reanchorArtifact: REANCHOR_PATH,
     },
     null,
     2,

@@ -7,6 +7,7 @@ import {
   buildFac115Phase9ExpectedArtifact,
   fac115Phase9ExpectedArtifactSchema,
   mapFac115HistoricalCandidates,
+  reanchorCandidatesToRenderedPages,
   sha256Stable,
   type Phase9AnswerPolicy,
 } from '../../packages/ai/src/public-rfp-phase9';
@@ -90,5 +91,60 @@ describe('Phase 9 FAC115 expected-answer contract', () => {
     expect(() => assertNoPhase9ProviderFlags({ PUBLIC_RFP_FAC115_LIVE_PILOT: '1' })).toThrow(
       /forbids provider flags/,
     );
+  });
+
+  it('reanchors only a candidate own uniquely matched quote and never consults expected answers', () => {
+    const candidate = {
+      id: 'candidate-1',
+      analysisRunId: 'run',
+      workspaceId: 'workspace',
+      documentId: 'doc',
+      category: 'deadline',
+      title: 'Question deadline',
+      obligation: 'Questions are due April 7.',
+      mandatoryClass: 'mandatory',
+      preliminaryPage: 4,
+      evidenceQuote: 'Questions are due April 7, 2022 at 2:00 PM.',
+      confidence: 1,
+      ambiguityNotes: [],
+      status: 'unverified',
+      promptVersion: 'extract-v1',
+      schemaVersion: 'candidate-v1',
+      modelId: 'mock',
+    } as const;
+    const resolved = reanchorCandidatesToRenderedPages({
+      candidates: [candidate],
+      pages: [
+        { documentId: 'doc', pageNumber: 4, text: 'Printed page 4.' },
+        {
+          documentId: 'doc',
+          pageNumber: 6,
+          text: 'Questions are due April 7, 2022 at 2:00 PM.',
+        },
+      ],
+    });
+    expect(resolved.candidates[0]?.preliminaryPage).toBe(6);
+    expect(resolved.reanchors[0]).toEqual({
+      candidateId: candidate.id,
+      documentId: 'doc',
+      originalPage: 4,
+      resolvedPage: 6,
+      matchingPages: [6],
+      status: 'reanchored_unique_exact',
+    });
+
+    const ambiguous = reanchorCandidatesToRenderedPages({
+      candidates: [candidate],
+      pages: [
+        { documentId: 'doc', pageNumber: 5, text: candidate.evidenceQuote },
+        { documentId: 'doc', pageNumber: 6, text: candidate.evidenceQuote },
+      ],
+    });
+    expect(ambiguous.candidates[0]?.preliminaryPage).toBe(4);
+    expect(ambiguous.reanchors[0]).toMatchObject({
+      resolvedPage: null,
+      matchingPages: [5, 6],
+      status: 'ambiguous_multiple_pages',
+    });
   });
 });

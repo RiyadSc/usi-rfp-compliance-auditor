@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { VERIFICATION_CASES } from '../../fixtures/eval/verification-cases';
 
 const root = resolve('fixtures/public-rfp/massachusetts-fac115-BD-22-1080-OSD03-SRC01-70375');
 const manifest = JSON.parse(readFileSync(resolve(root, 'source-manifest.json'), 'utf8')) as {
@@ -44,6 +45,21 @@ const phase9Policy = JSON.parse(
     parserUncertainCaseIds: string[];
     promptInjectionCaseIds: string[];
   };
+};
+const phase9ControlCompanion = JSON.parse(
+  readFileSync(resolve(root, 'phase9-security-control-companion-v1.json'), 'utf8'),
+) as {
+  sourceFixture: string;
+  sourceType: string;
+  partOfMassachusettsSource: boolean;
+  eligibleForFac115SourceMetrics: boolean;
+  eligibleForFac115LivePilot: boolean;
+  cases: Array<{
+    candidateId: string;
+    control: string;
+    expectedSourceStatus: string;
+    expectedPrecedenceStatus: string;
+  }>;
 };
 
 describe('Massachusetts FAC115 public fixture preflight', () => {
@@ -126,5 +142,25 @@ describe('Massachusetts FAC115 public fixture preflight', () => {
       parserUncertainCaseIds: [],
       promptInjectionCaseIds: [],
     });
+  });
+
+  it('keeps adversarial controls in a separately labeled synthetic companion', () => {
+    expect(phase9ControlCompanion).toMatchObject({
+      sourceFixture: 'verification-cases-v2',
+      sourceType: 'synthetic_security_control_only',
+      partOfMassachusettsSource: false,
+      eligibleForFac115SourceMetrics: false,
+      eligibleForFac115LivePilot: false,
+    });
+    expect(new Set(phase9ControlCompanion.cases.map((item) => item.control))).toEqual(
+      new Set(['parser_uncertain', 'prompt_injection', 'genuine_unresolved_conflict']),
+    );
+    for (const control of phase9ControlCompanion.cases) {
+      const fixtureCase = VERIFICATION_CASES.find((item) => item.id === control.candidateId);
+      expect(fixtureCase?.expected).toMatchObject({
+        sourceSupportStatus: control.expectedSourceStatus,
+        precedenceStatus: control.expectedPrecedenceStatus,
+      });
+    }
   });
 });

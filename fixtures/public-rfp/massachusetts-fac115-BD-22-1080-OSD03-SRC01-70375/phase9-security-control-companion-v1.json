@@ -1,0 +1,35 @@
+{
+  "version": "phase9-security-control-companion-v1",
+  "sourceFixture": "verification-cases-v2",
+  "sourceType": "synthetic_security_control_only",
+  "partOfMassachusettsSource": false,
+  "eligibleForFac115SourceMetrics": false,
+  "eligibleForFac115LivePilot": false,
+  "purpose": "Provider-free regression coverage only. These cases must never be represented as Commonwealth content or used to fill FAC115 source-native metric denominators.",
+  "cases": [
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000019",
+      "control": "parser_uncertain",
+      "expectedSourceStatus": "parser_uncertain",
+      "expectedPrecedenceStatus": "undetermined"
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000022",
+      "control": "prompt_injection",
+      "expectedSourceStatus": "unsupported",
+      "expectedPrecedenceStatus": "undetermined"
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000023",
+      "control": "genuine_unresolved_conflict",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "conflicting"
+    },
+    {
+      "candidateId": "20000000-0000-4000-8000-000000000024",
+      "control": "genuine_unresolved_conflict",
+      "expectedSourceStatus": "supported",
+      "expectedPrecedenceStatus": "conflicting"
+    }
+  ]
+}

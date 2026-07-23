@@ -1,6 +1,6 @@
 {
   "version": "massachusetts-fac115-phase9-stage0-v1",
-  "generatedAt": "2026-07-23T04:41:41.109Z",
+  "generatedAt": "2026-07-23T05:01:21.133Z",
   "providerCalls": 0,
   "providerConstructed": false,
   "fixture": "massachusetts-fac115-category1-public-rfp-v1",
@@ -533,7 +533,17 @@
       "no_genuine_unresolved_conflict_case",
       "no_parser_uncertain_expected_case",
       "no_source_native_prompt_injection_case"
-    ]
+    ],
+    "syntheticSecurityControlCompanion": {
+      "version": "phase9-security-control-companion-v1",
+      "hash": "f3fda9eebc62bed7387e8fcff6d3534ade8d63b43a08b30863ee4811b2780166",
+      "sourceFixture": "verification-cases-v2",
+      "sourceType": "synthetic_security_control_only",
+      "caseCount": 4,
+      "partOfMassachusettsSource": false,
+      "eligibleForFac115SourceMetrics": false,
+      "eligibleForFac115LivePilot": false
+    }
   },
   "deterministic": {
     "dateChecks": [
@@ -644,9 +654,10 @@
     "analysisRunId": "5d2401ea-f042-4c3c-a6f8-f6c3dfb94fd0",
     "populationHash": "f4e4c37056de810a475852fa8816403a65c661c03a2c269fbfb8662d871a9348",
     "extractedCandidates": 248,
-    "acceptedCandidates": 209,
+    "historicalAcceptedCandidates": 209,
+    "remediatedAcceptedCandidates": 240,
     "plannedCandidates": 209,
-    "exactExpectedAnswerBindings": 8,
+    "exactExpectedAnswerBindings": 13,
     "expectedAnswerCount": 23,
     "bindings": [
       {
@@ -715,23 +726,23 @@
       {
         "answerId": "security-company-experience",
         "expectedCandidateId": "fac115-phase9-security-company-experience",
-        "historicalCandidateIds": [],
-        "exactBinding": false,
-        "reason": "not_extracted_or_page_mismatch"
+        "historicalCandidateIds": ["1b00643a-c3fb-4316-a942-7fb01526753e"],
+        "exactBinding": true,
+        "reason": "exact_document_page_quote"
       },
       {
         "answerId": "watch-guard-license-attachment",
         "expectedCandidateId": "fac115-phase9-watch-guard-license-attachment",
-        "historicalCandidateIds": [],
-        "exactBinding": false,
-        "reason": "not_extracted_or_page_mismatch"
+        "historicalCandidateIds": ["2240a5f3-8dd5-4ff6-b2db-d6ad704759ee"],
+        "exactBinding": true,
+        "reason": "exact_document_page_quote"
       },
       {
         "answerId": "armed-personnel-license",
         "expectedCandidateId": "fac115-phase9-armed-personnel-license",
-        "historicalCandidateIds": [],
-        "exactBinding": false,
-        "reason": "not_extracted_or_page_mismatch"
+        "historicalCandidateIds": ["354cb20a-f810-4cc1-9d10-13212badc058"],
+        "exactBinding": true,
+        "reason": "exact_document_page_quote"
       },
       {
         "answerId": "replacement-guard-pool",
@@ -743,16 +754,16 @@
       {
         "answerId": "references-three-to-five",
         "expectedCandidateId": "fac115-phase9-references-three-to-five",
-        "historicalCandidateIds": [],
-        "exactBinding": false,
-        "reason": "not_extracted_or_page_mismatch"
+        "historicalCandidateIds": ["fbf9b1e5-c946-48ae-84a9-4c45cd487a41"],
+        "exactBinding": true,
+        "reason": "exact_document_page_quote"
       },
       {
         "answerId": "geographic-coverage",
         "expectedCandidateId": "fac115-phase9-geographic-coverage",
-        "historicalCandidateIds": [],
-        "exactBinding": false,
-        "reason": "not_extracted_or_page_mismatch"
+        "historicalCandidateIds": ["49e5cd3c-53d8-4402-b510-f13c5de0aa5b"],
+        "exactBinding": true,
+        "reason": "exact_document_page_quote"
       },
       {
         "answerId": "price-sheet-v2",
@@ -811,6 +822,16 @@
         "reason": "exact_document_page_quote"
       }
     ],
+    "renderedPageReanchor": {
+      "version": "massachusetts-fac115-rendered-page-reanchor-v1",
+      "hash": "6c8312e6e6df5213477a2e2998baf8923c8abf0e652596314dc169fd097e40e3",
+      "artifact": "artifacts/evaluation/phase9-fac115-rendered-page-reanchor-v1.json",
+      "candidateOwnQuoteOnly": true,
+      "expectedAnswersConsulted": false,
+      "reanchoredCandidates": 31,
+      "ambiguousCandidates": 20,
+      "unresolvedCandidates": 7
+    },
     "failureTraceArtifact": "artifacts/evaluation/phase9-fac115-candidate-mapping-failures-v1.json"
   },
   "budget": {

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import type { RequirementCandidate } from './schemas';
+import { validateEvidenceQuote } from './deterministic-verification';
 
 export const FAC115_PHASE9_EXPECTED_VERSION = 'massachusetts-fac115-phase9-expected-v1';
 export const FAC115_PHASE9_POLICY_VERSION = 'massachusetts-fac115-phase9-policy-v1';
@@ -244,6 +245,71 @@ export type HistoricalCandidateBinding = {
   exactBinding: boolean;
   reason: 'exact_document_page_quote' | 'not_extracted_or_page_mismatch';
 };
+
+export type CandidateRenderedPage = {
+  documentId: string;
+  pageNumber: number;
+  text: string;
+};
+
+export type CandidateRenderedPageReanchor = {
+  candidateId: string;
+  documentId: string;
+  originalPage: number;
+  resolvedPage: number | null;
+  matchingPages: number[];
+  status: 'unchanged_exact' | 'reanchored_unique_exact' | 'not_found' | 'ambiguous_multiple_pages';
+};
+
+/**
+ * Resolves a candidate's own quoted evidence against rendered pages. This does not consult expected
+ * answers and refuses to choose when the quote is absent or appears on multiple pages.
+ */
+export function reanchorCandidatesToRenderedPages(input: {
+  candidates: RequirementCandidate[];
+  pages: CandidateRenderedPage[];
+}): {
+  candidates: RequirementCandidate[];
+  reanchors: CandidateRenderedPageReanchor[];
+} {
+  const pagesByDocument = new Map<string, CandidateRenderedPage[]>();
+  for (const page of input.pages) {
+    const existing = pagesByDocument.get(page.documentId) ?? [];
+    existing.push(page);
+    pagesByDocument.set(page.documentId, existing);
+  }
+
+  const reanchors: CandidateRenderedPageReanchor[] = [];
+  const candidates = input.candidates.map((candidate) => {
+    const matchingPages = (pagesByDocument.get(candidate.documentId) ?? [])
+      .filter((page) => {
+        const match = validateEvidenceQuote(page.text, candidate.evidenceQuote);
+        return match.matchType === 'exact' || match.matchType === 'normalized_exact';
+      })
+      .map((page) => page.pageNumber)
+      .sort((left, right) => left - right);
+    const resolvedPage = matchingPages.length === 1 ? matchingPages[0]! : null;
+    const status =
+      matchingPages.length === 0
+        ? ('not_found' as const)
+        : matchingPages.length > 1
+          ? ('ambiguous_multiple_pages' as const)
+          : resolvedPage === candidate.preliminaryPage
+            ? ('unchanged_exact' as const)
+            : ('reanchored_unique_exact' as const);
+    reanchors.push({
+      candidateId: candidate.id,
+      documentId: candidate.documentId,
+      originalPage: candidate.preliminaryPage,
+      resolvedPage,
+      matchingPages,
+      status,
+    });
+    return resolvedPage === null ? candidate : { ...candidate, preliminaryPage: resolvedPage };
+  });
+
+  return { candidates, reanchors };
+}
 
 /** Maps only exact document + rendered page + quotation bindings. It never fuzzy-rebases pages. */
 export function mapFac115HistoricalCandidates(input: {
