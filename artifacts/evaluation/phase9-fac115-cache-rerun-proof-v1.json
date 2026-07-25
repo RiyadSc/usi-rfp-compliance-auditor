@@ -1,0 +1,10 @@
+{
+  "version": "phase9-fac115-cache-rerun-proof-v1",
+  "sourcePackageHash": "a26306505985a1f6ce42ef948e90a441f51a0cef16a16801af7a940f527ab964",
+  "cachedTaskCount": 58,
+  "providerConstructed": false,
+  "providerCalls": 0,
+  "additionalSpendUsd": 0,
+  "hardMaximumUsd": 0,
+  "passed": true
+}

@@ -6351,10 +6351,10 @@
       "minerVersion": "phase9-deterministic-miner-v1"
     },
     {
-      "id": "3e029d872c6a6aa44d0760f006f18b2aaa19f8d895e49cd438ec45cf997b1c02",
+      "id": "7facf09d0d67548aed605d269fc1fc1ed8faa28c743e491d9dedabf85253b705",
       "sourceBlockIds": ["00096a9497ef541ab769b45f6e86a3baee57f0510b2d3b9ed6fd685697de7aaa"],
       "documentId": "80000000-0000-4000-8000-000000000001",
-      "requirementType": "other",
+      "requirementType": "meeting",
       "obligationText": "Attendance is strongly suggested.",
       "evidenceText": "Attendance is strongly suggested.",
       "subject": null,

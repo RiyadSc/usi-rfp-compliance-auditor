@@ -4,9 +4,9 @@
   "forecastCostUsd": 1.527085,
   "optimizedMaximumUsd": 2.027129,
   "timings": {
-    "coverageGenerationMs": 27.789,
-    "candidateMiningAndReductionMs": 84.131,
-    "callPlanGenerationMs": 13.203
+    "coverageGenerationMs": 30.742,
+    "candidateMiningAndReductionMs": 84.794,
+    "callPlanGenerationMs": 14.55
   },
   "stageMaximums": {
     "coverageClassification": 0.036292,

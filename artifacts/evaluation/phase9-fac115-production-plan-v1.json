@@ -197,9 +197,9 @@
     }
   ],
   "timings": {
-    "coverageGenerationMs": 27.789,
-    "candidateMiningAndReductionMs": 84.131,
-    "callPlanGenerationMs": 13.203
+    "coverageGenerationMs": 30.742,
+    "candidateMiningAndReductionMs": 84.794,
+    "callPlanGenerationMs": 14.55
   },
   "blocks": [
     {
@@ -26123,25 +26123,6 @@
       "minerVersion": "phase9-deterministic-miner-v1"
     },
     {
-      "id": "3e029d872c6a6aa44d0760f006f18b2aaa19f8d895e49cd438ec45cf997b1c02",
-      "sourceBlockIds": ["00096a9497ef541ab769b45f6e86a3baee57f0510b2d3b9ed6fd685697de7aaa"],
-      "documentId": "80000000-0000-4000-8000-000000000001",
-      "requirementType": "other",
-      "obligationText": "Attendance is strongly suggested.",
-      "evidenceText": "Attendance is strongly suggested.",
-      "subject": null,
-      "action": null,
-      "condition": null,
-      "dateValue": null,
-      "numberValue": null,
-      "unit": null,
-      "formReference": null,
-      "deterministicSignals": ["strongly_suggested"],
-      "discoveryRoute": "deterministic",
-      "needsVerification": true,
-      "minerVersion": "phase9-deterministic-miner-v1"
-    },
-    {
       "id": "451c4ab8e3a918ca7932defedb0e8b923a9749e2554c261f96298a66cd5beb3a",
       "sourceBlockIds": ["ef77299aefa4f009a249eb3d796072a4937959c1a89680de59ba2eb43f682f6e"],
       "documentId": "80000000-0000-4000-8000-000000000001",
@@ -34032,6 +34013,25 @@
       "unit": null,
       "formReference": null,
       "deterministicSignals": ["attach"],
+      "discoveryRoute": "deterministic",
+      "needsVerification": true,
+      "minerVersion": "phase9-deterministic-miner-v1"
+    },
+    {
+      "id": "7facf09d0d67548aed605d269fc1fc1ed8faa28c743e491d9dedabf85253b705",
+      "sourceBlockIds": ["00096a9497ef541ab769b45f6e86a3baee57f0510b2d3b9ed6fd685697de7aaa"],
+      "documentId": "80000000-0000-4000-8000-000000000001",
+      "requirementType": "meeting",
+      "obligationText": "Attendance is strongly suggested.",
+      "evidenceText": "Attendance is strongly suggested.",
+      "subject": null,
+      "action": null,
+      "condition": null,
+      "dateValue": null,
+      "numberValue": null,
+      "unit": null,
+      "formReference": null,
+      "deterministicSignals": ["strongly_suggested"],
       "discoveryRoute": "deterministic",
       "needsVerification": true,
       "minerVersion": "phase9-deterministic-miner-v1"
@@ -45867,11 +45867,6 @@
         ]
       },
       {
-        "familyKey": "15700e9b9d9930cc9596521f6674db8b544befebd77e2a242fe8e29cbb8a1cba",
-        "canonicalId": "3e029d872c6a6aa44d0760f006f18b2aaa19f8d895e49cd438ec45cf997b1c02",
-        "contributingIds": ["3e029d872c6a6aa44d0760f006f18b2aaa19f8d895e49cd438ec45cf997b1c02"]
-      },
-      {
         "familyKey": "162bee894a4e752dbab225636b992f8f95f666df4beacd33cbf292d9537940b1",
         "canonicalId": "451c4ab8e3a918ca7932defedb0e8b923a9749e2554c261f96298a66cd5beb3a",
         "contributingIds": ["451c4ab8e3a918ca7932defedb0e8b923a9749e2554c261f96298a66cd5beb3a"]
@@ -48017,6 +48012,11 @@
         "familyKey": "727166b1ae5680eacd435e40e41e636f404ff7384ae39909e35f5a55bce9534c",
         "canonicalId": "64dbbb18ca6bf1cc03fd5f9ac1b7acc2e48b1f4f958f97092ff50ca3e4a4f448",
         "contributingIds": ["64dbbb18ca6bf1cc03fd5f9ac1b7acc2e48b1f4f958f97092ff50ca3e4a4f448"]
+      },
+      {
+        "familyKey": "72a849f3e48bd5778fbfb29dfba736d28144b4ed74ce04cbab8ad9d1882a4674",
+        "canonicalId": "7facf09d0d67548aed605d269fc1fc1ed8faa28c743e491d9dedabf85253b705",
+        "contributingIds": ["7facf09d0d67548aed605d269fc1fc1ed8faa28c743e491d9dedabf85253b705"]
       },
       {
         "familyKey": "736257b73c5b1bfbd8e9c15129adaf0a7956549c2812e26765a6028493fb3680",

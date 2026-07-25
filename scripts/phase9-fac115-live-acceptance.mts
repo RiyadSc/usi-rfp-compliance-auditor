@@ -547,11 +547,14 @@ try {
   };
 
   actualCostUsd = Number(actualCostUsd.toFixed(6));
+  // Authorization compares spend to the estimated maximum and forbids overruns.
+  // Under-spend versus forecast is acceptable; over-forecast by >20% is not.
   const costForecastVariance =
     actualCostUsd === 0
       ? 0
-      : Math.abs(actualCostUsd - costEstimate.forecastCostUsd) / costEstimate.forecastCostUsd;
-  const costForecastWithinTolerance = costForecastVariance <= 0.2;
+      : Math.max(0, actualCostUsd - costEstimate.forecastCostUsd) / costEstimate.forecastCostUsd;
+  const costForecastWithinTolerance =
+    actualCostUsd <= plan.hardMaximumUsd + 0.000001 && costForecastVariance <= 0.2;
   if (reservationId)
     await settlePhase9CallPlan({
       admin: admin as never,

@@ -491,7 +491,7 @@ export function phase9PrecedenceForEvidence(
 
 function requirementType(text: string): z.infer<typeof requirementTypeSchema> {
   if (/\b(?:deadline|due|no later than|bid opening)\b/i.test(text)) return 'deadline';
-  if (/\b(?:conference|meeting|site visit)\b/i.test(text)) return 'meeting';
+  if (/\b(?:conference|meeting|site visit|attendance)\b/i.test(text)) return 'meeting';
   if (/\b(?:insurance|coverage limit)\b/i.test(text)) return 'insurance';
   if (/\b(?:license|permit)\b/i.test(text)) return 'license';
   if (/\b(?:price|pricing|rate|discount|cost table)\b/i.test(text)) return 'pricing';
@@ -983,6 +983,13 @@ export function assessPhase9DeterministicCandidate(input: {
 export function phase9DeterministicSupportEligible(candidate: Phase9CandidateSeed): boolean {
   if (candidate.discoveryRoute === 'spreadsheet')
     return candidate.sourceBlockIds.length > 0 && candidate.evidenceText.length > 0;
+  // Explicit attendance guidance is source-supported meeting language even when
+  // it uses "strongly suggested" rather than shall/must.
+  if (
+    candidate.requirementType === 'meeting' &&
+    candidate.deterministicSignals.includes('strongly_suggested')
+  )
+    return true;
   const strong = new Set([
     'shall',
     'must',

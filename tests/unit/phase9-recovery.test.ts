@@ -43,6 +43,23 @@ function blocks(texts: string[], state: Phase9SourceBlock['parserState'] = 'nati
 }
 
 describe('Phase 9 coverage-led recovery', () => {
+  it('supports exact attendance strongly-suggested meeting language deterministically', () => {
+    const source = blocks(['1.2.3 Bidders Conference. Attendance is strongly suggested.']);
+    const coverage = classifyPhase9Coverage(source);
+    const mined = minePhase9DeterministicCandidates(source, coverage);
+    const candidate = mined.find((item) =>
+      item.evidenceText.includes('Attendance is strongly suggested'),
+    );
+    expect(candidate?.requirementType).toBe('meeting');
+    expect(candidate?.deterministicSignals).toContain('strongly_suggested');
+    const finding = finalizePhase9Finding({
+      candidate: candidate!,
+      blocks: source,
+    });
+    expect(finding?.sourceSupportStatus).toBe('supported');
+    expect(finding?.proofRequirement).toBe('none_identified');
+  });
+
   it('gives every source block one explicit coverage state', () => {
     const source = blocks([
       'Bidder must submit Form A by April 7, 2027.',
