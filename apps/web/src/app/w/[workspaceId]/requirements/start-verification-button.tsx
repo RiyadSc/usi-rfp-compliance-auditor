@@ -19,7 +19,7 @@ export function StartVerificationButton({
       <button
         type="button"
         disabled={pending}
-        className="rounded bg-blue-800 px-4 py-2 text-sm font-medium text-white hover:bg-blue-900 disabled:opacity-50"
+        className="primary-action"
         onClick={() =>
           begin(async () => {
             setError(null);
@@ -31,11 +31,11 @@ export function StartVerificationButton({
       >
         {pending ? 'Starting independent verification…' : 'Start independent verification'}
       </button>
-      <p className="text-xs text-slate-600">
+      <p className="text-metadata">
         Creates a separate machine assessment. Human review remains pending.
       </p>
       {error ? (
-        <p role="alert" className="text-sm text-red-800">
+        <p role="alert" className="text-sm text-critical-400">
           {error}
         </p>
       ) : null}

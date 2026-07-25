@@ -119,38 +119,34 @@ export default async function Phase8DemoPage({
   ];
 
   return (
-    <main className="mx-auto max-w-7xl space-y-8 px-4 py-6 lg:px-6">
+    <main className="page-shell space-y-8">
       <DemoModeBanner mode={mode} />
-      <header className="rounded-2xl bg-slate-950 p-6 text-white lg:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+      <header className="hero-panel texture-nodes p-6 lg:p-8">
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-300">
-              Prepared synthetic demonstration
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight lg:text-4xl">
-              Harbor City full-roadmap demo
-            </h1>
-            <p className="mt-3 max-w-3xl text-slate-300">
+            <p className="section-kicker text-teal-300">Prepared synthetic demonstration</p>
+            <h1 className="page-title mt-2">Harbor City full-roadmap demo</h1>
+            <p className="mt-3 max-w-3xl text-ink-soft">
               A guided story from RFP evidence to submission blockers, proposal risk, and executive
               final review—using known-answer synthetic data only.
             </p>
           </div>
           <StatusBadge value="informational" label="Safe demo data" tone="info" />
         </div>
-        <details className="analyst-only mt-5 text-sm text-slate-300">
+        <details className="analyst-only disclosure relative mt-5 text-sm text-ink-soft">
           <summary className="cursor-pointer">Technical fixture details</summary>
           <p className="mt-2">
             Fixture {scope.binding.fixtureVersion} · Phase 4 fingerprint{' '}
-            <code>{scope.binding.compatibilityFingerprint}</code>
+            <code className="mono">{scope.binding.compatibilityFingerprint}</code>
           </p>
         </details>
       </header>
 
       <nav
         aria-label="Demo walkthrough"
-        className="sticky top-0 z-10 overflow-x-auto rounded-xl border border-slate-200 bg-white/95 p-2 shadow-sm backdrop-blur"
+        className="stage-nav sticky top-0 z-10 overflow-x-auto bg-surface-900/95 backdrop-blur"
       >
-        <ol className="flex min-w-max gap-1 text-sm font-semibold">
+        <ol className="flex min-w-max gap-1">
           {[
             ['#demo-overview', '1. Opportunity'],
             ['#requirements-heading', '2. RFP change'],
@@ -159,10 +155,7 @@ export default async function Phase8DemoPage({
             ['#report-heading', '5. Final review'],
           ].map(([href, text]) => (
             <li key={href}>
-              <a
-                href={href}
-                className="block rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100"
-              >
+              <a href={href} className="stage-nav-item">
                 {text}
               </a>
             </li>
@@ -194,18 +187,20 @@ export default async function Phase8DemoPage({
         />
       </section>
 
-      <aside className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">
-        <strong>Suggested talk track:</strong> start with one changed RFP requirement, show the five
-        missing forms, inspect the incorrect deadline or insurance value, then finish with the
-        executive report.
+      <aside className="notice notice-info">
+        <strong className="notice-title">Suggested talk track:</strong>
+        <p className="mt-2">
+          start with one changed RFP requirement, show the five missing forms, inspect the incorrect
+          deadline or insurance value, then finish with the executive report.
+        </p>
       </aside>
 
       <section aria-labelledby="requirements-heading" className="scroll-mt-20">
         <p className="section-kicker">Step 2 · Understand the RFP</p>
-        <h2 id="requirements-heading" className="text-2xl font-semibold">
+        <h2 id="requirements-heading" className="section-title mt-1.5">
           Candidate extraction and source verification
         </h2>
-        <p className="mt-1 text-slate-600">
+        <p className="section-lede mt-1">
           {candidateRows.length} immutable extraction candidates; machine findings remain distinct
           from human review.
         </p>
@@ -215,12 +210,10 @@ export default async function Phase8DemoPage({
               ? candidate.verification_findings[0]
               : candidate.verification_findings;
             return (
-              <article key={candidate.id} className="rounded border border-slate-300 bg-white p-3">
-                <h3 className="font-semibold">{candidate.title}</h3>
-                <p className="text-sm">Source page {candidate.preliminary_page}</p>
-                <blockquote className="my-2 border-l-4 border-blue-600 pl-3">
-                  {candidate.evidence_quote}
-                </blockquote>
+              <article key={candidate.id} className="surface-card p-5">
+                <h3 className="font-semibold text-ink">{candidate.title}</h3>
+                <p className="text-sm text-ink-muted">Source page {candidate.preliminary_page}</p>
+                <blockquote className="evidence-quote mt-3">{candidate.evidence_quote}</blockquote>
                 <div className="my-3 flex flex-wrap gap-1.5">
                   <StatusBadge value={finding?.source_support_status ?? 'pending'} />
                   <StatusBadge value={finding?.precedence_status ?? 'undetermined'} />
@@ -228,7 +221,7 @@ export default async function Phase8DemoPage({
                 </div>
                 {finding?.id ? (
                   <Link
-                    className="text-blue-700 underline"
+                    className="action-link"
                     href={`/w/${workspaceId}/requirements/${candidate.id}`}
                   >
                     Open verified requirement and evidence
@@ -236,7 +229,7 @@ export default async function Phase8DemoPage({
                 ) : null}
                 {' · '}
                 <Link
-                  className="text-blue-700 underline"
+                  className="locator"
                   href={`/w/${workspaceId}/documents/${scope.binding.sourceDocumentId}?page=${candidate.preliminary_page}`}
                 >
                   Open original page
@@ -249,22 +242,22 @@ export default async function Phase8DemoPage({
 
       <section aria-labelledby="checklist-heading" className="scroll-mt-20">
         <p className="section-kicker">Step 3 · Organize the submission</p>
-        <h2 id="checklist-heading" className="text-2xl font-semibold">
+        <h2 id="checklist-heading" className="section-title mt-1.5">
           Deterministic checklist and blockers
         </h2>
-        <p data-testid="missing-form-count">
+        <p data-testid="missing-form-count" className="mt-1 text-ink-soft">
           Exactly {blockerRows.length} missing mandatory-form blockers.
         </p>
-        <p className="mt-1 font-medium text-red-700">
+        <p className="mt-1 font-medium text-critical-400">
           Blocked by 5 required items · Human review required
         </p>
         <ul className="mt-3 space-y-2">
           {checklistRows.map((item) => {
             const blocker = blockerRows.find((entry) => entry.checklist_item_id === item.id);
             return (
-              <li key={item.id} className="rounded border border-slate-300 bg-white p-3">
+              <li key={item.id} className={`surface-card p-5 ${blocker ? 'rail-critical' : ''}`}>
                 <div className="flex flex-wrap items-start justify-between gap-2">
-                  <strong>{item.title}</strong>
+                  <strong className="text-ink">{item.title}</strong>
                   <span className="flex flex-wrap gap-1">
                     <StatusBadge value={item.workflow_status} />
                     <StatusBadge value={item.artifact_state} />
@@ -273,14 +266,11 @@ export default async function Phase8DemoPage({
                 {blocker ? (
                   <>
                     <br />
-                    <span>Critical blocker: {blocker.reason}</span>
+                    <span className="text-critical-400">Critical blocker: {blocker.reason}</span>
                   </>
                 ) : null}
                 <br />
-                <Link
-                  className="text-blue-700 underline"
-                  href={`/w/${workspaceId}/checklist/${item.id}`}
-                >
+                <Link className="action-link" href={`/w/${workspaceId}/checklist/${item.id}`}>
                   Open checklist item and linked evidence
                 </Link>
               </li>
@@ -291,25 +281,21 @@ export default async function Phase8DemoPage({
 
       <section aria-labelledby="proposal-heading" className="scroll-mt-20">
         <p className="section-kicker">Step 4 · Review the proposal</p>
-        <h2 id="proposal-heading" className="text-2xl font-semibold">
+        <h2 id="proposal-heading" className="section-title mt-1.5">
           Proposal draft audit
         </h2>
-        <p>
+        <p className="section-lede mt-1">
           Flawed synthetic proposal parsed into page-anchored claims. No document instruction had
           authority.
         </p>
         <div className="mt-3 grid gap-2 md:grid-cols-2">
           {expectedProposalFindings.map(([title, type, proposalPage, sourcePage]) => (
-            <article
-              key={type}
-              className="rounded border border-slate-300 bg-white p-3"
-              data-finding-type={type}
-            >
-              <h3 className="font-semibold">{title}</h3>
-              <p className="analyst-only text-xs text-slate-500">{businessLabel(type)}</p>
+            <article key={type} className="surface-card p-5" data-finding-type={type}>
+              <h3 className="font-semibold text-ink">{title}</h3>
+              <p className="analyst-only text-metadata mt-1">{businessLabel(type)}</p>
               {proposalPage ? (
                 <Link
-                  className="text-blue-700 underline"
+                  className="locator mt-2 inline-flex"
                   href={`/w/${workspaceId}/documents/${scope.binding.proposalDocumentId}?page=${proposalPage}`}
                 >
                   Open proposal page {proposalPage}
@@ -317,9 +303,9 @@ export default async function Phase8DemoPage({
               ) : null}
               {sourcePage ? (
                 <>
-                  <span> · </span>
+                  <span className="text-ink-muted"> · </span>
                   <Link
-                    className="text-blue-700 underline"
+                    className="locator"
                     href={`/w/${workspaceId}/documents/${scope.binding.sourceDocumentId}?page=${sourcePage}`}
                   >
                     Open RFP page {sourcePage}
@@ -332,7 +318,7 @@ export default async function Phase8DemoPage({
         <div className="mt-4">
           <DemoFindingReviewButton workspaceId={workspaceId} scopeId={PHASE8_SCOPE_ID} />
         </div>
-        <p data-testid="resolution-history">
+        <p data-testid="resolution-history" className="mt-2 text-sm text-ink-soft">
           {findingReviewDemonstrated
             ? 'Append-only resolution history contains the demonstrated review.'
             : 'Resolution history is ready for a review demonstration.'}
@@ -341,24 +327,24 @@ export default async function Phase8DemoPage({
 
       <section aria-labelledby="report-heading" className="scroll-mt-20">
         <p className="section-kicker">Step 5 · Prepare the decision meeting</p>
-        <h2 id="report-heading" className="text-2xl font-semibold">
+        <h2 id="report-heading" className="section-title mt-1.5">
           Executive readiness report
         </h2>
-        <p>
+        <p className="section-lede mt-1">
           Critical blockers, unresolved findings, missing artifacts, source coverage, and review
           completion are deterministic projections.
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {executiveMetrics.map((metric) => (
-            <div key={metric.label} className="surface-card p-3">
-              <p className="text-xs font-medium text-slate-500">{metric.label}</p>
-              <p className="mt-1 text-lg font-semibold">{metric.value}</p>
+            <div key={metric.label} className="metric-card">
+              <p className="metric-label">{metric.label}</p>
+              <p className="metric-value text-[1.25rem]">{metric.value}</p>
             </div>
           ))}
         </div>
-        <p className="mt-2">DEMO — SYNTHETIC DATA — NOT FOR SUBMISSION</p>
+        <p className="mt-2 text-sm text-ink-muted">DEMO — SYNTHETIC DATA — NOT FOR SUBMISSION</p>
         <Link
-          className="text-blue-700 underline"
+          className="action-link"
           href={`/w/${workspaceId}/reports/${scope.binding.reportSnapshotId}`}
         >
           Open deterministic report and private export
@@ -375,12 +361,12 @@ export default async function Phase8DemoPage({
       </section>
 
       <section aria-labelledby="controls-heading">
-        <h2 id="controls-heading" className="text-2xl font-semibold">
+        <h2 id="controls-heading" className="section-title">
           Resilience and audit controls
         </h2>
         <DemoModeControls workspaceId={workspaceId} scopeId={PHASE8_SCOPE_ID} />
-        <p className="mt-2">Reset count: {state.data?.reset_count ?? 0}</p>
-        <ul className="mt-2 text-sm">
+        <p className="mt-2 text-sm text-ink-soft">Reset count: {state.data?.reset_count ?? 0}</p>
+        <ul className="mt-2 space-y-1 text-sm text-ink-muted">
           {(events.data ?? []).map((event, index) => (
             <li key={`${event.created_at}-${index}`}>
               {event.event_type} ·{' '}
@@ -407,12 +393,14 @@ function DemoMetric({
   warning?: boolean;
 }) {
   return (
-    <div className="surface-card p-4">
-      <p className="text-sm font-medium text-slate-600">{label}</p>
-      <p className={`metric-value ${danger ? 'text-red-700' : warning ? 'text-amber-700' : ''}`}>
+    <div className={`metric-card ${danger ? 'rail-critical' : warning ? 'rail-warning' : ''}`}>
+      <p className="metric-label">{label}</p>
+      <p
+        className={`metric-value ${danger ? 'text-critical-400' : warning ? 'text-warning-400' : 'text-ink'}`}
+      >
         {value}
       </p>
-      <p className="text-xs text-slate-500">{note}</p>
+      <p className="metric-note">{note}</p>
     </div>
   );
 }

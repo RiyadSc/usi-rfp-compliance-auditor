@@ -1,6 +1,15 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
+import {
+  IconAlert,
+  IconBlocker,
+  IconCalendar,
+  IconInfo,
+  IconLink,
+  IconQuote,
+  IconShield,
+} from '@/components/icons';
 import { StatusBadge, StatusAxis } from '@/components/status-badge';
 import { WorkspaceNavigation } from '@/components/workspace-navigation';
 import { businessLabel, formatDate } from '@/lib/presentation';
@@ -13,8 +22,8 @@ const label = businessLabel;
 function Field({ name, value }: { name: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">{name}</dt>
-      <dd className="mt-1 break-words">{value}</dd>
+      <dt className="text-micro">{name}</dt>
+      <dd className="mt-1 break-words text-sm text-ink-soft">{value}</dd>
     </div>
   );
 }
@@ -111,20 +120,20 @@ export default async function ChecklistItemPage({
     (documents ?? []).map((document) => [document.id, document.normalized_filename]),
   );
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+    <main className="page-shell">
       <WorkspaceNavigation
         workspaceId={workspaceId}
         workspaceName={workspace.name}
         current="checklist"
         compact
       />
-      <Link className="action-link text-sm" href={`/w/${workspaceId}/checklist`}>
+      <Link className="quiet-link text-sm font-medium" href={`/w/${workspaceId}/checklist`}>
         ← Submission plan
       </Link>
-      <header className="mt-4">
-        <p className="section-kicker">Submission task</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">{item.title}</h1>
-        <div className="mt-3 flex flex-wrap gap-2">
+      <header className="mt-5">
+        <p className="page-eyebrow">Submission task</p>
+        <h1 className="page-title mt-2 max-w-4xl">{item.title}</h1>
+        <div className="mt-4 flex flex-wrap gap-2">
           <StatusBadge value={item.workflow_status} />
           <StatusBadge
             value={item.artifact_state}
@@ -133,17 +142,18 @@ export default async function ChecklistItemPage({
           <StatusBadge value={item.source_human_review_status} />
         </div>
       </header>
-      <p className="my-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+      <p className="notice notice-warning my-6 flex items-start gap-2.5">
+        <IconAlert size={16} className="mt-0.5 shrink-0 text-warning-400" />
         Completing this task records workflow progress only. It does not change the RFP evidence or
         indicate final approval.
       </p>
 
-      <section className="surface-card mb-6 p-5" aria-labelledby="action-summary">
+      <section className="surface-card mb-6 p-6" aria-labelledby="action-summary">
         <p className="section-kicker">What needs to happen</p>
-        <h2 id="action-summary" className="mt-2 text-xl font-semibold">
+        <h2 id="action-summary" className="section-title mt-2 max-w-3xl">
           {item.obligation}
         </h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <StatusAxis
             label="Task status"
             value={item.workflow_status}
@@ -165,21 +175,24 @@ export default async function ChecklistItemPage({
             help="What internal or external proof is still needed."
           />
         </div>
-        <p className="mt-4 text-sm text-slate-600">
-          <strong>Due:</strong>{' '}
-          {item.due_at
-            ? `${formatDate(item.due_at)} · ${item.due_timezone ?? 'timezone not stated'}`
-            : 'No deterministic deadline identified'}
+        <p className="mt-5 flex items-center gap-2 text-sm text-ink-soft">
+          <IconCalendar size={15} className="shrink-0 text-ink-muted" />
+          <span className="tabular">
+            <strong className="font-semibold text-ink">Due:</strong>{' '}
+            {item.due_at
+              ? `${formatDate(item.due_at)} · ${item.due_timezone ?? 'timezone not stated'}`
+              : 'No deterministic deadline identified'}
+          </span>
         </p>
       </section>
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-5">
-          <section className="surface-card p-4">
-            <h2 className="font-semibold">Why this task exists</h2>
-            <p className="mt-2 text-sm text-slate-700">
+          <section className="surface-card p-5">
+            <h2 className="section-title">Why this task exists</h2>
+            <p className="mt-2 text-sm text-ink-soft">
               It was generated from an evidence-linked RFP requirement.
             </p>
-            <dl className="analyst-only mt-4 grid gap-3 text-sm sm:grid-cols-2">
+            <dl className="analyst-only surface-panel mt-4 grid gap-4 p-4 sm:grid-cols-2">
               <Field name="Category" value={label(item.category)} />
               <Field
                 name="Eligibility"
@@ -202,27 +215,28 @@ export default async function ChecklistItemPage({
               <Field name="Generation" value={item.generation_version} />
             </dl>
             <Link
-              className="mt-4 inline-block text-sm font-medium text-blue-700 hover:underline"
+              className="action-link mt-5 inline-flex items-center gap-1.5 text-sm"
               href={`/w/${workspaceId}/requirements/${item.candidate_id}`}
             >
               Open linked Phase 4 requirement →
             </Link>
           </section>
-          <section className="surface-card p-4">
-            <h2 className="font-semibold">Exact source evidence</h2>
+          <section className="surface-card p-5">
+            <h2 className="section-title flex items-center gap-2">
+              <IconQuote size={17} className="shrink-0 text-teal-400" />
+              Exact source evidence
+            </h2>
             {sources?.length ? (
-              <ul className="mt-3 space-y-3">
+              <ul className="mt-4 space-y-3">
                 {sources.map((source) => (
-                  <li key={source.id} className="rounded border border-slate-200 p-3">
-                    <blockquote className="border-l-2 border-blue-500 pl-3 text-sm">
-                      {source.quote_exact}
-                    </blockquote>
-                    <p className="mt-2 text-xs text-slate-600">
+                  <li key={source.id} className="surface-panel p-4">
+                    <blockquote className="evidence-quote">{source.quote_exact}</blockquote>
+                    <p className="text-metadata tabular mt-3">
                       {source.match_type} · page {source.page_number} · source{' '}
                       {source.source_version}
                     </p>
                     <Link
-                      className="mt-2 inline-block text-sm text-blue-700 hover:underline"
+                      className="action-link mt-3 inline-flex items-center gap-1.5 text-sm"
                       href={`/w/${workspaceId}/documents/${source.document_id}?page=${source.page_number}`}
                     >
                       Open original page {source.page_number} →
@@ -231,101 +245,127 @@ export default async function ChecklistItemPage({
                 ))}
               </ul>
             ) : (
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-3 text-sm text-ink-muted">
                 No exact Phase 4 evidence was eligible for this record. It remains excluded or
                 review-needed.
               </p>
             )}
           </section>
-          <section className="surface-card p-4">
-            <h2 className="font-semibold">Blockers</h2>
+          <section className="surface-card p-5">
+            <h2 className="section-title flex items-center gap-2">
+              <IconBlocker
+                size={17}
+                className={`shrink-0 ${blockers?.length ? 'text-critical-400' : 'text-ink-muted'}`}
+              />
+              Blockers
+            </h2>
             {blockers?.length ? (
-              <ul className="mt-3 space-y-2 text-sm">
+              <ul className="mt-4 space-y-2.5 text-sm">
                 {blockers.map((blocker) => (
-                  <li key={blocker.id} className="rounded border border-slate-200 p-3">
-                    <strong>
+                  <li
+                    key={blocker.id}
+                    className="surface-panel rail-critical bg-critical-500/5 p-4"
+                  >
+                    <strong className="text-sm font-semibold text-ink">
                       {label(blocker.severity)} · {label(blocker.blocker_type)}
                     </strong>
-                    <p>{blocker.reason}</p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-ink-soft">{blocker.reason}</p>
+                    <p className="text-metadata mt-2">
                       {label(blocker.status)} · {blocker.engine_version}
                     </p>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="mt-2 text-sm text-slate-600">No blocker records.</p>
+              <p className="mt-3 text-sm text-ink-muted">No blocker records.</p>
             )}
           </section>
-          <section className="surface-card p-4">
-            <h2 className="font-semibold">Relationships</h2>
+          <section className="surface-card p-5">
+            <h2 className="section-title flex items-center gap-2">
+              <IconLink size={17} className="shrink-0 text-ink-muted" />
+              Relationships
+            </h2>
             {relationships?.length ? (
-              <ul className="mt-3 space-y-2 text-sm">
+              <ul className="mt-4 space-y-2 text-sm">
                 {relationships.map((relationship) => (
-                  <li key={relationship.id}>
+                  <li key={relationship.id} className="surface-panel px-3.5 py-2.5 text-ink-soft">
                     {label(relationship.relationship_type)} ·{' '}
                     {label(relationship.human_review_status)} · records remain separate
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-3 text-sm text-ink-muted">
                 No linked parent/child or duplicate proposal.
               </p>
             )}
           </section>
-          <details className="surface-card analyst-only p-4">
-            <summary className="cursor-pointer font-semibold">Decision and audit history</summary>
-            <h3 className="mt-3 text-sm font-medium">Waivers</h3>
-            {waivers?.length ? (
-              <ol className="mt-2 space-y-2 text-sm">
-                {waivers.map((waiver) => (
-                  <li key={waiver.id}>
-                    {label(waiver.status)} · {label(waiver.designation)} · {waiver.reason} ·{' '}
-                    <time dateTime={waiver.created_at}>
-                      {new Date(waiver.created_at).toLocaleString()}
-                    </time>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="text-sm text-slate-600">No waiver records.</p>
-            )}
-            <h3 className="mt-4 text-sm font-medium">Exception notes</h3>
-            {exceptions?.length ? (
-              <ol className="mt-2 space-y-2 text-sm">
-                {exceptions.map((note) => (
-                  <li key={note.id}>
-                    {note.explanation} ·{' '}
-                    <time dateTime={note.created_at}>
-                      {new Date(note.created_at).toLocaleString()}
-                    </time>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="text-sm text-slate-600">No exception notes.</p>
-            )}
-            <h3 className="mt-4 text-sm font-medium">Audit events</h3>
-            {audit?.length ? (
-              <ol className="mt-2 space-y-1 text-sm">
-                {audit.map((event) => (
-                  <li key={event.id}>
-                    {label(event.event_type)} ·{' '}
-                    <time dateTime={event.created_at}>
-                      {new Date(event.created_at).toLocaleString()}
-                    </time>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="text-sm text-slate-600">No item audit events.</p>
-            )}
+          <details className="disclosure analyst-only">
+            <summary>Decision and audit history</summary>
+            <div className="disclosure-body">
+              <h3 className="text-micro flex items-center gap-2">
+                <IconShield size={14} className="shrink-0 text-warning-400" />
+                Waivers
+              </h3>
+              {waivers?.length ? (
+                <ol className="mt-2.5 space-y-2 text-sm">
+                  {waivers.map((waiver) => (
+                    <li
+                      key={waiver.id}
+                      className="surface-panel rail-warning px-3.5 py-2.5 text-ink-soft"
+                    >
+                      {label(waiver.status)} · {label(waiver.designation)} · {waiver.reason} ·{' '}
+                      <time dateTime={waiver.created_at} className="tabular text-ink-muted">
+                        {new Date(waiver.created_at).toLocaleString()}
+                      </time>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="mt-2 text-sm text-ink-muted">No waiver records.</p>
+              )}
+              <h3 className="text-micro mt-6 flex items-center gap-2">
+                <IconInfo size={14} className="shrink-0 text-info-400" />
+                Exception notes
+              </h3>
+              {exceptions?.length ? (
+                <ol className="mt-2.5 space-y-2 text-sm">
+                  {exceptions.map((note) => (
+                    <li
+                      key={note.id}
+                      className="surface-panel rail-steel px-3.5 py-2.5 text-ink-soft"
+                    >
+                      {note.explanation} ·{' '}
+                      <time dateTime={note.created_at} className="tabular text-ink-muted">
+                        {new Date(note.created_at).toLocaleString()}
+                      </time>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="mt-2 text-sm text-ink-muted">No exception notes.</p>
+              )}
+              <h3 className="text-micro mt-6">Audit events</h3>
+              {audit?.length ? (
+                <ol className="mt-2.5 space-y-1.5 text-sm text-ink-soft">
+                  {audit.map((event) => (
+                    <li key={event.id} className="border-b border-line-subtle pb-1.5 last:border-0">
+                      {label(event.event_type)} ·{' '}
+                      <time dateTime={event.created_at} className="tabular text-metadata">
+                        {new Date(event.created_at).toLocaleString()}
+                      </time>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="mt-2 text-sm text-ink-muted">No item audit events.</p>
+              )}
+            </div>
           </details>
         </div>
-        <aside className="surface-card h-fit p-4 lg:sticky lg:top-4">
-          <h2 className="mb-1 font-semibold">Update this task</h2>
-          <p className="mb-4 text-sm text-slate-600">
+        <aside className="surface-card h-fit p-5 lg:sticky lg:top-6">
+          <h2 className="section-title">Update this task</h2>
+          <p className="mb-5 mt-1.5 text-sm text-ink-soft">
             Assign ownership, update progress, or attach supporting documents.
           </p>
           <ChecklistItemControls

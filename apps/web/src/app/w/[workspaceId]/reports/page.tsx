@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { z } from 'zod';
 import { WorkspaceNavigation } from '@/components/workspace-navigation';
 import { StatusBadge } from '@/components/status-badge';
+import { EmptyStateArt } from '@/components/brand';
 import { businessLabel, formatDate } from '@/lib/presentation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { ReportGenerationControls } from './report-controls';
@@ -77,63 +78,69 @@ export default async function ReportsPage({
     ];
   });
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+    <main className="page-shell">
       <WorkspaceNavigation
         workspaceId={workspaceId}
         workspaceName={workspace.name}
         current="reports"
       />
-      <p className="section-kicker">Executive decision support</p>
-      <h1 aria-label="Reports and exports" className="mt-1 text-3xl font-semibold tracking-tight">
-        Reports
-      </h1>
-      <p className="mt-1 mb-6 text-sm text-slate-600">
-        Bring submission blockers, missing evidence, proposal issues, and human decisions into one
-        executive review. Reports never represent automatic approval.
-      </p>
-      <details className="surface-card" open={!reportRuns?.length}>
-        <summary className="cursor-pointer list-none px-4 py-4 font-semibold">
-          Generate a new report{' '}
-          <span className="ml-2 text-sm font-normal text-slate-500">
-            Choose a completed draft review
+      <div className="page-header">
+        <div>
+          <p className="page-eyebrow">Executive decision support</p>
+          <h1 aria-label="Reports and exports" className="page-title mt-2">
+            Reports
+          </h1>
+          <p className="page-lede mt-3">
+            Bring submission blockers, missing evidence, proposal issues, and human decisions into
+            one executive review. Reports never represent automatic approval.
+          </p>
+        </div>
+      </div>
+      <details className="disclosure" open={!reportRuns?.length}>
+        <summary className="text-ink">
+          <span className="flex flex-wrap items-baseline gap-x-2 font-semibold">
+            Generate a new report{' '}
+            <span className="text-metadata font-normal">Choose a completed draft review</span>
           </span>
         </summary>
-        <div className="border-t border-slate-200 p-4">
+        <div className="disclosure-body">
           <ReportGenerationControls workspaceId={workspaceId} sourceOptions={sourceOptions} />
         </div>
       </details>
-      <section className="mt-8" aria-labelledby="report-history">
-        <h2 id="report-history" className="mb-1 text-lg font-semibold">
+      <section className="mt-10" aria-labelledby="report-history">
+        <h2 id="report-history" className="section-title">
           Executive review history
         </h2>
-        <p className="mb-3 text-sm text-slate-600">
+        <p className="section-lede mb-5">
           Open the latest report for the current opportunity state.
         </p>
         {reportRuns?.length ? (
-          <ul className="grid gap-3 md:grid-cols-2">
+          <ul className="grid gap-4 md:grid-cols-2">
             {reportRuns.slice(0, pageSize).map((run) => {
               const snapshot = (
                 run.report_snapshots as unknown as Array<{ id: string }> | null
               )?.[0];
               return (
-                <li key={run.id} className="surface-card p-4">
-                  <div className="flex items-start justify-between gap-3">
+                <li key={run.id} className="surface-card surface-card-interactive p-5">
+                  <div className="flex items-start justify-between gap-4">
                     {snapshot ? (
                       <Link
                         href={`/w/${workspaceId}/reports/${snapshot.id}`}
-                        className="font-medium text-blue-700 hover:underline"
+                        className="action-link text-base leading-snug"
                       >
                         {businessLabel(run.report_type)}
                       </Link>
                     ) : (
-                      <span className="font-medium">{businessLabel(run.report_type)}</span>
+                      <span className="text-base font-medium leading-snug text-ink">
+                        {businessLabel(run.report_type)}
+                      </span>
                     )}
                     <StatusBadge value={run.status} />
                   </div>
-                  <p className="mt-3 text-sm text-slate-600">
+                  <p className="text-metadata mt-4">
                     Generated {formatDate(run.created_at)} · Human review remains separate
                   </p>
-                  <p className="analyst-only mt-2 text-xs text-slate-500">
+                  <p className="analyst-only mono mt-2 text-[0.6875rem] text-ink-faint">
                     Input {run.input_hash.slice(0, 12)}…
                   </p>
                 </li>
@@ -141,13 +148,16 @@ export default async function ReportsPage({
             })}
           </ul>
         ) : (
-          <p className="text-sm text-slate-600">No reports yet.</p>
+          <div className="empty-state">
+            <EmptyStateArt />
+            <p className="empty-state-body">No reports yet.</p>
+          </div>
         )}
-        <nav aria-label="Report history pages" className="mt-3 flex gap-3 text-sm">
+        <nav aria-label="Report history pages" className="mt-5 flex gap-4 text-sm">
           {historyPage > 1 ? (
             <Link
               href={`/w/${workspaceId}/reports?page=${historyPage - 1}`}
-              className="text-blue-700 hover:underline"
+              className="action-link"
             >
               ← Newer
             </Link>
@@ -155,7 +165,7 @@ export default async function ReportsPage({
           {(reportRuns?.length ?? 0) > pageSize ? (
             <Link
               href={`/w/${workspaceId}/reports?page=${historyPage + 1}`}
-              className="text-blue-700 hover:underline"
+              className="action-link"
             >
               Older →
             </Link>

@@ -3,7 +3,9 @@ import { notFound } from 'next/navigation';
 import { z } from 'zod';
 import { WorkspaceNavigation } from '@/components/workspace-navigation';
 import { StatusBadge } from '@/components/status-badge';
-import { deadlineLabel, eventLabel, formatDate } from '@/lib/presentation';
+import { EvidenceField } from '@/components/brand';
+import { IconAlert, IconArrowRight, IconCalendar, IconCheck, IconInfo } from '@/components/icons';
+import { daysUntil, deadlineLabel, eventLabel, formatDate } from '@/lib/presentation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 const uuidSchema = z.string().uuid();
@@ -202,53 +204,81 @@ export default async function WorkspaceOverviewPage({
                   note: 'Prepare the opportunity for final human review.',
                 };
 
+  const deadlineDays = daysUntil(workspace.deadline);
+  const deadlineUrgent = deadlineDays != null && deadlineDays < 0;
+  const deadlineNear = deadlineDays != null && deadlineDays >= 0 && deadlineDays <= 14;
+
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+    <main className="page-shell">
       <WorkspaceNavigation
         workspaceId={workspaceId}
         workspaceName={workspace.name}
         current="overview"
       />
 
-      <header className="mb-7 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="section-kicker">Opportunity command center</p>
-            <StatusBadge value={workspace.status} />
+      <header className="hero-panel texture-nodes mb-6 p-6 lg:p-8">
+        <EvidenceField className="opacity-25" />
+        <div className="relative flex flex-wrap items-start justify-between gap-x-10 gap-y-6">
+          <div className="min-w-0 max-w-3xl">
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="page-eyebrow">Opportunity command center</p>
+              <StatusBadge value={workspace.status} />
+            </div>
+            <h1 className="page-title mt-3">{workspace.name}</h1>
+            <p className="mt-3 text-sm text-ink-soft">
+              {workspace.customer ?? 'Customer not set'}
+              {workspace.deadline ? ` · Response deadline ${formatDate(workspace.deadline)}` : ''}
+            </p>
+            {workspace.description ? (
+              <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-muted">
+                {workspace.description}
+              </p>
+            ) : null}
           </div>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">{workspace.name}</h1>
-          <p className="mt-2 text-slate-600">
-            {workspace.customer ?? 'Customer not set'}
-            {workspace.deadline ? ` · Response deadline ${formatDate(workspace.deadline)}` : ''}
-          </p>
-          {workspace.description ? (
-            <p className="mt-2 max-w-3xl text-sm text-slate-600">{workspace.description}</p>
-          ) : null}
-        </div>
-        <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-right">
-          <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
-            Submission timing
-          </p>
-          <p className="mt-1 text-lg font-semibold text-blue-950">
-            {deadlineLabel(workspace.deadline)}
-          </p>
-          <p className="text-xs text-blue-800">
-            {workspace.deadline
-              ? formatDate(workspace.deadline)
-              : 'Add a deadline to track urgency'}
-          </p>
+          <div
+            className={`surface-inset min-w-[15rem] p-4 ${
+              deadlineUrgent ? 'rail-critical' : deadlineNear ? 'rail-warning' : 'rail-teal'
+            }`}
+          >
+            <p className="metric-label flex items-center gap-1.5">
+              <IconCalendar size={13} />
+              Submission timing
+            </p>
+            <p
+              className={`mt-2 text-lg font-semibold tracking-[-0.02em] ${
+                deadlineUrgent
+                  ? 'text-critical-400'
+                  : deadlineNear
+                    ? 'text-warning-400'
+                    : 'text-ink'
+              }`}
+            >
+              {deadlineLabel(workspace.deadline)}
+            </p>
+            <p className="text-metadata mt-0.5">
+              {workspace.deadline
+                ? formatDate(workspace.deadline)
+                : 'Add a deadline to track urgency'}
+            </p>
+          </div>
         </div>
       </header>
 
       {isFac115PublicEvaluation ? (
-        <aside className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-          <strong>Public FAC115 evaluation workspace.</strong> Requirements and checklist are a
-          curated projection from the accepted Live Analysis run. Proposal audit and the final
-          report are illustrative because the public package has no bidder draft.{' '}
-          <Link href={`/w/${workspaceId}/phase9`} className="font-semibold underline">
-            Open Live Analysis
-          </Link>{' '}
-          for the 23/23 accuracy and cost proof.
+        <aside className="notice notice-warning mb-6">
+          <strong className="notice-title">
+            <IconInfo size={15} />
+            Public FAC115 evaluation workspace.
+          </strong>
+          <div className="mt-2">
+            Requirements and checklist are a curated projection from the accepted Live Analysis run.
+            Proposal audit and the final report are illustrative because the public package has no
+            bidder draft.{' '}
+            <Link href={`/w/${workspaceId}/phase9`} className="action-link">
+              Open Live Analysis
+            </Link>{' '}
+            for the 23/23 accuracy and cost proof.
+          </div>
         </aside>
       ) : null}
 
@@ -307,21 +337,19 @@ export default async function WorkspaceOverviewPage({
         />
       </section>
 
-      <section className="mt-6 grid gap-5 lg:grid-cols-[1.25fr_0.75fr]">
-        <div className="surface-card p-5">
+      <section className="mt-6 grid gap-4 lg:grid-cols-[1.25fr_0.75fr]">
+        <div className="surface-card rail-teal flex flex-col p-6">
           <p className="section-kicker">Recommended next action</p>
-          <h2 className="mt-2 text-xl font-semibold">{nextAction.label}</h2>
-          <p className="mt-2 text-sm text-slate-600">{nextAction.note}</p>
-          <Link
-            href={nextAction.href}
-            className="mt-4 inline-flex rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800"
-          >
-            Continue →
+          <h2 className="section-title mt-2 text-xl">{nextAction.label}</h2>
+          <p className="mt-2 text-sm text-ink-soft">{nextAction.note}</p>
+          <Link href={nextAction.href} className="primary-action mt-5 self-start">
+            Continue
+            <IconArrowRight size={16} />
           </Link>
         </div>
-        <div className="surface-card p-5">
+        <div className="surface-card p-6">
           <p className="section-kicker">Decision signals</p>
-          <ul className="mt-3 space-y-3 text-sm">
+          <ul className="mt-4 space-y-3 text-sm text-ink-soft">
             <Signal
               danger={unresolvedSources > 0}
               text={
@@ -350,10 +378,10 @@ export default async function WorkspaceOverviewPage({
         </div>
       </section>
 
-      <section className="mt-7" aria-labelledby="journey-heading">
-        <div className="mb-3">
+      <section className="mt-10" aria-labelledby="journey-heading">
+        <div className="mb-4">
           <p className="section-kicker">Bid journey</p>
-          <h2 id="journey-heading" className="mt-1 text-xl font-semibold">
+          <h2 id="journey-heading" className="section-title mt-1 text-xl">
             Progress by stage
           </h2>
         </div>
@@ -478,7 +506,7 @@ export default async function WorkspaceOverviewPage({
             action="Open final review"
           />
         </div>
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="text-metadata mt-4">
           Business steps coordinate the response. Processing steps prepare source material. Review
           steps require human judgment. Workflow progress never means automatic approval.
         </p>
@@ -486,33 +514,33 @@ export default async function WorkspaceOverviewPage({
 
       <section
         id="activity"
-        className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.7fr]"
+        className="mt-10 grid gap-6 lg:grid-cols-[1fr_0.7fr]"
         aria-labelledby="activity-heading"
       >
-        <div>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 id="activity-heading" className="text-lg font-semibold">
+        <div className="min-w-0">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 id="activity-heading" className="section-title">
               Recent activity
             </h2>
-            <span className="analyst-only text-xs text-slate-500">
+            <span className="analyst-only text-metadata">
               System events are available in analyst view.
             </span>
           </div>
           {eventsResult.data?.length ? (
-            <ol className="surface-card divide-y divide-slate-200">
+            <ol className="surface-card divide-y divide-line-subtle">
               {eventsResult.data.map((event) => (
                 <li
                   key={event.id}
-                  className="flex items-start justify-between gap-4 px-4 py-3 text-sm"
+                  className="flex items-start justify-between gap-4 px-5 py-3.5 text-sm"
                 >
-                  <div>
-                    <p className="font-medium">{eventLabel(event.event_type)}</p>
-                    <code className="analyst-only mt-1 block text-xs text-slate-500">
+                  <div className="min-w-0">
+                    <p className="font-medium text-ink">{eventLabel(event.event_type)}</p>
+                    <code className="analyst-only mono mt-1 block text-xs text-ink-muted">
                       {event.event_type}
                     </code>
                   </div>
                   <time
-                    className="whitespace-nowrap text-xs text-slate-500"
+                    className="text-metadata tabular whitespace-nowrap"
                     dateTime={event.created_at}
                   >
                     {new Date(event.created_at).toLocaleString()}
@@ -521,22 +549,25 @@ export default async function WorkspaceOverviewPage({
               ))}
             </ol>
           ) : (
-            <p className="rounded-xl border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-600">
+            <p className="empty-state text-sm text-ink-soft">
               Activity will appear here as the team works on the opportunity.
             </p>
           )}
         </div>
-        <aside className="surface-card p-5">
-          <h2 className="font-semibold">Director’s review cadence</h2>
-          <ul className="mt-3 space-y-3 text-sm text-slate-700">
+        <aside className="surface-card p-6">
+          <h2 className="section-title">Director’s review cadence</h2>
+          <ul className="mt-4 space-y-3 text-sm text-ink-soft">
             <li>
-              <strong>Today:</strong> address blockers and unassigned work.
+              <strong className="font-semibold text-ink">Today:</strong> address blockers and
+              unassigned work.
             </li>
             <li>
-              <strong>After each addendum:</strong> review changed requirements.
+              <strong className="font-semibold text-ink">After each addendum:</strong> review
+              changed requirements.
             </li>
             <li>
-              <strong>Before final review:</strong> confirm company proof and proposal findings.
+              <strong className="font-semibold text-ink">Before final review:</strong> confirm
+              company proof and proposal findings.
             </li>
           </ul>
         </aside>
@@ -560,30 +591,32 @@ function Metric({
   warning?: boolean;
   info?: boolean;
 }) {
-  const color = danger
-    ? 'text-red-700'
+  // Only a true blocker earns a coral value; softer states tint the supporting
+  // line instead, so the rail stays calm and one number leads.
+  const noteColor = danger
+    ? 'text-critical-400'
     : warning
-      ? 'text-amber-700'
+      ? 'text-warning-400'
       : info
-        ? 'text-blue-700'
-        : 'text-slate-950';
+        ? 'text-info-400'
+        : '';
   return (
-    <div className="surface-card p-4">
-      <p className="text-sm font-medium text-slate-600">{label}</p>
-      <p className={`metric-value ${color}`}>{value}</p>
-      <p className="mt-1 text-xs text-slate-500">{note}</p>
+    <div className={`metric-card ${danger ? 'rail-critical' : ''}`}>
+      <p className="metric-label">{label}</p>
+      <p className={`metric-value ${danger ? 'text-critical-400' : 'text-ink'}`}>{value}</p>
+      <p className={`metric-note ${noteColor}`}>{note}</p>
     </div>
   );
 }
 
 function Signal({ danger, text }: { danger: boolean; text: string }) {
   return (
-    <li className="flex gap-2">
+    <li className="flex items-start gap-2.5">
       <span
-        className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-xs ${danger ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}
+        className={`mt-0.5 shrink-0 ${danger ? 'text-critical-400' : 'text-success-400'}`}
         aria-hidden="true"
       >
-        {danger ? '!' : '✓'}
+        {danger ? <IconAlert size={15} /> : <IconCheck size={15} />}
       </span>
       <span>{text}</span>
     </li>
@@ -608,22 +641,21 @@ function StageCard({
   action: string;
 }) {
   return (
-    <article className="surface-card p-4">
+    <article className="surface-card flex flex-col p-5">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-sm font-semibold">
+        <div className="flex items-center gap-2.5">
+          <span className="mono grid h-7 w-7 place-items-center rounded-xs border border-line-subtle bg-canvas-900 text-xs font-semibold text-teal-300">
             {number}
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-            {kind}
-          </span>
+          <span className="text-micro">{kind}</span>
         </div>
         <StatusBadge value={status} />
       </div>
-      <h3 className="mt-4 font-semibold">{title}</h3>
-      <p className="mt-1 min-h-10 text-sm text-slate-600">{summary}</p>
-      <Link href={href} className="action-link mt-3 inline-block text-sm">
-        {action} →
+      <h3 className="mt-4 font-semibold text-ink">{title}</h3>
+      <p className="mt-1.5 min-h-10 text-sm leading-snug text-ink-soft">{summary}</p>
+      <Link href={href} className="action-link mt-4 inline-flex items-center gap-1.5 text-sm">
+        {action}
+        <IconArrowRight size={14} />
       </Link>
     </article>
   );

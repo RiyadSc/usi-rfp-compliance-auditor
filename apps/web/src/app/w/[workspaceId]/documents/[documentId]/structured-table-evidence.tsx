@@ -26,10 +26,10 @@ export function StructuredTableEvidence({ tables }: { tables: Table[] }) {
   return (
     <section aria-labelledby="structured-tables-heading" className="mt-6 space-y-4">
       <div>
-        <h2 id="structured-tables-heading" className="text-lg font-semibold">
+        <h2 id="structured-tables-heading" className="section-title">
           Structured table evidence
         </h2>
-        <p className="text-sm text-slate-600">
+        <p className="section-lede">
           Values remain attached to their row, column, sheet/page, and cell coordinates. They are
           not flattened into unrelated prose.
         </p>
@@ -39,28 +39,26 @@ export function StructuredTableEvidence({ tables }: { tables: Table[] }) {
           table.cells.map((cell) => [`${cell.row_index}:${cell.column_index}`, cell]),
         );
         return (
-          <article
-            key={table.id}
-            className="overflow-hidden rounded border border-slate-200 bg-white"
-          >
-            <div className="border-b border-slate-200 px-3 py-2">
-              <h3 className="font-medium">{table.title ?? table.caption ?? 'Detected table'}</h3>
-              <p className="text-xs text-slate-500">
+          <article key={table.id} className="data-frame overflow-hidden">
+            <div className="border-b border-line-subtle px-4 py-3">
+              <h3 className="font-medium text-ink">
+                {table.title ?? table.caption ?? 'Detected table'}
+              </h3>
+              <p className="text-metadata mt-1">
                 {table.row_count} rows × {table.column_count} columns · confidence{' '}
                 {Math.round(Number(table.confidence) * 100)}%
                 {table.repeated_header ? ' · repeated header' : ''}
                 {table.continuation_of_table_id ? ' · continuation of prior table' : ''}
               </p>
             </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse text-sm">
+            <div className="data-scroll">
+              <table className="data-table data-table-dense min-w-full">
                 <tbody>
                   {Array.from({ length: table.row_count }, (_, rowIndex) => (
                     <tr key={rowIndex}>
                       {Array.from({ length: table.column_count }, (_, columnIndex) => {
                         const cell = byPosition.get(`${rowIndex}:${columnIndex}`);
-                        if (!cell)
-                          return <td key={columnIndex} className="border border-slate-200 p-2" />;
+                        if (!cell) return <td key={columnIndex} />;
                         const Tag =
                           cell.cell_role === 'header' || cell.cell_role === 'row_header'
                             ? 'th'
@@ -77,10 +75,10 @@ export function StructuredTableEvidence({ tables }: { tables: Table[] }) {
                                   ? 'row'
                                   : undefined
                             }
-                            className="border border-slate-200 p-2 text-left align-top"
+                            className="align-top"
                           >
                             <span>{cell.raw_text || '—'}</span>
-                            <span className="mt-1 block text-[11px] font-normal text-slate-500">
+                            <span className="mt-1 block text-metadata font-normal">
                               {String(
                                 cell.provenance.sheetName ??
                                   cell.provenance.cellRange ??

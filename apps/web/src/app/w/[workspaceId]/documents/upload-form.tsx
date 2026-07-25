@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { EvidenceProcessingMark } from '@/components/brand';
+import { IconUpload } from '@/components/icons';
 import { createUploadIntent, finalizeUpload } from './actions';
 
 type Props = {
@@ -87,62 +89,57 @@ export function UploadForm({ workspaceId, supabaseUrl, supabaseAnonKey, maxUploa
   }
 
   return (
-    <form action={onSubmit} className="space-y-3 rounded border border-slate-200 bg-white p-4">
-      <h2 className="text-base font-medium">Upload solicitation files</h2>
-      <p className="text-sm text-slate-600">
-        PDF, DOCX, XLSX, HTML, TXT, approved images, or a safe ZIP package. Contents are untrusted
-        data. Maximum size is {maxUploadBytes} bytes (enforced server-side).
-      </p>
+    <form action={onSubmit} className="surface-panel grid gap-5 p-5">
+      <div>
+        <h2 className="section-title">Upload solicitation files</h2>
+        <p className="section-lede">
+          PDF, DOCX, XLSX, HTML, TXT, approved images, or a safe ZIP package. Contents are untrusted
+          data. Maximum size is {maxUploadBytes} bytes (enforced server-side).
+        </p>
+      </div>
       {error ? (
-        <p
-          role="alert"
-          className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800"
-        >
+        <p role="alert" className="notice notice-critical rail-critical">
           {error}
         </p>
       ) : null}
       {status ? (
-        <p aria-live="polite" className="text-sm text-slate-700">
+        <p aria-live="polite" className="flex items-center gap-2.5 text-sm text-ink-soft">
+          <EvidenceProcessingMark size={20} />
           {status}
         </p>
       ) : null}
-      <div>
-        <label htmlFor="documentType" className="block text-sm font-medium mb-1">
-          Document type
-        </label>
-        <select
-          id="documentType"
-          name="documentType"
-          className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-          defaultValue="primary_rfp"
-        >
-          <option value="primary_rfp">Primary RFP</option>
-          <option value="addendum">Addendum</option>
-          <option value="attachment">Attachment</option>
-          <option value="proposal_draft">Proposal draft</option>
-          <option value="reference">Reference</option>
-        </select>
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="field">
+          <label htmlFor="documentType" className="field-label">
+            Document type
+          </label>
+          <select id="documentType" name="documentType" defaultValue="primary_rfp">
+            <option value="primary_rfp">Primary RFP</option>
+            <option value="addendum">Addendum</option>
+            <option value="attachment">Attachment</option>
+            <option value="proposal_draft">Proposal draft</option>
+            <option value="reference">Reference</option>
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor="file" className="field-label">
+            Document or package
+          </label>
+          <input
+            id="file"
+            name="file"
+            type="file"
+            accept=".pdf,.docx,.xlsx,.html,.htm,.txt,.png,.jpg,.jpeg,.tif,.tiff,.webp,.zip"
+            required
+          />
+        </div>
       </div>
-      <div>
-        <label htmlFor="file" className="block text-sm font-medium mb-1">
-          Document or package
-        </label>
-        <input
-          id="file"
-          name="file"
-          type="file"
-          accept=".pdf,.docx,.xlsx,.html,.htm,.txt,.png,.jpg,.jpeg,.tif,.tiff,.webp,.zip"
-          required
-          className="block w-full text-sm"
-        />
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="submit" disabled={pending} className="primary-action">
+          <IconUpload size={16} />
+          {pending ? 'Working…' : 'Upload'}
+        </button>
       </div>
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-50"
-      >
-        {pending ? 'Working…' : 'Upload'}
-      </button>
     </form>
   );
 }

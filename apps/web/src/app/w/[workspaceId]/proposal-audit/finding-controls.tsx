@@ -18,7 +18,7 @@ export function ProposalFindingControls({
   const router = useRouter();
   return (
     <form
-      className="mt-3 grid gap-2 rounded border border-slate-200 p-3 sm:grid-cols-2"
+      className="surface-panel rail-teal mt-5 grid gap-4 p-4 sm:grid-cols-2"
       onSubmit={(event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
@@ -36,51 +36,38 @@ export function ProposalFindingControls({
         });
       }}
     >
-      <label className="text-sm font-medium">
-        Human decision
-        <select
-          name="humanStatus"
-          className="mt-1 block w-full rounded border border-slate-300 px-2 py-1"
-        >
+      <label className="field">
+        <span className="field-label">Human decision</span>
+        <select name="humanStatus">
           <option value="accepted">Accept assessment</option>
           <option value="rejected">Reject assessment</option>
           <option value="needs_follow_up">Needs follow-up</option>
           <option value="waived">Record waiver</option>
         </select>
       </label>
-      <label className="text-sm font-medium">
-        Finding workflow
-        <select
-          name="workflowStatus"
-          className="mt-1 block w-full rounded border border-slate-300 px-2 py-1"
-        >
+      <label className="field">
+        <span className="field-label">Finding workflow</span>
+        <select name="workflowStatus">
           <option value="in_review">In review</option>
           <option value="resolved">Resolved</option>
           <option value="accepted_risk">Accepted risk</option>
           <option value="obsolete">Obsolete</option>
         </select>
       </label>
-      <label className="text-sm font-medium sm:col-span-2">
-        Reason
-        <textarea
-          required
-          minLength={5}
-          maxLength={4000}
-          name="reason"
-          className="mt-1 block min-h-20 w-full rounded border border-slate-300 px-2 py-1"
-        />
+      <label className="field sm:col-span-2">
+        <span className="field-label">Reason</span>
+        <textarea required minLength={5} maxLength={4000} name="reason" className="min-h-20" />
       </label>
-      <button
-        disabled={pending}
-        className="w-fit rounded border border-slate-500 px-3 py-2 text-sm disabled:opacity-50"
-      >
-        Record decision
-      </button>
-      {message ? (
-        <p aria-live="polite" className="text-sm text-slate-700">
-          {message}
-        </p>
-      ) : null}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:col-span-2">
+        <button disabled={pending} className="secondary-action btn-sm">
+          Record decision
+        </button>
+        {message ? (
+          <p aria-live="polite" className="text-metadata">
+            {message}
+          </p>
+        ) : null}
+      </div>
     </form>
   );
 }

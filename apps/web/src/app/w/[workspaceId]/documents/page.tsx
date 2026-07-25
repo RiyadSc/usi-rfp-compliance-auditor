@@ -5,6 +5,8 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { serverEnv } from '@/lib/env';
 import { WorkspaceNavigation } from '@/components/workspace-navigation';
 import { StatusBadge } from '@/components/status-badge';
+import { EmptyStateArt } from '@/components/brand';
+import { IconDocument, IconInfo } from '@/components/icons';
 import { businessLabel, formatDate } from '@/lib/presentation';
 import { UploadForm } from './upload-form';
 import { DocumentDownloadButton } from './download-button';
@@ -59,45 +61,53 @@ export default async function DocumentsPage({
   ];
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+    <main className="page-shell">
       <WorkspaceNavigation
         workspaceId={workspaceId}
         workspaceName={workspace.name}
         current="documents"
       />
-      <div className="mb-6">
-        <p className="section-kicker">Opportunity source library</p>
-        <h1 aria-label="Documents" className="mt-1 text-3xl font-semibold tracking-tight">
-          Documents
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-600">
-          Keep the main RFP, addenda, forms, and proposal drafts clearly separated. Processing
-          status does not imply that a document has been reviewed by your team.
-        </p>
+      <div className="page-header">
+        <div>
+          <p className="page-eyebrow">Opportunity source library</p>
+          <h1 aria-label="Documents" className="page-title mt-1.5">
+            Documents
+          </h1>
+          <p className="page-lede mt-3">
+            Keep the main RFP, addenda, forms, and proposal drafts clearly separated. Processing
+            status does not imply that a document has been reviewed by your team.
+          </p>
+        </div>
       </div>
 
-      <details className="surface-card mb-7" open={!documents?.length}>
-        <summary className="cursor-pointer list-none px-4 py-4 font-semibold">
-          Upload a document
-          <span className="ml-2 text-sm font-normal text-slate-500">PDF files only</span>
+      <details className="disclosure mb-8" open={!documents?.length}>
+        <summary>
+          <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <span className="text-sm font-semibold text-ink">Upload a document</span>
+            <span className="text-metadata">PDF files only</span>
+          </span>
         </summary>
-        <div className="border-t border-slate-200 p-4">
-          <ol className="mb-5 grid gap-3 text-sm sm:grid-cols-3" aria-label="Document upload steps">
-            <li className="rounded-lg bg-slate-50 p-3">
-              <strong>1. Choose its purpose</strong>
-              <span className="mt-1 block text-slate-600">
+        <div className="disclosure-body">
+          <ol className="mb-6 grid gap-3 text-sm sm:grid-cols-3" aria-label="Document upload steps">
+            <li className="surface-panel p-4">
+              <strong className="text-[0.8125rem] font-semibold text-ink">
+                1. Choose its purpose
+              </strong>
+              <span className="mt-1.5 block text-ink-soft">
                 Main RFP, addendum, attachment, form, or proposal draft.
               </span>
             </li>
-            <li className="rounded-lg bg-slate-50 p-3">
-              <strong>2. Select the PDF</strong>
-              <span className="mt-1 block text-slate-600">
+            <li className="surface-panel p-4">
+              <strong className="text-[0.8125rem] font-semibold text-ink">2. Select the PDF</strong>
+              <span className="mt-1.5 block text-ink-soft">
                 The file stays private and workspace-scoped.
               </span>
             </li>
-            <li className="rounded-lg bg-slate-50 p-3">
-              <strong>3. Review processing</strong>
-              <span className="mt-1 block text-slate-600">
+            <li className="surface-panel p-4">
+              <strong className="text-[0.8125rem] font-semibold text-ink">
+                3. Review processing
+              </strong>
+              <span className="mt-1.5 block text-ink-soft">
                 Resolve parser warnings before trusting source text.
               </span>
             </li>
@@ -112,7 +122,7 @@ export default async function DocumentsPage({
       </details>
 
       {documents?.length ? (
-        <div className="space-y-7">
+        <div className="space-y-10">
           {groups.map((group) => {
             const rows = documents.filter((document) =>
               group.key === 'other'
@@ -122,39 +132,49 @@ export default async function DocumentsPage({
             if (!rows.length) return null;
             return (
               <section key={group.key} aria-labelledby={`documents-${group.key}`}>
-                <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+                <div className="mb-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
                   <div>
-                    <h2 id={`documents-${group.key}`} className="text-lg font-semibold">
+                    <h2 id={`documents-${group.key}`} className="section-title">
                       {group.title}
                     </h2>
-                    <p className="text-sm text-slate-600">{group.description}</p>
+                    <p className="section-lede">{group.description}</p>
                   </div>
-                  <span className="text-sm text-slate-500">
+                  <span className="text-metadata tabular">
                     {rows.length} file{rows.length === 1 ? '' : 's'}
                   </span>
                 </div>
-                <ul className="surface-card divide-y divide-slate-200">
+                <ul className="surface-card divide-y divide-line-subtle overflow-hidden">
                   {rows.map((d) => (
                     <li
                       key={d.id}
-                      className="flex items-center justify-between gap-4 px-4 py-4 hover:bg-slate-50"
+                      className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-4 transition-colors hover:bg-surface-800/40 sm:px-5"
                     >
                       <Link
                         href={`/w/${workspaceId}/documents/${d.id}`}
-                        className="min-w-0 flex-1"
+                        className="group flex min-w-0 flex-1 items-start gap-3"
                       >
-                        <span className="block font-medium">{d.normalized_filename}</span>
-                        <span className="block text-sm text-slate-600">
-                          {businessLabel(d.document_type)}
-                          {d.page_count != null ? ` · ${d.page_count} pages` : ''}
-                          {d.created_at ? ` · added ${formatDate(d.created_at)}` : ''}
+                        <span
+                          aria-hidden="true"
+                          className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-sm border border-line-subtle bg-surface-800 text-teal-300"
+                        >
+                          <IconDocument size={17} />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate font-medium text-ink group-hover:text-mist-100">
+                            {d.normalized_filename}
+                          </span>
+                          <span className="text-metadata mt-0.5 block">
+                            {businessLabel(d.document_type)}
+                            {d.page_count != null ? ` · ${d.page_count} pages` : ''}
+                            {d.created_at ? ` · added ${formatDate(d.created_at)}` : ''}
+                          </span>
                         </span>
                       </Link>
                       <span className="flex shrink-0 items-center gap-3 text-right">
                         <DocumentDownloadButton workspaceId={workspaceId} documentId={d.id} />
                         <span>
                           <StatusBadge value={d.status} label={businessLabel(d.status)} />
-                          <code className="analyst-only mt-1 block text-[10px] text-slate-400">
+                          <code className="analyst-only mono mt-1 block text-[10px] text-ink-faint">
                             {d.status}
                           </code>
                         </span>
@@ -165,21 +185,32 @@ export default async function DocumentsPage({
               </section>
             );
           })}
-          <aside className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">
-            <strong>Addendum review:</strong> open each amendment to confirm what changed. The
-            requirements stage keeps superseded and current instructions separate.
-            <Link
-              href={`/w/${workspaceId}/requirements?precedence=superseded`}
-              className="ml-2 font-semibold underline"
-            >
-              Review changed requirements →
-            </Link>
+          <aside className="notice notice-info flex gap-3">
+            <span aria-hidden="true" className="mt-0.5 shrink-0 text-info-400">
+              <IconInfo size={16} />
+            </span>
+            <span>
+              <strong className="font-semibold text-ink">Addendum review:</strong> open each
+              amendment to confirm what changed. The requirements stage keeps superseded and current
+              instructions separate.
+              <Link
+                href={`/w/${workspaceId}/requirements?precedence=superseded`}
+                className="action-link ml-2 inline-flex items-center gap-1.5"
+              >
+                Review changed requirements →
+              </Link>
+            </span>
           </aside>
         </div>
       ) : (
-        <p className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-600">
-          No RFP files yet. Upload the main solicitation to begin.
-        </p>
+        <div className="empty-state">
+          <EmptyStateArt>
+            <IconDocument size={20} />
+          </EmptyStateArt>
+          <p className="empty-state-body">
+            No RFP files yet. Upload the main solicitation to begin.
+          </p>
+        </div>
       )}
     </main>
   );

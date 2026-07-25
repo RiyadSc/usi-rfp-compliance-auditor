@@ -1,11 +1,18 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
+import { IconDocument, IconInfo } from '@/components/icons';
 import { StatusBadge } from '@/components/status-badge';
 import { WorkspaceNavigation } from '@/components/workspace-navigation';
 import { businessLabel, formatDate } from '@/lib/presentation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { ProposalFindingControls } from '../finding-controls';
+
+/** Severity keeps a non-colour cue: a left rail on the card, not a tinted panel. */
+const severityRail: Record<string, string> = {
+  critical: 'rail-critical',
+  blocking: 'rail-warning',
+};
 
 export default async function ProposalAuditDetailPage({
   params,
@@ -89,23 +96,24 @@ export default async function ProposalAuditDetailPage({
     (finding) => finding.human_resolution_status === 'pending',
   ).length;
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+    <main className="page-shell">
       <WorkspaceNavigation
         workspaceId={workspaceId}
         workspaceName={workspace.name}
         current="proposal-audit"
         compact
       />
-      <Link href={`/w/${workspaceId}/proposal-audit`} className="action-link text-sm">
+      <Link
+        href={`/w/${workspaceId}/proposal-audit`}
+        className="action-link inline-flex items-center gap-1.5 text-sm"
+      >
         ← Draft review history
       </Link>
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
+      <div className="page-header mt-4">
         <div>
-          <p className="section-kicker">Completed draft review</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-            {draft.documents.normalized_filename}
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="page-eyebrow">Completed draft review</p>
+          <h1 className="page-title mt-1.5">{draft.documents.normalized_filename}</h1>
+          <p className="page-lede mt-2.5">
             Revision {draft.revision_number} · completed{' '}
             {formatDate(run.completed_at ?? run.created_at)} · team decisions remain separate
           </p>
@@ -113,14 +121,17 @@ export default async function ProposalAuditDetailPage({
         <StatusBadge value={run.status} />
       </div>
 
-      <p className="mt-5 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">
-        This review is complete. Run another review only after uploading a new proposal revision.
-        Machine findings still require a human decision.
-      </p>
+      <div className="notice notice-info flex items-start gap-2.5">
+        <IconInfo size={16} className="mt-0.5 shrink-0 text-info-400" />
+        <p>
+          This review is complete. Run another review only after uploading a new proposal revision.
+          Machine findings still require a human decision.
+        </p>
+      </div>
 
       <section
         aria-label="Draft review summary"
-        className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+        className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
       >
         <Metric label="Critical issues" value={criticalCount} danger={criticalCount > 0} />
         <Metric label="Blocking issues" value={blockingCount} danger={blockingCount > 0} />
@@ -128,179 +139,192 @@ export default async function ProposalAuditDetailPage({
         <Metric label="Team decisions pending" value={pendingCount} warning={pendingCount > 0} />
       </section>
 
-      <details className="analyst-only surface-card mt-4 p-4 text-sm">
-        <summary className="cursor-pointer font-semibold">Technical audit details</summary>
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <p>
-            <strong>Claims</strong>
-            <br />
-            {run.claim_count}
-          </p>
-          <p>
-            <strong>Findings</strong>
-            <br />
-            {run.finding_count}
-          </p>
-          <p>
-            <strong>Evaluator</strong>
-            <br />
-            {run.evaluator_version}
-          </p>
-          <p className="break-all sm:col-span-3">
-            <strong>Input hash</strong>
-            <br />
-            {run.input_hash}
-          </p>
+      <details className="analyst-only disclosure mt-5">
+        <summary>Technical audit details</summary>
+        <div className="disclosure-body grid gap-4 sm:grid-cols-3">
+          <div>
+            <p className="section-kicker">Claims</p>
+            <p className="mono mt-1.5 text-xs text-ink-soft">{run.claim_count}</p>
+          </div>
+          <div>
+            <p className="section-kicker">Findings</p>
+            <p className="mono mt-1.5 text-xs text-ink-soft">{run.finding_count}</p>
+          </div>
+          <div>
+            <p className="section-kicker">Evaluator</p>
+            <p className="mono mt-1.5 text-xs text-ink-soft">{run.evaluator_version}</p>
+          </div>
+          <div className="sm:col-span-3">
+            <p className="section-kicker">Input hash</p>
+            <p className="mono mt-1.5 break-all text-xs text-ink-soft">{run.input_hash}</p>
+          </div>
         </div>
       </details>
 
-      <section className="mt-8" aria-labelledby="priority-findings">
-        <div className="mb-3">
+      <section className="mt-10" aria-labelledby="priority-findings">
+        <div className="mb-4">
           <p className="section-kicker">What needs attention</p>
-          <h2 id="priority-findings" className="mt-1 text-xl font-semibold">
+          <h2 id="priority-findings" className="section-title mt-1.5">
             Proposal issues
           </h2>
-          <p className="text-sm text-slate-600">
+          <p className="section-lede">
             Sorted by submission risk. Open a finding to inspect its evidence and record a team
             decision.
           </p>
         </div>
         {orderedFindings.length ? (
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             {orderedFindings.map((finding) => (
               <article
                 key={`summary-${finding.id}`}
-                className={`surface-card border-l-4 p-4 ${finding.severity === 'critical' ? 'border-l-red-600' : finding.severity === 'blocking' ? 'border-l-amber-500' : 'border-l-blue-500'}`}
+                className={`surface-card flex flex-col gap-3 p-5 ${severityRail[finding.severity] ?? 'rail-steel'}`}
               >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <h3 className="font-semibold">Issue: {finding.title}</h3>
+                <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+                  <h3 className="text-[0.9375rem] font-semibold leading-snug text-ink">
+                    Issue: {finding.title}
+                  </h3>
                   <StatusBadge value={finding.severity} />
                 </div>
-                <p className="mt-2 text-sm text-slate-700">{finding.detail}</p>
+                <p className="text-sm text-ink-soft">{finding.detail}</p>
                 {finding.source_quote ? (
-                  <div className="mt-3 rounded-lg bg-slate-50 p-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      RFP requires
+                  <div>
+                    <p className="section-kicker">RFP requires</p>
+                    <p
+                      className={`evidence-quote mt-2 ${finding.severity === 'critical' ? 'evidence-quote-conflict' : ''}`}
+                    >
+                      {finding.source_quote}
                     </p>
-                    <p className="mt-1 text-sm">{finding.source_quote}</p>
                   </div>
                 ) : null}
-                <a
-                  href={`#finding-${finding.id}`}
-                  className="action-link mt-3 inline-block text-sm"
-                >
+                <a href={`#finding-${finding.id}`} className="action-link mt-auto w-fit text-sm">
                   Review evidence and decide →
                 </a>
               </article>
             ))}
           </div>
         ) : (
-          <p className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-            No machine findings were generated. Human review of the proposal is still required.
-          </p>
+          <div className="notice flex items-start gap-2.5">
+            <IconInfo size={16} className="mt-0.5 shrink-0 text-ink-muted" />
+            <p>
+              No machine findings were generated. Human review of the proposal is still required.
+            </p>
+          </div>
         )}
       </section>
-      <section className="mt-8">
-        <h2 className="mb-3 text-lg font-medium">RFP response coverage</h2>
-        <div className="overflow-x-auto rounded border border-slate-200">
-          <table className="min-w-full bg-white text-left text-sm">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="p-3">Requirement</th>
-                <th className="p-3">Category</th>
-                <th className="p-3">Coverage</th>
-                <th className="p-3">Reason</th>
-                <th className="p-3">Source</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(coverage ?? []).map((item) => {
-                const source = item.checklist_items as unknown as {
-                  title: string;
-                  category: string;
-                  candidate_id: string;
-                  relationship_role: string;
-                };
-                return (
-                  <tr key={item.id} className="border-t border-slate-200">
-                    <td className="p-3">{source.title}</td>
-                    <td className="p-3">
-                      {businessLabel(source.category)} · {businessLabel(source.relationship_role)}
-                    </td>
-                    <td className="p-3 font-medium">
-                      <StatusBadge
-                        value={item.coverage_status}
-                        label={businessLabel(item.coverage_status)}
-                      />
-                    </td>
-                    <td className="p-3">{item.reason}</td>
-                    <td className="p-3">
-                      <Link
-                        className="text-blue-700 hover:underline"
-                        href={`/w/${workspaceId}/requirements/${source.candidate_id}`}
-                      >
-                        Requirement evidence
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      <section className="mt-10">
+        <h2 className="section-title mb-4">RFP response coverage</h2>
+        <div className="data-frame">
+          <div className="data-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Requirement</th>
+                  <th scope="col">Category</th>
+                  <th scope="col">Coverage</th>
+                  <th scope="col">Reason</th>
+                  <th scope="col">Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(coverage ?? []).map((item) => {
+                  const source = item.checklist_items as unknown as {
+                    title: string;
+                    category: string;
+                    candidate_id: string;
+                    relationship_role: string;
+                  };
+                  return (
+                    <tr key={item.id}>
+                      <td className="cell-primary min-w-56">{source.title}</td>
+                      <td className="text-xs text-ink-muted">
+                        {businessLabel(source.category)} · {businessLabel(source.relationship_role)}
+                      </td>
+                      <td>
+                        <StatusBadge
+                          value={item.coverage_status}
+                          label={businessLabel(item.coverage_status)}
+                        />
+                      </td>
+                      <td className="min-w-64">{item.reason}</td>
+                      <td>
+                        <Link
+                          className="action-link whitespace-nowrap"
+                          href={`/w/${workspaceId}/requirements/${source.candidate_id}`}
+                        >
+                          Requirement evidence
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
-      <details className="mt-8" open>
-        <summary className="cursor-pointer text-lg font-semibold">Atomic proposal claims</summary>
-        <section className="mt-3">
-          <h2 className="mb-3 text-lg font-medium">Atomic claims</h2>
-          <ul className="space-y-2">
-            {(matches ?? []).map((match, index) => {
-              const claim = match.proposal_claims as unknown as {
-                claim_text: string;
-                page_number: number;
-              };
-              return (
-                <li key={index} className="rounded border border-slate-200 bg-white p-3">
-                  <blockquote>{claim.claim_text}</blockquote>
-                  <p className="mt-1 text-xs text-slate-600">
-                    Support: {match.support_status} · consistency: {match.consistency_status} · page{' '}
-                    {claim.page_number} · score {Number(match.match_score).toFixed(2)}
-                  </p>
-                  <Link
-                    href={`/w/${workspaceId}/documents/${draft.document_id}?page=${claim.page_number}`}
-                    className="text-xs text-blue-700 hover:underline"
-                  >
-                    Open proposal page
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+      <details className="disclosure mt-10" open>
+        <summary className="text-[0.9375rem] font-semibold text-ink">
+          Atomic proposal claims
+        </summary>
+        <div className="disclosure-body">
+          <section>
+            <h2 className="section-title mb-4">Atomic claims</h2>
+            <ul className="grid gap-3">
+              {(matches ?? []).map((match, index) => {
+                const claim = match.proposal_claims as unknown as {
+                  claim_text: string;
+                  page_number: number;
+                };
+                return (
+                  <li key={index} className="surface-panel rail-steel p-4">
+                    <blockquote className="evidence-quote evidence-quote-proposal">
+                      {claim.claim_text}
+                    </blockquote>
+                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                      <p className="text-xs text-ink-muted">
+                        Support: {match.support_status} · consistency: {match.consistency_status} ·
+                        page {claim.page_number} · score {Number(match.match_score).toFixed(2)}
+                      </p>
+                      <Link
+                        href={`/w/${workspaceId}/documents/${draft.document_id}?page=${claim.page_number}`}
+                        className="locator"
+                      >
+                        <IconDocument size={12} />
+                        Open proposal page
+                      </Link>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        </div>
       </details>
-      <section className="mt-8">
-        <h2 className="mb-3 text-lg font-medium">Findings</h2>
+      <section className="mt-10" aria-labelledby="findings-heading">
+        <h2 id="findings-heading" className="section-title mb-4">
+          Findings
+        </h2>
         {findings?.length ? (
           <ul className="space-y-4">
             {orderedFindings.map((finding) => (
               <li
                 id={`finding-${finding.id}`}
                 key={finding.id}
-                className="rounded border border-slate-200 bg-white p-4"
+                className={`surface-card p-5 ${severityRail[finding.severity] ?? ''}`}
               >
                 <div className="flex flex-wrap justify-between gap-2">
-                  <h3 className="font-medium">{finding.title}</h3>
-                  <span className="text-sm">
-                    <StatusBadge value={finding.severity} />{' '}
-                    <StatusBadge value={finding.workflow_status} />{' '}
+                  <h3 className="font-medium text-ink">{finding.title}</h3>
+                  <span className="flex flex-wrap gap-1.5 text-sm">
+                    <StatusBadge value={finding.severity} />
+                    <StatusBadge value={finding.workflow_status} />
                     <StatusBadge value={finding.human_resolution_status} />
                   </span>
                 </div>
-                <p className="mt-2 text-sm">{finding.detail}</p>
-                <div className="mt-2 flex flex-wrap gap-3 text-sm">
+                <p className="mt-2 text-sm text-ink-soft">{finding.detail}</p>
+                <div className="mt-3 flex flex-wrap gap-3 text-sm">
                   {finding.proposal_page_number ? (
                     <Link
-                      className="text-blue-700 hover:underline"
+                      className="locator"
                       href={`/w/${workspaceId}/documents/${draft.document_id}?page=${finding.proposal_page_number}`}
                     >
                       Proposal page {finding.proposal_page_number}
@@ -308,7 +332,7 @@ export default async function ProposalAuditDetailPage({
                   ) : null}
                   {finding.checklist_item_id ? (
                     <Link
-                      className="text-blue-700 hover:underline"
+                      className="action-link"
                       href={`/w/${workspaceId}/checklist/${finding.checklist_item_id}`}
                     >
                       Checklist source
@@ -316,7 +340,7 @@ export default async function ProposalAuditDetailPage({
                   ) : null}
                   {finding.source_document_id && finding.source_page_number ? (
                     <Link
-                      className="text-blue-700 hover:underline"
+                      className="locator"
                       href={`/w/${workspaceId}/documents/${finding.source_document_id}?page=${finding.source_page_number}`}
                     >
                       Source page {finding.source_page_number}
@@ -324,7 +348,9 @@ export default async function ProposalAuditDetailPage({
                   ) : null}
                 </div>
                 {finding.source_quote ? (
-                  <blockquote className="mt-3 border-l-2 border-slate-300 pl-3 text-sm">
+                  <blockquote
+                    className={`evidence-quote mt-3 ${finding.severity === 'critical' ? 'evidence-quote-conflict' : ''}`}
+                  >
                     {finding.source_quote}
                   </blockquote>
                 ) : null}
@@ -334,9 +360,9 @@ export default async function ProposalAuditDetailPage({
                   findingId={finding.id}
                 />
                 {(resolutionByFinding.get(finding.id) ?? []).length ? (
-                  <details className="mt-3 text-sm">
+                  <details className="disclosure mt-3 text-sm">
                     <summary>Decision history</summary>
-                    <ul className="mt-2 list-disc pl-5">
+                    <ul className="disclosure-body mt-2 list-disc pl-5 text-ink-soft">
                       {(resolutionByFinding.get(finding.id) ?? []).map((resolution) => (
                         <li key={resolution.id}>
                           {resolution.human_resolution_status} / {resolution.workflow_status} —{' '}
@@ -350,7 +376,7 @@ export default async function ProposalAuditDetailPage({
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-ink-muted">
             No findings were generated. Human review is still required for the audit.
           </p>
         )}
@@ -371,10 +397,10 @@ function Metric({
   warning?: boolean;
 }) {
   return (
-    <div className="surface-card p-4">
-      <p className="text-sm font-medium text-slate-600">{label}</p>
+    <div className={`metric-card ${danger ? 'rail-critical' : warning ? 'rail-warning' : ''}`}>
+      <p className="metric-label">{label}</p>
       <p
-        className={`metric-value ${danger ? 'text-red-700' : warning ? 'text-amber-700' : 'text-slate-950'}`}
+        className={`metric-value ${danger ? 'text-critical-400' : warning ? 'text-warning-400' : 'text-ink'}`}
       >
         {value}
       </p>

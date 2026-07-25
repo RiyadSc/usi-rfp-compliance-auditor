@@ -4,6 +4,7 @@ import { reportSnapshotSchema } from '@usi/domain';
 import { z } from 'zod';
 import { WorkspaceNavigation } from '@/components/workspace-navigation';
 import { StatusBadge } from '@/components/status-badge';
+import { BrandSeal, EmptyStateArt } from '@/components/brand';
 import { businessLabel, phaseLabel } from '@/lib/presentation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { createPreparedDemoLinkResolver } from '@/lib/reporting/prepared-demo-links';
@@ -134,11 +135,15 @@ export default async function ReportDetailPage({
       generation: manifest.regeneration_number,
     }));
   });
+  const requiredProgressPercent = report.summary.requiredItems
+    ? Math.round((report.summary.completedRequiredItems / report.summary.requiredItems) * 100)
+    : 0;
+  const blockingTotal = report.summary.criticalBlockers + report.summary.blockingIssues;
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+    <main className="page-shell">
       {report.demoWatermark ? (
         <div
-          className="mb-4 rounded border-2 border-amber-500 bg-amber-50 p-3 text-center font-semibold text-amber-950"
+          className="notice notice-warning mb-6 text-center text-[0.8125rem] font-semibold uppercase tracking-[0.18em] text-warning-400"
           role="status"
         >
           {report.demoWatermark}
@@ -150,29 +155,25 @@ export default async function ReportDetailPage({
         current="reports"
         compact
       />
-      <Link href={`/w/${workspaceId}/reports`} className="action-link text-sm">
+      <Link href={`/w/${workspaceId}/reports`} className="action-link no-print text-sm">
         ← Final review history
       </Link>
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="page-header mt-5">
         <div>
-          <p className="section-kicker mt-4">Executive final review</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-            {label(report.reportType)} report
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Generated {new Date(row.generated_at).toLocaleString()} · revision{' '}
-            {report.summary.proposalRevision}
+          <p className="page-eyebrow">Executive final review</p>
+          <h1 className="page-title mt-2">{label(report.reportType)} report</h1>
+          <p className="text-metadata mt-3">
+            Generated <span className="tabular">{new Date(row.generated_at).toLocaleString()}</span>{' '}
+            · revision <span className="tabular">{report.summary.proposalRevision}</span>
           </p>
         </div>
         <StatusBadge value="pending" label="Human decisions remain separate" tone="warning" />
       </div>
-      <p className="mt-4 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
-        {report.provenance.humanReviewDisclaimer}
-      </p>
+      <p className="notice notice-info">{report.provenance.humanReviewDisclaimer}</p>
 
       <nav
         aria-label="Report sections"
-        className="sticky top-0 z-10 mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white/95 p-2 text-sm shadow-sm backdrop-blur"
+        className="stage-nav no-print sticky top-0 z-10 mt-6 bg-canvas-900/85 backdrop-blur"
       >
         <div className="flex min-w-max gap-1">
           {[
@@ -184,81 +185,83 @@ export default async function ReportDetailPage({
             ['#coverage', 'Source coverage'],
             ['#exports', 'Exports'],
           ].map(([href, text]) => (
-            <a
-              key={href}
-              href={href}
-              className="rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100"
-            >
+            <a key={href} href={href} className="stage-nav-item">
               {text}
             </a>
           ))}
         </div>
       </nav>
 
-      <section id="decision-brief" className="mt-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-xl border border-slate-900 bg-slate-900 p-5 text-white">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
-            Bid status
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold">{label(report.summary.readinessState)}</h2>
-          <p className="mt-2 text-sm text-slate-300">
-            {report.summary.requiredItems
-              ? Math.round(
-                  (report.summary.completedRequiredItems / report.summary.requiredItems) * 100,
-                )
-              : 0}
-            % of required tasks are complete ·{' '}
-            {report.summary.criticalBlockers + report.summary.blockingIssues} blocking issues
-            require attention.
-          </p>
-          <a
-            href="#blockers"
-            className="mt-4 inline-flex rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-900"
-          >
-            Review top issues →
-          </a>
+      <section id="decision-brief" className="mt-8 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="hero-panel texture-halftone p-6 lg:p-8">
+          <BrandSeal
+            size={224}
+            className="pointer-events-none absolute -right-10 -top-14 text-mist-100 opacity-[0.07]"
+          />
+          <div className="relative">
+            <p className="section-kicker">Bid status</p>
+            <h2 className="mt-3 text-[1.9rem] font-medium leading-[1.08] tracking-[-0.035em] text-ink">
+              {label(report.summary.readinessState)}
+            </h2>
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink-soft">
+              <span className="tabular font-semibold text-ink">{requiredProgressPercent}</span>% of
+              required tasks are complete ·{' '}
+              <span
+                className={`tabular font-semibold ${blockingTotal ? 'text-critical-400' : 'text-ink'}`}
+              >
+                {blockingTotal}
+              </span>{' '}
+              blocking issues require attention.
+            </p>
+            <div className="progress-track mt-5 max-w-xs" aria-hidden="true">
+              <div className="progress-fill" style={{ width: `${requiredProgressPercent}%` }} />
+            </div>
+            <a href="#blockers" className="primary-action mt-6">
+              Review top issues →
+            </a>
+          </div>
         </div>
-        <div className="surface-card p-5">
+        <div className="surface-card p-6">
           <p className="section-kicker">Decisions needed</p>
-          <ul className="mt-3 space-y-2 text-sm">
-            <li>
-              <strong>{report.summary.humanReviewPending}</strong> machine assessments await team
-              review.
+          <ul className="mt-3 text-sm text-ink-soft">
+            <li className="flex items-baseline gap-3 border-b border-line-subtle py-3 last:border-0 last:pb-0">
+              <strong className="tabular text-[1.375rem] font-medium leading-none text-ink">
+                {report.summary.humanReviewPending}
+              </strong>{' '}
+              <span>machine assessments await team review.</span>
             </li>
-            <li>
-              <strong>{report.summary.humanProofCount}</strong> items require company evidence.
+            <li className="flex items-baseline gap-3 border-b border-line-subtle py-3 last:border-0 last:pb-0">
+              <strong className="tabular text-[1.375rem] font-medium leading-none text-ink">
+                {report.summary.humanProofCount}
+              </strong>{' '}
+              <span>items require company evidence.</span>
             </li>
-            <li>
-              <strong>{report.summary.missingArtifacts}</strong> required artifacts are missing.
+            <li className="flex items-baseline gap-3 border-b border-line-subtle py-3 last:border-0 last:pb-0">
+              <strong className="tabular text-[1.375rem] font-medium leading-none text-ink">
+                {report.summary.missingArtifacts}
+              </strong>{' '}
+              <span>required artifacts are missing.</span>
             </li>
           </ul>
         </div>
       </section>
 
       <form
-        className="analyst-only mt-4 grid gap-3 rounded border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-5"
+        className="filter-bar analyst-only no-print mt-6 grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-5"
         method="get"
       >
-        <label className="text-sm font-medium">
-          Phase
-          <select
-            name="phase"
-            defaultValue={phaseFilter}
-            className="mt-1 block w-full rounded border border-slate-300 px-2 py-2"
-          >
+        <label className="field">
+          <span className="field-label">Phase</span>
+          <select name="phase" defaultValue={phaseFilter}>
             <option value="">All</option>
             <option value="phase4">RFP requirement review</option>
             <option value="phase5">Submission planning</option>
             <option value="phase6">Proposal draft review</option>
           </select>
         </label>
-        <label className="text-sm font-medium">
-          Severity
-          <select
-            name="severity"
-            defaultValue={severityFilter}
-            className="mt-1 block w-full rounded border border-slate-300 px-2 py-2"
-          >
+        <label className="field">
+          <span className="field-label">Severity</span>
+          <select name="severity" defaultValue={severityFilter}>
             <option value="">All</option>
             <option value="critical">Critical</option>
             <option value="blocking">Blocking</option>
@@ -266,13 +269,9 @@ export default async function ReportDetailPage({
             <option value="informational">Informational</option>
           </select>
         </label>
-        <label className="text-sm font-medium">
-          Human review
-          <select
-            name="review"
-            defaultValue={reviewFilter}
-            className="mt-1 block w-full rounded border border-slate-300 px-2 py-2"
-          >
+        <label className="field">
+          <span className="field-label">Human review</span>
+          <select name="review" defaultValue={reviewFilter}>
             <option value="">All</option>
             <option value="pending">Pending</option>
             <option value="accepted">Accepted</option>
@@ -281,149 +280,158 @@ export default async function ReportDetailPage({
             <option value="waived">Waived</option>
           </select>
         </label>
-        <label className="text-sm font-medium">
-          Finding type
-          <input
-            name="type"
-            defaultValue={typeFilter}
-            maxLength={100}
-            className="mt-1 block w-full rounded border border-slate-300 px-2 py-2"
-          />
+        <label className="field">
+          <span className="field-label">Finding type</span>
+          <input name="type" defaultValue={typeFilter} maxLength={100} />
         </label>
-        <button className="self-end rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white">
-          Apply filters
-        </button>
+        <button className="secondary-action">Apply filters</button>
       </form>
 
       <section
-        className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+        className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
         aria-label="Executive summary"
       >
-        {[
-          ['Readiness', label(report.summary.readinessState)],
+        {(
           [
-            'Required progress',
-            `${report.summary.completedRequiredItems} of ${report.summary.requiredItems}`,
-          ],
-          ['Critical blockers', report.summary.criticalBlockers],
-          ['Blocking issues', report.summary.blockingIssues],
-          ['Warnings', report.summary.warnings],
-          ['Missing artifacts', report.summary.missingArtifacts],
-          ['Human proof', report.summary.humanProofCount],
-          ['Review pending', report.summary.humanReviewPending],
-        ].map(([name, value]) => (
-          <div key={String(name)} className="rounded border border-slate-200 bg-white p-4">
-            <dt className="text-sm text-slate-600">{name}</dt>
-            <dd className="mt-1 text-xl font-semibold">{value}</dd>
+            ['Readiness', label(report.summary.readinessState)],
+            [
+              'Required progress',
+              `${report.summary.completedRequiredItems} of ${report.summary.requiredItems}`,
+            ],
+            ['Critical blockers', report.summary.criticalBlockers, true],
+            ['Blocking issues', report.summary.blockingIssues, true],
+            ['Warnings', report.summary.warnings],
+            ['Missing artifacts', report.summary.missingArtifacts],
+            ['Human proof', report.summary.humanProofCount],
+            ['Review pending', report.summary.humanReviewPending],
+          ] as Array<[string, string | number, boolean?]>
+        ).map(([name, value, urgent]) => (
+          <div key={String(name)} className="metric-card">
+            <dt className="metric-label">{name}</dt>
+            <dd
+              className={`metric-value ${urgent && Number(value) > 0 ? 'text-critical-400' : ''}`}
+            >
+              {value}
+            </dd>
           </div>
         ))}
       </section>
 
-      <details id="exports" className="surface-card mt-8 p-4" open>
-        <summary className="cursor-pointer text-sm font-semibold text-slate-600">
-          Export and download options
-        </summary>
-        <div className="mt-4">
-          <h2 className="mb-3 text-lg font-semibold">Private exports</h2>
+      <details id="exports" className="disclosure mt-10" open>
+        <summary className="font-semibold text-ink">Export and download options</summary>
+        <div className="disclosure-body">
+          <h2 className="section-title mb-4">Private exports</h2>
           <ReportExportControls workspaceId={workspaceId} snapshotId={reportId} />
           {artifacts.length ? (
-            <ul className="mt-3 divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-              {artifacts.map((artifact) => (
-                <li key={artifact.id} className="space-y-2 p-3">
-                  <div>
-                    <span className="font-medium">{artifact.normalized_filename}</span>
-                    <span className="ml-2 text-sm text-slate-600">
-                      {artifact.format}
-                      {artifact.dataset ? ` · ${artifact.dataset}` : ''} · generation{' '}
-                      {artifact.generation} · {artifact.content_length} bytes
-                    </span>
-                  </div>
-                  <p className="break-all text-xs text-slate-500">
-                    SHA-256 {artifact.sha256} · retained until{' '}
-                    {new Date(artifact.retention_until).toLocaleString()}
-                  </p>
-                  <ExportArtifactControls
-                    workspaceId={workspaceId}
-                    artifactId={artifact.id}
-                    status={artifact.status}
-                  />
-                </li>
-              ))}
+            <ul className="surface-panel mt-4 divide-y divide-line-subtle">
+              {artifacts.map((artifact) => {
+                const inactive = artifact.status !== 'active';
+                return (
+                  <li key={artifact.id} className="space-y-2.5 p-4">
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <span className={`font-medium ${inactive ? 'text-ink-faint' : 'text-ink'}`}>
+                        {artifact.normalized_filename}
+                      </span>
+                      <span className={`text-metadata ${inactive ? 'text-ink-faint' : ''}`}>
+                        {artifact.format}
+                        {artifact.dataset ? ` · ${artifact.dataset}` : ''} · generation{' '}
+                        {artifact.generation} · {artifact.content_length} bytes
+                      </span>
+                    </div>
+                    <p
+                      className={`mono break-all text-[0.6875rem] ${inactive ? 'text-ink-faint' : 'text-ink-muted'}`}
+                    >
+                      SHA-256 {artifact.sha256} · retained until{' '}
+                      {new Date(artifact.retention_until).toLocaleString()}
+                    </p>
+                    <ExportArtifactControls
+                      workspaceId={workspaceId}
+                      artifactId={artifact.id}
+                      status={artifact.status}
+                    />
+                  </li>
+                );
+              })}
             </ul>
           ) : (
-            <p className="mt-2 text-sm text-slate-600">No exports generated.</p>
+            <p className="text-metadata mt-4">No exports generated.</p>
           )}
         </div>
       </details>
 
-      <section className="mt-8" id="blockers">
-        <h2 className="mb-3 text-lg font-semibold">Critical and blocking issues</h2>
+      <section className="mt-10" id="blockers">
+        <h2 className="section-title mb-4">Critical and blocking issues</h2>
         {filteredBlockers.length ? (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="p-2">Source</th>
-                  <th className="p-2">Severity</th>
-                  <th className="p-2">Issue</th>
-                  <th className="p-2">Workflow</th>
-                  <th className="p-2">Human review</th>
-                  <th className="p-2">Evidence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginate(filteredBlockers).map((item) => (
-                  <tr key={item.stableId} className="border-b align-top">
-                    <td className="p-2">{phaseLabel(item.sourcePhase)}</td>
-                    <td className="p-2">
-                      <StatusBadge value={item.severity} />
-                    </td>
-                    <td className="p-2">
-                      <strong>{item.title}</strong>
-                      <p className="text-slate-600">{item.explanation}</p>
-                    </td>
-                    <td className="p-2">
-                      <StatusBadge value={item.workflowState} />
-                    </td>
-                    <td className="p-2">
-                      <StatusBadge value={item.humanReviewState} />
-                    </td>
-                    <td className="p-2">
-                      <Link
-                        href={preparedLinks.navigationReference(item.navigationReference)}
-                        aria-label="Open linked record"
-                        className="text-blue-700 hover:underline"
-                      >
-                        Review issue and evidence
-                      </Link>
-                    </td>
+          <div className="data-frame">
+            <div className="data-scroll">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Source</th>
+                    <th scope="col">Severity</th>
+                    <th scope="col">Issue</th>
+                    <th scope="col">Workflow</th>
+                    <th scope="col">Human review</th>
+                    <th scope="col">Evidence</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {paginate(filteredBlockers).map((item) => (
+                    <tr key={item.stableId}>
+                      <td className={item.severity === 'critical' ? 'rail-critical' : ''}>
+                        {phaseLabel(item.sourcePhase)}
+                      </td>
+                      <td>
+                        <StatusBadge value={item.severity} />
+                      </td>
+                      <td className="max-w-[26rem]">
+                        <strong className="cell-primary">{item.title}</strong>
+                        <p className="text-metadata mt-1">{item.explanation}</p>
+                      </td>
+                      <td>
+                        <StatusBadge value={item.workflowState} />
+                      </td>
+                      <td>
+                        <StatusBadge value={item.humanReviewState} />
+                      </td>
+                      <td>
+                        <Link
+                          href={preparedLinks.navigationReference(item.navigationReference)}
+                          aria-label="Open linked record"
+                          className="action-link"
+                        >
+                          Review issue and evidence
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : (
-          <p className="text-sm text-slate-600">
-            No critical or blocking issues match the filters.
-          </p>
+          <div className="empty-state">
+            <EmptyStateArt />
+            <p className="empty-state-body">No critical or blocking issues match the filters.</p>
+          </div>
         )}
       </section>
 
-      <section className="mt-8" id="unresolved">
-        <h2 className="mb-3 text-lg font-semibold">Unresolved findings</h2>
-        <ul className="space-y-2">
+      <section className="mt-10" id="unresolved">
+        <h2 className="section-title mb-4">Unresolved findings</h2>
+        <ul className="grid gap-3">
           {paginate(filteredUnresolved).map((item) => (
-            <li key={item.stableId} className="rounded border border-slate-200 bg-white p-3">
-              <div className="flex flex-wrap justify-between gap-2">
-                <strong>{item.title}</strong>
-                <span className="text-sm">
+            <li key={item.stableId} className="surface-panel rail-warning p-4">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <strong className="text-ink">{item.title}</strong>
+                <span className="text-metadata">
                   {phaseLabel(item.sourcePhase)} · {label(item.humanState)}
                 </span>
               </div>
-              <p className="text-sm text-slate-600">{item.reason}</p>
+              <p className="mt-2 text-sm text-ink-soft">{item.reason}</p>
               <Link
                 href={preparedLinks.navigationReference(item.navigationReference)}
-                className="text-sm text-blue-700 hover:underline"
+                className="action-link mt-3 inline-block text-sm"
               >
                 Inspect source record
               </Link>
@@ -432,201 +440,214 @@ export default async function ReportDetailPage({
         </ul>
       </section>
 
-      <section className="mt-8" id="missing-artifacts">
-        <h2 className="mb-3 text-lg font-semibold">Missing or rejected artifacts</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="p-2">Item</th>
-                <th className="p-2">Artifact</th>
-                <th className="p-2">State</th>
-                <th className="p-2">Owner</th>
-                <th className="p-2">Source</th>
-              </tr>
-            </thead>
-            <tbody>
-              {report.missingArtifacts.map((item) => (
-                <tr key={`${item.checklistItemId}:${item.artifactType}`} className="border-b">
-                  <td className="p-2">
-                    <Link
-                      href={`/w/${workspaceId}/checklist/${preparedLinks.checklistId(item.checklistItemId)}`}
-                      className="text-blue-700 hover:underline"
-                    >
-                      {item.title}
-                    </Link>
-                  </td>
-                  <td className="p-2">{label(item.artifactType)}</td>
-                  <td className="p-2">{label(item.artifactState)}</td>
-                  <td className="p-2">{item.owner ?? 'Unassigned'}</td>
-                  <td className="p-2">
-                    {item.sourceDocumentId && item.sourcePageNumber ? (
-                      <Link
-                        href={`/w/${workspaceId}/documents/${preparedLinks.sourceDocumentId(item.sourceDocumentId)}?page=${item.sourcePageNumber}`}
-                        className="text-blue-700 hover:underline"
-                      >
-                        Page {item.sourcePageNumber}
-                      </Link>
-                    ) : (
-                      'Unavailable'
-                    )}
-                  </td>
+      <section className="mt-10" id="missing-artifacts">
+        <h2 className="section-title mb-4">Missing or rejected artifacts</h2>
+        <div className="data-frame">
+          <div className="data-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Item</th>
+                  <th scope="col">Artifact</th>
+                  <th scope="col">State</th>
+                  <th scope="col">Owner</th>
+                  <th scope="col">Source</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {report.missingArtifacts.map((item) => (
+                  <tr key={`${item.checklistItemId}:${item.artifactType}`}>
+                    <td className="max-w-[24rem]">
+                      <Link
+                        href={`/w/${workspaceId}/checklist/${preparedLinks.checklistId(item.checklistItemId)}`}
+                        className="action-link"
+                      >
+                        {item.title}
+                      </Link>
+                    </td>
+                    <td>{label(item.artifactType)}</td>
+                    <td>{label(item.artifactState)}</td>
+                    <td>{item.owner ?? 'Unassigned'}</td>
+                    <td>
+                      {item.sourceDocumentId && item.sourcePageNumber ? (
+                        <Link
+                          href={`/w/${workspaceId}/documents/${preparedLinks.sourceDocumentId(item.sourceDocumentId)}?page=${item.sourcePageNumber}`}
+                          className="locator"
+                        >
+                          Page {item.sourcePageNumber}
+                        </Link>
+                      ) : (
+                        <span className="text-ink-faint">Unavailable</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
-      <section className="mt-8" id="requirements">
-        <h2 className="mb-3 text-lg font-semibold">Phase 4 source requirements</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="p-2">Requirement</th>
-                <th className="p-2">Support</th>
-                <th className="p-2">Precedence</th>
-                <th className="p-2">Proof</th>
-                <th className="p-2">Human review</th>
-                <th className="p-2">Evidence</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginate(
-                report.requirements.filter(
-                  (item) => !reviewFilter || item.humanReviewStatus === reviewFilter,
-                ),
-              ).map((item) => (
-                <tr key={item.findingId} className="border-b align-top">
-                  <td className="p-2">
-                    <Link
-                      href={`/w/${workspaceId}/requirements/${preparedLinks.candidateId(item.candidateId)}`}
-                      className="font-medium text-blue-700 hover:underline"
-                    >
-                      {item.title}
-                    </Link>
-                  </td>
-                  <td className="p-2">{label(item.sourceSupportStatus)}</td>
-                  <td className="p-2">{label(item.precedenceStatus)}</td>
-                  <td className="p-2">{label(item.proofRequirement)}</td>
-                  <td className="p-2">{label(item.humanReviewStatus)}</td>
-                  <td className="p-2">
-                    {item.exactQuote ?? 'Unavailable'}
-                    {item.documentId && item.pageNumber ? (
-                      <>
-                        <br />
+      <section className="mt-10" id="requirements">
+        <h2 className="section-title mb-4">Phase 4 source requirements</h2>
+        <div className="data-frame">
+          <div className="data-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Requirement</th>
+                  <th scope="col">Support</th>
+                  <th scope="col">Precedence</th>
+                  <th scope="col">Proof</th>
+                  <th scope="col">Human review</th>
+                  <th scope="col">Evidence</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginate(
+                  report.requirements.filter(
+                    (item) => !reviewFilter || item.humanReviewStatus === reviewFilter,
+                  ),
+                ).map((item) => (
+                  <tr key={item.findingId}>
+                    <td className="max-w-[20rem]">
+                      <Link
+                        href={`/w/${workspaceId}/requirements/${preparedLinks.candidateId(item.candidateId)}`}
+                        className="action-link"
+                      >
+                        {item.title}
+                      </Link>
+                    </td>
+                    <td>{label(item.sourceSupportStatus)}</td>
+                    <td>{label(item.precedenceStatus)}</td>
+                    <td>{label(item.proofRequirement)}</td>
+                    <td>{label(item.humanReviewStatus)}</td>
+                    <td className="max-w-[26rem]">
+                      <span className={item.exactQuote ? 'evidence-quote block' : 'text-ink-faint'}>
+                        {item.exactQuote ?? 'Unavailable'}
+                      </span>
+                      {item.documentId && item.pageNumber ? (
                         <Link
                           href={`/w/${workspaceId}/documents/${preparedLinks.sourceDocumentId(item.documentId)}?page=${item.pageNumber}`}
-                          className="text-blue-700 hover:underline"
+                          className="locator mt-2"
                         >
                           Original page {item.pageNumber}
                         </Link>
-                      </>
-                    ) : null}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      ) : null}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
-      <section className="mt-8" id="checklist">
-        <h2 className="mb-3 text-lg font-semibold">Checklist detail</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="p-2">Requirement</th>
-                <th className="p-2">Category</th>
-                <th className="p-2">Workflow</th>
-                <th className="p-2">Source / precedence</th>
-                <th className="p-2">Proof / review</th>
-              </tr>
-            </thead>
-            <tbody>
-              {report.checklistItems.map((item) => (
-                <tr key={item.id} className="border-b align-top">
-                  <td className="p-2">
-                    <Link
-                      href={`/w/${workspaceId}/checklist/${preparedLinks.checklistId(item.id)}`}
-                      className="font-medium text-blue-700 hover:underline"
-                    >
-                      {item.title}
-                    </Link>
-                    <p className="mt-1 max-w-md text-xs text-slate-600">{item.sourceQuote}</p>
-                  </td>
-                  <td className="p-2">{label(item.category)}</td>
-                  <td className="p-2">
-                    {label(item.workflowStatus)}
-                    <br />
-                    <span className="text-xs">artifact: {label(item.artifactState)}</span>
-                  </td>
-                  <td className="p-2">
-                    {label(item.sourceSupportStatus)} / {label(item.precedenceStatus)}
-                    {item.sourceDocumentId && item.sourcePageNumber ? (
-                      <>
-                        <br />
+      <section className="mt-10" id="checklist">
+        <h2 className="section-title mb-4">Checklist detail</h2>
+        <div className="data-frame">
+          <div className="data-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Requirement</th>
+                  <th scope="col">Category</th>
+                  <th scope="col">Workflow</th>
+                  <th scope="col">Source / precedence</th>
+                  <th scope="col">Proof / review</th>
+                </tr>
+              </thead>
+              <tbody>
+                {report.checklistItems.map((item) => (
+                  <tr key={item.id}>
+                    <td className="max-w-[24rem]">
+                      <Link
+                        href={`/w/${workspaceId}/checklist/${preparedLinks.checklistId(item.id)}`}
+                        className="action-link"
+                      >
+                        {item.title}
+                      </Link>
+                      {item.sourceQuote ? (
+                        <p className="evidence-quote mt-2 max-w-md">{item.sourceQuote}</p>
+                      ) : null}
+                    </td>
+                    <td>{label(item.category)}</td>
+                    <td>
+                      {label(item.workflowStatus)}
+                      <p className="text-metadata mt-1">artifact: {label(item.artifactState)}</p>
+                    </td>
+                    <td>
+                      {label(item.sourceSupportStatus)} / {label(item.precedenceStatus)}
+                      {item.sourceDocumentId && item.sourcePageNumber ? (
                         <Link
                           href={`/w/${workspaceId}/documents/${preparedLinks.sourceDocumentId(item.sourceDocumentId)}?page=${item.sourcePageNumber}`}
-                          className="text-blue-700 hover:underline"
+                          className="locator mt-2"
                         >
                           Original page {item.sourcePageNumber}
                         </Link>
-                      </>
-                    ) : null}
-                  </td>
-                  <td className="p-2">
-                    {label(item.proofRequirement)} / {label(item.humanReviewStatus)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      ) : null}
+                    </td>
+                    <td>
+                      {label(item.proofRequirement)} / {label(item.humanReviewStatus)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
-      <section className="mt-8" id="proposal-findings">
-        <h2 className="mb-3 text-lg font-semibold">Proposal findings</h2>
-        <ul className="space-y-2">
+      <section className="mt-10" id="proposal-findings">
+        <h2 className="section-title mb-4">Proposal findings</h2>
+        <ul className="grid gap-3">
           {paginate(filteredProposalFindings).map((finding) => (
             <li
               id={`finding-${preparedLinks.findingId(finding.id)}`}
               key={finding.id}
-              className="rounded border border-slate-200 bg-white p-3"
+              className="surface-card p-4"
             >
-              <div className="flex flex-wrap justify-between gap-2">
-                <strong>{finding.title}</strong>
-                <span className="text-sm">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <strong className="text-ink">{finding.title}</strong>
+                <span className="text-metadata">
                   {finding.severity} · {label(finding.workflowStatus)} · human{' '}
                   {label(finding.humanResolutionStatus)}
                 </span>
               </div>
-              <p className="text-sm text-slate-600">{finding.detail}</p>
-              <dl className="mt-2 grid gap-2 text-xs sm:grid-cols-2">
+              <p className="mt-2 text-sm text-ink-soft">{finding.detail}</p>
+              <dl className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div>
-                  <dt className="font-medium">Proposal evidence</dt>
-                  <dd>
-                    {finding.proposalQuote ?? 'Not applicable'}
-                    {finding.proposalPageNumber ? ` · page ${finding.proposalPageNumber}` : ''}
+                  <dt className="text-metadata">Proposal evidence</dt>
+                  <dd className="mt-1.5">
+                    <span
+                      className={
+                        finding.proposalQuote
+                          ? 'evidence-quote evidence-quote-proposal block'
+                          : 'text-ink-faint'
+                      }
+                    >
+                      {finding.proposalQuote ?? 'Not applicable'}
+                    </span>
+                    {finding.proposalPageNumber ? (
+                      <p className="text-metadata mt-2">page {finding.proposalPageNumber}</p>
+                    ) : null}
                   </dd>
                 </div>
                 <div>
-                  <dt className="font-medium">Requirement evidence</dt>
-                  <dd>
-                    {finding.sourceQuote ?? 'Not applicable'}
+                  <dt className="text-metadata">Requirement evidence</dt>
+                  <dd className="mt-1.5">
+                    <span
+                      className={finding.sourceQuote ? 'evidence-quote block' : 'text-ink-faint'}
+                    >
+                      {finding.sourceQuote ?? 'Not applicable'}
+                    </span>
                     {finding.sourceDocumentId && finding.sourcePageNumber ? (
-                      <>
-                        {' '}
-                        ·{' '}
-                        <Link
-                          href={`/w/${workspaceId}/documents/${preparedLinks.sourceDocumentId(finding.sourceDocumentId)}?page=${finding.sourcePageNumber}`}
-                          className="text-blue-700 hover:underline"
-                        >
-                          page {finding.sourcePageNumber}
-                        </Link>
-                      </>
+                      <Link
+                        href={`/w/${workspaceId}/documents/${preparedLinks.sourceDocumentId(finding.sourceDocumentId)}?page=${finding.sourcePageNumber}`}
+                        className="locator mt-2"
+                      >
+                        page {finding.sourcePageNumber}
+                      </Link>
                     ) : null}
                   </dd>
                 </div>
@@ -636,53 +657,55 @@ export default async function ReportDetailPage({
         </ul>
       </section>
 
-      <section className="mt-8" id="proposal-claims">
-        <h2 className="mb-3 text-lg font-semibold">Atomic proposal claims</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="p-2">Claim</th>
-                <th className="p-2">Type</th>
-                <th className="p-2">Support</th>
-                <th className="p-2">Consistency</th>
-                <th className="p-2">Page</th>
-                <th className="p-2">Evidence count</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginate(report.proposalClaims).map((claim) => (
-                <tr key={claim.id} className="border-b align-top">
-                  <td className="p-2">{claim.text}</td>
-                  <td className="p-2">{label(claim.claimType)}</td>
-                  <td className="p-2">{label(claim.supportStatus)}</td>
-                  <td className="p-2">{label(claim.consistencyStatus)}</td>
-                  <td className="p-2">{claim.pageNumber}</td>
-                  <td className="p-2">{claim.evidenceCount}</td>
+      <section className="mt-10" id="proposal-claims">
+        <h2 className="section-title mb-4">Atomic proposal claims</h2>
+        <div className="data-frame">
+          <div className="data-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Claim</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Support</th>
+                  <th scope="col">Consistency</th>
+                  <th scope="col">Page</th>
+                  <th scope="col">Evidence count</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {paginate(report.proposalClaims).map((claim) => (
+                  <tr key={claim.id}>
+                    <td className="max-w-[28rem] cell-primary">{claim.text}</td>
+                    <td>{label(claim.claimType)}</td>
+                    <td>{label(claim.supportStatus)}</td>
+                    <td>{label(claim.consistencyStatus)}</td>
+                    <td className="cell-numeric tabular">{claim.pageNumber}</td>
+                    <td className="cell-numeric tabular">{claim.evidenceCount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
       <nav aria-label="Filtered report pages" className="mt-6 flex gap-3 text-sm">
         {rowPage > 1 ? (
-          <Link href={filterHref(rowPage - 1)} className="text-blue-700 hover:underline">
+          <Link href={filterHref(rowPage - 1)} className="action-link">
             ← Previous rows
           </Link>
         ) : null}
         {[filteredBlockers.length, filteredUnresolved.length, filteredProposalFindings.length].some(
           (count) => count > rowPage * rowLimit,
         ) ? (
-          <Link href={filterHref(rowPage + 1)} className="text-blue-700 hover:underline">
+          <Link href={filterHref(rowPage + 1)} className="action-link">
             Next rows →
           </Link>
         ) : null}
       </nav>
 
-      <section className="mt-8" id="coverage">
-        <h2 className="mb-3 text-lg font-semibold">Source coverage and review denominators</h2>
+      <section className="mt-10" id="coverage">
+        <h2 className="section-title mb-4">Source coverage and review denominators</h2>
         <div className="grid gap-3 md:grid-cols-2">
           {Object.entries(report.sourceCoverage)
             .filter(([, value]) => typeof value === 'object')
@@ -694,42 +717,47 @@ export default async function ReportDetailPage({
                 denominatorDescription: string;
               };
               return (
-                <div key={name} className="rounded border border-slate-200 bg-white p-3">
-                  <h3 className="font-medium">{label(name)}</h3>
-                  <p className="text-lg">
-                    {ratio.numerator} / {ratio.denominator}
+                <div key={name} className="metric-card">
+                  <h3 className="metric-label">{label(name)}</h3>
+                  <p className="metric-value">
+                    <span className="tabular">
+                      {ratio.numerator} / {ratio.denominator}
+                    </span>
                     {ratio.ratio === null
                       ? ' · not applicable'
                       : ` · ${(ratio.ratio * 100).toFixed(0)}%`}
                   </p>
-                  <p className="text-xs text-slate-600">{ratio.denominatorDescription}</p>
+                  <p className="text-metadata mt-2">{ratio.denominatorDescription}</p>
                 </div>
               );
             })}
         </div>
       </section>
 
-      <section
-        className="mt-8 rounded border border-slate-200 bg-slate-50 p-4 text-sm"
-        id="provenance"
-      >
-        <h2 className="font-semibold">Provenance</h2>
-        <dl className="mt-2 grid gap-2 md:grid-cols-2">
+      <section className="surface-panel mt-10 p-5 text-sm" id="provenance">
+        <h2 className="section-title">Provenance</h2>
+        <dl className="mt-4 grid gap-4 md:grid-cols-2">
           <div>
-            <dt>Input hash</dt>
-            <dd className="break-all font-mono text-xs">{report.inputHash}</dd>
+            <dt className="text-metadata">Input hash</dt>
+            <dd className="mono mt-1 break-all text-[0.6875rem] text-ink-muted">
+              {report.inputHash}
+            </dd>
           </div>
           <div>
-            <dt>Source snapshot</dt>
-            <dd>{new Date(report.provenance.sourceSnapshotAt).toLocaleString()}</dd>
+            <dt className="text-metadata">Source snapshot</dt>
+            <dd className="mt-1 text-ink-soft tabular">
+              {new Date(report.provenance.sourceSnapshotAt).toLocaleString()}
+            </dd>
           </div>
           <div>
-            <dt>Report versions</dt>
-            <dd>{Object.values(report.provenance.reportVersions).join(' · ')}</dd>
+            <dt className="text-metadata">Report versions</dt>
+            <dd className="mt-1 text-ink-soft">
+              {Object.values(report.provenance.reportVersions).join(' · ')}
+            </dd>
           </div>
           <div>
-            <dt>Provider use</dt>
-            <dd>{report.provenance.providerUseStatement}</dd>
+            <dt className="text-metadata">Provider use</dt>
+            <dd className="mt-1 text-ink-soft">{report.provenance.providerUseStatement}</dd>
           </div>
         </dl>
       </section>

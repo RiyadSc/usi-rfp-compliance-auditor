@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
+import { EmptyStateArt } from '@/components/brand';
+import { IconChecklist, IconUpload } from '@/components/icons';
 import { StatusBadge } from '@/components/status-badge';
 import { WorkspaceNavigation } from '@/components/workspace-navigation';
 import { formatDate } from '@/lib/presentation';
@@ -51,41 +53,44 @@ export default async function ProposalAuditPage({
         .order('created_at', { ascending: false }),
     ]);
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+    <main className="page-shell">
       <WorkspaceNavigation
         workspaceId={workspaceId}
         workspaceName={workspace.name}
         current="proposal-audit"
       />
-      <div className="mb-6">
-        <p className="section-kicker">Proposal quality review</p>
-        <h1
-          aria-label="Proposal draft audit"
-          className="mt-1 text-3xl font-semibold tracking-tight"
-        >
-          Proposal Review
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Compare the proposal against the RFP-backed submission plan and focus the team on material
-          issues before final review.
-        </p>
+      <div className="page-header">
+        <div>
+          <p className="page-eyebrow">Proposal quality review</p>
+          <h1 aria-label="Proposal draft audit" className="page-title mt-1.5">
+            Proposal Review
+          </h1>
+          <p className="page-lede mt-2.5">
+            Compare the proposal against the RFP-backed submission plan and focus the team on
+            material issues before final review.
+          </p>
+        </div>
+        <div className="page-actions">
+          <Link href={`/w/${workspaceId}/documents`} className="secondary-action btn-sm">
+            <IconUpload size={15} />
+            Upload a new proposal revision
+          </Link>
+          <Link href={`/w/${workspaceId}/checklist`} className="secondary-action btn-sm">
+            <IconChecklist size={15} />
+            Open the submission plan
+          </Link>
+        </div>
       </div>
-      <div className="mb-6 flex flex-wrap gap-3 text-sm">
-        <Link href={`/w/${workspaceId}/documents`} className="text-blue-700 hover:underline">
-          Upload a new proposal revision
-        </Link>
-        <Link href={`/w/${workspaceId}/checklist`} className="text-blue-700 hover:underline">
-          Open the submission plan
-        </Link>
-      </div>
-      <details className="surface-card" open={!auditRuns?.length}>
-        <summary className="cursor-pointer list-none px-4 py-4 font-semibold">
-          Start a review for a new proposal revision
-          <span className="ml-2 text-sm font-normal text-slate-500">
-            Only needed when the proposal changes
+      <details className="disclosure" open={!auditRuns?.length}>
+        <summary className="list-none">
+          <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <span className="font-semibold text-ink">
+              Start a review for a new proposal revision
+            </span>
+            <span className="text-metadata">Only needed when the proposal changes</span>
           </span>
         </summary>
-        <div className="border-t border-slate-200 p-4">
+        <div className="disclosure-body">
           <ProposalAuditControls
             workspaceId={workspaceId}
             documents={(documents ?? []).map((document) => ({
@@ -103,21 +108,21 @@ export default async function ProposalAuditPage({
           />
         </div>
       </details>
-      <section className="mt-8">
-        <div className="mb-3">
-          <h2 className="text-lg font-semibold">Completed draft reviews</h2>
-          <p className="text-sm text-slate-600">
+      <section className="mt-10">
+        <div className="mb-4">
+          <h2 className="section-title">Completed draft reviews</h2>
+          <p className="section-lede">
             Open an existing result; run a new review only after uploading a new revision.
           </p>
         </div>
         {auditRuns?.length ? (
-          <ul className="grid gap-3 md:grid-cols-2">
+          <ul className="grid gap-4 md:grid-cols-2">
             {auditRuns.map((run) => (
-              <li key={run.id} className="surface-card p-4">
+              <li key={run.id} className="surface-card surface-card-interactive p-5">
                 <div className="flex items-start justify-between gap-3">
                   <Link
                     href={`/w/${workspaceId}/proposal-audit/${run.id}`}
-                    className="font-semibold text-blue-700 hover:underline"
+                    className="action-link text-[0.9375rem] leading-snug"
                   >
                     {String(
                       (
@@ -129,21 +134,24 @@ export default async function ProposalAuditPage({
                   </Link>
                   <StatusBadge value={run.status} />
                 </div>
-                <p className="mt-3 text-2xl font-semibold">{run.finding_count}</p>
-                <p className="text-sm text-slate-600">
+                <p className="metric-value mt-4">{run.finding_count}</p>
+                <p className="metric-note">
                   issue{run.finding_count === 1 ? '' : 's'} found · {run.claim_count} proposal
                   claims checked
                 </p>
-                <p className="mt-3 text-xs text-slate-500">
+                <p className="text-metadata mt-4 border-t border-line-subtle pt-3">
                   Completed {formatDate(run.created_at)} · Human decisions remain separate
                 </p>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600">
-            No draft reviews yet. Upload a parsed proposal PDF, then start the first review above.
-          </p>
+          <div className="empty-state">
+            <EmptyStateArt />
+            <p className="empty-state-body">
+              No draft reviews yet. Upload a parsed proposal PDF, then start the first review above.
+            </p>
+          </div>
         )}
       </section>
     </main>

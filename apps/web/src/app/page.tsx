@@ -3,6 +3,8 @@ import { AppHeader } from '@/components/app-header';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { deadlineLabel, formatDate, statusTone, businessLabel } from '@/lib/presentation';
 import { StatusBadge } from '@/components/status-badge';
+import { EvidenceField } from '@/components/brand';
+import { IconBlocker, IconCalendar, IconSearch } from '@/components/icons';
 import { signOut } from './login/actions';
 import { createWorkspace } from './workspaces/actions';
 
@@ -88,25 +90,22 @@ async function PortfolioPage({
     <>
       <AppHeader />
       <main className="page-shell">
-        <header className="mb-7 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="section-kicker">
+        <header className="page-header">
+          <div className="min-w-0">
+            <p className="page-eyebrow">
               {mode === 'home' ? 'Your bid command center' : 'Bid portfolio'}
             </p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+            <h1 className="page-title mt-2">
               {mode === 'home' ? 'Good morning' : 'Opportunities'}
             </h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
+            <p className="page-lede mt-3">
               {mode === 'home'
                 ? 'See what needs attention, where each opportunity stands, and the next action your team should take.'
                 : 'Compare deadlines, submission risk, ownership, and team progress across active bids.'}
             </p>
           </div>
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-100"
-            >
+          <form action={signOut} className="page-actions">
+            <button type="submit" className="secondary-action">
               Sign out
             </button>
           </form>
@@ -114,48 +113,57 @@ async function PortfolioPage({
 
         {mode === 'home' ? (
           <section
-            className="mb-7 grid gap-5 lg:grid-cols-[1.25fr_0.75fr]"
+            className="mb-8 grid gap-4 lg:grid-cols-[1.35fr_0.65fr]"
             aria-label="Home priorities"
           >
-            <div className="surface-card p-5">
-              <p className="section-kicker">Needs attention</p>
-              <h2 className="mt-1 text-xl font-semibold">Top issues across your opportunities</h2>
-              {attention.length ? (
-                <ol className="mt-4 divide-y divide-slate-200">
-                  {attention.map((blocker) => (
-                    <li key={blocker.id} className="flex items-start justify-between gap-4 py-3">
-                      <div>
-                        <p className="font-medium">{blocker.reason}</p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          {workspaceById.get(blocker.workspace_id)?.name ??
-                            'Authorized opportunity'}
-                        </p>
-                      </div>
-                      <Link
-                        className="action-link whitespace-nowrap text-sm"
-                        href={`/w/${blocker.workspace_id}/checklist?blocker=yes`}
+            <div className="hero-panel texture-nodes p-6 lg:p-7">
+              <EvidenceField className="opacity-20" />
+              <div className="relative">
+                <p className="section-kicker">Needs attention</p>
+                <h2 className="section-title mt-2 text-xl">Top issues across your opportunities</h2>
+                {attention.length ? (
+                  <ol className="mt-4 divide-y divide-line-subtle">
+                    {attention.map((blocker) => (
+                      <li
+                        key={blocker.id}
+                        className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2 py-3.5"
                       >
-                        Resolve →
-                      </Link>
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <p className="mt-4 text-sm text-slate-600">
-                  No active blockers are visible in your opportunities.
-                </p>
-              )}
+                        <div className="flex min-w-0 items-start gap-2.5">
+                          <span className="mt-0.5 shrink-0 text-critical-400" aria-hidden="true">
+                            <IconBlocker size={15} />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="font-medium break-words text-ink">{blocker.reason}</p>
+                            <p className="text-metadata mt-1">
+                              {workspaceById.get(blocker.workspace_id)?.name ??
+                                'Authorized opportunity'}
+                            </p>
+                          </div>
+                        </div>
+                        <Link
+                          className="action-link whitespace-nowrap text-sm"
+                          href={`/w/${blocker.workspace_id}/checklist?blocker=yes`}
+                        >
+                          Resolve →
+                        </Link>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="mt-4 text-sm text-ink-soft">
+                    No active blockers are visible in your opportunities.
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="rounded-xl border border-blue-200 bg-blue-50 p-5">
-              <p className="section-kicker text-blue-700">Recommended start</p>
-              <h2 className="mt-2 text-lg font-semibold text-blue-950">
-                Open the highest-priority opportunity
-              </h2>
-              <p className="mt-2 text-sm text-blue-900">
+            <div className="surface-card rail-teal flex flex-col p-6">
+              <p className="section-kicker text-teal-400">Recommended start</p>
+              <h2 className="section-title mt-2 text-lg">Open the highest-priority opportunity</h2>
+              <p className="mt-2 text-sm text-ink-soft">
                 Review the deadline, top blockers, and the single recommended next action.
               </p>
               <Link
-                className="primary-action mt-4"
+                className="primary-action mt-5 self-start"
                 href={
                   active[0]
                     ? `/w/${active[0].id}`
@@ -170,7 +178,7 @@ async function PortfolioPage({
           </section>
         ) : null}
 
-        <section aria-label="Portfolio summary" className="mb-7 grid gap-3 sm:grid-cols-3">
+        <section aria-label="Portfolio summary" className="mb-8 grid gap-3 sm:grid-cols-3">
           <Metric
             label="Active opportunities"
             value={active.length}
@@ -185,34 +193,31 @@ async function PortfolioPage({
           <Metric label="Prepared demos" value={demos.length} note="Synthetic/public data only" />
         </section>
 
-        <div className="grid items-start gap-7 lg:grid-cols-[1fr_20rem]">
-          <div className="min-w-0 space-y-7">
-            <form className="surface-card flex gap-2 p-3" role="search">
+        <div className="grid items-start gap-8 lg:grid-cols-[1fr_20rem]">
+          <div className="min-w-0 space-y-8">
+            <form className="filter-bar flex flex-wrap items-center gap-2" role="search">
               <label htmlFor="opportunity-search" className="sr-only">
                 Search opportunities
               </label>
-              <input
-                id="opportunity-search"
-                name="q"
-                defaultValue={q}
-                placeholder="Search by opportunity or customer"
-                className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              />
-              <button className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
-                Search
-              </button>
+              <div className="search-field min-w-0 flex-1 basis-56">
+                <IconSearch size={16} />
+                <input
+                  id="opportunity-search"
+                  name="q"
+                  defaultValue={q}
+                  placeholder="Search by opportunity or customer"
+                />
+              </div>
+              <button className="secondary-action">Search</button>
               {query ? (
-                <Link href="/" className="self-center px-2 text-sm text-blue-700 hover:underline">
+                <Link href="/" className="action-link self-center px-2 text-sm">
                   Clear
                 </Link>
               ) : null}
             </form>
 
             {listError ? (
-              <p
-                role="alert"
-                className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-800"
-              >
+              <p role="alert" className="notice notice-critical">
                 Opportunities could not be loaded. Reload the page to try again.
               </p>
             ) : (
@@ -224,7 +229,7 @@ async function PortfolioPage({
                   empty="No active opportunities match this view."
                 />
                 {active.length > displayedActive.length ? (
-                  <div className="-mt-4 text-right">
+                  <div className="-mt-5 text-right">
                     <Link href="/opportunities" className="action-link text-sm">
                       View all {active.length} opportunities →
                     </Link>
@@ -238,15 +243,13 @@ async function PortfolioPage({
                   demo
                 />
                 {tests.length ? (
-                  <details className="surface-card">
-                    <summary className="cursor-pointer list-none px-4 py-4 font-semibold">
+                  <details className="disclosure">
+                    <summary className="justify-start gap-2 font-semibold text-ink after:ml-auto">
                       Test workspaces{' '}
-                      <span className="ml-2 text-sm font-normal text-slate-500">
-                        ({tests.length})
-                      </span>
+                      <span className="text-sm font-normal text-ink-muted">({tests.length})</span>
                     </summary>
-                    <div className="border-t border-slate-200 p-4">
-                      <p className="mb-3 text-sm text-slate-600">
+                    <div className="disclosure-body">
+                      <p className="mb-4 text-sm text-ink-soft">
                         Development and isolation workspaces are hidden from the main portfolio.
                       </p>
                       <WorkspaceList workspaces={tests} />
@@ -257,11 +260,11 @@ async function PortfolioPage({
             )}
           </div>
 
-          <aside className="space-y-5 lg:sticky lg:top-24">
+          <aside className="space-y-4 lg:sticky lg:top-24">
             {mode === 'home' ? (
-              <section className="surface-card p-4" aria-labelledby="my-work-preview">
+              <section className="surface-card p-5" aria-labelledby="my-work-preview">
                 <div className="flex items-center justify-between gap-3">
-                  <h2 id="my-work-preview" className="font-semibold">
+                  <h2 id="my-work-preview" className="section-title">
                     My work
                   </h2>
                   <Link href="/my-work" className="action-link text-sm">
@@ -269,51 +272,44 @@ async function PortfolioPage({
                   </Link>
                 </div>
                 {(ownedItems ?? []).length ? (
-                  <ul className="mt-3 space-y-3">
+                  <ul className="mt-3 divide-y divide-line-subtle">
                     {(ownedItems ?? []).slice(0, 4).map((item) => (
-                      <li key={item.id}>
+                      <li key={item.id} className="py-2.5">
                         <Link
                           href={`/w/${item.workspace_id}/checklist/${item.id}`}
-                          className="text-sm font-medium hover:text-blue-800"
+                          className="block text-sm font-medium break-words text-ink transition-colors hover:text-teal-300"
                         >
                           {item.title}
                         </Link>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-metadata mt-0.5">
                           {businessLabel(item.workflow_status)}
                         </p>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="mt-3 text-sm text-slate-600">No open work is assigned to you.</p>
+                  <p className="mt-3 text-sm text-ink-soft">No open work is assigned to you.</p>
                 )}
               </section>
             ) : null}
-            <section className="surface-card p-4">
-              <h2 id="create-heading" className="text-base font-semibold">
+            <section className="surface-card p-5">
+              <h2 id="create-heading" className="section-title">
                 New opportunity
               </h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Create a private workspace for one RFP response.
-              </p>
+              <p className="section-lede">Create a private workspace for one RFP response.</p>
               {error ? (
-                <p
-                  role="alert"
-                  className="mt-3 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800"
-                >
+                <p role="alert" className="notice notice-critical mt-4">
                   The opportunity could not be created. Check the fields and try again.
                 </p>
               ) : null}
               {drafts.length ? (
-                <details className="surface-card">
-                  <summary className="cursor-pointer list-none px-4 py-4 font-semibold">
+                <details className="disclosure mt-4">
+                  <summary className="justify-start gap-2 font-semibold text-ink after:ml-auto">
                     Draft opportunities{' '}
-                    <span className="ml-2 text-sm font-normal text-slate-500">
-                      ({drafts.length})
-                    </span>
+                    <span className="text-sm font-normal text-ink-muted">({drafts.length})</span>
                   </summary>
-                  <div className="border-t border-slate-200 p-4">
-                    <p className="mb-3 text-sm text-slate-600">
+                  <div className="disclosure-body">
+                    <p className="mb-4 text-sm text-ink-soft">
                       Early workspaces without a customer or response deadline are kept out of the
                       director portfolio until they are defined.
                     </p>
@@ -354,14 +350,14 @@ function Metric({
   tone?: 'neutral' | 'positive' | 'danger';
 }) {
   return (
-    <div className="surface-card p-4">
-      <p className="text-sm font-medium text-slate-600">{label}</p>
+    <div className={`metric-card p-4 ${tone === 'danger' ? 'rail-critical' : ''}`}>
+      <p className="metric-label">{label}</p>
       <p
-        className={`metric-value ${tone === 'danger' ? 'text-red-700' : tone === 'positive' ? 'text-emerald-700' : ''}`}
+        className={`metric-value ${tone === 'danger' ? 'text-critical-400' : tone === 'positive' ? 'text-success-400' : 'text-ink'}`}
       >
         {value}
       </p>
-      <p className="mt-1 text-xs text-slate-500">{note}</p>
+      <p className="metric-note">{note}</p>
     </div>
   );
 }
@@ -381,23 +377,21 @@ function WorkspaceGroup({
 }) {
   return (
     <section aria-labelledby={`${heading.replaceAll(' ', '-').toLowerCase()}-heading`}>
-      <div className="mb-3 flex items-end justify-between gap-3">
-        <div>
+      <div className="mb-4 flex items-end justify-between gap-3">
+        <div className="min-w-0">
           <h2
             id={`${heading.replaceAll(' ', '-').toLowerCase()}-heading`}
-            className="text-lg font-semibold"
+            className="section-title text-lg"
           >
             {heading}
           </h2>
-          <p className="text-sm text-slate-600">{description}</p>
+          <p className="section-lede">{description}</p>
         </div>
       </div>
       {workspaces.length ? (
         <WorkspaceList workspaces={workspaces} demo={demo} />
       ) : (
-        <p className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600">
-          {empty}
-        </p>
+        <p className="empty-state text-sm text-ink-soft">{empty}</p>
       )}
     </section>
   );
@@ -412,89 +406,80 @@ function WorkspaceList({
 }) {
   return (
     <ul className="grid gap-3 sm:grid-cols-2">
-      {workspaces.map((workspace) => (
-        <li key={workspace.id}>
-          <Link
-            href={`/w/${workspace.id}`}
-            className="surface-card group block h-full p-4 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <span className="font-semibold text-slate-950 group-hover:text-blue-800">
-                {workspace.name}
-              </span>
-              <StatusBadge
-                value={demo ? 'informational' : workspace.status}
-                label={demo ? 'Prepared demo' : businessLabel(workspace.status)}
-                tone={demo ? 'info' : statusTone(workspace.status)}
-              />
-            </div>
-            <p className="mt-2 text-sm text-slate-600">
-              {workspace.customer ?? 'Customer not set'}
-            </p>
-            <div className="mt-4 flex items-center justify-between gap-3 text-xs">
-              <span
-                className={workspace.deadline ? 'font-semibold text-slate-800' : 'text-slate-500'}
-              >
-                {deadlineLabel(workspace.deadline)}
-              </span>
-              <span className="text-slate-500">
-                {workspace.deadline ? formatDate(workspace.deadline) : ''}
-              </span>
-            </div>
-          </Link>
-        </li>
-      ))}
+      {workspaces.map((workspace) => {
+        const days = workspace.deadline
+          ? Math.ceil(
+              (new Date(`${workspace.deadline}T23:59:59`).valueOf() - Date.now()) / 86_400_000,
+            )
+          : null;
+        const overdue = days != null && days < 0;
+        const urgent = days != null && days >= 0 && days <= 7;
+        return (
+          <li key={workspace.id} className="min-w-0">
+            <Link
+              href={`/w/${workspace.id}`}
+              className="surface-card surface-card-interactive group flex h-full flex-col p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <span className="min-w-0 font-semibold break-words text-ink transition-colors group-hover:text-teal-300">
+                  {workspace.name}
+                </span>
+                <StatusBadge
+                  value={demo ? 'informational' : workspace.status}
+                  label={demo ? 'Prepared demo' : businessLabel(workspace.status)}
+                  tone={demo ? 'info' : statusTone(workspace.status)}
+                />
+              </div>
+              <p className="text-metadata mt-2">{workspace.customer ?? 'Customer not set'}</p>
+              <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-line-subtle pt-3.5 text-xs">
+                <span
+                  className={`inline-flex items-center gap-1.5 ${
+                    overdue
+                      ? 'font-semibold text-critical-400'
+                      : urgent
+                        ? 'font-semibold text-warning-400'
+                        : workspace.deadline
+                          ? 'font-semibold text-ink'
+                          : 'text-ink-muted'
+                  }`}
+                >
+                  <IconCalendar size={13} className="shrink-0" />
+                  {deadlineLabel(workspace.deadline)}
+                </span>
+                <span className="text-metadata tabular">
+                  {workspace.deadline ? formatDate(workspace.deadline) : ''}
+                </span>
+              </div>
+            </Link>
+          </li>
+        );
+      })}
     </ul>
   );
 }
 
 function WorkspaceForm() {
   return (
-    <form action={createWorkspace} className="mt-4 grid gap-3">
-      <label htmlFor="name" className="text-sm font-medium">
-        Opportunity name <span aria-hidden="true">*</span>
-        <input
-          id="name"
-          name="name"
-          required
-          minLength={2}
-          maxLength={120}
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        />
+    <form action={createWorkspace} className="mt-5 grid gap-4">
+      <label htmlFor="name" className="field">
+        <span className="field-label">
+          Opportunity name <span aria-hidden="true">*</span>
+        </span>
+        <input id="name" name="name" required minLength={2} maxLength={120} />
       </label>
-      <label htmlFor="customer" className="text-sm font-medium">
-        Customer / agency
-        <input
-          id="customer"
-          name="customer"
-          maxLength={120}
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        />
+      <label htmlFor="customer" className="field">
+        <span className="field-label">Customer / agency</span>
+        <input id="customer" name="customer" maxLength={120} />
       </label>
-      <label htmlFor="deadline" className="text-sm font-medium">
-        Response deadline
-        <input
-          id="deadline"
-          name="deadline"
-          type="date"
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        />
+      <label htmlFor="deadline" className="field">
+        <span className="field-label">Response deadline</span>
+        <input id="deadline" name="deadline" type="date" />
       </label>
-      <label htmlFor="description" className="text-sm font-medium">
-        Description
-        <textarea
-          id="description"
-          name="description"
-          rows={2}
-          maxLength={2000}
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        />
+      <label htmlFor="description" className="field">
+        <span className="field-label">Description</span>
+        <textarea id="description" name="description" rows={2} maxLength={2000} />
       </label>
-      <button
-        type="submit"
-        aria-label="Create workspace"
-        className="rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800"
-      >
+      <button type="submit" aria-label="Create workspace" className="secondary-action mt-1">
         Create opportunity
       </button>
     </form>

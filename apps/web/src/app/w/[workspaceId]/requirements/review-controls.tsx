@@ -28,7 +28,7 @@ export function ReviewControls({
   const [pending, begin] = useTransition();
   return (
     <form
-      className="space-y-3"
+      className="space-y-4"
       onSubmit={(event) => {
         event.preventDefault();
         begin(async () => {
@@ -45,12 +45,12 @@ export function ReviewControls({
         });
       }}
     >
-      <label className="block text-sm font-medium">
+      <label className="field-label block">
         {relationshipId ? 'Assessment outcome' : 'Decision'}
         <select
           value={decision}
           onChange={(event) => setDecision(event.target.value as typeof decision)}
-          className="mt-1 block w-full rounded border border-slate-300 bg-white px-3 py-2"
+          className="mt-1.5 block w-full"
         >
           {DECISIONS.map(([value, label]) => (
             <option key={value} value={value}>
@@ -59,16 +59,16 @@ export function ReviewControls({
           ))}
         </select>
       </label>
-      <label className="block text-sm font-medium">
+      <label className="field-label block">
         {relationshipId ? 'Relationship note' : 'Reviewer note'}
         <textarea
           value={note}
           onChange={(event) => setNote(event.target.value)}
           maxLength={4000}
-          className="mt-1 min-h-24 w-full rounded border border-slate-300 px-3 py-2"
+          className="mt-1.5 min-h-24 w-full"
         />
       </label>
-      <label className="block text-sm font-medium">
+      <label className="field-label block">
         {relationshipId ? 'Structured relationship correction' : 'Proposed corrected values'}
         {' (optional JSON object)'}
         <textarea
@@ -76,17 +76,14 @@ export function ReviewControls({
           onChange={(event) => setCorrectedValues(event.target.value)}
           placeholder={'{"deadline":"2027-04-22"}'}
           maxLength={4000}
-          className="mt-1 min-h-20 w-full rounded border border-slate-300 px-3 py-2 font-mono text-xs"
+          className="mono mt-1.5 min-h-20 w-full text-xs"
         />
       </label>
-      <button
-        disabled={pending}
-        className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-      >
+      <button disabled={pending} className="primary-action">
         {pending ? 'Recording…' : relationshipId ? 'Record relationship review' : 'Record review'}
       </button>
       {message ? (
-        <p role="status" className="text-sm text-slate-700">
+        <p role="status" className="text-sm text-ink-soft">
           {message}
         </p>
       ) : null}

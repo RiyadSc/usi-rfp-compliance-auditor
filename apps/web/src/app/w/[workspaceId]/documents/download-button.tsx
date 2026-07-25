@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { IconDownload } from '@/components/icons';
 import { createDocumentDownloadUrl } from './actions';
 
 export function DocumentDownloadButton({
@@ -17,7 +18,7 @@ export function DocumentDownloadButton({
     <span className="inline-flex flex-col items-end gap-1">
       <button
         type="button"
-        className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+        className="secondary-action btn-sm"
         disabled={pending}
         onClick={(event) => {
           event.preventDefault();
@@ -33,9 +34,10 @@ export function DocumentDownloadButton({
           });
         }}
       >
+        <IconDownload size={15} />
         {pending ? 'Preparing…' : 'Download'}
       </button>
-      {error ? <span className="text-[11px] text-red-700">{error}</span> : null}
+      {error ? <span className="text-[11px] text-critical-400">{error}</span> : null}
     </span>
   );
 }

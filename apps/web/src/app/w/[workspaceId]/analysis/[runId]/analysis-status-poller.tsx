@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { EvidenceProcessingMark } from '@/components/brand';
 
 export function AnalysisStatusPoller({ active }: { active: boolean }) {
   const router = useRouter();
@@ -12,8 +13,9 @@ export function AnalysisStatusPoller({ active }: { active: boolean }) {
   }, [active, router]);
   if (!active) return null;
   return (
-    <p aria-live="polite" className="mb-4 text-sm text-slate-700">
-      Extraction running… this page refreshes automatically.
+    <p aria-live="polite" className="notice notice-info mb-4 flex items-center gap-3">
+      <EvidenceProcessingMark size={22} />
+      <span>Extraction running… this page refreshes automatically.</span>
     </p>
   );
 }

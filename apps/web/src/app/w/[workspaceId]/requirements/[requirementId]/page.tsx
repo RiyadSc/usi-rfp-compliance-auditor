@@ -5,6 +5,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { StatusAxis, StatusBadge } from '@/components/status-badge';
 import { WorkspaceNavigation } from '@/components/workspace-navigation';
+import { IconAlert, IconArrowLeft } from '@/components/icons';
 import { businessLabel } from '@/lib/presentation';
 import { EvidenceHighlight } from '../evidence-highlight';
 import { ReviewControls } from '../review-controls';
@@ -120,20 +121,24 @@ export default async function RequirementDetailPage({
   const challengePass = latestPasses.get('challenge');
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+    <main className="page-shell">
       <WorkspaceNavigation
         workspaceId={workspaceId}
         workspaceName={workspace.name}
         current="requirements"
         compact
       />
-      <div className="mb-5">
-        <Link href={`/w/${workspaceId}/requirements`} className="action-link text-sm">
-          ← Requirement register
+      <div className="mb-6">
+        <Link
+          href={`/w/${workspaceId}/requirements`}
+          className="action-link inline-flex items-center gap-1.5 text-sm"
+        >
+          <IconArrowLeft size={14} />
+          Requirement register
         </Link>
-        <p className="section-kicker mt-4">RFP requirement</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">{candidate.title}</h1>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <p className="page-eyebrow mt-5">RFP requirement</p>
+        <h1 className="page-title mt-2 max-w-4xl">{candidate.title}</h1>
+        <div className="mt-4 flex flex-wrap gap-2">
           <StatusBadge value={candidate.mandatory_class} />
           <StatusBadge
             value={candidate.category}
@@ -143,14 +148,19 @@ export default async function RequirementDetailPage({
           <StatusBadge value={latestReview} />
         </div>
       </div>
-      <p className="mb-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-        <strong>Machine assessment:</strong> {businessLabel(latestReview)}. Source evidence, company
-        proof, workflow completion, and human review remain separate.
+      <p className="notice notice-warning mb-6">
+        <strong className="notice-title">
+          <IconAlert size={15} />
+          Machine assessment: {businessLabel(latestReview)}.
+        </strong>
+        <span className="mt-2 block text-sm text-ink-soft">
+          Source evidence, company proof, workflow completion, and human review remain separate.
+        </span>
       </p>
-      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="space-y-5">
           <Panel title="What the RFP requires">
-            <p className="text-lg leading-relaxed">{candidate.obligation}</p>
+            <p className="text-base leading-relaxed text-ink">{candidate.obligation}</p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <StatusAxis
                 label="Backed by the RFP?"
@@ -174,33 +184,33 @@ export default async function RequirementDetailPage({
               />
             </div>
             {finding ? (
-              <div className="mt-4 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
-                <strong>Why:</strong> {finding.rationale}
+              <div className="surface-inset mt-5 p-4 text-sm text-ink-soft">
+                <strong className="font-semibold text-ink">Why:</strong> {finding.rationale}
               </div>
             ) : (
-              <p className="mt-4 text-sm text-slate-600">No verification finding yet.</p>
+              <p className="mt-5 text-sm text-ink-muted">No verification finding yet.</p>
             )}
           </Panel>
           <Panel title="Exact RFP evidence">
             {(evidence ?? []).length ? (
-              <ul className="space-y-3">
+              <ul className="space-y-4">
                 {(evidence ?? []).map((item) => (
-                  <li key={item.id} className="rounded border border-slate-200 p-3">
-                    <div className="flex flex-wrap justify-between gap-2 text-xs">
-                      <strong>{businessLabel(item.evidence_role)}</strong>
-                      <span>
+                  <li key={item.id} className="evidence-card">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <strong className="text-micro text-teal-300">
+                        {businessLabel(item.evidence_role)}
+                      </strong>
+                      <span className="locator">
                         {item.match_type} · page {item.page_number} ·{' '}
                         {item.validated ? 'validated quote' : 'not validated'}
                       </span>
                     </div>
-                    <blockquote className="mt-2 border-l-2 border-slate-300 pl-3 text-sm">
-                      {item.quote_exact}
-                    </blockquote>
+                    <blockquote className="evidence-quote mt-3">{item.quote_exact}</blockquote>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-slate-600">No evidence references persisted.</p>
+              <p className="text-sm text-ink-muted">No evidence references persisted.</p>
             )}
           </Panel>
           <Panel title="Technical verification details" className="analyst-only">
@@ -227,9 +237,12 @@ export default async function RequirementDetailPage({
               <Field name="Challenge state" value={finding?.challenge_status ?? 'pending'} />
             </dl>
             {finding?.deterministic_model_disagreement?.length ? (
-              <div className="mt-3 rounded border border-amber-300 bg-amber-50 p-3 text-sm">
-                <strong>Deterministic/model disagreement</strong>
-                <ul className="mt-1 list-disc pl-5">
+              <div className="notice notice-warning mt-4">
+                <strong className="notice-title">
+                  <IconAlert size={15} />
+                  Deterministic/model disagreement
+                </strong>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
                   {finding.deterministic_model_disagreement.map((item: string) => (
                     <li key={item}>{item}</li>
                   ))}
@@ -237,37 +250,40 @@ export default async function RequirementDetailPage({
               </div>
             ) : null}
             {challengePass?.status === 'failed' ? (
-              <p className="mt-3 text-sm text-red-700">
+              <p className="mt-4 text-sm text-critical-400">
                 Challenge failed; this candidate cannot be source-supported.
               </p>
             ) : null}
           </Panel>
           <Panel title="Addendum and relationship timeline">
             {(relationships ?? []).length ? (
-              <ol className="space-y-2 text-sm">
+              <ol className="space-y-3 text-sm">
                 {relationships!.map((item, index) => (
-                  <li key={item.id} className="rounded border border-slate-200 p-3">
-                    <span className="mr-2 text-xs font-semibold text-slate-500">
-                      CHANGE {index + 1}
-                    </span>
-                    <strong>{businessLabel(item.relationship_type)}</strong> →{' '}
-                    <Link
-                      className="text-blue-700 hover:underline"
-                      href={`/w/${workspaceId}/requirements/${item.target_candidate_id}`}
-                    >
-                      related requirement
-                    </Link>
-                    <p className="text-slate-600">{item.rationale}</p>
+                  <li key={item.id} className="surface-panel rail-steel p-4">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="text-micro">CHANGE {index + 1}</span>
+                      <strong className="font-semibold text-ink">
+                        {businessLabel(item.relationship_type)}
+                      </strong>
+                      <span aria-hidden="true" className="text-ink-faint">
+                        →
+                      </span>
+                      <Link
+                        className="action-link"
+                        href={`/w/${workspaceId}/requirements/${item.target_candidate_id}`}
+                      >
+                        related requirement
+                      </Link>
+                    </div>
+                    <p className="mt-2 text-ink-soft">{item.rationale}</p>
                     {item.precedence_quote ? (
-                      <blockquote className="mt-2 border-l-2 border-slate-300 pl-3 text-xs">
+                      <blockquote className="evidence-quote mt-3 text-xs">
                         {item.precedence_quote}
                       </blockquote>
                     ) : null}
-                    <details className="mt-3">
-                      <summary className="cursor-pointer text-blue-700">
-                        Review this relationship
-                      </summary>
-                      <div className="mt-3">
+                    <details className="disclosure mt-4">
+                      <summary>Review this relationship</summary>
+                      <div className="disclosure-body">
                         <ReviewControls
                           workspaceId={workspaceId}
                           findingId={finding!.id}
@@ -279,7 +295,7 @@ export default async function RequirementDetailPage({
                 ))}
               </ol>
             ) : (
-              <p className="text-sm text-slate-600">No machine-proposed relationships.</p>
+              <p className="text-sm text-ink-muted">No machine-proposed relationships.</p>
             )}
           </Panel>
           {finding ? (
@@ -289,26 +305,35 @@ export default async function RequirementDetailPage({
           ) : null}
           <Panel title="Decision history">
             {(decisions ?? []).length ? (
-              <ol className="space-y-2 text-sm">
+              <ol className="space-y-3 text-sm">
                 {decisions!.map((decision) => (
-                  <li key={decision.id} className="rounded border border-slate-200 p-2">
-                    <strong>{decision.decision.replaceAll('_', ' ')}</strong> ·{' '}
-                    {new Date(decision.created_at).toLocaleString()}
+                  <li key={decision.id} className="surface-panel p-4">
+                    <div className="flex flex-wrap items-center gap-x-2">
+                      <strong className="font-semibold text-ink">
+                        {decision.decision.replaceAll('_', ' ')}
+                      </strong>
+                      <span aria-hidden="true" className="text-ink-faint">
+                        ·
+                      </span>
+                      <span className="text-metadata tabular">
+                        {new Date(decision.created_at).toLocaleString()}
+                      </span>
+                    </div>
                     {decision.relationship_id ? (
-                      <p className="text-xs text-slate-500">
+                      <p className="text-metadata mono mt-1">
                         Relationship review: {decision.relationship_id}
                       </p>
                     ) : null}
-                    <p className="whitespace-pre-wrap text-slate-700">
+                    <p className="mt-2 whitespace-pre-wrap text-ink-soft">
                       {decision.note || 'No note'}
                     </p>
                     {Object.keys(decision.corrected_values ?? {}).length ? (
-                      <pre className="mt-1 overflow-auto rounded bg-slate-50 p-2 text-xs">
+                      <pre className="surface-inset mono mt-3 overflow-auto p-3 text-xs text-ink-soft">
                         {JSON.stringify(decision.corrected_values, null, 2)}
                       </pre>
                     ) : null}
                     {decision.prior_decision_id ? (
-                      <p className="text-xs text-slate-500">
+                      <p className="text-metadata mono mt-2">
                         Revision of decision {decision.prior_decision_id}
                       </p>
                     ) : null}
@@ -316,26 +341,28 @@ export default async function RequirementDetailPage({
                 ))}
               </ol>
             ) : (
-              <p className="text-sm text-slate-600">Review pending.</p>
+              <p className="text-sm text-ink-muted">Review pending.</p>
             )}
           </Panel>
         </div>
-        <div className="space-y-5">
+        <div className="space-y-5 lg:sticky lg:top-20 lg:self-start">
           <Panel
             title={`Original PDF — ${document?.normalized_filename ?? 'source'} page ${pageNumber}`}
           >
             {signedPdfUrl ? (
-              <iframe
-                title={`Original PDF page ${pageNumber}`}
-                src={`${signedPdfUrl}#page=${pageNumber}`}
-                className="h-[62vh] w-full rounded border border-slate-200"
-              />
+              <div className="surface-inset overflow-hidden p-2">
+                <iframe
+                  title={`Original PDF page ${pageNumber}`}
+                  src={`${signedPdfUrl}#page=${pageNumber}`}
+                  className="paper-surface h-[62vh] w-full border-0"
+                />
+              </div>
             ) : (
-              <p className="text-sm text-slate-600">Original preview unavailable.</p>
+              <p className="text-sm text-ink-muted">Original preview unavailable.</p>
             )}
             <Link
               href={`/w/${workspaceId}/documents/${documentId}?page=${pageNumber}`}
-              className="mt-3 inline-block text-sm text-blue-700 hover:underline"
+              className="action-link mt-4 inline-flex items-center gap-1.5 text-sm"
             >
               Open source page →
             </Link>
@@ -343,7 +370,7 @@ export default async function RequirementDetailPage({
           <Panel title="Extracted text anchor">
             {primaryPage ? (
               <>
-                <p className="mb-2 text-xs text-slate-600">
+                <p className="text-metadata mb-3">
                   Text-level anchor; no pixel-level PDF highlight is claimed. Parser state:{' '}
                   {primaryPage.extraction_status}
                 </p>
@@ -353,7 +380,7 @@ export default async function RequirementDetailPage({
                 />
               </>
             ) : (
-              <p className="text-sm text-slate-600">No extracted evidence page available.</p>
+              <p className="text-sm text-ink-muted">No extracted evidence page available.</p>
             )}
           </Panel>
           <Panel title="Technical provenance" className="analyst-only">
@@ -385,7 +412,7 @@ export default async function RequirementDetailPage({
                 }
               />
             </dl>
-            <p className="mt-3 text-xs text-slate-500">
+            <p className="text-metadata mt-4">
               Provider request IDs, hidden prompts, full context, secrets, and reasoning are
               intentionally not shown.
             </p>
@@ -406,8 +433,8 @@ function Panel({
   className?: string;
 }) {
   return (
-    <section className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${className}`}>
-      <h2 className="mb-3 text-base font-semibold">{title}</h2>
+    <section className={`surface-card p-5 ${className}`}>
+      <h2 className="section-title mb-4">{title}</h2>
       {children}
     </section>
   );
@@ -415,8 +442,8 @@ function Panel({
 function Field({ name, value }: { name: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wide text-slate-500">{name}</dt>
-      <dd className="mt-1 break-words font-medium">{businessLabel(value)}</dd>
+      <dt className="text-micro">{name}</dt>
+      <dd className="mono mt-1.5 break-words text-[0.8125rem] text-ink">{businessLabel(value)}</dd>
     </div>
   );
 }

@@ -20,7 +20,7 @@ export function ProposalAuditControls({
   const router = useRouter();
   return (
     <form
-      className="space-y-3 rounded border border-slate-200 bg-white p-4"
+      className="grid gap-5"
       onSubmit={(event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
@@ -39,66 +39,61 @@ export function ProposalAuditControls({
         });
       }}
     >
-      <h2 className="font-medium">Start deterministic draft audit</h2>
-      <p className="text-sm text-slate-600">
-        Select a parsed proposal draft and a completed checklist generation. No model provider is
-        called.
-      </p>
-      <label className="block text-sm font-medium">
-        Proposal draft
-        <select
-          required
-          name="document"
-          className="mt-1 block w-full rounded border border-slate-300 px-3 py-2"
-        >
-          <option value="">Select parsed proposal</option>
-          {documents.map((document) => (
-            <option key={document.id} value={document.id}>
-              {document.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="block text-sm font-medium">
-        Prior revision (optional)
-        <select
-          name="priorDraft"
-          className="mt-1 block w-full rounded border border-slate-300 px-3 py-2"
-        >
-          <option value="">Start a new lineage</option>
-          {priorDrafts.map((draft) => (
-            <option key={draft.id} value={draft.id}>
-              {draft.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="block text-sm font-medium">
-        Checklist generation
-        <select
-          required
-          name="checklistRun"
-          className="mt-1 block w-full rounded border border-slate-300 px-3 py-2"
-        >
-          <option value="">Select checklist</option>
-          {checklistRuns.map((run) => (
-            <option key={run.id} value={run.id}>
-              {new Date(run.createdAt).toLocaleString()}
-            </option>
-          ))}
-        </select>
-      </label>
-      <button
-        disabled={pending || !documents.length || !checklistRuns.length}
-        className="rounded bg-blue-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-      >
-        {pending ? 'Auditing…' : 'Run proposal audit'}
-      </button>
-      {message ? (
-        <p aria-live="polite" className="text-sm text-slate-700">
-          {message}
+      <div>
+        <h2 className="section-title">Start deterministic draft audit</h2>
+        <p className="section-lede">
+          Select a parsed proposal draft and a completed checklist generation. No model provider is
+          called.
         </p>
-      ) : null}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <label className="field">
+          <span className="field-label">Proposal draft</span>
+          <select required name="document">
+            <option value="">Select parsed proposal</option>
+            {documents.map((document) => (
+              <option key={document.id} value={document.id}>
+                {document.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span className="field-label">Prior revision (optional)</span>
+          <select name="priorDraft">
+            <option value="">Start a new lineage</option>
+            {priorDrafts.map((draft) => (
+              <option key={draft.id} value={draft.id}>
+                {draft.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span className="field-label">Checklist generation</span>
+          <select required name="checklistRun">
+            <option value="">Select checklist</option>
+            {checklistRuns.map((run) => (
+              <option key={run.id} value={run.id}>
+                {new Date(run.createdAt).toLocaleString()}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line-subtle pt-4">
+        <button
+          disabled={pending || !documents.length || !checklistRuns.length}
+          className="primary-action"
+        >
+          {pending ? 'Auditing…' : 'Run proposal audit'}
+        </button>
+        {message ? (
+          <p aria-live="polite" className="text-metadata">
+            {message}
+          </p>
+        ) : null}
+      </div>
     </form>
   );
 }

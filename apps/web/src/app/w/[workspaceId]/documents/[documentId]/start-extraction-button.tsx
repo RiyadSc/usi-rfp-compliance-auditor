@@ -21,26 +21,27 @@ export function StartExtractionButton({ workspaceId, documentId, canStart }: Pro
   if (!canStart) return null;
 
   return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium" htmlFor="analysis-mode">
-        Analysis mode
-      </label>
-      <select
-        id="analysis-mode"
-        value={mode}
-        onChange={(event) => setMode(event.target.value as typeof mode)}
-        className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-      >
-        <option value="quick_scan">Quick scan — deterministic discovery, no provider</option>
-        <option value="standard_analysis">
-          Standard analysis — extraction plus independent verification
-        </option>
-        <option value="deep_audit">Deep audit — adds complex-table and ambiguity review</option>
-      </select>
+    <div className="space-y-3">
+      <div className="field">
+        <label className="field-label" htmlFor="analysis-mode">
+          Analysis mode
+        </label>
+        <select
+          id="analysis-mode"
+          value={mode}
+          onChange={(event) => setMode(event.target.value as typeof mode)}
+        >
+          <option value="quick_scan">Quick scan — deterministic discovery, no provider</option>
+          <option value="standard_analysis">
+            Standard analysis — extraction plus independent verification
+          </option>
+          <option value="deep_audit">Deep audit — adds complex-table and ambiguity review</option>
+        </select>
+      </div>
       <button
         type="button"
         disabled={pending}
-        className="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 disabled:opacity-50"
+        className="primary-action"
         onClick={() => {
           setError(null);
           startTransition(async () => {
@@ -55,12 +56,12 @@ export function StartExtractionButton({ workspaceId, documentId, canStart }: Pro
       >
         {pending ? 'Starting…' : 'Start candidate extraction'}
       </button>
-      <p className="text-xs text-slate-600">
+      <p className="field-hint">
         Results are always labeled candidate / unverified. Independent verification is started
         separately after extraction completes.
       </p>
       {error ? (
-        <p role="alert" className="text-sm text-red-800">
+        <p role="alert" className="field-error">
           {error}
         </p>
       ) : null}

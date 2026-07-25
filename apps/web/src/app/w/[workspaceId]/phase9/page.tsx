@@ -43,18 +43,22 @@ export default async function Phase9AnalysisPage({
     .maybeSingle();
   if (!run) {
     return (
-      <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+      <main className="page-shell">
         <WorkspaceNavigation
           workspaceId={workspaceId}
           workspaceName={workspace.name}
           current="phase9"
         />
-        <p className="section-kicker">Analysis coverage</p>
-        <h1 className="mt-1 text-3xl font-semibold">No controlled analysis result</h1>
-        <p className="mt-3 max-w-2xl text-slate-600">
-          Live provider analysis is disabled for ordinary workspaces. A protected public-fixture run
-          will appear here only after its source, budget, and compatibility checks pass.
-        </p>
+        <div className="page-header">
+          <div>
+            <p className="page-eyebrow">Analysis coverage</p>
+            <h1 className="page-title mt-2">No controlled analysis result</h1>
+            <p className="page-lede mt-3">
+              Live provider analysis is disabled for ordinary workspaces. A protected public-fixture
+              run will appear here only after its source, budget, and compatibility checks pass.
+            </p>
+          </div>
+        </div>
       </main>
     );
   }
@@ -116,17 +120,17 @@ export default async function Phase9AnalysisPage({
   ).length;
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+    <main className="page-shell">
       <WorkspaceNavigation
         workspaceId={workspaceId}
         workspaceName={workspace.name}
         current="phase9"
       />
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="page-header">
         <div>
-          <p className="section-kicker">Controlled source analysis</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">FAC115 analysis coverage</h1>
-          <p className="mt-2 max-w-3xl text-sm text-slate-600">
+          <p className="page-eyebrow">Controlled source analysis</p>
+          <h1 className="page-title mt-2">FAC115 analysis coverage</h1>
+          <p className="page-lede mt-3">
             Source-grounded machine analysis only. Every finding remains separate from human review
             and does not claim bidder compliance or submission approval.
           </p>
@@ -135,7 +139,7 @@ export default async function Phase9AnalysisPage({
       </div>
 
       <section
-        className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5"
+        className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5"
         aria-label="Analysis summary"
       >
         <Summary label="Source blocks covered" value={coverage?.length ?? 0} />
@@ -148,9 +152,9 @@ export default async function Phase9AnalysisPage({
         />
       </section>
 
-      <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5">
-        <h2 className="text-lg font-semibold">Processing and provenance</h2>
-        <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
+      <section className="surface-panel p-5">
+        <h2 className="section-title">Processing and provenance</h2>
+        <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Fact label="Mode" value={run.mode} />
           <Fact label="Cache reused" value={`${run.cache_hit_count} tasks`} />
           <Fact
@@ -169,24 +173,24 @@ export default async function Phase9AnalysisPage({
             value={`${(totals.latency / 1000).toFixed(1)} seconds`}
           />
         </dl>
-        <div className="mt-4 flex flex-wrap gap-2 text-xs">
+        <div className="mt-4 flex flex-wrap gap-2">
           {[...routes.entries()].map(([route, count]) => (
-            <span key={route} className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+            <span key={route} className="chip">
               {route.replaceAll('_', ' ')}: {count}
             </span>
           ))}
         </div>
       </section>
 
-      <section className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-5 py-4">
-          <h2 className="text-lg font-semibold">Source-grounded findings</h2>
-          <p className="mt-1 text-sm text-slate-600">
+      <section className="surface-card mt-6 overflow-hidden">
+        <div className="border-b border-line-subtle px-5 py-4">
+          <h2 className="section-title">Source-grounded findings</h2>
+          <p className="section-lede mt-1">
             Exact evidence, native workbook cells, ambiguous locations, and review state remain
             visible.
           </p>
         </div>
-        <div className="divide-y divide-slate-200">
+        <div className="divide-y divide-line-subtle">
           {rows.map((finding) => {
             const candidate = candidateByHash.get(finding.candidate_hash);
             const evidence = finding.evidence_block_hashes
@@ -196,13 +200,13 @@ export default async function Phase9AnalysisPage({
               <article key={finding.candidate_hash} className="p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="max-w-4xl">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <p className="text-micro text-ink-muted">
                       {candidate?.requirement_type?.replaceAll('_', ' ') ?? 'Requirement'}
                     </p>
-                    <h3 className="mt-1 font-semibold">
+                    <h3 className="mt-1 font-semibold text-ink">
                       {candidate?.obligation_text ?? 'Source-grounded requirement'}
                     </h3>
-                    <blockquote className="mt-3 border-l-4 border-blue-300 bg-blue-50 px-4 py-3 text-sm text-slate-800">
+                    <blockquote className="evidence-quote mt-3">
                       {candidate?.evidence_text ?? 'Evidence retained with the source record.'}
                     </blockquote>
                   </div>
@@ -213,14 +217,14 @@ export default async function Phase9AnalysisPage({
                     <StatusBadge value={finding.human_review_status} />
                   </div>
                 </div>
-                <div className="mt-3 flex flex-wrap gap-3 text-sm">
+                <div className="mt-3 flex flex-wrap gap-3">
                   {evidence.map((block) => (
                     <Link
                       key={block!.block_hash}
                       href={`/w/${workspaceId}/documents/${block!.source_document_id}${
                         block!.page_number ? `?page=${block!.page_number}` : ''
                       }`}
-                      className="font-medium text-blue-700 hover:underline"
+                      className="locator"
                     >
                       {block!.source_document_key}
                       {block!.page_number ? ` · page ${block!.page_number}` : ''}
@@ -229,19 +233,19 @@ export default async function Phase9AnalysisPage({
                   ))}
                 </div>
                 {finding.ambiguity_code ? (
-                  <p className="mt-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+                  <p className="notice notice-warning mt-3">
                     Evidence location remains ambiguous; every valid location is shown for human
                     review.
                   </p>
                 ) : null}
-                <p className="mt-3 text-xs text-slate-500">
+                <p className="text-metadata mt-3">
                   Machine-generated · human review {finding.human_review_status}
                 </p>
               </article>
             );
           })}
           {!rows.length ? (
-            <p className="p-5 text-sm text-slate-600">No persisted findings are available.</p>
+            <p className="empty-state-body p-5">No persisted findings are available.</p>
           ) : null}
         </div>
       </section>
@@ -251,9 +255,9 @@ export default async function Phase9AnalysisPage({
 
 function Summary({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold">{value}</p>
+    <div className="metric-card">
+      <p className="metric-label">{label}</p>
+      <p className="metric-value">{value}</p>
     </div>
   );
 }
@@ -261,8 +265,8 @@ function Summary({ label, value }: { label: string; value: string | number }) {
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</dt>
-      <dd className="mt-1 break-words font-medium">{value}</dd>
+      <dt className="text-micro text-ink-muted">{label}</dt>
+      <dd className="mono mt-1 wrap-break-word text-sm text-ink-soft">{value}</dd>
     </div>
   );
 }

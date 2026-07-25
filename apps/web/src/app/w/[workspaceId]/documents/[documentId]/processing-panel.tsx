@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { useState, useTransition } from 'react';
+import { EvidenceProcessingMark } from '@/components/brand';
+import { IconAlert, IconBlocker, IconRefresh } from '@/components/icons';
 import { cancelLargeDocumentJob, retryProcessingUnit } from './processing-actions';
 
 type Props = {
@@ -62,13 +64,17 @@ export function ProcessingPanel({
 }: Props) {
   const [pending, start] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  const running = job ? ['running', 'queued'].includes(job.status) : false;
   return (
-    <section className="surface-card mb-6" aria-labelledby="processing-title">
-      <h2 id="processing-title" className="text-lg font-semibold">
-        Document inspection and processing
-      </h2>
+    <section className="surface-card mb-6 p-5 sm:p-6" aria-labelledby="processing-title">
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+        <h2 id="processing-title" className="section-title">
+          Document inspection and processing
+        </h2>
+        {running ? <EvidenceProcessingMark size={26} /> : null}
+      </div>
       {inspection ? (
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        <dl className="mt-5 grid gap-3 sm:grid-cols-3">
           <Metric label="Detected format" value={inspection.sourceFormat.toUpperCase()} />
           <Metric label="Pages or sheets" value={String(inspection.pages)} />
           <Metric
@@ -78,69 +84,91 @@ export function ProcessingPanel({
           <Metric label="Blocks" value={String(inspection.blocks)} />
           <Metric label="Tables" value={String(inspection.tables)} />
           <Metric label="Cache" value={cacheDecision ?? 'Not evaluated'} />
-        </div>
+        </dl>
       ) : (
-        <p className="mt-2 text-sm text-slate-600">Inspection has not completed yet.</p>
+        <p className="mt-3 text-sm text-ink-soft">Inspection has not completed yet.</p>
       )}
       {cost ? (
-        <div className="mt-4 rounded border border-slate-200 p-3">
-          <h3 className="font-medium">Estimated analysis cost</h3>
-          <p className="text-sm text-slate-700">
+        <div className="surface-panel mt-5 p-4">
+          <h3 className="text-micro">Estimated analysis cost</h3>
+          <p className="tabular mt-2 text-sm text-ink-soft">
             Expected ${cost.low.toFixed(2)}–${cost.high.toFixed(2)} · hard maximum $
             {cost.maximum.toFixed(2)} · {cost.callsLow}–{cost.callsHigh} calls · largest stage:{' '}
             {cost.largestStage}
           </p>
           {!cost.allowed ? (
-            <p role="alert" className="mt-1 text-sm text-red-700">
+            <p role="alert" className="mt-2 flex items-start gap-2 text-sm text-critical-400">
+              <span aria-hidden="true" className="mt-0.5 shrink-0">
+                <IconBlocker size={15} />
+              </span>
               Execution blocked: {cost.blockReason}
             </p>
           ) : null}
         </div>
       ) : null}
       {job ? (
-        <div className="mt-4">
-          <h3 className="font-medium">Persisted progress</h3>
-          <p className="text-sm text-slate-700">
-            {job.currentStage.replaceAll('_', ' ')} · {job.progressNumerator} of{' '}
-            {job.progressDenominator} work units · {job.status}
-          </p>
-          <ol className="mt-2 space-y-1 text-sm">
-            {stages.map((stage) => (
-              <li key={stage.id}>
-                {stage.stage.replaceAll('_', ' ')}: {stage.progressNumerator} of{' '}
-                {stage.progressDenominator} · {stage.status}
-              </li>
-            ))}
-          </ol>
-          {['running', 'failed_retryable'].includes(job.status) ? (
-            <button
-              disabled={pending}
-              onClick={() =>
-                start(async () => {
-                  const result = await cancelLargeDocumentJob({
-                    workspaceId,
-                    documentId,
-                    jobId: job.id,
-                  });
-                  setMessage(result.ok ? 'Job cancelled' : result.error);
-                })
-              }
-              className="mt-3 rounded border border-slate-400 px-3 py-2 text-sm"
-            >
-              Cancel pending work
-            </button>
-          ) : null}
-        </div>
+        <details className="disclosure mt-5" open>
+          <summary>
+            <h3 className="text-sm font-semibold text-ink">Persisted progress</h3>
+          </summary>
+          <div className="disclosure-body">
+            <p className="tabular text-sm text-ink-soft">
+              {job.currentStage.replaceAll('_', ' ')} · {job.progressNumerator} of{' '}
+              {job.progressDenominator} work units · {job.status}
+            </p>
+            {stages.length ? (
+              <div className="stage-track mt-3" aria-hidden="true">
+                {stages.map((stage) => (
+                  <span key={stage.id} className={`stage-segment ${segmentTone(stage.status)}`} />
+                ))}
+              </div>
+            ) : null}
+            <ol className="mt-4 space-y-2 text-sm">
+              {stages.map((stage) => (
+                <li
+                  key={stage.id}
+                  className="tabular border-t border-line-subtle pt-2 text-ink-soft first:border-0 first:pt-0"
+                >
+                  {stage.stage.replaceAll('_', ' ')}: {stage.progressNumerator} of{' '}
+                  {stage.progressDenominator} · {stage.status}
+                </li>
+              ))}
+            </ol>
+            {['running', 'failed_retryable'].includes(job.status) ? (
+              <button
+                disabled={pending}
+                onClick={() =>
+                  start(async () => {
+                    const result = await cancelLargeDocumentJob({
+                      workspaceId,
+                      documentId,
+                      jobId: job.id,
+                    });
+                    setMessage(result.ok ? 'Job cancelled' : result.error);
+                  })
+                }
+                className="secondary-action btn-sm mt-4"
+              >
+                Cancel pending work
+              </button>
+            ) : null}
+          </div>
+        </details>
       ) : null}
       {failedUnits.length ? (
-        <div className="mt-4">
-          <h3 className="font-medium">Recovery</h3>
-          <ul className="space-y-2">
+        <div className="mt-5">
+          <h3 className="text-micro">Recovery</h3>
+          <ul className="mt-2 space-y-2">
             {failedUnits.map((unit) => (
-              <li key={unit.id} className="rounded border border-amber-300 bg-amber-50 p-2 text-sm">
-                <p>
-                  {unit.unitType.replaceAll('_', ' ')} · {unit.unitKey}
-                  {unit.error ? ` · ${unit.error}` : ''}
+              <li key={unit.id} className="notice notice-warning rail-warning">
+                <p className="flex items-start gap-2 text-sm">
+                  <span aria-hidden="true" className="mt-0.5 shrink-0 text-warning-400">
+                    <IconAlert size={15} />
+                  </span>
+                  <span className="mono">
+                    {unit.unitType.replaceAll('_', ' ')} · {unit.unitKey}
+                    {unit.error ? ` · ${unit.error}` : ''}
+                  </span>
                 </p>
                 {job && unit.status === 'failed_retryable' ? (
                   <button
@@ -156,8 +184,9 @@ export function ProcessingPanel({
                         setMessage(result.ok ? 'Retry queued' : result.error);
                       })
                     }
-                    className="mt-2 rounded bg-blue-700 px-3 py-1 text-white"
+                    className="secondary-action btn-sm mt-3"
                   >
+                    <IconRefresh size={14} />
                     Retry this unit
                   </button>
                 ) : null}
@@ -167,9 +196,12 @@ export function ProcessingPanel({
         </div>
       ) : null}
       {inspection?.warnings.length ? (
-        <div className="mt-4">
-          <h3 className="font-medium">Processing warnings</h3>
-          <ul className="list-disc pl-5 text-sm">
+        <div className="notice notice-warning mt-5">
+          <h3 className="notice-title">
+            <IconAlert size={15} />
+            Processing warnings
+          </h3>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-ink-soft">
             {inspection.warnings.map((w) => (
               <li key={w}>{w}</li>
             ))}
@@ -177,18 +209,27 @@ export function ProcessingPanel({
         </div>
       ) : null}
       {message ? (
-        <p aria-live="polite" className="mt-3 text-sm">
+        <p aria-live="polite" className="text-metadata mt-4">
           {message}
         </p>
       ) : null}
     </section>
   );
 }
+
+/** Segment tone follows the persisted stage status; no progress is inferred. */
+function segmentTone(status: string): string {
+  if (status === 'completed' || status === 'succeeded') return 'stage-segment-done';
+  if (status === 'running') return 'stage-segment-active';
+  if (status.startsWith('failed')) return 'bg-critical-500';
+  return '';
+}
+
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded bg-slate-50 p-3">
-      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</dt>
-      <dd className="mt-1 text-sm font-semibold text-slate-900">{value}</dd>
+    <div className="surface-panel p-4">
+      <dt className="metric-label">{label}</dt>
+      <dd className="tabular mt-2 text-sm font-semibold text-ink">{value}</dd>
     </div>
   );
 }

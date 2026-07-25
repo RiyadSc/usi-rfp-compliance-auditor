@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { AppHeader } from '@/components/app-header';
 import { StatusBadge } from '@/components/status-badge';
+import { EmptyStateArt } from '@/components/brand';
+import { IconCalendar } from '@/components/icons';
 import { businessLabel, formatDate } from '@/lib/presentation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
@@ -36,13 +38,17 @@ export default async function MyWorkPage({
     <>
       <AppHeader />
       <main className="page-shell">
-        <p className="section-kicker">Personal work queue</p>
-        <h1 className="page-title mt-1">My Work</h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-600">
-          Your assigned actions across authorized opportunities. Completing a task never changes the
-          underlying RFP evidence or human-review decision.
-        </p>
-        <section className="mt-6 grid gap-3 sm:grid-cols-3" aria-label="My work summary">
+        <div className="page-header">
+          <div className="min-w-0">
+            <p className="page-eyebrow">Personal work queue</p>
+            <h1 className="page-title mt-2">My Work</h1>
+            <p className="page-lede mt-3">
+              Your assigned actions across authorized opportunities. Completing a task never changes
+              the underlying RFP evidence or human-review decision.
+            </p>
+          </div>
+        </div>
+        <section className="grid gap-3 sm:grid-cols-3" aria-label="My work summary">
           <Metric label="Open assignments" value={open.length} />
           <Metric
             label="Blocked or unresolved"
@@ -55,7 +61,7 @@ export default async function MyWorkPage({
             value={open.filter((item) => item.proof_requirement !== 'none_identified').length}
           />
         </section>
-        <div className="mt-5 flex flex-wrap gap-2" aria-label="My work saved views">
+        <div className="mt-6 flex flex-wrap gap-2" aria-label="My work saved views">
           <View href="/my-work" active={!status}>
             Open work
           </View>
@@ -70,18 +76,25 @@ export default async function MyWorkPage({
           </View>
         </div>
         {open.length ? (
-          <ul className="mt-5 grid gap-3 lg:grid-cols-2">
+          <ul className="mt-6 grid gap-3 lg:grid-cols-2">
             {open.map((item) => {
               const workspace = names.get(item.workspace_id);
+              const days = item.due_at
+                ? Math.ceil((new Date(item.due_at).valueOf() - Date.now()) / 86_400_000)
+                : null;
+              const overdue = days != null && days < 0;
+              const blocked = ['blocked', 'unresolved'].includes(item.workflow_status);
+              const dueSoon = days != null && days >= 0 && days <= 7;
+              const rail = overdue || blocked ? 'rail-critical' : dueSoon ? 'rail-warning' : '';
               return (
-                <li key={item.id} className="surface-card p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-medium text-slate-500">
+                <li key={item.id} className={`surface-card min-w-0 p-4 ${rail}`}>
+                  <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+                    <div className="min-w-0">
+                      <p className="text-metadata">
                         {workspace?.name ?? 'Opportunity'} · {businessLabel(item.category)}
                       </p>
                       <Link
-                        className="mt-1 block font-semibold text-blue-800 hover:underline"
+                        className="mt-1 block font-semibold text-ink break-words transition-colors hover:text-teal-300"
                         href={`/w/${item.workspace_id}/checklist/${item.id}`}
                       >
                         {item.title}
@@ -89,23 +102,33 @@ export default async function MyWorkPage({
                     </div>
                     <StatusBadge value={item.workflow_status} />
                   </div>
-                  <div className="mt-4 flex items-center justify-between text-xs text-slate-600">
-                    <span>
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 border-t border-line-subtle pt-3 text-xs">
+                    <span
+                      className={`inline-flex items-center gap-1.5 tabular ${
+                        overdue
+                          ? 'font-semibold text-critical-400'
+                          : dueSoon
+                            ? 'font-semibold text-warning-400'
+                            : 'text-ink-soft'
+                      }`}
+                    >
+                      <IconCalendar size={13} className="shrink-0" />
                       {item.due_at ? `Due ${formatDate(item.due_at)}` : 'No item due date'}
                     </span>
-                    <span>{businessLabel(item.artifact_state)}</span>
+                    <span className="text-metadata">{businessLabel(item.artifact_state)}</span>
                   </div>
                 </li>
               );
             })}
           </ul>
         ) : (
-          <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
-            <h2 className="font-semibold">No assigned work in this view</h2>
-            <p className="mt-1 text-sm text-slate-600">
+          <div className="empty-state mt-6">
+            <EmptyStateArt />
+            <h2 className="empty-state-title">No assigned work in this view</h2>
+            <p className="empty-state-body">
               Open an opportunity checklist to review unassigned work.
             </p>
-            <Link href="/opportunities" className="secondary-action mt-4">
+            <Link href="/opportunities" className="secondary-action">
               Open opportunities
             </Link>
           </div>
@@ -117,8 +140,8 @@ export default async function MyWorkPage({
 
 function Metric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="surface-card p-4">
-      <p className="text-sm text-slate-600">{label}</p>
+    <div className="metric-card p-4">
+      <p className="metric-label">{label}</p>
       <p className="metric-value">{value}</p>
     </div>
   );
@@ -136,7 +159,7 @@ function View({
     <Link
       href={href}
       aria-current={active ? 'page' : undefined}
-      className={`rounded-full border px-3 py-1.5 text-sm font-medium ${active ? 'border-blue-700 bg-blue-700 text-white' : 'border-slate-300 bg-white'}`}
+      className={`chip ${active ? 'chip-active' : ''}`}
     >
       {children}
     </Link>

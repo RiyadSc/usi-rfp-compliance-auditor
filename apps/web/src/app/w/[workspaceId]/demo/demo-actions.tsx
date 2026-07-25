@@ -17,7 +17,7 @@ export function DemoFindingReviewButton({
       <button
         type="button"
         disabled={pending}
-        className="rounded bg-blue-700 px-3 py-2 text-white disabled:opacity-60"
+        className="primary-action disabled:opacity-60"
         onClick={() =>
           start(async () => {
             const result = await recordDemoFindingReview({
@@ -31,7 +31,7 @@ export function DemoFindingReviewButton({
       >
         {pending ? 'Recording…' : 'Record finding review'}
       </button>
-      <p role="status" aria-live="polite" className="mt-2 text-sm">
+      <p role="status" aria-live="polite" className="mt-2 text-sm text-ink-soft">
         {message}
       </p>
     </div>
@@ -54,12 +54,12 @@ export function DemoModeControls({
   ] as const;
   return (
     <fieldset className="flex flex-wrap gap-2" disabled={pending}>
-      <legend className="mb-2 text-sm font-medium">Presentation resilience mode</legend>
+      <legend className="mb-2 text-sm font-medium text-ink">Presentation resilience mode</legend>
       {modes.map(([mode, label]) => (
         <button
           type="button"
           key={mode}
-          className="rounded border border-slate-400 bg-white px-2 py-1 text-sm"
+          className="secondary-action btn-sm"
           onClick={() =>
             start(async () => {
               await setPhase8DemoMode({ workspaceId, scopeId, mode });
@@ -87,7 +87,7 @@ export function DemoDownloadGrantButton({
       <button
         type="button"
         disabled={pending}
-        className="rounded border border-blue-700 px-3 py-2 text-blue-700 disabled:opacity-60"
+        className="secondary-action disabled:opacity-60"
         onClick={() =>
           start(async () => {
             const result = await requestDemoFallbackGrant({ workspaceId, scopeId });
@@ -101,7 +101,7 @@ export function DemoDownloadGrantButton({
       >
         {pending ? 'Authorizing…' : 'Validate short-lived private download'}
       </button>
-      <p role="status" aria-live="polite" className="mt-2 text-sm">
+      <p role="status" aria-live="polite" className="mt-2 text-sm text-ink-soft">
         {message}
       </p>
     </div>

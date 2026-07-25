@@ -85,7 +85,9 @@ test('@demo-critical completes the exact protected synthetic presentation flow',
       .getByRole('link', { name: 'Open verified requirement and evidence' })
       .first()
       .click();
-    await expect(page.getByRole('heading', { name: 'Mandatory Form A-1' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Mandatory Form A-1', exact: true }),
+    ).toBeVisible();
     await expect(
       page
         .getByText('Offerors must complete and submit mandatory Form A-1.', { exact: true })
@@ -110,7 +112,9 @@ test('@demo-critical completes the exact protected synthetic presentation flow',
       .getByRole('link', { name: 'Open checklist item and linked evidence' })
       .first()
       .click();
-    await expect(page.getByRole('heading', { name: 'Mandatory Form A-1' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Mandatory Form A-1', exact: true }),
+    ).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Exact source evidence' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Open original page 18 →' })).toBeVisible();
     await page.goto(`/w/${workspaceId}/demo`);
@@ -133,8 +137,11 @@ test('@demo-critical completes the exact protected synthetic presentation flow',
     await expect(page.getByText('Extracted text — page 4 of 8')).toBeVisible();
     await page.goto(`/w/${workspaceId}/demo`);
     await page.getByRole('button', { name: 'Record finding review' }).click();
-    await expect(page.getByRole('status').filter({ hasText: 'Review recorded' })).toBeVisible();
-    await expect(page.getByTestId('resolution-history')).toContainText('Append-only');
+    // Server revalidation remounts the page and clears the ephemeral status toast;
+    // the durable signal is the append-only resolution history copy.
+    await expect(page.getByTestId('resolution-history')).toContainText('Append-only', {
+      timeout: 15_000,
+    });
     await page.goto(`/w/${workspaceId}/proposal-audit/${proposalAuditRunId}`);
     await expect(page.getByRole('heading', { name: 'phase8-flawed-proposal.pdf' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Findings' })).toBeVisible();

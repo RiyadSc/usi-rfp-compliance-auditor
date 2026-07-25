@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { z } from 'zod';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
+import { EvidenceProcessingMark } from '@/components/brand';
+import { IconAlert, IconBlocker } from '@/components/icons';
 import { DeleteDocumentButton } from './delete-button';
 import { PageViewer } from './page-viewer';
 import { ParseStatusPoller } from './parse-status-poller';
@@ -190,28 +192,31 @@ export default async function DocumentDetailPage({
     document.status === 'parsing';
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
-      <nav aria-label="Breadcrumb" className="mb-6 text-sm">
-        <Link href={`/w/${workspaceId}/documents`} className="text-blue-700 hover:underline">
+    <main className="page-shell">
+      <nav aria-label="Breadcrumb" className="breadcrumb mb-6">
+        <Link href={`/w/${workspaceId}/documents`} className="quiet-link font-medium">
           ← Documents
         </Link>
       </nav>
 
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold mb-1">{document.normalized_filename}</h1>
-          <p className="text-sm text-slate-600">
+      <div className="page-header">
+        <div className="min-w-0">
+          <p className="page-eyebrow">Source document</p>
+          <h1 className="page-title mt-1.5 break-words">{document.normalized_filename}</h1>
+          <p className="mt-3 text-sm text-ink-soft">
             {document.document_type} · status{' '}
-            <span className="font-medium capitalize">{document.status}</span>
+            <span className="font-medium capitalize text-ink">{document.status}</span>
             {document.page_count != null ? ` · ${document.page_count} pages` : ''}
             {document.parser_name ? ` · ${document.parser_name}@${document.parser_version}` : ''}
           </p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-metadata mt-1.5">
             Uploaded {new Date(document.created_at).toLocaleString()}
           </p>
         </div>
-        <div className="flex flex-col items-end gap-3">
-          <DeleteDocumentButton workspaceId={workspaceId} documentId={documentId} />
+        <div className="flex w-full flex-col items-stretch gap-4 sm:w-auto sm:min-w-[18rem]">
+          <div className="flex justify-end">
+            <DeleteDocumentButton workspaceId={workspaceId} documentId={documentId} />
+          </div>
           <StartExtractionButton
             workspaceId={workspaceId}
             documentId={documentId}
@@ -223,20 +228,25 @@ export default async function DocumentDetailPage({
       {processing ? <ParseStatusPoller /> : null}
 
       {document.status === 'failed' || document.status === 'rejected' ? (
-        <p
-          role="alert"
-          className="mb-4 rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800"
-        >
-          Parsing failed
-          {document.error_category ? ` (${document.error_category})` : ''}. Review the file and
-          re-upload if needed.
+        <p role="alert" className="notice notice-critical rail-critical mb-6 flex gap-3">
+          <span aria-hidden="true" className="mt-0.5 shrink-0 text-critical-400">
+            <IconBlocker size={16} />
+          </span>
+          <span>
+            Parsing failed
+            {document.error_category ? ` (${document.error_category})` : ''}. Review the file and
+            re-upload if needed.
+          </span>
         </p>
       ) : null}
 
       {Array.isArray(document.warnings) && document.warnings.length > 0 ? (
-        <div className="mb-4 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950">
-          <p className="font-medium mb-1">Parser warnings</p>
-          <ul className="list-disc pl-5">
+        <div className="notice notice-warning rail-warning mb-6">
+          <p className="notice-title mb-2">
+            <IconAlert size={15} />
+            Parser warnings
+          </p>
+          <ul className="list-disc space-y-1 pl-5 text-sm text-ink-soft">
             {(document.warnings as string[]).map((w) => (
               <li key={w}>{w}</li>
             ))}
@@ -340,9 +350,12 @@ export default async function DocumentDetailPage({
           sourceFormat={document.source_format ?? normalized?.source_format ?? 'pdf'}
         />
       ) : document.status === 'parsed' ? (
-        <p className="text-sm text-slate-600">No page records available.</p>
+        <p className="surface-panel p-5 text-sm text-ink-soft">No page records available.</p>
       ) : processing ? (
-        <p className="text-sm text-slate-600">Waiting for asynchronous parsing…</p>
+        <p className="surface-panel flex items-center gap-3 p-5 text-sm text-ink-soft">
+          <EvidenceProcessingMark size={22} />
+          Waiting for asynchronous parsing…
+        </p>
       ) : null}
       <StructuredTableEvidence tables={structuredTables} />
     </main>
