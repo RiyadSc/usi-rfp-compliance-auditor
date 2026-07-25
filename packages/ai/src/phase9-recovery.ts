@@ -10,6 +10,8 @@ export const PHASE9_CALL_PLAN_VERSION = 'phase9-exact-call-plan-v1';
 export const PHASE9_CACHE_VERSION = 'phase9-provider-cache-v1';
 export const PHASE9_PRICING_VERSION = 'phase9-pricing-2026-07-24';
 export const PHASE9_LEDGER_CEILING_USD = 3;
+/** Reasoning tokens count against Responses API max_output_tokens. */
+export const PHASE9_REASONING_OUTPUT_RESERVE_TOKENS = 1_800;
 
 export const PHASE9_TIER_MODELS = {
   tier1: 'gpt-5.4-mini-2026-03-17',
@@ -329,9 +331,9 @@ export const phase9CallPlanSchema = z.object({
   tasks: z.array(phase9CallPlanTaskSchema),
   stageMaximums: z.object({
     coverageClassification: z.number().nonnegative().max(0.35),
-    structuredExtraction: z.number().nonnegative().max(0.9),
+    structuredExtraction: z.number().nonnegative().max(1.0),
     independentVerification: z.number().nonnegative().max(1.25),
-    exceptionalAmbiguity: z.number().nonnegative().max(0.25),
+    exceptionalAmbiguity: z.number().nonnegative().max(0.45),
     retryReserve: z.number().nonnegative().max(0.25),
   }),
   hardMaximumUsd: z.number().nonnegative().max(PHASE9_LEDGER_CEILING_USD),
@@ -1239,7 +1241,11 @@ export function buildPhase9CallPlan(input: {
           blocks,
           candidates: [],
         }),
-        maximumOutputTokens: Math.min(900, 80 + blocks.length * 24),
+        // Reasoning tokens count against max_output_tokens; reserve headroom.
+        maximumOutputTokens: Math.min(
+          4_000,
+          PHASE9_REASONING_OUTPUT_RESERVE_TOKENS + 120 + blocks.length * 36,
+        ),
         maximumRetries: 0,
         escalationReason: 'coverage_sweep_for_non_targeted_blocks',
       }),
@@ -1280,7 +1286,10 @@ export function buildPhase9CallPlan(input: {
           blocks,
           candidates: [],
         }),
-        maximumOutputTokens: Math.min(1300, 180 + blocks.length * 95),
+        maximumOutputTokens: Math.min(
+          5_000,
+          PHASE9_REASONING_OUTPUT_RESERVE_TOKENS + 240 + blocks.length * 110,
+        ),
         maximumRetries: 0,
         escalationReason: 'targeted_requirement_bearing_blocks',
       }),
@@ -1319,7 +1328,7 @@ export function buildPhase9CallPlan(input: {
           blocks,
           candidates: batch,
         }),
-        maximumOutputTokens: 180 + batch.length * 90,
+        maximumOutputTokens: PHASE9_REASONING_OUTPUT_RESERVE_TOKENS + 220 + batch.length * 100,
         maximumRetries: 0,
         escalationReason: 'independent_semantic_source_support',
       }),
@@ -1365,7 +1374,7 @@ export function buildPhase9CallPlan(input: {
           blocks,
           candidates: batch,
         }),
-        maximumOutputTokens: 160 + batch.length * 70,
+        maximumOutputTokens: PHASE9_REASONING_OUTPUT_RESERVE_TOKENS + 200 + batch.length * 90,
         maximumRetries: 0,
         escalationReason: 'multiple_valid_evidence_locations',
       }),
@@ -1405,11 +1414,13 @@ export function buildPhase9CallPlan(input: {
     stageMaximums,
     hardMaximumUsd,
   };
+  // Stage caps stay well below the $3 ledger ceiling while leaving room for
+  // reasoning-token headroom in max_output_tokens.
   if (
     stageMaximums.coverageClassification > 0.35 ||
-    stageMaximums.structuredExtraction > 0.9 ||
+    stageMaximums.structuredExtraction > 1.0 ||
     stageMaximums.independentVerification > 1.25 ||
-    stageMaximums.exceptionalAmbiguity > 0.25 ||
+    stageMaximums.exceptionalAmbiguity > 0.45 ||
     hardMaximumUsd > PHASE9_LEDGER_CEILING_USD
   ) {
     throw new Error(

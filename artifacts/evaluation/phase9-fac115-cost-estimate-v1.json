@@ -1,18 +1,18 @@
 {
   "version": "phase9-pricing-2026-07-24",
   "obsoleteMaximumUsd": 88.81428,
-  "forecastCostUsd": 0.791137,
-  "optimizedMaximumUsd": 1.107191,
+  "forecastCostUsd": 1.527085,
+  "optimizedMaximumUsd": 2.027129,
   "timings": {
-    "coverageGenerationMs": 28.869,
-    "candidateMiningAndReductionMs": 85.001,
-    "callPlanGenerationMs": 13.431
+    "coverageGenerationMs": 27.789,
+    "candidateMiningAndReductionMs": 84.131,
+    "callPlanGenerationMs": 13.203
   },
   "stageMaximums": {
-    "coverageClassification": 0.018112,
-    "structuredExtraction": 0.449319,
-    "independentVerification": 0.46394,
-    "exceptionalAmbiguity": 0.17582,
+    "coverageClassification": 0.036292,
+    "structuredExtraction": 0.883077,
+    "independentVerification": 0.75734,
+    "exceptionalAmbiguity": 0.35042,
     "retryReserve": 0
   },
   "taskCount": 58,
@@ -23,5 +23,5 @@
     "tier4": 3
   },
   "estimatedInputTokens": 377997,
-  "estimatedOutputTokens": 62200
+  "estimatedOutputTokens": 178230
 }

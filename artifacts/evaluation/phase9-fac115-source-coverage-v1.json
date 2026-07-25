@@ -2,9 +2,9 @@
   "version": "phase9-source-coverage-v1",
   "sourcePackageHash": "a26306505985a1f6ce42ef948e90a441f51a0cef16a16801af7a940f527ab964",
   "timings": {
-    "coverageGenerationMs": 28.869,
-    "candidateMiningAndReductionMs": 85.001,
-    "callPlanGenerationMs": 13.431
+    "coverageGenerationMs": 27.789,
+    "candidateMiningAndReductionMs": 84.131,
+    "callPlanGenerationMs": 13.203
   },
   "routes": {
     "selected_for_deterministic_candidate": 234,
