@@ -1,0 +1,31 @@
+{
+  "version": "phase9-provider-free-holdouts-v1",
+  "providerCalls": 0,
+  "cases": [
+    {
+      "shape": "native_pdf",
+      "passed": true
+    },
+    {
+      "shape": "100_plus_page_solicitation",
+      "passed": true
+    },
+    {
+      "shape": "table_heavy_solicitation",
+      "passed": true
+    },
+    {
+      "shape": "spreadsheet_attachment",
+      "passed": true
+    },
+    {
+      "shape": "addendum_package",
+      "passed": true
+    },
+    {
+      "shape": "scanned_or_hybrid_document",
+      "passed": true,
+      "result": "parser_uncertain"
+    }
+  ]
+}

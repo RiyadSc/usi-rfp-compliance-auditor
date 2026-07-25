@@ -1,5 +1,13 @@
 # Build Status
 
+## Phase 9 recovery — offline architecture complete, live acceptance pending (2026-07-24)
+
+The coverage-led FAC115 recovery now assigns all 699 normalized PDF/portal/workbook blocks an explicit route, mines 1,197 source-derived seeds, reduces them to 1,073 atomic candidates without destructive merging, and represents all 23 frozen expected answers with exact rendered-page or native-cell evidence. `Guard Services!I11`, explicit addendum precedence, duplicate-location ambiguity, expected-answer isolation, compact strict schemas, tier routing, deterministic support gating, and the separate adversarial/parser/provider-resilience suites pass provider-free.
+
+The exact 58-task plan has a `$1.107191` hard maximum and `$0.791137` forecast, down from `$88.814280`. A dedicated additive migration, service-only atomic `$3.00` ledger, version-complete cache, dependency graph, public-only provisioning command, one-shot acceptance runner, and stored-results UI are implemented. No Phase 9 provider has been constructed and spend is `$0.00`.
+
+Remaining stop gates are operational: apply migration `20260724000026` to the confirmed development project, provision the immutable FAC115 public workspace, pass sequential Supabase/RLS and complete repository gates, commit to a clean worktree, then execute the single authorized acceptance command. General live verification, production deployment, confidential data, and arbitrary workspaces remain disabled.
+
 ## Phase 9 FAC115 Stage 0 — source ready, pilot blocked (2026-07-23)
 
 The provider-free Massachusetts FAC115 preflight validates all eight official public sources, seven hash-pinned renditions, 23 exact/normalized-exact rendered citations, DOCX section provenance, and native workbook evidence at `Guard Services!I11`. The frozen historical 22 answers remain unchanged; a versioned overlay adds separate source/precedence/proof axes, typed facts, scopes, stable IDs, and one workbook-native pricing case. Expected-answer hash: `8f97d2df60b5b82fbf126520f08b1c5684b1edeaa81f46e37f944c7723274db5`.

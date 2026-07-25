@@ -1,0 +1,27 @@
+{
+  "version": "phase9-pricing-2026-07-24",
+  "obsoleteMaximumUsd": 88.81428,
+  "forecastCostUsd": 0.791137,
+  "optimizedMaximumUsd": 1.107191,
+  "timings": {
+    "coverageGenerationMs": 28.869,
+    "candidateMiningAndReductionMs": 85.001,
+    "callPlanGenerationMs": 13.431
+  },
+  "stageMaximums": {
+    "coverageClassification": 0.018112,
+    "structuredExtraction": 0.449319,
+    "independentVerification": 0.46394,
+    "exceptionalAmbiguity": 0.17582,
+    "retryReserve": 0
+  },
+  "taskCount": 58,
+  "callsByTier": {
+    "tier1": 2,
+    "tier2": 48,
+    "tier3": 5,
+    "tier4": 3
+  },
+  "estimatedInputTokens": 377997,
+  "estimatedOutputTokens": 62200
+}

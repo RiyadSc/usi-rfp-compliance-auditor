@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { AppHeader } from './app-header';
 
 export type WorkspaceStage =
-  'overview' | 'documents' | 'requirements' | 'checklist' | 'proposal-audit' | 'reports';
+  'overview' | 'documents' | 'phase9' | 'requirements' | 'checklist' | 'proposal-audit' | 'reports';
 
 export const opportunityNavigation = [
   { id: 'overview', label: 'Overview', short: 'Overview', href: '' },
@@ -10,6 +10,7 @@ export const opportunityNavigation = [
   { id: 'checklist', label: 'Submission Checklist', short: 'Checklist', href: '/checklist' },
   { id: 'proposal-audit', label: 'Proposal Review', short: 'Proposal', href: '/proposal-audit' },
   { id: 'documents', label: 'Documents', short: 'Documents', href: '/documents' },
+  { id: 'phase9', label: 'Live Analysis', short: 'Analysis', href: '/phase9' },
   { id: 'reports', label: 'Reports', short: 'Reports', href: '/reports' },
 ] satisfies Array<{ id: WorkspaceStage; label: string; short: string; href: string }>;
 

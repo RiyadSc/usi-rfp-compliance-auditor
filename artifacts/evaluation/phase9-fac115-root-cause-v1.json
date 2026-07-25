@@ -1,0 +1,435 @@
+{
+  "version": "phase9-fac115-root-cause-v1",
+  "generatedAt": "2026-07-25T05:08:04.342Z",
+  "providerCalls": 0,
+  "originalExactBindings": 8,
+  "renderedPageCorrectedBindings": 13,
+  "unresolvedBeforeRecovery": 10,
+  "traces": [
+    {
+      "answerId": "conference-old-date",
+      "sourceDocument": "official-solicitation-page.html",
+      "renderedPage": 1,
+      "nativeReference": {
+        "kind": "html",
+        "originalFile": "official-solicitation-page.html",
+        "renderedPage": 1,
+        "location": "Amendment 4"
+      },
+      "exactExpectedQuotation": "Pre-Bid Conference changed from \"Thursday, March 31, 2022; 1:00- 2:00 PM.",
+      "sourceBlockTypes": ["portal"],
+      "headingPaths": [[], []],
+      "contentShape": [
+        {
+          "blockId": "18cdcdb6b7d77d4099b223936d2d31291e1c19ba56400698324190af25442efd",
+          "blockType": "portal",
+          "pageNumber": 1,
+          "sheetName": null,
+          "cellRange": null
+        },
+        {
+          "blockId": "370f543ece4ceb148ad916ec0ecd929b76d8b1e5050478f6f7c9829b467bd4c1",
+          "blockType": "portal",
+          "pageNumber": 1,
+          "sheetName": null,
+          "cellRange": null
+        }
+      ],
+      "deterministicPrefilterSelected": true,
+      "extractionRoutes": [
+        "selected_for_deterministic_candidate",
+        "selected_for_deterministic_candidate"
+      ],
+      "historicalModelInputStatus": "not_retained",
+      "historicalModelResponseStatus": "not_retained",
+      "historicalTokenTruncationStatus": "not_retained",
+      "historicalChunkBoundaryStatus": "not_evidenced",
+      "historicalDeduplicationStatus": "not_evidenced",
+      "historicalClassificationStatus": "candidate_scope_error",
+      "previousFailureCategory": "candidate_scope_error",
+      "sourceBlockDiscovered": true,
+      "freshCandidateDiscovered": true,
+      "freshCandidateIds": ["6db849d07fe50aa9d5581d7e8d4958a7d10af7c78818b56af16ad132b61ab5a1"],
+      "safeAmbiguity": false,
+      "recoveryComponent": "portal_addendum_relationships"
+    },
+    {
+      "answerId": "conference-active-date",
+      "sourceDocument": "official-solicitation-page.html",
+      "renderedPage": 1,
+      "nativeReference": {
+        "kind": "html",
+        "originalFile": "official-solicitation-page.html",
+        "renderedPage": 1,
+        "location": "Amendment 4"
+      },
+      "exactExpectedQuotation": "to \"Tuesday, April 5, 2022; 1:00 - 2:00 PM (updated from 3/31/22 date).",
+      "sourceBlockTypes": ["portal"],
+      "headingPaths": [[]],
+      "contentShape": [
+        {
+          "blockId": "370f543ece4ceb148ad916ec0ecd929b76d8b1e5050478f6f7c9829b467bd4c1",
+          "blockType": "portal",
+          "pageNumber": 1,
+          "sheetName": null,
+          "cellRange": null
+        }
+      ],
+      "deterministicPrefilterSelected": true,
+      "extractionRoutes": ["selected_for_deterministic_candidate"],
+      "historicalModelInputStatus": "not_retained",
+      "historicalModelResponseStatus": "not_retained",
+      "historicalTokenTruncationStatus": "not_retained",
+      "historicalChunkBoundaryStatus": "not_evidenced",
+      "historicalDeduplicationStatus": "not_evidenced",
+      "historicalClassificationStatus": "candidate_scope_error",
+      "previousFailureCategory": "candidate_scope_error",
+      "sourceBlockDiscovered": true,
+      "freshCandidateDiscovered": true,
+      "freshCandidateIds": [
+        "79569d38e31799523e275991a96cb570061dbc1e592bcf33ba77eb7ed7bbf088",
+        "ae9f9bda26a91f98ca1fa8870b5e5ce43ec62f4e340242860926927fd15964ec"
+      ],
+      "safeAmbiguity": false,
+      "recoveryComponent": "portal_addendum_relationships"
+    },
+    {
+      "answerId": "question-deadline",
+      "sourceDocument": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 6,
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 6,
+        "section": "1.2 Estimated Procurement Calendar"
+      },
+      "exactExpectedQuotation": "Deadline for submission of written questions through COMMBUYS “Bid Q&A” April 7, 2022, 2:00 PM EST",
+      "sourceBlockTypes": ["page_window"],
+      "headingPaths": [
+        [
+          "1.2 Estimated Procurement Calendar Action Date Announcement of Intent to Procure January 21, 2022 Bid Rele"
+        ]
+      ],
+      "contentShape": [
+        {
+          "blockId": "4e83a54097b5cbfd43c62bbd8b1c5321a4127917c8f314de4a2bcadfe95e7246",
+          "blockType": "page_window",
+          "pageNumber": 6,
+          "sheetName": null,
+          "cellRange": null
+        }
+      ],
+      "deterministicPrefilterSelected": true,
+      "extractionRoutes": ["selected_for_deterministic_candidate"],
+      "historicalModelInputStatus": "not_retained",
+      "historicalModelResponseStatus": "not_retained",
+      "historicalTokenTruncationStatus": "not_retained",
+      "historicalChunkBoundaryStatus": "not_evidenced",
+      "historicalDeduplicationStatus": "not_evidenced",
+      "historicalClassificationStatus": "candidate_scope_error",
+      "previousFailureCategory": "candidate_scope_error",
+      "sourceBlockDiscovered": true,
+      "freshCandidateDiscovered": true,
+      "freshCandidateIds": [
+        "f63fd0eb24e39054bc8c96d7509f150cc68179f2c6dcce991ff506e9368f93d3",
+        "b5be98572378d1d92a93b56db214ad661ef276a1bc8ef050b75f127200b49427"
+      ],
+      "safeAmbiguity": false,
+      "recoveryComponent": "coverage_ledger_and_atomic_miner"
+    },
+    {
+      "answerId": "narrative-page-limit",
+      "sourceDocument": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 22,
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 22,
+        "section": "7.2.1 Document Pages"
+      },
+      "exactExpectedQuotation": "Bidders should submit no more than ten (10) double-sided pages (excluding the required forms and attachments) of narrative",
+      "sourceBlockTypes": ["page_window"],
+      "headingPaths": [
+        [
+          "7.2 Limits and Restrictions 7",
+          "2.1 Document Pages Bidders should submit no more than ten (10) double-sided pages (excluding the required"
+        ]
+      ],
+      "contentShape": [
+        {
+          "blockId": "f63f4937078ad518b2c73b2c05add21470f275e991a30f70258914f94e4daa89",
+          "blockType": "page_window",
+          "pageNumber": 22,
+          "sheetName": null,
+          "cellRange": null
+        }
+      ],
+      "deterministicPrefilterSelected": true,
+      "extractionRoutes": ["selected_for_deterministic_candidate"],
+      "historicalModelInputStatus": "not_retained",
+      "historicalModelResponseStatus": "not_retained",
+      "historicalTokenTruncationStatus": "not_retained",
+      "historicalChunkBoundaryStatus": "not_evidenced",
+      "historicalDeduplicationStatus": "not_evidenced",
+      "historicalClassificationStatus": "model_omission",
+      "previousFailureCategory": "model_omission",
+      "sourceBlockDiscovered": true,
+      "freshCandidateDiscovered": true,
+      "freshCandidateIds": [
+        "ebfb849929b4b74bf7a97135287e4148d1b66eaf69a808f2926037059fd994a6",
+        "57dd4999c6e5fa6fe2ac935354ff7acc1f0546886312dba8f90b078d4170c421"
+      ],
+      "safeAmbiguity": false,
+      "recoveryComponent": "coverage_ledger_and_atomic_miner"
+    },
+    {
+      "answerId": "original-form-format",
+      "sourceDocument": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 23,
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 23,
+        "section": "7.2.2 File Format Restrictions"
+      },
+      "exactExpectedQuotation": "must be completed, and submitted in their original formats, NOT scanned and submitted as PDF or other file types.",
+      "sourceBlockTypes": ["page_window"],
+      "headingPaths": [
+        [
+          "7.2.3 File Naming Conventions Files submitted via COMMBUYS must follow the file naming convention specified"
+        ]
+      ],
+      "contentShape": [
+        {
+          "blockId": "38f7b29487f0bfda4830a8187fd26aa276c995fa52b9def16a994c011d58e21a",
+          "blockType": "page_window",
+          "pageNumber": 23,
+          "sheetName": null,
+          "cellRange": null
+        }
+      ],
+      "deterministicPrefilterSelected": true,
+      "extractionRoutes": ["selected_for_deterministic_candidate"],
+      "historicalModelInputStatus": "not_retained",
+      "historicalModelResponseStatus": "not_retained",
+      "historicalTokenTruncationStatus": "not_retained",
+      "historicalChunkBoundaryStatus": "not_evidenced",
+      "historicalDeduplicationStatus": "not_evidenced",
+      "historicalClassificationStatus": "model_omission",
+      "previousFailureCategory": "model_omission",
+      "sourceBlockDiscovered": true,
+      "freshCandidateDiscovered": true,
+      "freshCandidateIds": ["e6902d02f29ea53e2d3883762bc09022fe06b677a64b5d3db6d5e8a0d9802ff0"],
+      "safeAmbiguity": false,
+      "recoveryComponent": "coverage_ledger_and_atomic_miner"
+    },
+    {
+      "answerId": "replacement-guard-pool",
+      "sourceDocument": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 10,
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 10,
+        "section": "3.2.2 Capacity Plan"
+      },
+      "exactExpectedQuotation": "Bidder’s must have a pool of trained and/or cross-trained replacement security guards or PI’s who can be called upon in an emergency situation or for extra coverage as needed.",
+      "sourceBlockTypes": ["page_window"],
+      "headingPaths": [
+        [
+          "3.2.2 Capacity Plan (Category I and Category II) Contractors must have the manpower capabilities for this co"
+        ]
+      ],
+      "contentShape": [
+        {
+          "blockId": "d4c7025a95644bd5fb6701aa0aac9093171bf23c4c7f0cb1d39810450cc19c8b",
+          "blockType": "page_window",
+          "pageNumber": 10,
+          "sheetName": null,
+          "cellRange": null
+        }
+      ],
+      "deterministicPrefilterSelected": true,
+      "extractionRoutes": ["selected_for_deterministic_candidate"],
+      "historicalModelInputStatus": "not_retained",
+      "historicalModelResponseStatus": "not_retained",
+      "historicalTokenTruncationStatus": "not_retained",
+      "historicalChunkBoundaryStatus": "not_evidenced",
+      "historicalDeduplicationStatus": "not_evidenced",
+      "historicalClassificationStatus": "candidate_scope_error",
+      "previousFailureCategory": "candidate_scope_error",
+      "sourceBlockDiscovered": true,
+      "freshCandidateDiscovered": true,
+      "freshCandidateIds": ["8af52fca5f8842e028a4412c52c3fca74b5f3bd01794f909fbacb30b03c84900"],
+      "safeAmbiguity": false,
+      "recoveryComponent": "coverage_ledger_and_atomic_miner"
+    },
+    {
+      "answerId": "price-sheet-v2",
+      "sourceDocument": "official-solicitation-page.html",
+      "renderedPage": 1,
+      "nativeReference": {
+        "kind": "html",
+        "originalFile": "official-solicitation-page.html",
+        "renderedPage": 1,
+        "location": "Amendment 13"
+      },
+      "exactExpectedQuotation": "Update to Attachment B",
+      "sourceBlockTypes": ["portal"],
+      "headingPaths": [[]],
+      "contentShape": [
+        {
+          "blockId": "bc8170f2685dfb9eb499ac31f3edd28707d127d45a9af234f5ed167230657c0d",
+          "blockType": "portal",
+          "pageNumber": 1,
+          "sheetName": null,
+          "cellRange": null
+        }
+      ],
+      "deterministicPrefilterSelected": true,
+      "extractionRoutes": ["selected_for_deterministic_candidate"],
+      "historicalModelInputStatus": "not_retained",
+      "historicalModelResponseStatus": "not_retained",
+      "historicalTokenTruncationStatus": "not_retained",
+      "historicalChunkBoundaryStatus": "not_evidenced",
+      "historicalDeduplicationStatus": "not_evidenced",
+      "historicalClassificationStatus": "model_omission",
+      "previousFailureCategory": "model_omission",
+      "sourceBlockDiscovered": true,
+      "freshCandidateDiscovered": true,
+      "freshCandidateIds": [
+        "cafa0ef1e10f8c9ad82e1e6e452487d860abfe8de54c6ae73016cb146c5a362c",
+        "a7130f68586700939c18280f4d9a34f30447e028f6ea1b18c27cfae1355916b8",
+        "cf487817ddb7d3be5ce923586a80a774162b11a23c21bde5667015a3dfd9a511",
+        "f6d3f74a8c222eef923e1bee83ccb73a4d79ab0d374cd478c53a5bdc55ae9ab0"
+      ],
+      "safeAmbiguity": false,
+      "recoveryComponent": "portal_addendum_relationships"
+    },
+    {
+      "answerId": "price-components",
+      "sourceDocument": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 17,
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 17,
+        "section": "4.10.2 Security and Private Investigative Services"
+      },
+      "exactExpectedQuotation": "Hourly rates are inclusive ceiling rates. Use Attachment B Price Sheet Cost Table",
+      "sourceBlockTypes": ["page_window"],
+      "headingPaths": [
+        [
+          "4.10.2 Security and Private Investigative Services Hourly rates are inclusive ceiling rates"
+        ]
+      ],
+      "contentShape": [
+        {
+          "blockId": "05e1cae9d0c0260bd21f3fed099dc2628c7c4e15bf92d511e4cb59ad3b5d5a17",
+          "blockType": "page_window",
+          "pageNumber": 17,
+          "sheetName": null,
+          "cellRange": null
+        }
+      ],
+      "deterministicPrefilterSelected": true,
+      "extractionRoutes": ["selected_for_deterministic_candidate"],
+      "historicalModelInputStatus": "not_retained",
+      "historicalModelResponseStatus": "not_retained",
+      "historicalTokenTruncationStatus": "not_retained",
+      "historicalChunkBoundaryStatus": "not_evidenced",
+      "historicalDeduplicationStatus": "not_evidenced",
+      "historicalClassificationStatus": "candidate_scope_error",
+      "previousFailureCategory": "candidate_scope_error",
+      "sourceBlockDiscovered": true,
+      "freshCandidateDiscovered": true,
+      "freshCandidateIds": ["e3dd0e41ecc693a71bccb85f5dc9c4393a6978fa319c8798c3a1cd5715a3ac97"],
+      "safeAmbiguity": false,
+      "recoveryComponent": "coverage_ledger_and_atomic_miner"
+    },
+    {
+      "answerId": "sdp-evaluation-weight",
+      "sourceDocument": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 20,
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 20,
+        "section": "5 Evaluation of SDP Forms"
+      },
+      "exactExpectedQuotation": "at least 25% of the total available evaluation points (100) for this bid solicitation shall be allocated to the evaluation of the SDP Plan submissions",
+      "sourceBlockTypes": ["page_window"],
+      "headingPaths": [[]],
+      "contentShape": [
+        {
+          "blockId": "bf586e9d8c019ecacd6b1653cb01eaf5c20b3d63c79b8addcc4aebfa0414e5f7",
+          "blockType": "page_window",
+          "pageNumber": 20,
+          "sheetName": null,
+          "cellRange": null
+        }
+      ],
+      "deterministicPrefilterSelected": true,
+      "extractionRoutes": ["selected_for_deterministic_candidate"],
+      "historicalModelInputStatus": "not_retained",
+      "historicalModelResponseStatus": "not_retained",
+      "historicalTokenTruncationStatus": "not_retained",
+      "historicalChunkBoundaryStatus": "not_evidenced",
+      "historicalDeduplicationStatus": "not_evidenced",
+      "historicalClassificationStatus": "model_omission",
+      "previousFailureCategory": "model_omission",
+      "sourceBlockDiscovered": true,
+      "freshCandidateDiscovered": true,
+      "freshCandidateIds": ["ca5540bfd1352c0c13c29567ac58b8c61ff935d618cd8033b13852e2a72161d7"],
+      "safeAmbiguity": false,
+      "recoveryComponent": "coverage_ledger_and_atomic_miner"
+    },
+    {
+      "answerId": "post-award-forms-not-bid-attachments",
+      "sourceDocument": "FAC115_Request_for_Response_03.29.2022.pdf",
+      "renderedPage": 24,
+      "nativeReference": {
+        "kind": "docx",
+        "originalFile": "FAC115_Request_for_Response_03.29.2022.docx",
+        "renditionFile": "FAC115_Request_for_Response_03.29.2022.pdf",
+        "renderedPage": 24,
+        "section": "8.1 Required Forms"
+      },
+      "exactExpectedQuotation": "DO NOT SUBMIT THESE FORMS UNTIL INSTRUCTED TO DO SO.",
+      "sourceBlockTypes": ["page_window"],
+      "headingPaths": [["8.1 Required Forms DO NOT SUBMIT THESE FORMS UNTIL INSTRUCTED TO DO SO"]],
+      "contentShape": [
+        {
+          "blockId": "7eb0d9e972dcc6cbfdfa5603f554fba647ed2b647e13ee0694dbaff6360a5a90",
+          "blockType": "page_window",
+          "pageNumber": 24,
+          "sheetName": null,
+          "cellRange": null
+        }
+      ],
+      "deterministicPrefilterSelected": true,
+      "extractionRoutes": ["selected_for_deterministic_candidate"],
+      "historicalModelInputStatus": "not_retained",
+      "historicalModelResponseStatus": "not_retained",
+      "historicalTokenTruncationStatus": "not_retained",
+      "historicalChunkBoundaryStatus": "not_evidenced",
+      "historicalDeduplicationStatus": "not_evidenced",
+      "historicalClassificationStatus": "ambiguous_duplicate_quote",
+      "previousFailureCategory": "ambiguous_duplicate_quote",
+      "sourceBlockDiscovered": true,
+      "freshCandidateDiscovered": true,
+      "freshCandidateIds": [
+        "769fc3c55ce3fb732d87e3914700dd259cfce220565d104dd864edd3a4e4357d",
+        "6ebe58085cc7a07d88cbaeee2de376205b685f7ff510e9c99637ff5bb7a17af9"
+      ],
+      "safeAmbiguity": true,
+      "recoveryComponent": "coverage_ledger_and_atomic_miner"
+    }
+  ]
+}

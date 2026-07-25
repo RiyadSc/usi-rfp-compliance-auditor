@@ -127,3 +127,9 @@ Sources: Engineering Design §10, build-brief AI security rules, Phase 0 threat 
 - Nested normalized evidence uses workspace-and-source composite foreign keys. Ordinary users have SELECT-only RLS and cannot fabricate machine records or claim work.
 - OCR is deterministic and selective; uncertain output cannot become definitive evidence. No paid OCR engine is configured.
 - Whole-document selection reports complexity/truncation rather than silently ignoring later pages. General provider access remains disabled.
+
+# Phase 9 public-analysis controls
+
+The Phase 9 gateway accepts only persisted planned calls, two pinned model roles, low reasoning, strict structured output, `store:false`, no tools, and known source/candidate IDs. Public document text remains untrusted and has no access to secrets, tools, storage, workspace selection, expected answers, or application state. Expected answers load only in the post-run evaluator. A service-only advisory-locked reservation precedes provider construction. Cache entries are workspace/source/configuration bound and must be complete, schema-adherent, and hash-valid. Ordinary users cannot create or mutate Phase 9 machine history.
+
+This control set does not authorize confidential data, production deployment, or ordinary live verification.

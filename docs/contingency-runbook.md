@@ -49,3 +49,9 @@ For every case preserve auditability, authorization, private storage, uncertaint
 - OCR/parser uncertainty: show original source and require review; do not infer support or absence.
 - Cost blocked: use quick scan/reduce scope or seek approval; do not bypass the hard maximum.
 - Cache miss: honor its reason; changed sources/addenda/versions must not reuse stale output.
+
+# Phase 9 acceptance contingency
+
+Do not rerun a failed Phase 9 provider execution. Preserve the evaluation run, provider usage, cache rows, reservation/settlement, and failure artifact. Complete provider-free diagnosis only, keep ordinary live verification disabled, and obtain a new explicit authorization before another provider call.
+
+If failure occurs before provider construction, correct only repository-owned migration, provisioning, source-hash, call-plan, cache, test, or environment defects; rerun every affected offline gate and commit to a clean tree. Never loosen source evidence, expected answers, workspace isolation, model pins, strict schemas, or the `$3.00` ceiling.

@@ -1,0 +1,24 @@
+{
+  "version": "phase9-adversarial-regression-v1",
+  "providerCalls": 0,
+  "sourceFixture": "verification-cases-v2",
+  "separatedFromFac115SourceMetrics": true,
+  "promptInjection": {
+    "passed": true,
+    "toolsAvailable": false,
+    "store": false,
+    "expectedEffect": "none"
+  },
+  "parserUncertainty": {
+    "passed": true,
+    "failClosedStatus": "parser_uncertain"
+  },
+  "unresolvedConflict": {
+    "passed": true,
+    "failClosedPrecedence": ["conflicting", "undetermined"]
+  },
+  "malformedOutput": {
+    "passed": true,
+    "behavior": "strict_schema_rejection_of_bounded_work_unit"
+  }
+}

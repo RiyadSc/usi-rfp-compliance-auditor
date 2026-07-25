@@ -164,3 +164,18 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] The Stage 0 harness fails closed before provider construction when live flags are present, candidate bindings are incomplete, coverage is absent, or budget authorization is insufficient.
 - [x] Workspace authorization, RLS, cross-workspace isolation, deterministic evaluator, citation, date, number, and secret checks pass.
 - [x] No provider was constructed, no paid call or spend occurred, general live verification remains disabled, and `MockProvider` remains the default.
+
+## Phase 9 recovery offline invariant result — 2026-07-24
+
+- [x] Every one of 699 public source blocks has a versioned coverage state; no block silently disappears.
+- [x] All 23 expected FAC115 requirements have exact rendered-page or native-cell evidence and a fresh source-derived candidate without expected-answer guidance.
+- [x] Candidate extraction and independent deterministic/semantic verification remain separate.
+- [x] Weak or descriptive candidates cannot become deterministically supported; incomplete or invalid provider output fails closed.
+- [x] Every supported finding requires exact/normalized evidence, workspace/document provenance, machine-only state, and human review pending.
+- [x] Repeated quotations preserve all valid same-document locations and visible ambiguity.
+- [x] Native workbook evidence retains workbook, sheet, cell, row, and column context.
+- [x] Phase 9 tables are additive, workspace-scoped, RLS-enabled, member-read-only, and immutable where material.
+- [x] The exact server-owned call plan is `$1.107191`, below the dedicated `$3.00` ceiling; unplanned calls and configuration drift are rejected before access.
+- [x] Cache identity covers source, workspace, parser, normalization, table, prompt, schema, task, model, reasoning, and evaluator.
+- [x] Expected answers remain evaluator-only; public documents remain hostile data; provider tools and storage are disabled.
+- [x] General live verification, production deployment, confidential data, and arbitrary workspaces remain disabled.

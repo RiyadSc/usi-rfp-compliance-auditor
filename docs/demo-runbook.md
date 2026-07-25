@@ -67,3 +67,9 @@ Processing-job identities also include the verification version, preventing a fr
 ### Prepared 420-page demonstration
 
 Run `npm run demo:provision:large-document`, start web/worker with live flags disabled, and open **Harbor City 420-page Large RFP Demo**. Show exact progress/cost, page 40 table evidence, pages 50–51 split table, page 275 uncertainty, and pages 390/409–411 addendum changes. The script asserts exactly 420 pages, 8 tables, 48 cells, 430 work units, one cost estimate, and one cache entry. Disclose that the history is prepared and provider-free.
+
+# Phase 9 stored public-result walkthrough
+
+After a successful controlled FAC115 acceptance, open the explicitly provisioned public workspace and choose **Live Analysis**. Show source-block coverage, planned versus actual cost, cache reuse, machine-only/review-pending labels, exact PDF evidence, native `Guard Services!I11` evidence, and the duplicate-location ambiguity. Do not represent the result as bidder compliance, human approval, or permission to use confidential data.
+
+Ordinary demos continue to use the prepared deterministic Phase 8 workspace and MockProvider. Never enable general live flags for a presentation.

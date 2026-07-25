@@ -90,3 +90,9 @@ Two workspaces (A, B) with distinct users: A cannot read B's rows (each app tabl
 `typecheck` → `lint` → `test:unit` → `test:integration` → migration validation → secret scan → `test:e2e` → (from Phase 3) fixture evaluation thresholds. A phase does not close with red gates.
 
 Large-document coverage includes adapters/signatures, structured tables/merged ranges, OCR selection, archive attacks, source hierarchy, whole-document selection, scoped facts, cache/invalidation, costs/modes/leases, bounded AI contexts, RLS/composite FKs/cache isolation, worker recovery, the prepared browser path, and the measured 420-page fixture. Commands: `npm run eval:mock:large-document`, `npm run demo:provision:large-document`, and `npm run test:phase8:provision-idempotency`.
+
+# Phase 9 additions
+
+Phase 9 unit coverage includes coverage routing, atomic mining, table/workbook provenance, exact reduction, conservative deterministic support, amendment chains, duplicate-location ambiguity, compact schemas, provider reference validation, unplanned-model denial, token/cost limits, cache invalidation, expected-answer isolation, and static migration/RLS controls. Integration coverage exercises workspace visibility, ordinary-write denial, and exact idempotent reservation/settlement. The FAC115 offline evaluator must remain 23/23 with zero provider calls and a plan below `$3.00`.
+
+The final provider run is never part of CI, ordinary Playwright, application startup, or repository gates. Browser coverage uses stored completed Phase 9 rows and validates exact evidence, native workbook locations, ambiguity, cost/cache presentation, pending human review, and cross-workspace denial.

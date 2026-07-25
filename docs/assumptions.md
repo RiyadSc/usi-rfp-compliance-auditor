@@ -1,5 +1,15 @@
 # Assumptions
 
+## Phase 9 recovery assumptions — 2026-07-24
+
+- The frozen FAC115 package is official public procurement material and contains no bidder submission, customer record, credential, or confidential post order.
+- The dedicated Phase 9 ceiling is exactly `$3.00` and authorizes only one final FAC115 acceptance graph after every offline gate passes.
+- Exact source-derived imperative text and native workbook requirement cells may be source-supported deterministically; descriptive or merely suggestive text cannot.
+- Expected answers are evaluation data, not retrieval, extraction, ranking, or verification input.
+- `store:false` is not treated as contractual Zero Data Retention; confidential use remains prohibited.
+- A safely unresolved duplicate location, parser problem, or semantic uncertainty is acceptable; false support or false precision is not.
+- The existing Phase 4 model fingerprint, general live-disable control, and MockProvider default remain unchanged.
+
 ## Phase 8 closure assumptions
 
 - The full-roadmap prepared fixture is synthetic/public and may be retained in development for repeatable demos.

@@ -1,5 +1,15 @@
 # Decision Log
 
+## Phase 9 recovery decisions — 2026-07-24
+
+- **D-048 — Coverage before generation.** Every normalized block receives a persisted processing route; silent prefilter loss is an acceptance failure.
+- **D-049 — Aggressive discovery, conservative support.** Deterministic patterns maximize candidate recall, but only explicit obligation language or native structured requirements can receive deterministic source support. Weaker candidates remain unverified for bounded semantic or human review.
+- **D-050 — Expected answers are evaluator-only.** Production source preparation and provider code cannot import or read the expected fixture. Evaluation loads it only after extraction/verification.
+- **D-051 — Exact call plans replace population reserves.** Phase 9 reserves only the persisted, cache-aware 58-task FAC115 graph. The dedicated ceiling is `$3.00`; the current hard maximum is `$1.107191`.
+- **D-052 — Two server-owned model tiers.** Compact coverage/extraction use pinned `gpt-5.4-mini-2026-03-17`; bounded semantic/ambiguity work uses pinned `gpt-5.5-2026-04-23`, both at low reasoning. This does not modify the qualified Phase 4 fingerprint.
+- **D-053 — Cache before provider construction.** Complete schema-adherent hash-bound cache results bypass client construction. An unchanged replay must validate with zero calls and zero added spend.
+- **D-054 — Public-only acceptance remains rollout-isolated.** The FAC115 workspace, source hashes, clean repository state, exact plan, and atomic reservation are mandatory. Ordinary live verification and confidential data remain disabled.
+
 ## Phase 8 decisions — 2026-07-19
 
 - **D-041 — Final controls stay database-atomic.** Rate limits use fixed RPC policy and provider budgets use advisory-locked reservations before construction; no paid external limiter/monitor is introduced.

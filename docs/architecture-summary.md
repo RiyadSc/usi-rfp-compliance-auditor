@@ -161,3 +161,11 @@ The web application projects the unchanged Phase 4–8 records into two display 
 `document-parser-adapters-v1` routes PDF, DOCX, XLSX, HTML, TXT, approved images, and safe ZIP packages into `normalized-document-v1` and `normalized-table-v1`. It preserves native provenance, structured cells, heading hierarchy, parser confidence, selective-OCR state, and hashes. `large-document-jobs-v1` persists stage/work-unit progress and leases; one PDF page can be retried without replacing completed pages.
 
 `requirement-prefilter-v1` and `whole-document-selection-v1` inspect the complete document before bounded evidence-coherent batching. Cache keys bind every material input/version; `targeted-cache-invalidation-v1` invalidates downstream addendum-dependent analysis while retaining unchanged normalization. Cost estimates and server-capped concurrency are visible before analysis. See `docs/large-document-data-flow.md` and `docs/large-document-normalized-model.md`.
+
+# Phase 9 coverage-led public analysis
+
+The protected FAC115 path adds a separate coverage-led graph:
+
+`immutable public sources → normalized blocks/cells → coverage ledger → deterministic seeds → exact reduction → compact planned provider tasks → deterministic/semantic findings → human-review queue`.
+
+The path is server-owned, workspace-filtered, cache-aware, and reservation-gated. Expected answers exist only in a post-run evaluator. Phase 9 records do not rewrite Phase 3 candidates or Phase 4 findings, and general live verification remains disabled. See `phase9-live-ai-recovery.md`.
