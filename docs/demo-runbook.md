@@ -73,3 +73,30 @@ Run `npm run demo:provision:large-document`, start web/worker with live flags di
 After a successful controlled FAC115 acceptance, open the explicitly provisioned public workspace and choose **Live Analysis**. Show source-block coverage, planned versus actual cost, cache reuse, machine-only/review-pending labels, exact PDF evidence, native `Guard Services!I11` evidence, and the duplicate-location ambiguity. Do not represent the result as bidder compliance, human approval, or permission to use confidential data.
 
 Ordinary demos continue to use the prepared deterministic Phase 8 workspace and MockProvider. Never enable general live flags for a presentation.
+
+## FAC115 video-call demo (Director of Sales)
+
+Use this path when the prospect watches while you drive. FAC115 is the **real public RFP** proof; Harbor City remains the synthetic full-roadmap sandbox.
+
+### Preflight
+
+1. Confirm project `uxmxkdjschbekkbnweby`, web running with `LIVE_PROVIDER_ENABLED=false` and `PHASE4_LIVE_VERIFICATION_ENABLED=false`.
+2. Ensure FAC115 documents exist (`npm run provision:phase9:fac115` only if the workspace/docs are missing).
+3. Project bid-ops journey rows: `npm run provision:phase9:fac115:bid-ops` (requires `PHASE9_BID_OPS_BRIDGE=1`). Expect 23 candidates, open blockers, one illustrative proposal/report, zero provider calls.
+4. Sign in as the protected demo operator that can open workspace `80000000-0000-4000-8000-000000000100`.
+
+### Click-path
+
+1. Opportunities → **Massachusetts FAC115 Public Evaluation**.
+2. Overview → amber honesty banner; stages 4–6 lit from the Phase 9 projection; proposal/report present but labeled illustrative.
+3. Documents → open/download official FAC115 files (short-lived signed URLs).
+4. Requirements → curated obligations (deadlines, forms, insurance, pricing cell, superseded conference date).
+5. Checklist → blockers / company proof still needed.
+6. **Live Analysis** → 23/23 acceptance, cost under `$3`, cache rerun `$0`.
+7. Optional: Proposal audit + report as “what final review looks like” with explicit disclosure that no real bidder draft is in the public package.
+
+### Spoken honesty
+
+- Files + requirements + checklist projection = real public RFP + accepted live analysis.
+- Proposal/report = illustrative only.
+- Do not claim bidder compliance, human approval, or confidential data use.

@@ -7,6 +7,7 @@ import { WorkspaceNavigation } from '@/components/workspace-navigation';
 import { StatusBadge } from '@/components/status-badge';
 import { businessLabel, formatDate } from '@/lib/presentation';
 import { UploadForm } from './upload-form';
+import { DocumentDownloadButton } from './download-button';
 
 const uuidSchema = z.string().uuid();
 
@@ -134,26 +135,30 @@ export default async function DocumentsPage({
                 </div>
                 <ul className="surface-card divide-y divide-slate-200">
                   {rows.map((d) => (
-                    <li key={d.id}>
+                    <li
+                      key={d.id}
+                      className="flex items-center justify-between gap-4 px-4 py-4 hover:bg-slate-50"
+                    >
                       <Link
                         href={`/w/${workspaceId}/documents/${d.id}`}
-                        className="flex items-center justify-between gap-4 px-4 py-4 hover:bg-slate-50"
+                        className="min-w-0 flex-1"
                       >
-                        <span>
-                          <span className="block font-medium">{d.normalized_filename}</span>
-                          <span className="block text-sm text-slate-600">
-                            {businessLabel(d.document_type)}
-                            {d.page_count != null ? ` · ${d.page_count} pages` : ''}
-                            {d.created_at ? ` · added ${formatDate(d.created_at)}` : ''}
-                          </span>
+                        <span className="block font-medium">{d.normalized_filename}</span>
+                        <span className="block text-sm text-slate-600">
+                          {businessLabel(d.document_type)}
+                          {d.page_count != null ? ` · ${d.page_count} pages` : ''}
+                          {d.created_at ? ` · added ${formatDate(d.created_at)}` : ''}
                         </span>
-                        <span className="text-right">
+                      </Link>
+                      <span className="flex shrink-0 items-center gap-3 text-right">
+                        <DocumentDownloadButton workspaceId={workspaceId} documentId={d.id} />
+                        <span>
                           <StatusBadge value={d.status} label={businessLabel(d.status)} />
                           <code className="analyst-only mt-1 block text-[10px] text-slate-400">
                             {d.status}
                           </code>
                         </span>
-                      </Link>
+                      </span>
                     </li>
                   ))}
                 </ul>

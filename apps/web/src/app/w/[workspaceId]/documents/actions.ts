@@ -21,6 +21,8 @@ import { enqueueParseJob } from '@/lib/jobs';
 import { serverEnv } from '@/lib/env';
 import { enforceRateLimit } from '@/lib/hardening/service';
 
+const DOCUMENT_DOWNLOAD_TTL_SECONDS = 120;
+
 const DOCUMENT_TYPES = [
   'primary_rfp',
   'addendum',
@@ -390,5 +392,45 @@ export async function deleteDocument(input: {
     return { ok: true };
   } catch {
     return { ok: false, error: 'Could not delete document' };
+  }
+}
+
+export type DocumentDownloadResult =
+  | { ok: true; signedUrl: string; filename: string; expiresInSeconds: number }
+  | { ok: false; error: string };
+
+export async function createDocumentDownloadUrl(input: {
+  workspaceId: string;
+  documentId: string;
+}): Promise<DocumentDownloadResult> {
+  try {
+    const { user, workspaceId } = await requireMember(input.workspaceId);
+    await enforceRateLimit({
+      operation: 'signed_download',
+      actorId: user.id,
+      workspaceId,
+    });
+    const supabase = await createSupabaseServerClient();
+    const { data: document } = await supabase
+      .from('documents')
+      .select('id,object_key,normalized_filename,status,deleted_at')
+      .eq('id', input.documentId)
+      .eq('workspace_id', workspaceId)
+      .maybeSingle();
+    if (!document || document.deleted_at || document.status === 'deleted')
+      return { ok: false, error: 'Document unavailable' };
+    const admin = createSupabaseAdminClient();
+    const { data, error } = await admin.storage
+      .from('workspace-documents')
+      .createSignedUrl(document.object_key, DOCUMENT_DOWNLOAD_TTL_SECONDS);
+    if (error || !data?.signedUrl) return { ok: false, error: 'Could not create download link' };
+    return {
+      ok: true,
+      signedUrl: data.signedUrl,
+      filename: document.normalized_filename,
+      expiresInSeconds: DOCUMENT_DOWNLOAD_TTL_SECONDS,
+    };
+  } catch {
+    return { ok: false, error: 'Could not create download link' };
   }
 }

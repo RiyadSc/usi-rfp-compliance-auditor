@@ -7,6 +7,7 @@ import { deadlineLabel, eventLabel, formatDate } from '@/lib/presentation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 const uuidSchema = z.string().uuid();
+const FAC115_WORKSPACE_ID = '80000000-0000-4000-8000-000000000100';
 
 type LatestFinding = {
   id: string;
@@ -141,8 +142,29 @@ export default async function WorkspaceOverviewPage({
     ? Math.round((readiness.completed_required / readiness.total_required) * 100)
     : 0;
 
-  const nextAction =
-    documentCount === 0
+  const isFac115PublicEvaluation =
+    workspaceId === FAC115_WORKSPACE_ID ||
+    (workspace.description ?? '').includes('phase9-public-evaluation-only');
+
+  const nextAction = isFac115PublicEvaluation
+    ? requirementCount === 0
+      ? {
+          label: 'Open Live Analysis',
+          href: `/w/${workspaceId}/phase9`,
+          note: 'Show the accepted 23/23 public RFP accuracy proof first.',
+        }
+      : blockerCount > 0
+        ? {
+            label: 'Review submission blockers',
+            href: `/w/${workspaceId}/checklist?blocker=yes`,
+            note: `${blockerCount} projected blocker${blockerCount === 1 ? '' : 's'} from Phase 9 findings.`,
+          }
+        : {
+            label: 'Open Live Analysis',
+            href: `/w/${workspaceId}/phase9`,
+            note: 'Keep Live Analysis as the accuracy and cost proof.',
+          }
+    : documentCount === 0
       ? {
           label: 'Upload the RFP files',
           href: `/w/${workspaceId}/documents`,
@@ -217,6 +239,18 @@ export default async function WorkspaceOverviewPage({
           </p>
         </div>
       </header>
+
+      {isFac115PublicEvaluation ? (
+        <aside className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          <strong>Public FAC115 evaluation workspace.</strong> Requirements and checklist are a
+          curated projection from the accepted Live Analysis run. Proposal audit and the final
+          report are illustrative because the public package has no bidder draft.{' '}
+          <Link href={`/w/${workspaceId}/phase9`} className="font-semibold underline">
+            Open Live Analysis
+          </Link>{' '}
+          for the 23/23 accuracy and cost proof.
+        </aside>
+      ) : null}
 
       <section
         aria-label="Opportunity health"
