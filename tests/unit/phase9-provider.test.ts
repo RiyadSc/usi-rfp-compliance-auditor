@@ -131,6 +131,60 @@ describe('Phase 9 provider gateway', () => {
     ).toThrow('phase9_provider_coverage_reference_invalid');
   });
 
+  it('keeps normalized extraction quotes and drops invented ones', () => {
+    const block = buildPhase9PageBlocks({
+      workspaceId: 'workspace-a',
+      documentId: 'document-a',
+      documentName: 'fixture.pdf',
+      sourceHash: HASH,
+      pages: [{ pageNumber: 1, text: 'Bidders must submit a certificate of insurance.' }],
+    })[0]!;
+    const extractionTask = {
+      ...fixture().task,
+      taskType: 'targeted_extraction' as const,
+      sourceBlockIds: [block.id],
+      candidateIds: [] as string[],
+    };
+    const result = validatePhase9TaskResult({
+      task: extractionTask,
+      blocks: [block],
+      candidates: [],
+      result: {
+        candidates: [
+          {
+            requirementType: 'insurance',
+            obligationText: 'submit a certificate of insurance',
+            evidenceText: 'submit   a certificate of insurance',
+            sourceBlockIds: [block.id],
+            subject: null,
+            action: 'submit',
+            condition: null,
+            dateValue: null,
+            numberValue: null,
+            unit: null,
+            formReference: null,
+            needsVerification: true,
+          },
+          {
+            requirementType: 'other',
+            obligationText: 'invented',
+            evidenceText: 'this quote is not in the source',
+            sourceBlockIds: [block.id],
+            subject: null,
+            action: null,
+            condition: null,
+            dateValue: null,
+            numberValue: null,
+            unit: null,
+            formReference: null,
+            needsVerification: true,
+          },
+        ],
+      },
+    }) as { candidates: unknown[] };
+    expect(result.candidates).toHaveLength(1);
+  });
+
   it('rejects provider usage above the exact task allowance', async () => {
     const { blocks, candidates, plan, task } = fixture();
     const create = vi.fn().mockResolvedValue(

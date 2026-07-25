@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import type { z } from 'zod';
 import { estimateChatCost } from './cost';
+import { validateEvidenceQuote } from './deterministic-verification';
 import {
   PHASE9_PROMPT_VERSIONS,
   PHASE9_SCHEMA_VERSIONS,
@@ -323,15 +324,21 @@ export function validatePhase9TaskResult(input: {
   }
   if (input.task.taskType === 'targeted_extraction') {
     const output = phase9CompactExtractionOutputSchema.parse(parsed.data);
-    for (const candidate of output.candidates) {
-      if (candidate.sourceBlockIds.some((id) => !blockById.has(id)))
-        throw new Error('phase9_provider_extraction_block_invalid');
-      const evidenceExists = candidate.sourceBlockIds.some((id) =>
-        blockById.get(id)!.text.includes(candidate.evidenceText),
-      );
-      if (!evidenceExists) throw new Error('phase9_provider_extraction_quote_invalid');
-    }
-    return output;
+    // Keep only source-grounded quotes. Whitespace/unicode drift is accepted via
+    // the same deterministic quote validator used elsewhere; invented quotes are
+    // dropped instead of aborting the whole bounded call plan.
+    const grounded = output.candidates.filter((candidate) => {
+      if (
+        candidate.sourceBlockIds.length === 0 ||
+        candidate.sourceBlockIds.some((id) => !blockById.has(id))
+      )
+        return false;
+      return candidate.sourceBlockIds.some((id) => {
+        const match = validateEvidenceQuote(blockById.get(id)!.text, candidate.evidenceText);
+        return match.matchType === 'exact' || match.matchType === 'normalized_exact';
+      });
+    });
+    return { candidates: grounded };
   }
   const output = phase9CompactVerificationOutputSchema.parse(parsed.data);
   if (
