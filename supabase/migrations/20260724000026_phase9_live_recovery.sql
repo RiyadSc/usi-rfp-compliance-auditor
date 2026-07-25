@@ -304,9 +304,10 @@ begin
     raise exception 'phase9 budget exceeded';
   end if;
   insert into public.phase9_budget_reservations(
-    request_key,workspace_id,evaluation_run_id,call_plan_hash,reserved_usd
+    request_key,workspace_id,evaluation_run_id,call_plan_hash,reserved_usd,policy_version
   ) values (
-    p_request_key,p_workspace_id,p_evaluation_run_id,p_call_plan_hash,p_requested_usd
+    p_request_key,p_workspace_id,p_evaluation_run_id,p_call_plan_hash,p_requested_usd,
+    'phase9-budget-v1'
   ) returning id into v_id;
   update public.phase9_evaluation_runs set status='reserved'
     where id=p_evaluation_run_id and workspace_id=p_workspace_id and status='planned';

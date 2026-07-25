@@ -48,7 +48,11 @@ export async function reservePhase9CallPlan(input: {
     p_call_plan_hash: input.callPlanHash,
     p_requested_usd: Number(input.maximumUsd.toFixed(6)),
   });
-  if (error || typeof data !== 'string') throw new Error('phase9_budget_preflight_failed');
+  if (error || typeof data !== 'string') {
+    throw new Error(
+      `phase9_budget_preflight_failed:${error?.message ?? `unexpected_rpc_data:${typeof data}`}`,
+    );
+  }
   return data;
 }
 
