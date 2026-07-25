@@ -121,11 +121,15 @@ Primary:
 
 ## 22. Git commit hashes
 
-Filled after commit in this completion pass.
+- `2caa35bac5f0e91305a1243ccbf57638c62f976b` — design system foundations
+- `0e37f3ed0f42f241238a54c57804fa4beefadcbe` — product surface restyle
+- `bdbe13ae13e4c4222b0f7b4d44d4827ef9494692` — docs and visual artifacts
+
+Tip of the redesign series (includes this completion-report hash note): see `git log --oneline --grep='Evidence Intelligence'`.
 
 ## 23. Clean-worktree confirmation
 
-Confirmed after final commit (`git status` clean for redesign scope).
+Confirmed (`git status` clean after the commits above).
 
 ## 24. Backend and UX behaviour
 
