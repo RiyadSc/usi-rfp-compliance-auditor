@@ -3,7 +3,7 @@
   "sourcePackageHash": "a26306505985a1f6ce42ef948e90a441f51a0cef16a16801af7a940f527ab964",
   "expectedHash": "8f97d2df60b5b82fbf126520f08b1c5684b1edeaa81f46e37f944c7723274db5",
   "total": 23,
-  "matched": 22,
+  "matched": 23,
   "rows": [
     {
       "answerId": "conference-old-date",
@@ -65,25 +65,25 @@
     {
       "answerId": "conference-attendance-not-mandatory",
       "expectedSourceStatus": "supported",
-      "actualSourceStatus": "missing",
+      "actualSourceStatus": "supported",
       "expectedPrecedenceStatus": "active",
       "actualPrecedenceStatus": "active",
       "expectedProofRequirement": "none_identified",
-      "actualProofRequirement": "missing",
+      "actualProofRequirement": "none_identified",
       "expectedDocument": "FAC115_Request_for_Response_03.29.2022.pdf",
       "expectedPage": 8,
       "expectedSheet": null,
       "expectedCell": null,
       "evidenceBlockIds": ["00096a9497ef541ab769b45f6e86a3baee57f0510b2d3b9ed6fd685697de7aaa"],
-      "candidateIds": ["3e029d872c6a6aa44d0760f006f18b2aaa19f8d895e49cd438ec45cf997b1c02"],
-      "findingIds": [],
+      "candidateIds": ["7facf09d0d67548aed605d269fc1fc1ed8faa28c743e491d9dedabf85253b705"],
+      "findingIds": ["7facf09d0d67548aed605d269fc1fc1ed8faa28c743e491d9dedabf85253b705"],
       "evidenceValid": true,
       "provenanceValid": true,
       "ambiguousEvidenceLocation": false,
       "datePass": true,
       "numberPass": true,
-      "proofPass": false,
-      "sourcePass": false,
+      "proofPass": true,
+      "sourcePass": true,
       "precedencePass": true
     },
     {
@@ -606,9 +606,9 @@
   ],
   "metrics": {
     "expectedAnswerCoverage": 1,
-    "sourceStatusAccuracy": 0.9565217391304348,
+    "sourceStatusAccuracy": 1,
     "precedenceAccuracy": 1,
-    "proofRequirementAccuracy": 0.9565217391304348,
+    "proofRequirementAccuracy": 1,
     "dateAccuracy": 1,
     "numericalAccuracy": 1,
     "spreadsheetEvidenceAccuracy": 1,
@@ -617,5 +617,5 @@
     "falseVerified": 0,
     "falseActive": 0
   },
-  "passed": false
+  "passed": true
 }

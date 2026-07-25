@@ -1,32 +1,32 @@
 {
   "version": "phase9-fac115-final-live-v1",
-  "generatedAt": "2026-07-25T05:25:16.244Z",
-  "gitCommit": "cc0787958a65564c149edb71455551b59ac80282",
+  "generatedAt": "2026-07-25T05:27:37.709Z",
+  "gitCommit": "39c4fddafe90264565973b7879d644ba5b19be06",
   "projectRef": "uxmxkdjschbekkbnweby",
   "workspaceId": "80000000-0000-4000-8000-000000000100",
-  "evaluationRunId": "4fc04dd1-2334-4db0-8277-a0d8d063a5c4",
+  "evaluationRunId": "2e4f79ca-1be2-43e7-8daa-d6d2173cca9a",
   "sourcePackageHash": "a26306505985a1f6ce42ef948e90a441f51a0cef16a16801af7a940f527ab964",
   "expectedAnswerHash": "8f97d2df60b5b82fbf126520f08b1c5684b1edeaa81f46e37f944c7723274db5",
   "compatibilityFingerprint": "cde596458e56407e26b6ddf7ef0d6f27b4b2182e65ce479a68b1fa4c0d0d7582",
-  "callPlanHash": "91a1a1472f6f24a73a7bef7cbb48d8b49ac5523b56786e2db3a6c0cbd7118b7c",
-  "callPlanMaximumUsd": 1.990837,
+  "callPlanHash": "1588aff0edd23965afc2ce6ac2c9d740ac2a3b5b793df02c9e0f6bae2c965b9f",
+  "callPlanMaximumUsd": 0,
   "forecastCostUsd": 1.527085,
-  "costForecastVariance": 0.46966475343546693,
-  "costForecastWithinTolerance": false,
-  "providerCalls": 56,
-  "cacheHits": 2,
+  "costForecastVariance": 0,
+  "costForecastWithinTolerance": true,
+  "providerCalls": 0,
+  "cacheHits": 58,
   "usage": {
-    "inputTokens": 175423,
-    "outputTokens": 61051,
-    "reasoningTokens": 7327,
-    "latencyMs": 343215,
-    "actualCostUsd": 0.809867
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "reasoningTokens": 0,
+    "latencyMs": 0,
+    "actualCostUsd": 0
   },
   "extraction": {
     "deterministicSeeds": 1073,
     "aiSeeds": 287,
-    "persistedFindings": 902,
-    "unresolvedCandidates": 171
+    "persistedFindings": 903,
+    "unresolvedCandidates": 170
   },
   "reliability": {
     "repairs": 0,
@@ -51,7 +51,7 @@
     "sourcePackageHash": "a26306505985a1f6ce42ef948e90a441f51a0cef16a16801af7a940f527ab964",
     "expectedHash": "8f97d2df60b5b82fbf126520f08b1c5684b1edeaa81f46e37f944c7723274db5",
     "total": 23,
-    "matched": 22,
+    "matched": 23,
     "rows": [
       {
         "answerId": "conference-old-date",
@@ -113,25 +113,25 @@
       {
         "answerId": "conference-attendance-not-mandatory",
         "expectedSourceStatus": "supported",
-        "actualSourceStatus": "missing",
+        "actualSourceStatus": "supported",
         "expectedPrecedenceStatus": "active",
         "actualPrecedenceStatus": "active",
         "expectedProofRequirement": "none_identified",
-        "actualProofRequirement": "missing",
+        "actualProofRequirement": "none_identified",
         "expectedDocument": "FAC115_Request_for_Response_03.29.2022.pdf",
         "expectedPage": 8,
         "expectedSheet": null,
         "expectedCell": null,
         "evidenceBlockIds": ["00096a9497ef541ab769b45f6e86a3baee57f0510b2d3b9ed6fd685697de7aaa"],
-        "candidateIds": ["3e029d872c6a6aa44d0760f006f18b2aaa19f8d895e49cd438ec45cf997b1c02"],
-        "findingIds": [],
+        "candidateIds": ["7facf09d0d67548aed605d269fc1fc1ed8faa28c743e491d9dedabf85253b705"],
+        "findingIds": ["7facf09d0d67548aed605d269fc1fc1ed8faa28c743e491d9dedabf85253b705"],
         "evidenceValid": true,
         "provenanceValid": true,
         "ambiguousEvidenceLocation": false,
         "datePass": true,
         "numberPass": true,
-        "proofPass": false,
-        "sourcePass": false,
+        "proofPass": true,
+        "sourcePass": true,
         "precedencePass": true
       },
       {
@@ -654,9 +654,9 @@
     ],
     "metrics": {
       "expectedAnswerCoverage": 1,
-      "sourceStatusAccuracy": 0.9565217391304348,
+      "sourceStatusAccuracy": 1,
       "precedenceAccuracy": 1,
-      "proofRequirementAccuracy": 0.9565217391304348,
+      "proofRequirementAccuracy": 1,
       "dateAccuracy": 1,
       "numericalAccuracy": 1,
       "spreadsheetEvidenceAccuracy": 1,
@@ -665,6 +665,6 @@
       "falseVerified": 0,
       "falseActive": 0
     },
-    "passed": false
+    "passed": true
   }
 }
