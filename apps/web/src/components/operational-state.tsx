@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ReactNode } from 'react';
 import type { Phase8DemoMode } from '@usi/domain';
+import { IconAlert, IconBlocker, IconInfo, IconShield } from '@/components/icons';
 
 export type OperationalState =
   | 'loading'
@@ -29,6 +30,21 @@ const labels: Record<OperationalState, string> = {
   fallback: 'Prepared fallback snapshot — synthetic data',
 };
 
+/** Critical states stay calm: a coral accent and an icon, never a red panel. */
+const variants: Record<OperationalState, { className: string; glyph: ReactNode }> = {
+  loading: { className: '', glyph: <IconInfo size={15} /> },
+  empty: { className: '', glyph: <IconInfo size={15} /> },
+  partial: { className: 'notice-warning', glyph: <IconAlert size={15} /> },
+  parser_uncertain: { className: 'notice-warning', glyph: <IconAlert size={15} /> },
+  unauthorized: { className: '', glyph: <IconShield size={15} /> },
+  failed: { className: 'notice-critical', glyph: <IconBlocker size={15} /> },
+  stale: { className: 'notice-warning', glyph: <IconAlert size={15} /> },
+  expired: { className: 'notice-warning', glyph: <IconAlert size={15} /> },
+  revoked: { className: 'notice-critical', glyph: <IconBlocker size={15} /> },
+  cached: { className: 'notice-info', glyph: <IconInfo size={15} /> },
+  fallback: { className: 'notice-info', glyph: <IconInfo size={15} /> },
+};
+
 export function OperationalStateNotice({
   state,
   children,
@@ -37,16 +53,20 @@ export function OperationalStateNotice({
   children?: ReactNode;
 }) {
   const urgent = ['unauthorized', 'failed', 'stale', 'expired', 'revoked'].includes(state);
+  const variant = variants[state];
   return (
     <section
       aria-live={urgent ? 'assertive' : 'polite'}
       aria-atomic="true"
       role={urgent ? 'alert' : 'status'}
       data-operational-state={state}
-      className="rounded-md border border-slate-300 bg-white p-3 text-sm"
+      className={`notice ${variant.className}`}
     >
-      <strong>{labels[state]}</strong>
-      {children ? <div className="mt-1">{children}</div> : null}
+      <strong className="notice-title">
+        <span className="shrink-0">{variant.glyph}</span>
+        {labels[state]}
+      </strong>
+      {children ? <div className="mt-2 text-sm text-ink-soft">{children}</div> : null}
     </section>
   );
 }
@@ -63,11 +83,11 @@ export function DemoModeBanner({ mode }: { mode: Phase8DemoMode }) {
     <aside
       aria-label="Demo mode"
       role="status"
-      className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-950"
+      className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-b border-line-subtle bg-canvas-900/70 px-6 py-2 text-center text-xs text-ink-muted"
       data-demo-mode={mode}
     >
-      <strong>{modeLabels[mode]}</strong>. Results remain machine-generated unless a separate human
-      review is shown.
+      <strong className="font-semibold text-warning-400">{modeLabels[mode]}</strong>
+      <span>Results remain machine-generated unless a separate human review is shown.</span>
     </aside>
   );
 }

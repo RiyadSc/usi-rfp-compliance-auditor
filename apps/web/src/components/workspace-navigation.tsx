@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { AppHeader } from './app-header';
+import { IconActivity, IconArrowLeft } from './icons';
 
 export type WorkspaceStage =
   'overview' | 'documents' | 'phase9' | 'requirements' | 'checklist' | 'proposal-audit' | 'reports';
@@ -29,16 +30,23 @@ export function WorkspaceNavigation({
     <>
       <AppHeader />
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <nav aria-label="Breadcrumb" className="text-sm">
-          <Link href="/" className="font-medium text-blue-700 hover:underline">
-            {current === 'overview' ? '← Opportunities' : 'Opportunities'}
+        <nav aria-label="Breadcrumb" className="breadcrumb">
+          <Link href="/" className="quiet-link inline-flex items-center gap-1.5 font-medium">
+            {current === 'overview' ? (
+              <>
+                <IconArrowLeft size={14} />
+                Opportunities
+              </>
+            ) : (
+              'Opportunities'
+            )}
           </Link>
           {current !== 'overview' ? (
             <>
-              <span className="mx-2 text-slate-400" aria-hidden="true">
+              <span className="text-ink-faint" aria-hidden="true">
                 /
               </span>
-              <Link href={`/w/${workspaceId}`} className="text-slate-700 hover:underline">
+              <Link href={`/w/${workspaceId}`} className="breadcrumb-current hover:text-ink">
                 {workspaceName}
               </Link>
             </>
@@ -46,15 +54,13 @@ export function WorkspaceNavigation({
         </nav>
         <Link
           href={`/w/${workspaceId}#activity`}
-          className="text-sm text-slate-600 hover:text-blue-800 hover:underline"
+          className="quiet-link inline-flex items-center gap-1.5 text-[0.8125rem]"
         >
+          <IconActivity size={15} />
           Activity
         </Link>
       </div>
-      <nav
-        aria-label="Opportunity stages"
-        className={`mb-7 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm ${compact ? 'text-sm' : ''}`}
-      >
+      <nav aria-label="Opportunity stages" className={`stage-nav mb-8 ${compact ? 'text-sm' : ''}`}>
         <ol className="flex min-w-max items-center gap-1">
           {opportunityNavigation.map((stage) => {
             const active = stage.id === current;
@@ -63,11 +69,7 @@ export function WorkspaceNavigation({
                 <Link
                   href={`/w/${workspaceId}${stage.href}`}
                   aria-current={active ? 'page' : undefined}
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 font-medium ${
-                    active
-                      ? 'bg-blue-700 text-white'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                  }`}
+                  className={`stage-nav-item ${active ? 'stage-nav-item-active' : ''}`}
                 >
                   <span className="hidden sm:inline">{stage.label}</span>
                   <span className="sm:hidden">{stage.short}</span>

@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { GLOBAL_NAVIGATION, ROLE_VIEWS, ROLE_VIEW_LABELS, type RoleView } from '@/lib/ux-contract';
+import { BrandLockup } from '@/components/brand';
+import { IconSearch } from '@/components/icons';
 
 export function AppHeader() {
   const pathname = usePathname();
@@ -36,12 +38,9 @@ export function AppHeader() {
 
   return (
     <header className="app-header" data-testid="app-header">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3 lg:px-6">
-        <Link href="/" className="mr-2 flex items-center gap-2 font-semibold text-slate-950">
-          <span aria-hidden="true" className="brand-mark">
-            R
-          </span>
-          <span>RFP Response Hub</span>
+      <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-4 gap-y-3 px-6 py-3 lg:px-10">
+        <Link href="/" className="mr-2 rounded-sm">
+          <BrandLockup />
         </Link>
         <nav
           aria-label="Global navigation"
@@ -76,21 +75,23 @@ export function AppHeader() {
           <label htmlFor="global-search" className="sr-only">
             Search this account
           </label>
-          <input
-            id="global-search"
-            name="q"
-            defaultValue={pathname === '/search' ? (searchParams.get('q') ?? '') : ''}
-            placeholder="Search opportunities and work"
-            className="w-56 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-          />
+          <div className="search-field w-64">
+            <IconSearch size={16} />
+            <input
+              id="global-search"
+              name="q"
+              defaultValue={pathname === '/search' ? (searchParams.get('q') ?? '') : ''}
+              placeholder="Search opportunities and work"
+            />
+          </div>
         </form>
-        <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
+        <label className="flex items-center gap-2 text-xs font-medium text-ink-muted">
           <span className="hidden sm:inline">View for</span>
           <select
             aria-label="Role view"
             value={roleView}
             onChange={(event) => choose(event.target.value as RoleView)}
-            className="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm text-slate-800"
+            className="w-auto min-w-[9.5rem]"
           >
             {ROLE_VIEWS.map((role) => (
               <option key={role} value={role}>

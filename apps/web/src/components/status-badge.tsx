@@ -1,12 +1,24 @@
 import { businessLabel, statusTone, type Tone } from '@/lib/presentation';
+import { IconAlert, IconCheck, IconClock } from '@/components/icons';
 
 const toneClasses: Record<Tone, string> = {
-  neutral: 'border-slate-300 bg-slate-50 text-slate-700',
-  positive: 'border-emerald-300 bg-emerald-50 text-emerald-800',
-  info: 'border-blue-300 bg-blue-50 text-blue-800',
-  warning: 'border-amber-300 bg-amber-50 text-amber-900',
-  danger: 'border-red-300 bg-red-50 text-red-800',
+  neutral: 'badge-neutral',
+  positive: 'badge-positive',
+  info: 'badge-info',
+  warning: 'badge-warning',
+  danger: 'badge-danger',
 };
+
+/**
+ * Each tone carries a shape as well as a colour so status is never signalled by
+ * colour alone.
+ */
+function ToneGlyph({ tone }: { tone: Tone }) {
+  if (tone === 'danger') return <IconAlert size={12} />;
+  if (tone === 'warning') return <IconClock size={12} />;
+  if (tone === 'positive') return <IconCheck size={12} />;
+  return <span className="badge-dot" aria-hidden="true" />;
+}
 
 export function StatusBadge({
   value,
@@ -19,11 +31,10 @@ export function StatusBadge({
   tone?: Tone;
   title?: string;
 }) {
+  const resolved = tone ?? statusTone(value);
   return (
-    <span
-      title={title}
-      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${toneClasses[tone ?? statusTone(value)]}`}
-    >
+    <span title={title} className={`badge ${toneClasses[resolved]}`}>
+      <ToneGlyph tone={resolved} />
       {label ?? businessLabel(value)}
     </span>
   );
@@ -31,11 +42,11 @@ export function StatusBadge({
 
 export function StatusAxis({ label, value, help }: { label: string; value: string; help: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500" title={help}>
+    <div className="surface-panel p-4">
+      <p className="metric-label" title={help}>
         {label}
       </p>
-      <div className="mt-2">
+      <div className="mt-2.5">
         <StatusBadge value={value} title={help} />
       </div>
     </div>

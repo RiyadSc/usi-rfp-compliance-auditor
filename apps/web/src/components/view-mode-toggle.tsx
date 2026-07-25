@@ -22,7 +22,7 @@ export function ViewModeToggle() {
 
   return (
     <div
-      className="inline-flex rounded-lg border border-slate-300 bg-white p-1"
+      className="inline-flex rounded-sm border border-line-default bg-surface-900 p-1"
       aria-label="Page detail level"
     >
       {(['executive', 'analyst'] as const).map((option) => (
@@ -31,8 +31,10 @@ export function ViewModeToggle() {
           type="button"
           aria-pressed={mode === option}
           onClick={() => choose(option)}
-          className={`rounded-md px-3 py-1.5 text-xs font-semibold capitalize ${
-            mode === option ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+          className={`rounded-xs px-3 py-1.5 text-xs font-semibold capitalize transition-colors ${
+            mode === option
+              ? 'bg-mist-200 text-onlight'
+              : 'text-ink-muted hover:bg-surface-800 hover:text-ink'
           }`}
         >
           {option}
