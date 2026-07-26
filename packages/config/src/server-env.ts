@@ -50,6 +50,12 @@ export const serverEnvSchema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((v) => v === 'true'),
+  PHASE9_GENERAL_LIVE_ANALYSIS_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  PHASE9_LIVE_MAX_USD_PER_RUN: z.coerce.number().positive().max(3).default(1.5),
+  PHASE9_LIVE_MONTHLY_WORKSPACE_CEILING_USD: z.coerce.number().positive().max(100).default(15),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

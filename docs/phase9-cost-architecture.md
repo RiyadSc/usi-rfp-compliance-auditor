@@ -2,7 +2,7 @@
 
 ## Policy
 
-Phase 9 has its own immutable ledger and a hard cumulative provider ceiling of `$3.00`. Phase 3, Phase 4, public-evaluation, and remediation ledgers remain historical and are not reused as this ceiling.
+The original FAC115 acceptance keeps its immutable, lifetime `$3.00` ledger. Ordinary workspace analysis uses a separate `phase9-workspace-budget-v1` policy: each workspace has an explicit enable flag, a server-capped per-run maximum no greater than `$3.00`, and a calendar-month ceiling. Phase 3, Phase 4, public-evaluation, and remediation ledgers remain historical and are not reused as these limits.
 
 The provider cannot be constructed until the database has atomically reserved the exact persisted call plan. Each task binds its model, tier, source blocks, candidates, prompt/schema fingerprints, maximum input/output tokens, retry allowance, cache key, escalation reason, and maximum cost.
 
@@ -31,6 +31,8 @@ The forecast is `$0.791137`. The hard maximum uses compact task-specific output 
 - A planned task cannot change model, reasoning, output limit, tools, or storage behavior.
 - Cache hits bypass provider construction.
 - There are no automatic semantic repairs and no default retries.
+
+For jurisdiction-neutral workspace runs, `phase9_evaluation_documents` immutably binds the selected source set and hashes to the run. Only a workspace owner can submit the application action, and the owner must confirm both data authority and a maximum spend. `reserve_phase9_call_plan` refuses provider access unless the exact persisted plan fits the enabled workspace policy. Ordinary database users can read their own policy and run history but cannot create or mutate either.
 
 ## Cost regression
 

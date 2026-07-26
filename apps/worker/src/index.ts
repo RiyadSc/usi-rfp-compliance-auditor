@@ -5,11 +5,16 @@ import { handleParseJob, type ParseJobPayload } from './parse-document.js';
 import { handleExtractJob, type ExtractJobPayload } from './extract-document.js';
 import { handleVerifyJob, type VerifyJobPayload } from './verify-requirements.js';
 import { handleLargeDocumentWork, type LargeDocumentWorkPayload } from './large-document-work.js';
+import {
+  handlePhase9WorkspaceAnalysis,
+  type Phase9WorkspaceAnalysisPayload,
+} from './phase9-workspace-analysis.js';
 
 const PARSE_QUEUE = 'document-parse';
 const EXTRACT_QUEUE = 'document-extract';
 const VERIFY_QUEUE = 'requirements-verify';
 const LARGE_DOCUMENT_WORK_QUEUE = 'large-document-work';
+const PHASE9_WORKSPACE_ANALYSIS_QUEUE = 'phase9-workspace-analysis';
 const HEALTH_PORT = Number(process.env.WORKER_HEALTH_PORT ?? 3001);
 
 async function main() {
@@ -32,6 +37,7 @@ async function main() {
   await boss.createQueue(EXTRACT_QUEUE);
   await boss.createQueue(VERIFY_QUEUE);
   await boss.createQueue(LARGE_DOCUMENT_WORK_QUEUE);
+  await boss.createQueue(PHASE9_WORKSPACE_ANALYSIS_QUEUE);
 
   await boss.work(
     PARSE_QUEUE,
@@ -44,6 +50,19 @@ async function main() {
         );
         await handleParseJob(payload);
         console.info(`[worker] parse done document=${payload.documentId}`);
+      }
+    },
+  );
+
+  await boss.work(
+    PHASE9_WORKSPACE_ANALYSIS_QUEUE,
+    { batchSize: 1, localConcurrency: 1 },
+    async (jobs) => {
+      for (const job of jobs) {
+        const payload = job.data as Phase9WorkspaceAnalysisPayload;
+        console.info(`[worker] phase9 workspace analysis start run=${payload.evaluationRunId}`);
+        await handlePhase9WorkspaceAnalysis(payload);
+        console.info(`[worker] phase9 workspace analysis done run=${payload.evaluationRunId}`);
       }
     },
   );
@@ -85,7 +104,9 @@ async function main() {
     health.listen(HEALTH_PORT, '127.0.0.1', () => resolve());
   });
 
-  console.info(`[worker] listening on ${PARSE_QUEUE} + ${EXTRACT_QUEUE} + ${VERIFY_QUEUE}`);
+  console.info(
+    `[worker] listening on ${PARSE_QUEUE} + ${EXTRACT_QUEUE} + ${VERIFY_QUEUE} + ${PHASE9_WORKSPACE_ANALYSIS_QUEUE}`,
+  );
   console.info(`[worker] health http://127.0.0.1:${HEALTH_PORT}/`);
 
   const shutdown = async () => {

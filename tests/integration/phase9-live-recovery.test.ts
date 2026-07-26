@@ -74,8 +74,12 @@ describe('Phase 9 live-recovery persistence and isolation', () => {
     const update = await userA
       .from('phase9_evaluation_runs')
       .update({ status: 'completed' })
-      .eq('id', runId);
-    expect(update.error).not.toBeNull();
+      .eq('id', runId)
+      .select('id,status');
+    // PostgreSQL RLS deliberately presents unauthorized UPDATE targets as an
+    // empty set instead of leaking that the row exists.
+    expect(update.error).toBeNull();
+    expect(update.data).toEqual([]);
   });
 
   it('reserves and settles the exact plan atomically and idempotently', async () => {

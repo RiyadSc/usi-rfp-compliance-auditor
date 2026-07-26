@@ -20,6 +20,7 @@ export * from './public-rfp-evaluation';
 export * from './public-rfp-phase9';
 export * from './phase9-recovery';
 export * from './phase9-provider';
+export * from './phase9-workspace-plan';
 export * from './large-document';
 export { MockProvider } from './mock-provider';
 export { OpenAIProvider } from './openai-provider';

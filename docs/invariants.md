@@ -179,3 +179,12 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] Cache identity covers source, workspace, parser, normalization, table, prompt, schema, task, model, reasoning, and evaluator.
 - [x] Expected answers remain evaluator-only; public documents remain hostile data; provider tools and storage are disabled.
 - [x] General live verification, production deployment, confidential data, and arbitrary workspaces remain disabled.
+
+## Phase 9 jurisdiction-neutral workspace path result — 2026-07-25
+
+- [x] Planner inputs are limited to an explicit workspace, selected parsed documents, normalized source content, and complete provenance/cache versions; no jurisdiction, FAC115 identity, or expected answer is an input.
+- [x] Every selected document is same-workspace, hash-bound, immutable for the run, and limited to public or explicitly authorized data.
+- [x] Owner authorization, RLS, exact budget reservation, per-run/month ceilings, strict schemas, bounded contexts, no tools, and `store:false` remain enforced.
+- [x] Candidates and findings remain machine-only, human-review pending, and traceable to exact documents and evidence.
+- [x] A provider quota failure releases its reservation and creates no tokens, cost, findings, or implied verification result.
+- [x] General workspace live analysis remains default-off and cannot silently fall back to another workspace, fixture, or model path.

@@ -1,5 +1,15 @@
 # Build Status
 
+## Phase 9 jurisdiction-neutral workspace analysis — implemented; provider quota blocked live result (2026-07-25)
+
+The application now exposes an opt-in, workspace-scoped Phase 9 analysis path for parsed public or otherwise authorized RFP documents from any US state. The plan is built from the explicitly selected documents and their normalized content; it contains no FAC115, Massachusetts, New Jersey, solicitation-number, fixture-answer, or jurisdiction-specific selection rule. The web action, `phase9-workspace-analysis` worker queue, strict provider gateway, immutable document bindings, exact budget reservation, RLS, and fail-closed persistence are connected through the production application path.
+
+An owner-authorized New Jersey public security RFP reached the live OpenAI boundary using this generic path. The application created run `ac0ff690-f8d8-474d-a1ce-45bc97a9df4d`, bound the 48-page official document, and froze a 23-task plan with a `$0.967652` maximum. OpenAI then returned `429` insufficient quota before a response was generated. The run was normalized to `provider_quota_exceeded`, the reservation was released, and it persisted zero tokens, zero findings, and `$0.00` actual spend. It was not retried and is not represented as an analysis result.
+
+Focused unit tests (34), the complete Supabase integration suite (89), type-check, production build, the generic Phase 9 browser control, lint, and secret scan pass. The complete unit suite has one unrelated failure in the pre-existing dirty UX work: prohibited-language source scanning finds “approved/safe to submit” wording in the checklist page. The global formatting check likewise reports only pre-existing user-owned UX/design files; all files in this jurisdiction-neutral change pass Prettier. The dependency audit reports existing high-severity advisories in Next.js and the ESLint toolchain; no forced breaking upgrade was applied.
+
+The feature remains default-off (`PHASE9_GENERAL_LIVE_ANALYSIS_ENABLED=false`), owner-only, explicit-document-only, no-tools, `store:false`, public/authorized-data attested, and capped per run and per workspace/month. A Connecticut or other-state RFP follows this same path after parsing. Meaningful model results still require available OpenAI project quota and human review.
+
 ## Phase 9 recovery — offline architecture complete, live acceptance pending (2026-07-24)
 
 The coverage-led FAC115 recovery now assigns all 699 normalized PDF/portal/workbook blocks an explicit route, mines 1,197 source-derived seeds, reduces them to 1,073 atomic candidates without destructive merging, and represents all 23 frozen expected answers with exact rendered-page or native-cell evidence. `Guard Services!I11`, explicit addendum precedence, duplicate-location ambiguity, expected-answer isolation, compact strict schemas, tier routing, deterministic support gating, and the separate adversarial/parser/provider-resilience suites pass provider-free.

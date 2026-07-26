@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { StatusBadge } from '@/components/status-badge';
 import { WorkspaceNavigation } from '@/components/workspace-navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { serverEnv } from '@/lib/env';
+import { LiveAnalysisControls } from './live-analysis-controls';
 
 const uuid = z.string().uuid();
 
@@ -32,10 +34,33 @@ export default async function Phase9AnalysisPage({
     .eq('id', workspaceId)
     .maybeSingle();
   if (!workspace) notFound();
+  const env = serverEnv();
+  const { data: parsedDocuments } = await supabase
+    .from('documents')
+    .select('id,normalized_filename,document_type,page_count')
+    .eq('workspace_id', workspaceId)
+    .eq('status', 'parsed')
+    .is('deleted_at', null)
+    .not('document_type', 'in', '("proposal_draft","expected_answer")')
+    .order('created_at');
+  const liveControls = (
+    <LiveAnalysisControls
+      workspaceId={workspaceId}
+      enabled={env.PHASE9_GENERAL_LIVE_ANALYSIS_ENABLED && Boolean(env.OPENAI_API_KEY)}
+      perRunMaximumUsd={env.PHASE9_LIVE_MAX_USD_PER_RUN}
+      monthlyMaximumUsd={env.PHASE9_LIVE_MONTHLY_WORKSPACE_CEILING_USD}
+      documents={(parsedDocuments ?? []).map((document) => ({
+        id: document.id,
+        name: document.normalized_filename,
+        type: document.document_type,
+        pages: document.page_count,
+      }))}
+    />
+  );
   const { data: run } = await supabase
     .from('phase9_evaluation_runs')
     .select(
-      'id,status,mode,source_package_hash,call_plan_hash,compatibility_fingerprint,planned_maximum_usd,actual_usd,provider_call_count,cache_hit_count,versions,created_at,completed_at',
+      'id,status,mode,source_package_hash,document_set_hash,expected_answers_used,call_plan_hash,compatibility_fingerprint,planned_maximum_usd,requested_maximum_usd,actual_usd,provider_call_count,cache_hit_count,versions,error_category,created_at,completed_at',
     )
     .eq('workspace_id', workspaceId)
     .order('created_at', { ascending: false })
@@ -54,11 +79,12 @@ export default async function Phase9AnalysisPage({
             <p className="page-eyebrow">Analysis coverage</p>
             <h1 className="page-title mt-2">No controlled analysis result</h1>
             <p className="page-lede mt-3">
-              Live provider analysis is disabled for ordinary workspaces. A protected public-fixture
-              run will appear here only after its source, budget, and compatibility checks pass.
+              Select parsed RFP documents below. The application creates an exact, bounded call plan
+              before any provider access and keeps every result pending human review.
             </p>
           </div>
         </div>
+        {liveControls}
       </main>
     );
   }
@@ -129,7 +155,7 @@ export default async function Phase9AnalysisPage({
       <div className="page-header">
         <div>
           <p className="page-eyebrow">Controlled source analysis</p>
-          <h1 className="page-title mt-2">FAC115 analysis coverage</h1>
+          <h1 className="page-title mt-2">Live RFP analysis coverage</h1>
           <p className="page-lede mt-3">
             Source-grounded machine analysis only. Every finding remains separate from human review
             and does not claim bidder compliance or submission approval.
@@ -137,6 +163,8 @@ export default async function Phase9AnalysisPage({
         </div>
         <StatusBadge value={run.status} />
       </div>
+
+      {liveControls}
 
       <section
         className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5"
@@ -156,6 +184,10 @@ export default async function Phase9AnalysisPage({
         <h2 className="section-title">Processing and provenance</h2>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Fact label="Mode" value={run.mode} />
+          <Fact
+            label="Expected-answer fixture"
+            value={run.expected_answers_used ? 'Used' : 'Not used'}
+          />
           <Fact label="Cache reused" value={`${run.cache_hit_count} tasks`} />
           <Fact
             label="Maximum planned cost"
@@ -166,12 +198,17 @@ export default async function Phase9AnalysisPage({
             value={`${totals.input.toLocaleString()} / ${totals.output.toLocaleString()}`}
           />
           <Fact label="Source package" value={shortHash(run.source_package_hash)} />
+          <Fact
+            label="Document set"
+            value={run.document_set_hash ? shortHash(run.document_set_hash) : 'Legacy run'}
+          />
           <Fact label="Call plan" value={shortHash(run.call_plan_hash)} />
           <Fact label="Compatibility" value={shortHash(run.compatibility_fingerprint)} />
           <Fact
             label="Elapsed provider time"
             value={`${(totals.latency / 1000).toFixed(1)} seconds`}
           />
+          {run.error_category ? <Fact label="Failure category" value={run.error_category} /> : null}
         </dl>
         <div className="mt-4 flex flex-wrap gap-2">
           {[...routes.entries()].map(([route, count]) => (

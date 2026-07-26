@@ -1,12 +1,26 @@
 import { expect, test, type Page } from '@playwright/test';
 
 const WORKSPACE_ID = '80000000-0000-4000-8000-000000000100';
+const NEW_JERSEY_WORKSPACE_ID = '90000000-0000-4000-8000-000000000100';
+const NEW_JERSEY_DOCUMENT_ID = '90000000-0000-4000-8000-000000000101';
 
 function required(name: string) {
   const value = process.env[name];
   if (!value) throw new Error(`Phase 9 UI audit requires ${name}`);
   return value;
 }
+
+test('shows the general workspace control but keeps default Playwright provider-free', async ({
+  page,
+}) => {
+  await signIn(page, 'A');
+  await page.goto(`/w/${NEW_JERSEY_WORKSPACE_ID}/phase9`);
+  await expect(page.getByRole('heading', { name: 'Live RFP analysis coverage' })).toBeVisible();
+  await expect(page.getByText('Disabled by administrator', { exact: true })).toBeVisible();
+  await expect(page.getByTestId(`phase9-document-${NEW_JERSEY_DOCUMENT_ID}`)).toBeChecked();
+  await expect(page.getByTestId('phase9-start-live-analysis')).toBeDisabled();
+  await expect(page.getByText(/machine-only with human review pending/i)).toBeVisible();
+});
 
 async function signIn(page: Page, which: 'A' | 'B') {
   await page.goto('/login');
@@ -28,7 +42,7 @@ test.describe('Phase 9 stored FAC115 result', () => {
   }) => {
     await signIn(page, 'A');
     await page.goto(`/w/${WORKSPACE_ID}/phase9`);
-    await expect(page.getByRole('heading', { name: 'FAC115 analysis coverage' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Live RFP analysis coverage' })).toBeVisible();
     await expect(page.getByText('Source-grounded machine analysis only.')).toBeVisible();
     await expect(page.getByText('Source blocks covered')).toBeVisible();
     await expect(page.getByText('Actual provider cost')).toBeVisible();

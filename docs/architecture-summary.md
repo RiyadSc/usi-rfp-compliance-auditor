@@ -162,10 +162,12 @@ The web application projects the unchanged Phase 4–8 records into two display 
 
 `requirement-prefilter-v1` and `whole-document-selection-v1` inspect the complete document before bounded evidence-coherent batching. Cache keys bind every material input/version; `targeted-cache-invalidation-v1` invalidates downstream addendum-dependent analysis while retaining unchanged normalization. Cost estimates and server-capped concurrency are visible before analysis. See `docs/large-document-data-flow.md` and `docs/large-document-normalized-model.md`.
 
-# Phase 9 coverage-led public analysis
+# Phase 9 coverage-led live analysis
 
-The protected FAC115 path adds a separate coverage-led graph:
+The qualified FAC115 path established a reusable coverage-led graph:
 
 `immutable public sources → normalized blocks/cells → coverage ledger → deterministic seeds → exact reduction → compact planned provider tasks → deterministic/semantic findings → human-review queue`.
 
-The path is server-owned, workspace-filtered, cache-aware, and reservation-gated. Expected answers exist only in a post-run evaluator. Phase 9 records do not rewrite Phase 3 candidates or Phase 4 findings, and general live verification remains disabled. See `phase9-live-ai-recovery.md`.
+`phase9-workspace-plan-v1` now applies that graph to explicitly selected, parsed documents in any workspace without accepting a state, agency, fixture, or expected-answer input. The application owner must separately confirm data authority and a per-run maximum. The server must opt in with `PHASE9_GENERAL_LIVE_ANALYSIS_ENABLED=true`; a service-owned policy then enforces the lower of the exact plan, the confirmed maximum, the `$3` architectural plan cap, the configured per-run maximum, and a workspace-month ceiling.
+
+The path is server-owned, workspace-filtered, cache-aware, reservation-gated, and fail-closed. Provider calls are non-retrying, use strict structured outputs, `store:false`, and no tools. AI-discovered additions remain `candidate_unverified`; final findings remain `machine_only=true` and `human_review_status=pending`. General Phase 4 verification remains disabled, and Phase 9 records do not rewrite Phase 3 candidates or Phase 4 findings. Expected answers exist only in fixture evaluators and are explicitly absent from ordinary workspace runs. See `phase9-live-ai-recovery.md`.

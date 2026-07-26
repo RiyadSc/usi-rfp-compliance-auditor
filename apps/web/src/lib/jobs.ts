@@ -6,6 +6,7 @@ export const PARSE_QUEUE = 'document-parse';
 export const EXTRACT_QUEUE = 'document-extract';
 export const VERIFY_QUEUE = 'requirements-verify';
 export const LARGE_DOCUMENT_WORK_QUEUE = 'large-document-work';
+export const PHASE9_WORKSPACE_ANALYSIS_QUEUE = 'phase9-workspace-analysis';
 
 export type ParseJobPayload = {
   workspaceId: string;
@@ -30,6 +31,10 @@ export type VerifyJobPayload = {
   processingJobId: string;
 };
 export type LargeDocumentWorkPayload = { workspaceId: string; jobId: string; workUnitId: string };
+export type Phase9WorkspaceAnalysisPayload = {
+  workspaceId: string;
+  evaluationRunId: string;
+};
 
 async function withBoss<T>(fn: (boss: PgBoss) => Promise<T>): Promise<T> {
   const env = serverEnv();
@@ -92,6 +97,20 @@ export async function enqueueLargeDocumentWork(
     return boss.send(LARGE_DOCUMENT_WORK_QUEUE, payload, {
       retryLimit: 0,
       expireInSeconds: 60 * 15,
+    });
+  });
+}
+
+export async function enqueuePhase9WorkspaceAnalysis(
+  payload: Phase9WorkspaceAnalysisPayload,
+): Promise<string | null> {
+  return withBoss(async (boss) => {
+    await boss.createQueue(PHASE9_WORKSPACE_ANALYSIS_QUEUE);
+    return boss.send(PHASE9_WORKSPACE_ANALYSIS_QUEUE, payload, {
+      // A provider call may already have been billed when a job fails. Never
+      // replay a live analysis automatically.
+      retryLimit: 0,
+      expireInSeconds: 60 * 60,
     });
   });
 }
