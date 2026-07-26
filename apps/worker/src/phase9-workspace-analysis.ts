@@ -11,6 +11,7 @@ import {
   phase9PrecedenceForEvidence,
   phase9PromptFingerprint,
   phase9StableHash,
+  refinePhase9WorkspaceCandidates,
   validatePhase9TaskResult,
   type Phase9CandidateSeed,
   type Phase9FinalFinding,
@@ -387,9 +388,10 @@ export async function handlePhase9WorkspaceAnalysis(
     const dedupedAiSeeds = [
       ...new Map(aiSeeds.map((candidate) => [candidate.id, candidate])).values(),
     ];
-    if (dedupedAiSeeds.length) {
+    const refinedAiSeeds = refinePhase9WorkspaceCandidates(dedupedAiSeeds).candidates;
+    if (refinedAiSeeds.length) {
       const aiSeedWrite = await admin.from('phase9_candidate_seeds').insert(
-        dedupedAiSeeds.map((candidate) => ({
+        refinedAiSeeds.map((candidate) => ({
           workspace_id: payload.workspaceId,
           evaluation_run_id: payload.evaluationRunId,
           candidate_hash: candidate.id,

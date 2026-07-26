@@ -1,5 +1,13 @@
 # Build Status
 
+## Phase 9 general-workspace noise remediation — offline complete (2026-07-26)
+
+The successful New Jersey public run proved the state-neutral application/worker path but produced 471 findings with substantial navigation, fragment, descriptive-date, and keyword-category noise. `phase9-workspace-plan-v2` now adds the provider-neutral `phase9-workspace-candidate-refinement-v1` precision layer without changing the frozen FAC115 recovery contract.
+
+An offline replay of the same immutable 48-page New Jersey source mined 640 candidates, rejected 261 before findings (30 table-of-contents/navigation, 50 incomplete fragments, 172 without an explicit obligation, 8 historical/descriptive, and 1 pure not-applicable), reclassified 72 by material meaning, and reduced the final population to 348. Both official deadlines remain represented. The exact plan falls from 23 tasks / `$0.967652` to 21 tasks / `$0.540562`. No provider call was made for this remediation.
+
+Focused Phase 9 tests pass `26/26`; lint, changed-file formatting, type-check, secret scan, and the unrestricted production build pass. The Supabase suite completed `88/89` during an accidentally overlapping authentication run; the sole affected verification file then passed independently `15/15`, confirming the failure was session interference rather than product behavior. The complete unit suite remains `407/408` because the pre-existing user-owned checklist UX contains prohibited “approved/safe to submit” source wording; this remediation does not alter that file.
+
 ## Phase 9 jurisdiction-neutral workspace analysis — implemented; provider quota blocked live result (2026-07-25)
 
 The application now exposes an opt-in, workspace-scoped Phase 9 analysis path for parsed public or otherwise authorized RFP documents from any US state. The plan is built from the explicitly selected documents and their normalized content; it contains no FAC115, Massachusetts, New Jersey, solicitation-number, fixture-answer, or jurisdiction-specific selection rule. The web action, `phase9-workspace-analysis` worker queue, strict provider gateway, immutable document bindings, exact budget reservation, RLS, and fail-closed persistence are connected through the production application path.

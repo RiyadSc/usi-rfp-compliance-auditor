@@ -188,3 +188,12 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] Candidates and findings remain machine-only, human-review pending, and traceable to exact documents and evidence.
 - [x] A provider quota failure releases its reservation and creates no tokens, cost, findings, or implied verification result.
 - [x] General workspace live analysis remains default-off and cannot silently fall back to another workspace, fixture, or model path.
+
+## Phase 9 general-workspace noise remediation result — 2026-07-26
+
+- [x] The precision layer is confined to the jurisdiction-neutral workspace path; FAC115 recovery versions and persisted historical findings are unchanged.
+- [x] Navigation/table-of-contents text, historical/descriptive text, incomplete fragments, pure not-applicable statements, and candidates without an explicit obligation cannot become refined findings.
+- [x] Deadline, signature, license, insurance, and form categories require material semantic patterns instead of isolated keywords.
+- [x] Mixed event summaries preserve real question/submission deadlines even when nearby meetings are marked not applicable.
+- [x] Rejected and reclassified candidates are counted with a versioned deterministic reason; no record is silently promoted by exact quotation alone.
+- [x] The immutable New Jersey source replays offline with both official deadlines and a smaller bounded plan; no provider call or paid spend occurred.

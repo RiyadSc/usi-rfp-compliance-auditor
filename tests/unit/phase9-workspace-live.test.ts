@@ -5,6 +5,8 @@ import {
   PHASE9_WORKSPACE_PLAN_VERSION,
   buildPhase9WorkspaceProductionPlan,
   phase9StableHash,
+  refinePhase9WorkspaceCandidates,
+  type Phase9CandidateSeed,
 } from '../../packages/ai/src';
 import { classifyPhase9WorkspaceFailure } from '../../apps/worker/src/phase9-workspace-analysis';
 
@@ -35,6 +37,32 @@ function document(overrides: Record<string, unknown> = {}) {
       },
     ],
     ...overrides,
+  };
+}
+
+function candidate(
+  id: string,
+  requirementType: Phase9CandidateSeed['requirementType'],
+  obligationText: string,
+): Phase9CandidateSeed {
+  return {
+    id: id.repeat(64),
+    sourceBlockIds: ['f'.repeat(64)],
+    documentId: DOCUMENT,
+    requirementType,
+    obligationText,
+    evidenceText: obligationText,
+    subject: null,
+    action: null,
+    condition: null,
+    dateValue: null,
+    numberValue: null,
+    unit: null,
+    formReference: null,
+    deterministicSignals: ['shall'],
+    discoveryRoute: 'deterministic',
+    needsVerification: true,
+    minerVersion: 'phase9-deterministic-miner-v1',
   };
 }
 
@@ -145,6 +173,111 @@ describe('jurisdiction-neutral Phase 9 workspace planning', () => {
       const source = readFileSync(resolve(path), 'utf8');
       expect(source).not.toMatch(/known[-_ ]answers|fixture answers/i);
     }
+  });
+
+  it('rejects New Jersey-shaped table-of-contents, descriptive, and incomplete noise', () => {
+    const refinement = refinePhase9WorkspaceCandidates([
+      candidate(
+        '1',
+        'evaluation',
+        '3.4 EVALUATION OF THE BID PROPOSALS ................................................',
+      ),
+      candidate('2', 'signature', 'The bill was signed by the Governor on January 12, 2006.'),
+      candidate(
+        '3',
+        'deadline',
+        'The armed security term contract is presently due to expire on February 29, 2008.',
+      ),
+      candidate('4', 'insurance', 'Insurance coverage shall be in'),
+      candidate('5', 'other', 'The contractor must substantiate'),
+      candidate('6', 'meeting', 'Mandatory Pre-bid Conference Not Applicable'),
+    ]);
+    expect(refinement.candidates).toHaveLength(0);
+    expect(refinement.rejected.map((item) => item.reason)).toEqual([
+      'table_of_contents_or_navigation',
+      'historical_or_descriptive',
+      'no_explicit_obligation',
+      'incomplete_fragment',
+      'incomplete_fragment',
+      'not_applicable',
+    ]);
+  });
+
+  it('keeps complete obligations and assigns categories from material meaning', () => {
+    const refinement = refinePhase9WorkspaceCandidates([
+      candidate('1', 'other', 'Bid Submission Due Date is March 7, 2008 at 2:00 PM.'),
+      candidate(
+        '2',
+        'license',
+        'The armed guard shall permit only duly authorized persons to enter the premises.',
+      ),
+      candidate(
+        '3',
+        'other',
+        'The bidder must provide proof of a valid New Jersey Detective Agency Permit with the bid proposal.',
+      ),
+      candidate(
+        '4',
+        'other',
+        'The Signatory page shall be signed by an authorized representative of the bidder.',
+      ),
+      candidate(
+        '5',
+        'insurance',
+        'The contractor shall provide current certificates of insurance naming the State as an Additional Insured.',
+      ),
+      candidate(
+        '6',
+        'deadline',
+        'Mandatory Pre-bid Conference Not Applicable. Bid Submission Due Date is March 7, 2008 at 2:00 PM.',
+      ),
+    ]);
+    expect(refinement.candidates.map((item) => item.requirementType)).toEqual([
+      'deadline',
+      'staffing',
+      'license',
+      'signature',
+      'insurance',
+      'deadline',
+    ]);
+    expect(refinement.rejected).toHaveLength(0);
+    expect(refinement.reclassified).toHaveLength(4);
+  });
+
+  it('does not promote descriptive dates or keyword-only labels in a complete plan', () => {
+    const plan = buildPhase9WorkspaceProductionPlan({
+      workspaceId: WORKSPACE,
+      documents: [
+        document({
+          pages: [
+            {
+              pageNumber: 1,
+              text: [
+                'Request for Proposal.',
+                'Bid Submission Due Date is March 7, 2008 at 2:00 PM.',
+                'The current contract is presently due to expire on February 29, 2008.',
+                '3.4 EVALUATION OF BID PROPOSALS .......................... 30',
+                'The bidder must submit the Signatory Form with the bid proposal.',
+              ].join(' '),
+              parserConfidence: 1,
+              parserState: 'native',
+            },
+          ],
+        }),
+      ],
+    });
+    expect(
+      plan.reduction.candidates.some((item) => item.obligationText.includes('March 7, 2008')),
+    ).toBe(true);
+    expect(
+      plan.reduction.candidates.some((item) => item.obligationText.includes('February 29, 2008')),
+    ).toBe(false);
+    expect(
+      plan.reduction.candidates.some((item) =>
+        item.obligationText.includes('EVALUATION OF BID PROPOSALS'),
+      ),
+    ).toBe(false);
+    expect(plan.refinement.version).toBe('phase9-workspace-candidate-refinement-v1');
   });
 });
 

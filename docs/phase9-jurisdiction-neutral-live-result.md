@@ -6,14 +6,14 @@ Date: 2026-07-25
 
 The application and production worker now support the same controlled live-analysis workflow for an explicitly selected parsed RFP regardless of US state. The implementation is jurisdiction-neutral. It does not branch on Massachusetts, New Jersey, FAC115, an agency name, a solicitation number, or frozen expected answers.
 
-The first New Jersey execution reached the provider through the production web/queue/worker path but did not receive a model response because the OpenAI project returned an insufficient-quota `429`. The run failed closed. No extraction or verification quality conclusion can be drawn from that attempt.
+The first New Jersey execution reached the provider through the production web/queue/worker path but did not receive a model response because the OpenAI project returned an insufficient-quota `429`. The run failed closed. A later fresh run, after provider quota was restored, completed through the same production path.
 
 ## Production path
 
 1. A workspace owner explicitly selects one to forty parsed documents.
 2. The owner attests that the material is public or otherwise authorized and accepts the displayed maximum cost.
 3. The server validates membership, document types, parsing state, page limits, workspace scope, hashes, and rate limits.
-4. `phase9-workspace-plan-v1` constructs the complete normalized source package, coverage map, candidate seeds, deterministic reduction, bounded call plan, hashes, and hard maximum.
+4. `phase9-workspace-plan-v2` constructs the complete normalized source package, coverage map, refined candidate seeds, deterministic reduction, bounded call plan, hashes, and hard maximum.
 5. The application persists an immutable run and its exact document bindings before queueing `phase9-workspace-analysis`.
 6. The worker rehydrates and revalidates every material input, reserves the complete maximum atomically, and only then constructs the strict Phase 9 gateway.
 7. Valid results remain `candidate_unverified`, `machineOnly=true`, and `humanReviewStatus=pending`. Operational or schema failure produces no supported finding.
@@ -34,7 +34,33 @@ The first New Jersey execution reached the provider through the production web/q
 - Reservation: released
 - Retry: none
 
-This is an operational stop, not a failed model-quality score and not a successful RFP analysis.
+This was an operational stop, not a failed model-quality score.
+
+## Completed New Jersey run
+
+- Evaluation run: `43e9ec62-e7f0-4ed6-aeff-b9b82091fea3`
+- Status: completed
+- Calls: `23`
+- Tokens: `84,316` input / `28,843` output / `3,165` reasoning
+- Provider latency: `174,484 ms`
+- Findings: `471`
+- Actual cost: `$0.432833`
+- Repairs/retries/incompletes/refusals/timeouts: `0`
+
+The run recovered the question and submission deadlines, copy-count instructions, signatory requirements, registration/source-disclosure/subcontractor forms, detective-agency permit proof, insurance certificates, security staffing duties, and pricing instructions. It also exposed a precision defect: table-of-contents entries, sentence fragments, historical dates, and isolated keywords could become findings or inappropriate categories. The run has no frozen New Jersey known-answer set, so it is not assigned a precision or recall score.
+
+## Offline precision correction
+
+`phase9-workspace-candidate-refinement-v1` now rejects those demonstrated noise classes and reclassifies from material obligation language. On the identical immutable source it:
+
+- mined `640`;
+- rejected `261`;
+- reclassified `72`;
+- reduced to `348` final candidates;
+- preserved both official deadlines;
+- reduced the planned run to `21` tasks / `$0.540562`.
+
+This correction was provider-free. The completed 471-finding run remains immutable historical evidence and was not rescored or overwritten.
 
 ## Controls
 
