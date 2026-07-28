@@ -1,5 +1,82 @@
 # Demo Runbook
 
+## Phase 9 accelerated-review stakeholder tour
+
+**Value statement:** “Reduce the time required to reach a trusted submission plan while preserving
+source evidence and human control.”
+
+### Provider-free preflight
+
+Run sequentially from the repository root. These commands must not construct a live provider:
+
+```bash
+npm run migrate:phase9:review-demo
+npm run migrate:phase9:review-policy
+npm run demo:provision:phase8
+npm run demo:reset:phase8
+npm run demo:reset:phase8 -- --execute
+npm run demo:check:tour
+```
+
+The reset without `--execute` is the dry run. The execute form creates a fresh, deterministic
+review run from the immutable prepared template and resets `guided-product-tour-v1` first-run state;
+it does not reuse provider results or change protected Phase 4–8 evidence. Start web/worker with
+`LIVE_PROVIDER_ENABLED=false` and `PHASE4_LIVE_VERIFICATION_ENABLED=false`.
+
+Open the prepared Harbor City workspace in **Director / Executive** view. From **Guided tour**:
+
+- choose **Start guided demo** for the session-only 14-step stakeholder story;
+- choose **Show presenter notes** only if speaking cues are useful;
+- use **Back**, **Next**, **Exit guided tour**, or **Restart tour** at any time;
+- choose **Reset demo walkthrough** only when you want the prepared starting state again.
+
+Presenter Notes are off by default, stay in the presenter's browser session, and never enter
+ordinary onboarding, reports, or exports. First-run onboarding is a separate six-step tour and may
+remember only user/tour/version/status/last-step/timestamps.
+
+### Five-minute tour story
+
+| Step | What the interface demonstrates                                                  | Action type                     |
+| ---: | -------------------------------------------------------------------------------- | ------------------------------- |
+|    1 | Opportunity command center and next action                                       | Informational                   |
+|    2 | Submission-critical risks before the raw population                              | Informational                   |
+|    3 | Machine findings, team decisions, publication, and remaining work stay separate  | Informational                   |
+|    4 | Critical items always receive individual review                                  | Informational                   |
+|    5 | One prepared evidence-backed form/deadline finding                               | Informational                   |
+|    6 | Exact quotation and original source page; return resumes the same step           | Open source manually            |
+|    7 | Accept, dispute, or follow up remains a human action                             | Optional manual business action |
+|    8 | Clean routine findings can be selected together; critical/uncertain items cannot | Optional manual business action |
+|    9 | Parser/coverage exceptions stay visible                                          | Informational                   |
+|   10 | Publication remains fail closed until all required decisions resolve             | Informational                   |
+|   11 | Published requirements become assignable submission work                         | Informational                   |
+|   12 | Proposal review surfaces missing/conflicting/unsupported draft content           | Informational                   |
+|   13 | Leadership readiness report supports judgment without authorizing submission     | Informational                   |
+|   14 | Close on faster trusted planning with evidence and human control                 | Informational                   |
+
+The tour never performs the two manual actions automatically. If you demonstrate a decision or
+batch, explicitly confirm it and point out that each affected finding receives its own append-only
+team decision.
+
+### Presentation guardrails
+
+- Say: “The system suggests; your team decides.”
+- Say: “Routine evidence-valid items can be reviewed together; critical and uncertain items cannot.”
+- Say: “Page exceptions remain visible because coverage is not a perfect-recall claim.”
+- Do not say the system found everything, approved the bid, proved compliance, or made submission safe.
+- The review-effort range is approximate and disclosed; it is not a guaranteed duration.
+- Keep Analyst details closed unless the audience asks for technical provenance.
+
+### Accessibility and fallback rehearsal
+
+Complete one keyboard-only rehearsal: launch the tour, use Tab/Shift+Tab, Back/Next, open/return
+from the source page, and exit with Escape plus confirmation. Confirm focus returns to the launch
+control, status changes are announced, visible focus remains, and reduced-motion settings remove
+smooth movement. Check desktop, tablet, and mobile widths.
+
+If an optional target is unavailable, the panel offers retry, continue, or exit without pointing to
+empty space. A missing required prepared-demo target is a release failure: `npm run
+demo:check:tour` must exit non-zero. Never silently skip it during a stakeholder demo.
+
 ## DX0 — Kerry / Justin guided path (minimal narration)
 
 **Workstream:** `docs/ux-discovery/32-dx0-charter.md`
@@ -62,7 +139,7 @@ No Phase 5, Phase 6, or Phase 7 step invokes a paid provider. General live Phase
 
 1. Confirm project ref `uxmxkdjschbekkbnweby`, synthetic user A, and a clean worktree. Do not print environment values.
 2. Run `npm run demo:provision:phase8`; expect scope `81000000-0000-4000-8000-000000000001`, workspace `...000002`, 24 candidates, two documents, and zero provider calls/spend.
-3. Run `npm run demo:reset:phase8 -- --dry-run`, then `npm run demo:reset:phase8`; expected final state hash is `215f97d1472e013de82fa0e74d1f6821eabc88608ede05f516f956367fde833e`.
+3. Run `npm run demo:reset:phase8`, then `npm run demo:reset:phase8 -- --execute`; the first command is the dry run and the second applies the presentation reset.
 4. Run `PLAYWRIGHT_REUSE=0 npx playwright test --grep @demo-critical --workers=1` or inspect the last three rehearsal artifacts.
 5. Start web and worker with `LIVE_PROVIDER_ENABLED=false` and `PHASE4_LIVE_VERIFICATION_ENABLED=false`.
 

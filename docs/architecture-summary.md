@@ -188,3 +188,78 @@ revalidates exact/normalized-exact evidence against the stored workspace page in
 transaction. Only accepted, source-supported, active findings are published; every other state stays
 in Phase 9 history. The standard Phase 5 generator and Phase 6 proposal audit then consume the
 versioned Phase 4 records normally. See `phase9-coverage-review-bridge.md`.
+
+## Phase 9 review acceleration
+
+The review-acceleration layer is additive to the Phase 9 coverage/review bridge. It does not modify
+source blocks, machine findings, provider artifacts, or Phase 4–8 contracts.
+
+```mermaid
+flowchart LR
+  F[Immutable Phase 9 findings] --> P[phase9-review-priority-v1]
+  C[Page-coverage exceptions] --> P
+  P --> E[Exception: individual review]
+  P --> K[Critical: individual review]
+  P --> D[Deterministic duplicate group]
+  P --> R[Routine]
+  D --> B[Explicit batch confirmation]
+  R --> B
+  E --> I[Append-only individual decision]
+  K --> I
+  B --> J[One append-only decision per finding]
+  I --> G[Existing publication gate]
+  J --> G
+  C --> G
+  G -->|all existing conditions pass| V[Versioned Phase 4 requirements]
+```
+
+`phase9-review-priority-v1` is pure and provider-free. Every finding receives one lane with
+precedence `exception → critical → duplicate → routine`. Exception eligibility is derived from
+authoritative support, precedence, quotation, page, ambiguity, parser, coverage, and promotion
+state. Critical classification is category/material-fact based. `phase9-duplicate-policy-v1`
+groups only exact deterministic signatures derived from normalized obligation/category,
+same-document active precedence, material facts, exact evidence identity, and source-block hashes.
+The canonical record has the stable earliest source/order identity; immutable occurrences are never
+deleted or merged.
+
+`phase9-batch-review-policy-v1` allows only selected routine acceptance, selected non-canonical
+duplicate rejection, and explicitly selected follow-up. The database RPC takes identifiers—not
+client-computed eligibility—and revalidates every record under a transaction/advisory lock. One
+invalid or stale item rejects the entire batch. A successful batch writes one immutable operation
+plus one append-only finding decision per selected record with actor, policy version, reason, count,
+and shared operation ID. Existing individual and publication RPCs remain authoritative.
+
+The review workspace consumes bounded queue/summary RPCs rather than loading the full population
+into one server component. Server-side filters, deterministic ordering, stable cursors/pages, and a
+large-population fixture keep the workflow usable at 1,000+ findings. The executive summary,
+`phase9-review-effort-v1`, and next-action projection are deterministic display services. Observed
+timing affects the estimate only after documented sample thresholds; otherwise conservative
+defaults produce a range. The defaults are 75 seconds per unresolved individual item, 45 seconds
+per unresolved duplicate group, and 8 seconds per batch-eligible routine item. An individual
+observation is accepted only after at least five decisions and within 20–600 seconds per decision;
+a batch observation requires at least three operations and 2–120 seconds per item. The range floors
+the midpoint at 75 seconds/item and ceilings it at 45 seconds/item. Estimates never affect
+eligibility, authorization, or publication.
+
+`phase9-review-analytics-v1` stores append-only product-interaction metadata for session starts,
+finding/source openings, individual/batch decisions, coverage review, and publication events.
+Rows contain workspace/run/actor/event/reference/version/timestamp and bounded non-sensitive
+metadata. Document text, quotations, proposal content, prompts, tokens, credentials, and secrets
+are prohibited. The analytics summary is observational only.
+
+## Guided product tour
+
+`guided-product-tour-v1` is an optional UI layer, not a workflow dependency. Typed definitions
+contain stable IDs, version, audience, prepared-demo eligibility, ordered routes, semantic target
+keys, placement, interaction requirements, preconditions/completion conditions, and required or
+optional fallback behavior. Targets use `data-tour-target` attributes rather than generated
+classes, DOM position, visible copy, coordinates, or database IDs.
+
+The six-step first-run tour may persist only user/tour/version/status/last-step/timestamps. The
+14-step stakeholder tour is session-only and has optional session-only Presenter Notes. Route
+changes and source-page detours preserve the step; the overlay computes live target bounds,
+placement, spotlight, and connector geometry and responds to scrolling/resizing. Informational
+steps block background interaction. Interactive steps expose only the highlighted target and still
+require the person to perform the business action. Missing optional targets expose retry/continue/
+exit; missing required prepared-demo targets fail the readiness check. The framework never
+automatically reviews, publishes, assigns, uploads, completes, or approves anything.

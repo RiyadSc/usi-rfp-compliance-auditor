@@ -18,7 +18,7 @@ RFP files → parsed pages → candidate requirements → independent verificati
 - **Phase 5:** deterministic checklist generation, owners, workflow states, required artifacts, waivers, blockers, and readiness summaries.
 - **Phase 6:** proposal-draft audit with evidence-linked findings and human resolution history.
 - **Phase 7–8:** reports/exports, security hardening, reliability controls, demo reset, accessibility states, and mock-only evaluation coverage.
-- **Phase 9:** a jurisdiction-neutral workspace analysis path exists for explicitly selected public or otherwise authorized documents. It is still rollout-controlled and exploratory for arbitrary real-world RFPs.
+- **Phase 9:** a jurisdiction-neutral workspace analysis path exists for explicitly selected public or otherwise authorized documents. Its review-acceleration workspace now puts critical obligations and source exceptions first, groups only deterministic duplicates, and permits explicit batch decisions only for clean routine findings. It remains rollout-controlled and does not prove complete recall for an arbitrary real-world RFP.
 
 ## What is demo-only, qualified, or experimental?
 
@@ -27,6 +27,8 @@ RFP files → parsed pages → candidate requirements → independent verificati
 The prepared synthetic/demo workspace is the reference demonstration. It has frozen known answers, exact source-page evidence, planted missing forms, addenda, blockers, proposal errors, reports, and audit history. The controlled Phase 4 synthetic smoke passed its production-path, persistence, isolation, provenance, and UI checks. Ordinary live verification remains disabled.
 
 `MockProvider` is the default for normal demos, tests, and Playwright. It makes no OpenAI calls.
+
+The prepared demo also contains a provider-free Phase 9 review population, a six-step first-run tour, and a separate 14-step presenter-controlled stakeholder tour. The tour uses the real application surfaces and never records a review, publishes requirements, assigns work, or changes protected evidence automatically.
 
 ### Controlled only
 
@@ -42,7 +44,11 @@ From the repository root:
 
 ```bash
 npm install
+npm run migrate:phase9:review-demo
+npm run migrate:phase9:review-policy
 npm run demo:provision:phase8
+npm run demo:reset:phase8 -- --execute
+npm run demo:check:tour
 LIVE_PROVIDER_ENABLED=false PHASE4_LIVE_VERIFICATION_ENABLED=false npm run dev --workspace apps/web
 ```
 
@@ -52,14 +58,29 @@ In a second terminal:
 LIVE_PROVIDER_ENABLED=false PHASE4_LIVE_VERIFICATION_ENABLED=false npm run worker:dev
 ```
 
-Open the URL shown by Next.js, normally `http://localhost:3000`. Open the prepared synthetic workspace, then review the requirement register, checklist/blockers, proposal audit, and reports. To restore its presentation state:
+Open the URL shown by Next.js, normally `http://localhost:3000`. Open the prepared synthetic workspace, then choose **Guided tour** → **Start guided demo**. Presenter Notes are optional and session-only. To restore the presentation and guided-tour starting state:
 
 ```bash
-npm run demo:reset:phase8 -- --dry-run
 npm run demo:reset:phase8
+npm run demo:reset:phase8 -- --execute
 ```
 
-The useful director walkthrough is: see the executive summary, open a blocker such as a missing mandatory form, inspect the exact quotation and source page, assign an owner, change a workflow status, inspect a planted proposal error, and read the readiness/report summary. Workflow status never rewrites the underlying source evidence.
+The director walkthrough is: see the executive review summary, start with deadlines and other submission-critical findings, inspect an exact quotation and source page, record one individual decision, review a clean routine group, show an unresolved page exception and the fail-closed publication gate, then continue to the submission checklist, proposal audit, and readiness report. Workflow state never rewrites source evidence.
+
+## Phase 9 review acceleration
+
+Every Phase 9 finding remains in the immutable audit population and receives exactly one deterministic review lane. Lane precedence is `exception → critical → duplicate → routine`:
+
+- **Exceptions** include unsupported/non-active findings, evidence or page-reference failures, ambiguity, parser uncertainty, and unresolved page-coverage issues. They always need individual judgment.
+- **Critical** includes clean active deadlines, forms, signatures, pricing, insurance, licensing, bonds, mandatory certifications/attachments, meetings, and submission instructions. They always need individual review.
+- **Duplicates** are only conservative, explainable, non-canonical matches with identical material facts and evidence identity. Records are grouped, never deleted or merged.
+- **Routine** is the only lane eligible for explicit batch acceptance, and only while every selected record remains supported, active, exact-evidence-valid, unambiguous, non-critical, current, and in the same workspace/run.
+
+The server recomputes eligibility at confirmation. An invalid or stale selection rolls back as one transaction. Every successful batch still creates one append-only human decision per finding, linked by a shared batch ID. Publication keeps the existing fail-closed rules and remains locked until all required finding and page-exception decisions are resolved.
+
+The executive summary emphasizes blockers, deadlines, unresolved exceptions, next action, progress, and an approximate review-effort range before showing the total population. The estimate is a planning range based on remaining individual items, duplicate groups, and batch-eligible work; it is not a guarantee.
+
+The provider-free New Jersey replay preserved all 329 findings: 88 critical, 11 exception, 0 deterministic duplicates, and 230 routine. Estimated finding-decision interactions fell from 329 to 100 (69.60%). Including 38 unchanged page-coverage decisions, estimated interactions fell from 367 to 138 (62.40%). These are workflow estimates—not measured review duration, extraction precision/recall, or proof that every requirement was found.
 
 ## Testing and quality gates
 

@@ -1,5 +1,52 @@
 # Build Status
 
+## Phase 9 review acceleration and guided demo — 2026-07-28
+
+Status: implemented provider-free; final release gates are the repository-owned sequential gates.
+
+`phase9-review-priority-v1` assigns every machine finding to exactly one deterministic lane with
+fail-closed precedence `exception → critical → duplicate → routine`. Exceptions include every
+finding that is ineligible for Phase 4 publication because of support, precedence, quotation,
+page-reference, evidence, ambiguity, parser, or unresolved page-coverage state. Critical findings
+include deadlines, forms, signatures, pricing, insurance, licensing, bonds, mandatory
+certifications/attachments, required meetings, and material submission instructions. Only clean
+routine findings can be batch accepted. Conservative
+duplicate groups retain every immutable occurrence and reject active/superseded or conflicting
+material facts from the same group.
+
+`phase9-batch-review-policy-v1` permits explicit human batch acceptance of selected routine
+findings, rejection of selected deterministic non-canonical duplicates, and selected follow-up
+decisions. Critical and exception findings remain individual-only. The server recomputes lane,
+evidence, workspace, run, and review eligibility at confirmation; stale or mixed selections roll
+back transactionally. One append-only decision is still created per selected finding and linked to
+one audited batch operation. Publication continues to use the existing owner-only,
+exact-evidence, all-decisions-resolved fail-closed bridge.
+
+The director-facing review workspace now leads with submission-critical obligations, unresolved
+exceptions, next action, progress, and a disclosed review-effort range rather than the raw
+population. It provides bounded server-side queue pages, critical/exception/duplicate/routine/
+reviewed/all filters, exact source access, immediate progress refresh, coverage review, and
+controlled publication. Privacy-conscious activity records contain identifiers, event types,
+timestamps, versions, and non-sensitive interaction metadata only; they do not contain document
+text, quotations, proposal content, prompts, tokens, or secrets and never affect authorization or
+publication.
+
+The provider-free corrected New Jersey replay preserves all `329 / 329` findings: `88` critical,
+`11` exception, `0` deterministic non-canonical duplicates, and `230` routine. No critical or
+exception finding is batch-accept eligible. Estimated finding-decision interactions are `329 → 100`
+(`69.60%` reduction); including `38` unchanged page-coverage decisions they are `367 → 138`
+(`62.40%`). Both official question and submission deadlines remain critical. These are interaction
+estimates, not measured time or extraction precision/recall, and the release does not claim that
+all requirements were found.
+
+`guided-product-tour-v1` adds a six-step first-run tour and a separate 14-step presenter-controlled
+demo. Both are prepared-demo-only, target semantic `data-tour-target` attributes, preserve route and
+source-page return state, support keyboard/focus/reduced-motion behavior, and fail gracefully when
+an optional target is absent. A required prepared-demo target fails `npm run demo:check:tour`.
+Presenter Notes are off by default, session-only, never exported, and independent of onboarding
+completion. The tour never automatically records a review, publishes, assigns, uploads, or changes
+protected business data. Provision/reset/check commands perform zero provider calls.
+
 ## Documentation and gate alignment — 2026-07-28
 
 The repository README now describes the completed Phase 1–8 product path, the controlled synthetic verification qualification, the rollout-disabled live posture, the experimental jurisdiction-neutral Phase 9 path, the happy-path demo, and the current completeness/parser/provider limitations. It no longer describes Phase 4 as planned or labels the security posture as Phase 3.

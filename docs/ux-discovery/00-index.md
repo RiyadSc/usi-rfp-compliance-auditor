@@ -6,6 +6,7 @@
 
 **DX0:** `32-dx0-charter.md` · `33-dx0-screen-story-audit.md` · `34-dx0-change-log.md` · runbook DX0 path  
 **Track 2 Expansion:** `35-track2-expansion-authorization.md` · inventory `36a-…` · change log `36-…`  
+**Phase 9 Review Acceleration:** `37-phase9-review-acceleration-change-log.md`
 **Operating cadence:** `26-parallel-tracks-and-change-gate.md`  
 **Track 2 baseline log:** `29-track2-change-log.md`  
 **Screen audit:** `27-screen-audit-decision-map.md`  

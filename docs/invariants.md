@@ -213,3 +213,33 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] Phase 4 candidates remain immutable/unverified proposals; Phase 4 machine findings remain machine-only with separate human decisions.
 - [x] Phase 5 and proposal-audit provenance remain linked to the published finding, exact quote, document, page, and bridge run.
 - [x] No provider call or paid spend is part of coverage review or publication.
+
+## Phase 9 review-acceleration invariant result — 2026-07-28
+
+- [x] Every machine finding remains represented and receives exactly one deterministic lane.
+- [x] Lane precedence is fail-closed: exception before critical, critical before duplicate, duplicate before routine.
+- [x] Unsupported, non-active, evidence-invalid, ambiguous, parser-uncertain, unresolved-coverage, and otherwise promotion-ineligible findings are exceptions.
+- [x] Critical and exception findings always require one individual human decision and can never be batch accepted.
+- [x] Only clean supported/active/exact-evidence-valid/non-critical/non-duplicate routine findings can be selected for batch acceptance.
+- [x] Duplicate rejection applies only to deterministic non-canonical occurrences; active/superseded, conflicting values/dates/quantities/forms/scopes, and dirty findings cannot be grouped.
+- [x] A batch remains an explicit human action, is server-revalidated, fails atomically when stale or mixed, and creates one append-only decision per affected finding.
+- [x] Batch and individual workflow state never changes source support, precedence, evidence, provider artifacts, or machine findings.
+- [x] Existing publication eligibility remains unchanged and fail closed while any finding or page-level exception is undecided or needs follow-up.
+- [x] The queue uses bounded server-side population reads and deterministic order; no 1,000-row client dump is required.
+- [x] Review analytics contain no document text, quotations, proposals, prompts, tokens, or secrets and never affect workflow authorization or publication.
+- [x] New Jersey offline review acceleration preserved `329 / 329` findings, batch-enabled zero critical/exception findings, and made no provider call.
+- [x] The reported New Jersey interaction reductions are estimates, not measured time, precision/recall, or a completeness guarantee.
+
+## Guided-tour invariant result — 2026-07-28
+
+- [x] First-run onboarding and presenter-controlled demo are separate prepared-demo-only modes.
+- [x] Every target is a stable semantic attribute; no generated classes, DOM indexes, coordinates, text selectors, or fixture UUIDs define a tour step.
+- [x] Informational steps cannot activate background controls; interactive steps still require the presenter to perform the protected action.
+- [x] The tour never automatically accepts/rejects findings, publishes requirements, assigns work, uploads files, completes checklists, approves reports, or submits bids.
+- [x] The user can move backward/forward, exit, restart, and recover from an optional missing target.
+- [x] Missing required prepared-demo targets fail `npm run demo:check:tour`.
+- [x] Source-page detours return to the same step without changing protected evidence.
+- [x] Presenter Notes are off by default, session-only, demo-only, and excluded from reports/exports.
+- [x] First-run state persists only user/tour/version/status/last-step/timestamps; no confidential content is stored.
+- [x] Focus, keyboard navigation, screen-reader announcements, responsive placement, and reduced-motion preferences remain supported.
+- [x] Provisioning, reset, readiness, and tour tests require no live provider.
