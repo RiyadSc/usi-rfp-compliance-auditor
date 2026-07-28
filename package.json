@@ -43,6 +43,7 @@
     "phase9:fac115:live-acceptance": "node --import tsx scripts/phase9-fac115-live-acceptance.mts",
     "phase9:workspace:live": "node --import tsx scripts/run-phase9-workspace-live-analysis.mts",
     "migrate:phase9:reviewed-bridge": "node --import tsx scripts/apply-phase9-reviewed-bridge-migration.mts",
+    "migrate:phase9:review-demo": "node --import tsx scripts/apply-phase9-review-demo-scope-migration.mts",
     "provision:phase9:fac115": "node --import tsx scripts/provision-phase9-fac115-workspace.mts",
     "provision:phase9:fac115:bid-ops": "PHASE9_BID_OPS_BRIDGE=1 node --import tsx scripts/provision-phase9-fac115-bid-ops-bridge.mts",
     "worker": "npm run start --workspace apps/worker",

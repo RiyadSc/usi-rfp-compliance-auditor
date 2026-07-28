@@ -39,6 +39,10 @@ export const PHASE8_REPORT_RUN_ID = '81000000-0000-4000-8000-000000000013';
 export const PHASE8_REPORT_SNAPSHOT_ID = '81000000-0000-4000-8000-000000000014';
 export const PHASE8_EXPORT_MANIFEST_ID = '81000000-0000-4000-8000-000000000015';
 export const PHASE8_EXPORT_ARTIFACT_ID = '81000000-0000-4000-8000-000000000016';
+export const PHASE9_REVIEW_DEMO_SCOPE_ID = '81000000-0000-4000-8900-000000000001';
+export const PHASE9_REVIEW_TEMPLATE_RUN_ID = '81000000-0000-4000-8900-000000000002';
+export const PHASE9_REVIEW_DEMO_MARKER = 'phase9-review-acceleration-demo-only';
+export const PHASE9_REVIEW_DEMO_SCOPE_VERSION = 'phase9-review-demo-v1';
 
 const sha256 = (input: string | Uint8Array) => createHash('sha256').update(input).digest('hex');
 const uuid = (group: number, index: number) =>
@@ -164,6 +168,177 @@ export const PHASE8_DEMO_CANDIDATES = phase8Candidates.map((entry, index) => ({
   evidenceId: uuid(3, index + 1),
   pageId: uuid(4, entry.pageNumber),
 }));
+
+const formReferenceFor = (obligation: string) =>
+  obligation.match(/\b(?:Form|Schedule)\s+([A-Z0-9-]+)/i)?.[0] ?? null;
+
+const normalizedDateFor = (key: string) => {
+  if (key === '20000000-0000-4000-8000-000000000008') return '2026-04-22T14:00:00-04:00';
+  if (key === '20000000-0000-4000-8000-000000000009') return '2026-04-23T14:00:00-04:00';
+  if (
+    key === '20000000-0000-4000-8000-000000000001' ||
+    key === '20000000-0000-4000-8000-000000000004'
+  )
+    return '2026-03-01T10:00:00-05:00';
+  return null;
+};
+
+export const PHASE9_REVIEW_DEMO_SOURCE_BLOCKS = PHASE8_SOURCE_PAGES.map((page) => {
+  const blockHash = sha256Canonical({
+    fixture: 'phase9-review-acceleration-demo-v1',
+    documentId: PHASE8_SOURCE_DOCUMENT_ID,
+    pageNumber: page.pageNumber,
+    text: page.text,
+  });
+  const deterministicSignals = [
+    ...(page.text.match(/\b(?:deadline|due)\b/i) ? ['deadline'] : []),
+    ...(page.text.match(/\bform\s+[a-z0-9-]+\b/i) ? ['form_identifier'] : []),
+    ...(page.text.match(/\b(?:sign|signature|signed)\b/i) ? ['signature'] : []),
+    ...(page.text.match(/\b(?:must|shall|required|mandatory)\b/i) ? ['mandatory_language'] : []),
+  ];
+  return {
+    blockHash,
+    pageNumber: page.pageNumber,
+    route:
+      page.pageNumber === 15
+        ? ('parser_uncertain' as const)
+        : ('selected_for_deterministic_candidate' as const),
+    deterministicSignals,
+    processingResult:
+      page.pageNumber === 15
+        ? 'Synthetic parser uncertainty retained for human review.'
+        : 'Synthetic source page reviewed and bound to deterministic evidence.',
+  };
+});
+
+const phase9ReviewSourceBlockByPage = new Map(
+  PHASE9_REVIEW_DEMO_SOURCE_BLOCKS.map((block) => [block.pageNumber, block]),
+);
+
+const phase9ReviewCandidate = (
+  candidate: (typeof PHASE8_DEMO_CANDIDATES)[number],
+  candidateHash = sha256Canonical({
+    fixture: 'phase9-review-acceleration-demo-v1',
+    key: candidate.key,
+    obligation: candidate.obligation,
+    pageNumber: candidate.pageNumber,
+  }),
+) => {
+  const sourceBlock = phase9ReviewSourceBlockByPage.get(candidate.pageNumber);
+  if (!sourceBlock) throw new Error(`phase9_demo_source_page_missing:${candidate.pageNumber}`);
+  const formReference = formReferenceFor(candidate.obligation);
+  const normalizedDate = normalizedDateFor(candidate.key);
+  return {
+    candidateHash,
+    sourceBlockHashes: [sourceBlock.blockHash],
+    requirementType: candidate.category,
+    obligationText: candidate.obligation,
+    evidenceText: candidate.evidenceQuote,
+    materialFacts: {
+      ...(formReference ? { formReference } : {}),
+      ...(normalizedDate ? { normalizedDate } : {}),
+    },
+    discoveryRoute: 'deterministic' as const,
+    sourceSupportStatus: candidate.sourceSupportStatus,
+    precedenceStatus: candidate.precedenceStatus,
+    proofRequirement: candidate.proofRequirement,
+    ambiguityCode:
+      candidate.sourceSupportStatus === 'parser_uncertain' ? 'parser_extraction_uncertain' : null,
+  };
+};
+
+const phase9BaseReviewCandidates = PHASE8_DEMO_CANDIDATES.map((candidate) =>
+  phase9ReviewCandidate(candidate),
+);
+const staffingPlan = PHASE8_DEMO_CANDIDATES.find(
+  (candidate) => candidate.key === '20000000-0000-4000-8000-000000000015',
+);
+if (!staffingPlan) throw new Error('phase9_demo_staffing_plan_missing');
+
+/** A deliberately repeated machine occurrence used to demonstrate explained duplicate review. */
+const phase9DuplicateStaffingPlan = phase9ReviewCandidate(staffingPlan, 'f'.repeat(64));
+
+export const PHASE9_REVIEW_DEMO_FINDINGS = [
+  ...phase9BaseReviewCandidates,
+  phase9DuplicateStaffingPlan,
+] as const;
+
+const optionalPage = PHASE8_SOURCE_PAGES.find((page) => page.pageNumber === 12);
+const optionalBlock = phase9ReviewSourceBlockByPage.get(12);
+if (!optionalPage || !optionalBlock) throw new Error('phase9_demo_coverage_example_missing');
+
+/** Deliberately lacks a finding so the prepared demo has one unresolved coverage exception. */
+export const PHASE9_REVIEW_DEMO_UNASSESSED_SEED = {
+  candidateHash: sha256Canonical({
+    fixture: 'phase9-review-acceleration-demo-v1',
+    key: 'unassessed-optional-page-signal',
+  }),
+  sourceBlockHashes: [optionalBlock.blockHash],
+  requirementType: 'other',
+  obligationText: 'Review the nonbinding branding reference for applicability.',
+  evidenceText: optionalPage.text,
+  materialFacts: { coverageExample: true },
+  discoveryRoute: 'coverage_sweep' as const,
+};
+
+export const PHASE9_REVIEW_DEMO_SEEDS = [
+  ...PHASE9_REVIEW_DEMO_FINDINGS.map(
+    ({
+      sourceSupportStatus: _support,
+      precedenceStatus: _precedence,
+      proofRequirement: _proof,
+      ambiguityCode: _ambiguity,
+      ...seed
+    }) => seed,
+  ),
+  PHASE9_REVIEW_DEMO_UNASSESSED_SEED,
+] as const;
+
+export const PHASE9_REVIEW_SOURCE_PACKAGE_HASH = sha256Canonical({
+  fixture: 'phase9-review-acceleration-demo-v1',
+  documentId: PHASE8_SOURCE_DOCUMENT_ID,
+  sourceHash: PHASE8_SOURCE_SHA,
+  blocks: PHASE9_REVIEW_DEMO_SOURCE_BLOCKS,
+});
+export const PHASE9_REVIEW_EXPECTED_ANSWER_HASH = sha256Canonical({
+  fixture: 'phase9-review-acceleration-demo-v1',
+  findingPopulation: PHASE9_REVIEW_DEMO_FINDINGS.map((finding) => ({
+    candidateHash: finding.candidateHash,
+    sourceSupportStatus: finding.sourceSupportStatus,
+    precedenceStatus: finding.precedenceStatus,
+    proofRequirement: finding.proofRequirement,
+  })),
+  expectedAnswersUsedAtRuntime: false,
+});
+export const PHASE9_REVIEW_CALL_PLAN_HASH = sha256Canonical({
+  mode: 'provider_free_prepared_demo',
+  providerCalls: 0,
+  candidateCount: PHASE9_REVIEW_DEMO_FINDINGS.length,
+  version: 'phase9-review-demo-call-plan-v1',
+});
+export const PHASE9_REVIEW_DOCUMENT_SET_HASH = sha256Canonical([
+  { id: PHASE8_SOURCE_DOCUMENT_ID, sha256: PHASE8_SOURCE_SHA },
+]);
+export const PHASE9_REVIEW_CANDIDATE_SET_HASH = sha256(
+  PHASE9_REVIEW_DEMO_SEEDS.map((seed) => seed.candidateHash)
+    .sort()
+    .join('\n'),
+);
+export const PHASE9_REVIEW_SOURCE_BLOCK_SET_HASH = sha256(
+  PHASE9_REVIEW_DEMO_SOURCE_BLOCKS.map((block) => block.blockHash)
+    .sort()
+    .join('\n'),
+);
+export const PHASE9_REVIEW_DEMO_EXPECTED = Object.freeze({
+  findings: 25,
+  candidateSeeds: 26,
+  sourceBlocks: PHASE8_SOURCE_PAGES.length,
+  duplicateGroups: 1,
+  nonCanonicalDuplicates: 1,
+  coverageExceptions: 3,
+  providerCalls: 0,
+  providerSpendUsd: 0,
+});
 
 export const PHASE8_DEMO_EXPECTED = Object.freeze({
   candidateCount: 24,

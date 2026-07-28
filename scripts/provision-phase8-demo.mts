@@ -29,6 +29,20 @@ import {
   PHASE8_SOURCE_PDF,
   PHASE8_SOURCE_SHA,
   PHASE8_VERIFICATION_RUN_ID,
+  PHASE9_REVIEW_CALL_PLAN_HASH,
+  PHASE9_REVIEW_CANDIDATE_SET_HASH,
+  PHASE9_REVIEW_DEMO_EXPECTED,
+  PHASE9_REVIEW_DEMO_FINDINGS,
+  PHASE9_REVIEW_DEMO_MARKER,
+  PHASE9_REVIEW_DEMO_SCOPE_ID,
+  PHASE9_REVIEW_DEMO_SCOPE_VERSION,
+  PHASE9_REVIEW_DEMO_SEEDS,
+  PHASE9_REVIEW_DEMO_SOURCE_BLOCKS,
+  PHASE9_REVIEW_DOCUMENT_SET_HASH,
+  PHASE9_REVIEW_EXPECTED_ANSWER_HASH,
+  PHASE9_REVIEW_SOURCE_PACKAGE_HASH,
+  PHASE9_REVIEW_SOURCE_BLOCK_SET_HASH,
+  PHASE9_REVIEW_TEMPLATE_RUN_ID,
   phase8DemoManifest,
 } from './lib/phase8-prepared-demo';
 
@@ -195,6 +209,63 @@ async function ensureImmutablePhase8Fallback(expected: ImmutablePhase8Fallback) 
     );
   }
   assertMatchingImmutableFallback(concurrent.data, expected);
+}
+
+type ImmutablePhase9ReviewDemoScope = {
+  id: string;
+  workspace_id: string;
+  phase8_scope_id: string;
+  template_evaluation_run_id: string;
+  synthetic_marker: string;
+  scope_version: string;
+  source_package_hash: string;
+  document_set_hash: string;
+  expected_answer_hash: string;
+  compatibility_fingerprint: string;
+  candidate_set_hash: string;
+  source_block_set_hash: string;
+  finding_count: number;
+  candidate_seed_count: number;
+  source_block_count: number;
+  coverage_exception_count: number;
+};
+
+async function ensureImmutablePhase9ReviewDemoScope(expected: ImmutablePhase9ReviewDemoScope) {
+  const columns = Object.keys(expected).join(',');
+  const find = () =>
+    admin
+      .from('phase9_review_demo_scopes')
+      .select(columns)
+      .eq('id', expected.id)
+      .eq('workspace_id', expected.workspace_id)
+      .maybeSingle<ImmutablePhase9ReviewDemoScope>();
+  const assertMatches = (actual: ImmutablePhase9ReviewDemoScope) => {
+    for (const [field, expectedValue] of Object.entries(expected)) {
+      if (actual[field as keyof ImmutablePhase9ReviewDemoScope] !== expectedValue)
+        throw new Error(`phase9_review_demo_scope_conflict_${field}`);
+    }
+  };
+  const existing = await find();
+  if (existing.error) throw new Error(`phase9_review_demo_scopes:${existing.error.message}`);
+  if (existing.data) {
+    assertMatches(existing.data);
+    return;
+  }
+  const inserted = await admin
+    .from('phase9_review_demo_scopes')
+    .insert(expected)
+    .select(columns)
+    .maybeSingle<ImmutablePhase9ReviewDemoScope>();
+  if (!inserted.error && inserted.data) {
+    assertMatches(inserted.data);
+    return;
+  }
+  const concurrent = await find();
+  if (concurrent.error || !concurrent.data)
+    throw new Error(
+      `phase9_review_demo_scopes:${inserted.error?.message ?? concurrent.error?.message ?? 'insert_failed'}`,
+    );
+  assertMatches(concurrent.data);
 }
 
 await insert('workspaces', {
@@ -961,6 +1032,120 @@ await ensureImmutablePhase8Fallback({
   fallback_version: 'phase8-report-fallback-v1',
 });
 
+const phase9StartedAt = '2026-07-28T12:00:00.000Z';
+await insert('phase9_evaluation_runs', {
+  id: PHASE9_REVIEW_TEMPLATE_RUN_ID,
+  workspace_id: PHASE8_DEMO_WORKSPACE_ID,
+  actor_id: user.id,
+  mode: 'dry_run',
+  status: 'completed',
+  source_package_hash: PHASE9_REVIEW_SOURCE_PACKAGE_HASH,
+  expected_answer_hash: PHASE9_REVIEW_EXPECTED_ANSWER_HASH,
+  call_plan_hash: PHASE9_REVIEW_CALL_PLAN_HASH,
+  compatibility_fingerprint: manifest.binding.compatibilityFingerprint,
+  versions: {
+    fixture: 'phase9-review-acceleration-demo-v1',
+    sourceCoverage: 'phase9-source-coverage-v1',
+    candidateMiner: 'phase9-deterministic-miner-v1',
+    verification: 'phase9-deterministic-verification-v1',
+    reviewPriority: 'phase9-review-priority-v1',
+    duplicatePolicy: 'phase9-duplicate-policy-v1',
+    batchPolicy: 'phase9-batch-review-policy-v1',
+  },
+  planned_maximum_usd: 0,
+  actual_usd: 0,
+  provider_call_count: 0,
+  cache_hit_count: 0,
+  started_at: phase9StartedAt,
+  completed_at: phase9StartedAt,
+  document_set_hash: PHASE9_REVIEW_DOCUMENT_SET_HASH,
+  expected_answers_used: false,
+  requested_maximum_usd: 0,
+});
+await insert('phase9_evaluation_documents', {
+  workspace_id: PHASE8_DEMO_WORKSPACE_ID,
+  evaluation_run_id: PHASE9_REVIEW_TEMPLATE_RUN_ID,
+  document_id: PHASE8_SOURCE_DOCUMENT_ID,
+  source_hash: PHASE8_SOURCE_SHA,
+  ordinal: 0,
+  page_count: PHASE8_SOURCE_PAGES.length,
+});
+await insert(
+  'phase9_source_block_coverage',
+  PHASE9_REVIEW_DEMO_SOURCE_BLOCKS.map((block) => ({
+    workspace_id: PHASE8_DEMO_WORKSPACE_ID,
+    evaluation_run_id: PHASE9_REVIEW_TEMPLATE_RUN_ID,
+    block_hash: block.blockHash,
+    source_document_id: PHASE8_SOURCE_DOCUMENT_ID,
+    source_document_key: manifest.sourceObjectKey,
+    source_hash: PHASE8_SOURCE_SHA,
+    block_type: 'page_window',
+    page_number: block.pageNumber,
+    heading_path: [],
+    route: block.route,
+    deterministic_signals: block.deterministicSignals,
+    processing_result: block.processingResult,
+    coverage_version: 'phase9-source-coverage-v1',
+  })),
+);
+await insert(
+  'phase9_candidate_seeds',
+  PHASE9_REVIEW_DEMO_SEEDS.map((seed) => ({
+    workspace_id: PHASE8_DEMO_WORKSPACE_ID,
+    evaluation_run_id: PHASE9_REVIEW_TEMPLATE_RUN_ID,
+    candidate_hash: seed.candidateHash,
+    source_block_hashes: seed.sourceBlockHashes,
+    requirement_type: seed.requirementType,
+    obligation_text: seed.obligationText,
+    evidence_text: seed.evidenceText,
+    material_facts: seed.materialFacts,
+    discovery_route: seed.discoveryRoute,
+    machine_status: 'candidate_unverified',
+    miner_version: 'phase9-deterministic-miner-v1',
+  })),
+);
+await insert(
+  'phase9_findings',
+  PHASE9_REVIEW_DEMO_FINDINGS.map((finding) => ({
+    workspace_id: PHASE8_DEMO_WORKSPACE_ID,
+    evaluation_run_id: PHASE9_REVIEW_TEMPLATE_RUN_ID,
+    candidate_hash: finding.candidateHash,
+    source_support_status: finding.sourceSupportStatus,
+    precedence_status: finding.precedenceStatus,
+    proof_requirement: finding.proofRequirement,
+    evidence_block_hashes: finding.sourceBlockHashes,
+    ambiguity_code: finding.ambiguityCode,
+    machine_only: true,
+    human_review_status: 'pending',
+    decision_version: 'phase9-deterministic-verification-v1',
+  })),
+);
+await ensureImmutablePhase9ReviewDemoScope({
+  id: PHASE9_REVIEW_DEMO_SCOPE_ID,
+  workspace_id: PHASE8_DEMO_WORKSPACE_ID,
+  phase8_scope_id: PHASE8_DEMO_SCOPE_ID,
+  template_evaluation_run_id: PHASE9_REVIEW_TEMPLATE_RUN_ID,
+  synthetic_marker: PHASE9_REVIEW_DEMO_MARKER,
+  scope_version: PHASE9_REVIEW_DEMO_SCOPE_VERSION,
+  source_package_hash: PHASE9_REVIEW_SOURCE_PACKAGE_HASH,
+  document_set_hash: PHASE9_REVIEW_DOCUMENT_SET_HASH,
+  expected_answer_hash: PHASE9_REVIEW_EXPECTED_ANSWER_HASH,
+  compatibility_fingerprint: manifest.binding.compatibilityFingerprint,
+  candidate_set_hash: PHASE9_REVIEW_CANDIDATE_SET_HASH,
+  source_block_set_hash: PHASE9_REVIEW_SOURCE_BLOCK_SET_HASH,
+  finding_count: PHASE9_REVIEW_DEMO_EXPECTED.findings,
+  candidate_seed_count: PHASE9_REVIEW_DEMO_EXPECTED.candidateSeeds,
+  source_block_count: PHASE9_REVIEW_DEMO_EXPECTED.sourceBlocks,
+  coverage_exception_count: PHASE9_REVIEW_DEMO_EXPECTED.coverageExceptions,
+});
+await insert('phase9_review_demo_states', {
+  workspace_id: PHASE8_DEMO_WORKSPACE_ID,
+  demo_scope_id: PHASE9_REVIEW_DEMO_SCOPE_ID,
+  active_evaluation_run_id: PHASE9_REVIEW_TEMPLATE_RUN_ID,
+  reset_count: 0,
+  state_version: 'phase9-review-demo-state-v1',
+});
+
 const { data: candidateCount } = await admin
   .from('requirement_candidates')
   .select('id', { count: 'exact' })
@@ -974,6 +1159,55 @@ const { data: scope } = await admin
   .single();
 if (sha256Canonical(scope?.binding) !== sha256Canonical(manifest.binding))
   throw new Error('phase8_scope_binding_drift');
+const phase9Counts = await Promise.all(
+  [
+    ['phase9_source_block_coverage', PHASE9_REVIEW_DEMO_EXPECTED.sourceBlocks],
+    ['phase9_candidate_seeds', PHASE9_REVIEW_DEMO_EXPECTED.candidateSeeds],
+    ['phase9_findings', PHASE9_REVIEW_DEMO_EXPECTED.findings],
+  ].map(async ([table, expected]) => {
+    const { count, error } = await admin
+      .from(String(table))
+      .select('id', { count: 'exact', head: true })
+      .eq('workspace_id', PHASE8_DEMO_WORKSPACE_ID)
+      .eq('evaluation_run_id', PHASE9_REVIEW_TEMPLATE_RUN_ID);
+    if (error) throw new Error(`${String(table)}:${error.message}`);
+    if (count !== expected)
+      throw new Error(`phase9_demo_${String(table)}_count_mismatch:${count}:${expected}`);
+    return count;
+  }),
+);
+const { data: phase9Template, error: phase9TemplateError } = await admin
+  .from('phase9_evaluation_runs')
+  .select(
+    'status,actual_usd,provider_call_count,expected_answers_used,source_package_hash,document_set_hash,expected_answer_hash,call_plan_hash,compatibility_fingerprint',
+  )
+  .eq('workspace_id', PHASE8_DEMO_WORKSPACE_ID)
+  .eq('id', PHASE9_REVIEW_TEMPLATE_RUN_ID)
+  .single();
+if (
+  phase9TemplateError ||
+  phase9Template?.status !== 'completed' ||
+  Number(phase9Template?.actual_usd) !== 0 ||
+  phase9Template?.provider_call_count !== 0 ||
+  phase9Template?.expected_answers_used !== false ||
+  phase9Template?.source_package_hash !== PHASE9_REVIEW_SOURCE_PACKAGE_HASH ||
+  phase9Template?.document_set_hash !== PHASE9_REVIEW_DOCUMENT_SET_HASH ||
+  phase9Template?.expected_answer_hash !== PHASE9_REVIEW_EXPECTED_ANSWER_HASH ||
+  phase9Template?.call_plan_hash !== PHASE9_REVIEW_CALL_PLAN_HASH ||
+  phase9Template?.compatibility_fingerprint !== manifest.binding.compatibilityFingerprint
+)
+  throw new Error('phase9_demo_template_binding_drift');
+const { data: phase9State, error: phase9StateError } = await admin
+  .from('phase9_review_demo_states')
+  .select('demo_scope_id,state_version')
+  .eq('workspace_id', PHASE8_DEMO_WORKSPACE_ID)
+  .single();
+if (
+  phase9StateError ||
+  phase9State?.demo_scope_id !== PHASE9_REVIEW_DEMO_SCOPE_ID ||
+  phase9State?.state_version !== 'phase9-review-demo-state-v1'
+)
+  throw new Error('phase9_demo_presentation_state_drift');
 const auditTables = [
   ['proposal_sections', 8],
   ['proposal_claims', 8],
@@ -1004,6 +1238,11 @@ console.info(
     cacheKey: manifest.binding.cacheKey,
     bindingHash: manifest.bindingHash,
     candidates: 24,
+    phase9ReviewDemoScopeId: PHASE9_REVIEW_DEMO_SCOPE_ID,
+    phase9TemplateRunId: PHASE9_REVIEW_TEMPLATE_RUN_ID,
+    phase9ReviewFindings: PHASE9_REVIEW_DEMO_EXPECTED.findings,
+    phase9ReviewCandidateSeeds: PHASE9_REVIEW_DEMO_EXPECTED.candidateSeeds,
+    phase9ReviewSourceBlocks: phase9Counts[0],
     proposalClaims: 8,
     proposalFindings: 9,
     providerCalls: 0,
