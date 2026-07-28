@@ -66,6 +66,8 @@ describe('prepared Phase 9 review-acceleration demo', () => {
     );
     expect(matches).toHaveLength(2);
     expect(new Set(matches.map((finding) => finding.candidateHash)).size).toBe(2);
+    expect(matches[0]!.candidateHash.localeCompare(matches[1]!.candidateHash)).toBeLessThan(0);
+    expect(matches[1]!.candidateHash).toBe('f'.repeat(64));
   });
 
   it('has the expected unresolved page-coverage examples without omitting a page', () => {
