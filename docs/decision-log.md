@@ -1,5 +1,11 @@
 # Decision Log
 
+## Documentation and gate alignment — 2026-07-28
+
+- **D-055 — Separate core and complete gates.** `npm run gates:core` is the secretless static gate used automatically by CI; `npm run gates` adds sequential Supabase integration and isolated Playwright validation. This makes the distinction visible instead of implying that a green secretless job proves the entire deployed system.
+- **D-056 — Repository-owned migration validation.** `check:migrations` validates migration naming, ordering, non-empty SQL, and destructive-operation policy without requiring a database. The two historical `20260717000005` files are explicitly allowed because the repository documents their separate roles; new duplicate versions fail.
+- **D-057 — CI credential boundary remains explicit.** Pull requests run only secretless checks. Development-Supabase and browser checks remain a manual-dispatch workflow using dedicated secrets, preventing shared test identities and credentials from entering untrusted pull-request execution. GitHub branch protection must require the `quality-gates` job.
+
 ## Phase 9 recovery decisions — 2026-07-24
 
 - **D-048 — Coverage before generation.** Every normalized block receives a persisted processing route; silent prefilter loss is an acceptance failure.

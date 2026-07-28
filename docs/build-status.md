@@ -1,5 +1,13 @@
 # Build Status
 
+## Documentation and gate alignment — 2026-07-28
+
+The repository README now describes the completed Phase 1–8 product path, the controlled synthetic verification qualification, the rollout-disabled live posture, the experimental jurisdiction-neutral Phase 9 path, the happy-path demo, and the current completeness/parser/provider limitations. It no longer describes Phase 4 as planned or labels the security posture as Phase 3.
+
+`npm run gates` is now the complete sequential local gate: it runs `gates:core` (lint, formatting, type-check, unit, deterministic evaluation, migration validation, lockfile, dependency, secret, and build checks) followed by Supabase integration and isolated Playwright tests. `npm run gates:core` remains available for secretless environments. CI runs the core gate automatically on pull requests and pushes to `main`; the credentialed Supabase/browser job remains manual-dispatch by design and is documented as a release/migration gate.
+
+Migration validation is repository-owned and provider-free. It checks ordered, non-empty, safely named SQL migrations, allows the two documented legacy `20260717000005` files, and rejects unapproved destructive database operations. No provider call or database write occurred for this documentation/gate change.
+
 ## Phase 9 general-workspace noise remediation — offline complete (2026-07-26)
 
 The successful New Jersey public run proved the state-neutral application/worker path but produced 471 findings with substantial navigation, fragment, descriptive-date, and keyword-category noise. `phase9-workspace-plan-v2` now adds the provider-neutral `phase9-workspace-candidate-refinement-v1` precision layer without changing the frozen FAC115 recovery contract.

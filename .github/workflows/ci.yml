@@ -23,14 +23,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run lint
-      - run: npm run format:check
-      - run: npm run typecheck
-      - run: npm run test:unit
-      - run: npm run eval:mock:phase8
-      - run: npm run check:dependencies
-      - run: npm run build
-      - run: npm run check:secrets
+      - run: npm run gates:core
 
   controlled-supabase-and-browser:
     if: ${{ github.event_name == 'workflow_dispatch' }}
