@@ -113,6 +113,25 @@ describe('deterministic duplicate grouping', () => {
       ]),
     ).toHaveLength(0);
   });
+
+  it('never lets an unsupported or evidence-missing record displace a clean canonical record', () => {
+    expect(
+      groupPhase9DeterministicDuplicates([
+        finding({ candidateHash: hash(1), sourceSupportStatus: 'unsupported' }),
+        finding({ candidateHash: hash(2) }),
+      ]),
+    ).toHaveLength(0);
+    expect(
+      assignPhase9ReviewLane(
+        finding({
+          sourceDocumentId: null,
+          evidenceCount: 0,
+          pageReferencesComplete: false,
+          quoteMatchType: 'not_found',
+        }),
+      ).lane,
+    ).toBe('exception');
+  });
 });
 
 describe('batch policy and effort estimate', () => {
@@ -134,6 +153,19 @@ describe('batch policy and effort estimate', () => {
         'reject_duplicate',
       ).eligible,
     ).toBe(true);
+    expect(
+      evaluatePhase9BatchEligibility(finding({ category: 'mandatory_form' }), 'mark_follow_up'),
+    ).toMatchObject({ eligible: false, reason: 'critical_requires_individual_review' });
+    expect(
+      evaluatePhase9BatchEligibility(
+        finding({ sourceSupportStatus: 'unsupported' }),
+        'mark_follow_up',
+      ),
+    ).toMatchObject({ eligible: false, reason: 'exception_requires_individual_review' });
+    expect(evaluatePhase9BatchEligibility(finding(), 'mark_follow_up')).toMatchObject({
+      eligible: true,
+      reason: 'eligible_explicit_follow_up',
+    });
   });
 
   it('refuses stale reviewed selections', () => {
@@ -154,6 +186,24 @@ describe('batch policy and effort estimate', () => {
       maximumMinutes: expect.any(Number),
       basis: 'conservative_defaults',
     });
+    expect(
+      estimatePhase9ReviewEffort({
+        unresolvedIndividualItems: 10,
+        unresolvedDuplicateGroups: 0,
+        unresolvedBatchEligibleRoutineItems: 0,
+        observedSecondsPerIndividualDecision: 30,
+        observedIndividualDecisionCount: 1,
+      }).basis,
+    ).toBe('conservative_defaults');
+    expect(
+      estimatePhase9ReviewEffort({
+        unresolvedIndividualItems: 10,
+        unresolvedDuplicateGroups: 0,
+        unresolvedBatchEligibleRoutineItems: 0,
+        observedSecondsPerIndividualDecision: 30,
+        observedIndividualDecisionCount: 5,
+      }).basis,
+    ).toBe('observed_and_conservative_defaults');
   });
 });
 
@@ -161,17 +211,25 @@ describe('guided tour contract', () => {
   const definition = {
     id: 'stakeholder-demo',
     version: GUIDED_PRODUCT_TOUR_VERSION,
-    audience: 'presenter',
+    audience: 'stakeholder_demo',
     demoOnly: true,
+    eligibility: {
+      workspaceMode: 'prepared_demo_only',
+      requiredWorkspaceMarker: 'phase8-synthetic-demo',
+    },
     steps: [
       {
         id: 'overview',
+        order: 1,
         targetKey: 'executive-summary',
         route: '/w/:workspaceId/phase9',
         title: 'Opportunity overview',
         text: 'See the most important work first.',
         preferredPlacement: 'bottom',
         interactionRequirement: 'informational',
+        precondition: 'target_available',
+        completionCondition: 'manual_next',
+        fallbackBehavior: 'required',
         presenterNote: 'Pause for questions.',
       },
     ],

@@ -6,7 +6,6 @@ import {
   sourceSupportStatusSchema,
   type ChecklistCategory,
 } from './checklist';
-import { normalizePhase9Evidence } from './phase9-bridge';
 
 export const PHASE9_REVIEW_PRIORITY_VERSION = 'phase9-review-priority-v1';
 export const PHASE9_DUPLICATE_POLICY_VERSION = 'phase9-duplicate-policy-v1';
@@ -64,10 +63,19 @@ export const phase9ReviewFindingSchema = z
       .default(null),
     humanDecision: z.enum(['accepted', 'rejected', 'needs_follow_up']).nullable().default(null),
     mandatoryClass: z.enum(['mandatory', 'optional', 'uncertain']).default('uncertain'),
-    sourceDocumentId: z.string().uuid(),
+    sourceDocumentId: z.string().uuid().nullable(),
     sourcePage: z.number().int().positive().nullable(),
     sourceOrder: z.number().int().nonnegative().default(0),
-    deadlineIso: z.string().datetime({ offset: true }).nullable().default(null),
+    deadlineIso: z
+      .string()
+      .refine(
+        (value) =>
+          /^\d{4}-\d{2}-\d{2}$/.test(value) ||
+          z.string().datetime({ offset: true }).safeParse(value).success,
+        'Deadline must be an ISO date or offset datetime.',
+      )
+      .nullable()
+      .default(null),
     formReference: z.string().trim().max(160).nullable().default(null),
     materialFacts: z.record(z.string(), z.unknown()).default({}),
     sourceBlockHashes: z.array(z.string().min(1).max(160)).max(20).default([]),
@@ -88,7 +96,6 @@ const CRITICAL_CATEGORIES = new Set<ChecklistCategory>([
   'insurance',
   'bond',
   'license',
-  'certification',
   'pre_bid_conference',
   'site_visit',
   'delivery_method',
@@ -98,7 +105,6 @@ const CRITICAL_CATEGORIES = new Set<ChecklistCategory>([
   'file_format',
   'naming_requirement',
   'packaging_requirement',
-  'attachment',
   'subcontractor_disclosure',
 ]);
 
@@ -108,6 +114,11 @@ const CRITICAL_MEANING =
 export function isPhase9CriticalFinding(finding: Phase9ReviewFinding): boolean {
   const parsed = phase9ReviewFindingSchema.parse(finding);
   if (CRITICAL_CATEGORIES.has(parsed.category)) return true;
+  if (
+    parsed.mandatoryClass === 'mandatory' &&
+    (parsed.category === 'attachment' || parsed.category === 'certification')
+  )
+    return true;
   return (
     parsed.mandatoryClass === 'mandatory' &&
     CRITICAL_MEANING.test(`${parsed.obligationText} ${parsed.formReference ?? ''}`)
@@ -220,17 +231,19 @@ function stableJson(value: unknown): string {
 
 export function phase9DuplicateSignature(raw: Phase9ReviewFinding): string {
   const finding = phase9ReviewFindingSchema.parse(raw);
+  if (!finding.sourceDocumentId)
+    throw new Error('A deterministic duplicate signature requires source evidence.');
+  const normalizeDuplicateText = (value: string) => value.trim().replace(/\s+/g, ' ').toLowerCase();
   return createHash('sha256')
     .update(
       [
         PHASE9_DUPLICATE_POLICY_VERSION,
-        normalizePhase9Evidence(finding.obligationText).toLowerCase(),
+        normalizeDuplicateText(finding.obligationText),
         finding.category,
         finding.sourceDocumentId,
         finding.precedenceStatus,
         stableJson(finding.materialFacts),
-        normalizePhase9Evidence(finding.evidenceText).toLowerCase(),
-        [...finding.sourceBlockHashes].sort().join(','),
+        normalizeDuplicateText(finding.evidenceText),
       ].join('|'),
     )
     .digest('hex');
@@ -251,13 +264,25 @@ export function groupPhase9DeterministicDuplicates(
   const findings = rawFindings.map((finding) => phase9ReviewFindingSchema.parse(finding));
   const groups = new Map<string, Phase9ReviewFinding[]>();
   for (const finding of findings) {
-    if (finding.precedenceStatus !== 'active') continue;
+    if (
+      finding.sourceSupportStatus !== 'supported' ||
+      finding.precedenceStatus !== 'active' ||
+      !finding.machineOnly ||
+      !finding.sourceDocumentId ||
+      finding.evidenceCount < 1 ||
+      !finding.pageReferencesComplete ||
+      !['exact', 'normalized_exact'].includes(finding.quoteMatchType) ||
+      finding.ambiguityCode ||
+      finding.parserUncertain ||
+      finding.unresolvedCoverageException
+    )
+      continue;
     const signature = phase9DuplicateSignature(finding);
     groups.set(signature, [...(groups.get(signature) ?? []), finding]);
   }
   return [...groups.entries()]
     .filter(([, entries]) => entries.length > 1)
-    .map(([groupKey, entries]) => {
+    .map<Phase9DuplicateGroup>(([groupKey, entries]) => {
       const ordered = [...entries].sort(
         (left, right) =>
           left.sourceOrder - right.sourceOrder ||
@@ -268,7 +293,7 @@ export function groupPhase9DeterministicDuplicates(
       return {
         version: PHASE9_DUPLICATE_POLICY_VERSION,
         groupKey,
-        canonicalCandidateHash: ordered[0].candidateHash,
+        canonicalCandidateHash: ordered[0]!.candidateHash,
         candidateHashes: ordered.map((entry) => entry.candidateHash),
         reason: 'exact_normalized_obligation_category_source_facts_evidence_match',
       };
@@ -302,12 +327,6 @@ export function evaluatePhase9BatchEligibility(
       eligible: false,
       reason: 'already_reviewed',
     };
-  if (action === 'mark_follow_up')
-    return {
-      version: PHASE9_BATCH_REVIEW_POLICY_VERSION,
-      eligible: true,
-      reason: 'eligible_explicit_follow_up',
-    };
   if (assignment.lane === 'critical')
     return {
       version: PHASE9_BATCH_REVIEW_POLICY_VERSION,
@@ -320,6 +339,18 @@ export function evaluatePhase9BatchEligibility(
       eligible: false,
       reason: 'exception_requires_individual_review',
     };
+  if (action === 'mark_follow_up')
+    return assignment.lane === 'routine' || assignment.lane === 'duplicate'
+      ? {
+          version: PHASE9_BATCH_REVIEW_POLICY_VERSION,
+          eligible: true,
+          reason: 'eligible_explicit_follow_up',
+        }
+      : {
+          version: PHASE9_BATCH_REVIEW_POLICY_VERSION,
+          eligible: false,
+          reason: 'not_routine',
+        };
   if (action === 'accept_routine')
     return assignment.lane === 'routine'
       ? {
@@ -359,19 +390,23 @@ export function estimatePhase9ReviewEffort(input: {
   unresolvedBatchEligibleRoutineItems: number;
   observedSecondsPerIndividualDecision?: number | null;
   observedSecondsPerBatchItem?: number | null;
+  observedIndividualDecisionCount?: number;
+  observedBatchOperationCount?: number;
 }): Phase9ReviewEffortEstimate {
-  const individualSeconds =
-    input.observedSecondsPerIndividualDecision &&
-    input.observedSecondsPerIndividualDecision >= 20 &&
-    input.observedSecondsPerIndividualDecision <= 600
-      ? input.observedSecondsPerIndividualDecision
-      : 75;
-  const batchSeconds =
-    input.observedSecondsPerBatchItem &&
-    input.observedSecondsPerBatchItem >= 2 &&
-    input.observedSecondsPerBatchItem <= 120
-      ? input.observedSecondsPerBatchItem
-      : 8;
+  const validIndividualObservation =
+    Boolean(input.observedSecondsPerIndividualDecision) &&
+    Number(input.observedSecondsPerIndividualDecision) >= 20 &&
+    Number(input.observedSecondsPerIndividualDecision) <= 600 &&
+    (input.observedIndividualDecisionCount ?? 0) >= 5;
+  const validBatchObservation =
+    Boolean(input.observedSecondsPerBatchItem) &&
+    Number(input.observedSecondsPerBatchItem) >= 2 &&
+    Number(input.observedSecondsPerBatchItem) <= 120 &&
+    (input.observedBatchOperationCount ?? 0) >= 3;
+  const individualSeconds = validIndividualObservation
+    ? Number(input.observedSecondsPerIndividualDecision)
+    : 75;
+  const batchSeconds = validBatchObservation ? Number(input.observedSecondsPerBatchItem) : 8;
   const midpointSeconds =
     Math.max(0, input.unresolvedIndividualItems) * individualSeconds +
     Math.max(0, input.unresolvedDuplicateGroups) * 45 +
@@ -379,9 +414,7 @@ export function estimatePhase9ReviewEffort(input: {
   const minimumMinutes = midpointSeconds === 0 ? 0 : Math.max(1, Math.floor(midpointSeconds / 75));
   const maximumMinutes =
     midpointSeconds === 0 ? 0 : Math.max(minimumMinutes, Math.ceil(midpointSeconds / 45));
-  const observed = Boolean(
-    input.observedSecondsPerIndividualDecision || input.observedSecondsPerBatchItem,
-  );
+  const observed = validIndividualObservation || validBatchObservation;
   return {
     version: PHASE9_REVIEW_EFFORT_VERSION,
     minimumMinutes,
@@ -420,13 +453,22 @@ export const guidedTourPlacementSchema = z.enum(['top', 'bottom', 'left', 'right
 export const guidedTourStepSchema = z
   .object({
     id: z.string().regex(/^[a-z0-9-]+$/),
+    order: z.number().int().positive(),
     targetKey: z.string().regex(/^[a-z0-9-]+$/),
     route: z.string().startsWith('/'),
     title: z.string().trim().min(1).max(80),
     text: z.string().trim().min(1).max(320),
     preferredPlacement: guidedTourPlacementSchema,
-    interactionRequirement: z.enum(['informational', 'optional_action', 'required_navigation']),
-    required: z.boolean().default(true),
+    interactionRequirement: z.enum([
+      'informational',
+      'open_source',
+      'manual_business_action',
+    ]),
+    precondition: z.literal('target_available').optional(),
+    completionCondition: z
+      .enum(['manual_next', 'source_opened', 'business_action_observed'])
+      .optional(),
+    fallbackBehavior: z.enum(['required', 'optional']),
     presenterNote: z.string().trim().max(240).optional(),
   })
   .strict();
@@ -436,8 +478,14 @@ export const guidedTourDefinitionSchema = z
   .object({
     id: z.string().regex(/^[a-z0-9-]+$/),
     version: z.literal(GUIDED_PRODUCT_TOUR_VERSION),
-    audience: z.enum(['first_run', 'presenter']),
+    audience: z.enum(['first_run', 'stakeholder_demo']),
     demoOnly: z.boolean(),
+    eligibility: z
+      .object({
+        workspaceMode: z.enum(['any_eligible_workspace', 'prepared_demo_only']),
+        requiredWorkspaceMarker: z.string().trim().min(1).max(120).optional(),
+      })
+      .strict(),
     steps: z.array(guidedTourStepSchema).min(1).max(24),
   })
   .strict()
@@ -445,6 +493,12 @@ export const guidedTourDefinitionSchema = z
     const stepIds = new Set<string>();
     const targetIds = new Set<string>();
     for (const [index, step] of value.steps.entries()) {
+      if (step.order !== index + 1)
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['steps', index, 'order'],
+          message: 'Tour step order must be contiguous and one-based.',
+        });
       if (stepIds.has(step.id))
         context.addIssue({
           code: z.ZodIssueCode.custom,
