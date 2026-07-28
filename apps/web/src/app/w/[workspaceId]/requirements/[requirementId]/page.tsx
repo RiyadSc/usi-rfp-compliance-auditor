@@ -134,7 +134,7 @@ export default async function RequirementDetailPage({
           className="action-link inline-flex items-center gap-1.5 text-sm"
         >
           <IconArrowLeft size={14} />
-          Requirement register
+          Requirement list
         </Link>
         <p className="page-eyebrow mt-5">RFP requirement</p>
         <h1 className="page-title mt-2 max-w-4xl">{candidate.title}</h1>
@@ -151,10 +151,11 @@ export default async function RequirementDetailPage({
       <p className="notice notice-warning mb-6">
         <strong className="notice-title">
           <IconAlert size={15} />
-          Machine assessment: {businessLabel(latestReview)}.
+          Team review status: {businessLabel(latestReview)}.
         </strong>
         <span className="mt-2 block text-sm text-ink-soft">
-          Source evidence, company proof, workflow completion, and human review remain separate.
+          Source evidence, company proof, workflow completion, and human review remain separate. A
+          team decision here does not authorize submission.
         </span>
       </p>
       <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">

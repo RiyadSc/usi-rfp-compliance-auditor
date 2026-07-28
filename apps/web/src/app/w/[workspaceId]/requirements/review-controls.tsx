@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import { recordHumanReview } from './actions';
 
 const DECISIONS = [
-  ['accepted', 'Accept machine assessment'],
-  ['rejected', 'Reject machine assessment'],
+  ['accepted', 'Accept source assessment'],
+  ['rejected', 'Dispute source assessment'],
   ['needs_follow_up', 'Needs follow-up'],
-  ['waived', 'Waive review'],
+  ['waived', 'Record waiver'],
 ] as const;
 
 export function ReviewControls({
@@ -40,13 +40,22 @@ export function ReviewControls({
             correctedValues,
             ...(relationshipId ? { relationshipId } : {}),
           });
-          setMessage(result.ok ? 'Review decision recorded.' : result.error);
+          setMessage(
+            result.ok
+              ? 'Team decision recorded. This does not authorize submission.'
+              : result.error,
+          );
           if (result.ok) router.refresh();
         });
       }}
     >
+      <p className="text-sm text-ink-soft">
+        Records whether your team accepts the machine’s source assessment. It does{' '}
+        <strong className="font-semibold text-ink">not</strong> authorize submission or replace
+        final human review.
+      </p>
       <label className="field-label block">
-        {relationshipId ? 'Assessment outcome' : 'Decision'}
+        {relationshipId ? 'Assessment outcome' : 'Team decision'}
         <select
           value={decision}
           onChange={(event) => setDecision(event.target.value as typeof decision)}
@@ -68,17 +77,22 @@ export function ReviewControls({
           className="mt-1.5 min-h-24 w-full"
         />
       </label>
-      <label className="field-label block">
-        {relationshipId ? 'Structured relationship correction' : 'Proposed corrected values'}
-        {' (optional JSON object)'}
-        <textarea
-          value={correctedValues}
-          onChange={(event) => setCorrectedValues(event.target.value)}
-          placeholder={'{"deadline":"2027-04-22"}'}
-          maxLength={4000}
-          className="mono mt-1.5 min-h-20 w-full text-xs"
-        />
-      </label>
+      <details className="disclosure">
+        <summary className="text-sm font-medium text-ink-soft">
+          Advanced: structured correction (optional)
+        </summary>
+        <label className="field-label mt-3 block">
+          {relationshipId ? 'Structured relationship correction' : 'Proposed corrected values'}
+          {' (JSON object for technical reviewers)'}
+          <textarea
+            value={correctedValues}
+            onChange={(event) => setCorrectedValues(event.target.value)}
+            placeholder={'{"deadline":"2027-04-22"}'}
+            maxLength={4000}
+            className="mono mt-1.5 min-h-20 w-full text-xs"
+          />
+        </label>
+      </details>
       <button disabled={pending} className="primary-action">
         {pending ? 'Recording…' : relationshipId ? 'Record relationship review' : 'Record review'}
       </button>

@@ -171,3 +171,20 @@ The qualified FAC115 path established a reusable coverage-led graph:
 `phase9-workspace-plan-v2` now applies that graph to explicitly selected, parsed documents in any workspace without accepting a state, agency, fixture, or expected-answer input. Before reduction, `phase9-workspace-candidate-refinement-v1` rejects navigation/table-of-contents text, historical or non-obligatory language, explicit not-applicable statements, and incomplete fragments; it also assigns categories from material obligation language rather than isolated keywords. The application owner must separately confirm data authority and a per-run maximum. The server must opt in with `PHASE9_GENERAL_LIVE_ANALYSIS_ENABLED=true`; a service-owned policy then enforces the lower of the exact plan, the confirmed maximum, the `$3` architectural plan cap, the configured per-run maximum, and a workspace-month ceiling.
 
 The path is server-owned, workspace-filtered, cache-aware, reservation-gated, and fail-closed. Provider calls are non-retrying, use strict structured outputs, `store:false`, and no tools. AI-discovered additions remain `candidate_unverified`; final findings remain `machine_only=true` and `human_review_status=pending`. General Phase 4 verification remains disabled, and Phase 9 records do not rewrite Phase 3 candidates or Phase 4 findings. Expected answers exist only in fixture evaluators and are explicitly absent from ordinary workspace runs. See `phase9-live-ai-recovery.md`.
+
+## Coverage review and controlled Phase 9 handoff
+
+`phase9-coverage-summary-v1` accounts for every selected page and presents requirement pages,
+no-requirement pages, parser uncertainty, unexamined pages, unassessed candidate seeds, and possible
+form/deadline omissions as a director-facing exception queue. Page coverage is explicitly separate
+from a perfect-recall claim.
+
+`phase9-finding-review-v1` records append-only team decisions without mutating machine findings.
+`phase9-coverage-review-v1` separately records whether each page-level omission/parser exception was
+checked or still needs follow-up. `phase9-reviewed-bridge-v1` is the only general handoff into the
+Phase 4/5 workflow. Publication is workspace-owner-only, requires a decision for every finding and
+current coverage exception, rejects unresolved follow-up, and
+revalidates exact/normalized-exact evidence against the stored workspace page inside one database
+transaction. Only accepted, source-supported, active findings are published; every other state stays
+in Phase 9 history. The standard Phase 5 generator and Phase 6 proposal audit then consume the
+versioned Phase 4 records normally. See `phase9-coverage-review-bridge.md`.

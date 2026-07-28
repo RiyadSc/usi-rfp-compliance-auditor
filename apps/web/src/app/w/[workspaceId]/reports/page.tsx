@@ -86,13 +86,13 @@ export default async function ReportsPage({
       />
       <div className="page-header">
         <div>
-          <p className="page-eyebrow">Executive decision support</p>
+          <p className="page-eyebrow">Ready for leadership?</p>
           <h1 aria-label="Reports and exports" className="page-title mt-2">
-            Reports
+            Final Review
           </h1>
           <p className="page-lede mt-3">
-            Bring submission blockers, missing evidence, proposal issues, and human decisions into
-            one executive review. Reports never represent automatic approval.
+            Open a point-in-time briefing of blockers, open judgments, and missing proof. It
+            supports a human decision — it never authorizes submission.
           </p>
         </div>
       </div>
@@ -150,7 +150,14 @@ export default async function ReportsPage({
         ) : (
           <div className="empty-state">
             <EmptyStateArt />
-            <p className="empty-state-body">No reports yet.</p>
+            <p className="empty-state-title">No leadership briefing yet</p>
+            <p className="empty-state-body">
+              Complete a proposal draft review first, then create a point-in-time briefing for
+              leadership. Briefings never authorize submission.
+            </p>
+            <Link href={`/w/${workspaceId}/proposal-audit`} className="primary-action mt-4">
+              Open proposal review
+            </Link>
           </div>
         )}
         <nav aria-label="Report history pages" className="mt-5 flex gap-4 text-sm">

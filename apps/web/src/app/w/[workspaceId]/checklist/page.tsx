@@ -177,13 +177,13 @@ export default async function ChecklistPage({
       />
       <div className="page-header">
         <div>
-          <p className="page-eyebrow">Team submission work</p>
-          <h1 aria-label="Deterministic checklist and blockers" className="page-title mt-2">
+          <p className="page-eyebrow">What is still missing</p>
+          <h1 aria-label="Submission checklist and blockers" className="page-title mt-2">
             Submission Checklist
           </h1>
           <p className="page-lede mt-3">
-            Assign work, resolve blockers, collect company evidence, and prepare the response for
-            final team review.
+            Start with items that block submission work. Completing a task here does not authorize
+            the bid or replace final human review.
           </p>
         </div>
         {latestVerification ? (
@@ -456,7 +456,34 @@ export default async function ChecklistPage({
       ) : (
         <div className="empty-state">
           <EmptyStateArt />
-          <p className="empty-state-body">No checklist items match these filters.</p>
+          <p className="empty-state-title">
+            {latestRun ? 'No items match these filters' : 'No submission list yet'}
+          </p>
+          <p className="empty-state-body">
+            {latestRun
+              ? 'Clear filters or open All work to see every submission item.'
+              : latestVerification
+                ? 'Build a submission list from the verified requirements to assign owners and track blockers.'
+                : 'Finish reviewing RFP requirements first, then build the submission list.'}
+          </p>
+          {!latestRun && latestVerification ? (
+            <div className="mt-4">
+              <GenerateChecklistButton
+                workspaceId={workspaceId}
+                verificationRunId={latestVerification.id}
+              />
+            </div>
+          ) : null}
+          {!latestRun && !latestVerification ? (
+            <Link href={`/w/${workspaceId}/requirements`} className="primary-action mt-4">
+              Open requirements
+            </Link>
+          ) : null}
+          {latestRun ? (
+            <Link href={`/w/${workspaceId}/checklist`} className="secondary-action mt-4">
+              Clear filters
+            </Link>
+          ) : null}
         </div>
       )}
     </main>

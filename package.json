@@ -39,6 +39,7 @@
     "phase9:fac115:dry-run": "node --import tsx scripts/phase9-fac115-recovery-offline.mts",
     "phase9:fac115:live-acceptance": "node --import tsx scripts/phase9-fac115-live-acceptance.mts",
     "phase9:workspace:live": "node --import tsx scripts/run-phase9-workspace-live-analysis.mts",
+    "migrate:phase9:reviewed-bridge": "node --import tsx scripts/apply-phase9-reviewed-bridge-migration.mts",
     "provision:phase9:fac115": "node --import tsx scripts/provision-phase9-fac115-workspace.mts",
     "provision:phase9:fac115:bid-ops": "PHASE9_BID_OPS_BRIDGE=1 node --import tsx scripts/provision-phase9-fac115-bid-ops-bridge.mts",
     "worker": "npm run start --workspace apps/worker",
@@ -54,12 +55,12 @@
     "@playwright/test": "^1.61.1",
     "@types/node": "^22.13.0",
     "dotenv": "^17.0.0",
-    "eslint": "^9.0.0",
+    "eslint": "^10.8.0",
     "postcss": "8.5.19",
     "prettier": "^3.4.0",
     "sharp": "0.35.3",
     "typescript": "^5.7.0",
-    "typescript-eslint": "^8.20.0",
+    "typescript-eslint": "^8.65.0",
     "vitest": "^3.0.0"
   },
   "engines": {

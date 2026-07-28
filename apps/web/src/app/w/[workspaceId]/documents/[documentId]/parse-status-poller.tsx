@@ -14,7 +14,7 @@ export function ParseStatusPoller() {
   return (
     <p aria-live="polite" className="notice notice-info mb-4 flex items-center gap-3">
       <EvidenceProcessingMark size={22} />
-      <span>Processing asynchronously… this page refreshes automatically.</span>
+      <span>Reading the document… this page refreshes automatically.</span>
     </p>
   );
 }

@@ -31,6 +31,9 @@ async function PortfolioPage({
   mode?: 'home' | 'opportunities';
 }) {
   const { error, q = '' } = await searchParams;
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const clearHref = mode === 'opportunities' ? '/opportunities' : '/';
   const supabase = await createSupabaseServerClient();
   const { data: workspaces, error: listError } = await supabase
     .from('workspaces')
@@ -95,9 +98,7 @@ async function PortfolioPage({
             <p className="page-eyebrow">
               {mode === 'home' ? 'Your bid command center' : 'Bid portfolio'}
             </p>
-            <h1 className="page-title mt-2">
-              {mode === 'home' ? 'Good morning' : 'Opportunities'}
-            </h1>
+            <h1 className="page-title mt-2">{mode === 'home' ? greeting : 'Opportunities'}</h1>
             <p className="page-lede mt-3">
               {mode === 'home'
                 ? 'See what needs attention, where each opportunity stands, and the next action your team should take.'
@@ -210,7 +211,7 @@ async function PortfolioPage({
               </div>
               <button className="secondary-action">Search</button>
               {query ? (
-                <Link href="/" className="action-link self-center px-2 text-sm">
+                <Link href={clearHref} className="action-link self-center px-2 text-sm">
                   Clear
                 </Link>
               ) : null}
@@ -479,7 +480,7 @@ function WorkspaceForm() {
         <span className="field-label">Description</span>
         <textarea id="description" name="description" rows={2} maxLength={2000} />
       </label>
-      <button type="submit" aria-label="Create workspace" className="secondary-action mt-1">
+      <button type="submit" aria-label="Create opportunity" className="secondary-action mt-1">
         Create opportunity
       </button>
     </form>

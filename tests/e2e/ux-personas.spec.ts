@@ -29,11 +29,12 @@ test('@ux-director understands readiness, top issues, and next action', async ({
   await expect(
     page.getByRole('navigation', { name: 'Global navigation' }).getByRole('link'),
   ).toHaveCount(5);
-  await expect(page.getByRole('region', { name: 'Opportunity health' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'What needs attention first' })).toBeVisible();
   await expect(page.getByText('Recommended next action')).toBeVisible();
   await expect(page.getByText('Decision signals')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Progress by stage' })).toBeVisible();
-  await expect(page.getByText('Prepare final human review')).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'How this response typically progresses' }),
+  ).toBeVisible();
 });
 
 test('@ux-proposal-manager follows requirements, checklist, and proposal workflow', async ({
@@ -45,7 +46,7 @@ test('@ux-proposal-manager follows requirements, checklist, and proposal workflo
   await expect(page.getByLabel('Search requirements')).toBeVisible();
   await page.goto(`/w/${PHASE8_DEMO_WORKSPACE_ID}/checklist`);
   await expect(
-    page.getByRole('heading', { name: 'Deterministic checklist and blockers' }),
+    page.getByRole('heading', { name: 'Submission checklist and blockers' }),
   ).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Blocking submission' })).toBeVisible();
   await page.goto(`/w/${PHASE8_DEMO_WORKSPACE_ID}/proposal-audit`);

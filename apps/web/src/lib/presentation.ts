@@ -66,7 +66,7 @@ export const businessDefinitions: Record<string, string> = {
   requires_company_artifact:
     'The RFP requires a company document such as a certificate, license, or insurance record.',
   pending: 'An authorized person has not yet accepted or disputed the machine assessment.',
-  blocked: 'A deterministic rule found work that must be resolved before final review.',
+  blocked: 'Work that must be resolved before final leadership review.',
 };
 
 export function businessLabel(value: string | null | undefined): string {

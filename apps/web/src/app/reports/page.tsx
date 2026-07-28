@@ -30,8 +30,9 @@ export default async function AccountReportsPage() {
             <p className="page-eyebrow">Portfolio reporting</p>
             <h1 className="page-title mt-2">Reports</h1>
             <p className="page-lede mt-3">
-              Open the latest deterministic readiness and proposal-review reports across your
-              authorized opportunities. Reports support final human review; they are not approval.
+              Latest readiness and proposal-review briefings across your opportunities. Open an
+              opportunity’s Final Review to create a new briefing. Reports support leadership
+              judgment; they are not approval to submit.
             </p>
           </div>
         </div>

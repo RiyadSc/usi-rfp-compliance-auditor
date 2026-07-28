@@ -43,6 +43,7 @@ export default async function WorkspaceOverviewPage({
     auditRunResult,
     reportResult,
     eventsResult,
+    phase9RunResult,
   ] = await Promise.all([
     supabase
       .from('documents')
@@ -93,7 +94,43 @@ export default async function WorkspaceOverviewPage({
       .eq('workspace_id', workspaceId)
       .order('created_at', { ascending: false })
       .limit(8),
+    supabase
+      .from('phase9_evaluation_runs')
+      .select('id,status,created_at')
+      .eq('workspace_id', workspaceId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
+
+  const phase9Run = phase9RunResult.data;
+  const [{ count: phase9FindingCount }, { data: phase9Reviews }, { count: phase9BridgeCount }] =
+    phase9Run
+      ? await Promise.all([
+          supabase
+            .from('phase9_findings')
+            .select('id', { count: 'exact', head: true })
+            .eq('workspace_id', workspaceId)
+            .eq('evaluation_run_id', phase9Run.id),
+          supabase
+            .from('phase9_finding_review_decisions')
+            .select('candidate_hash,created_at')
+            .eq('workspace_id', workspaceId)
+            .eq('evaluation_run_id', phase9Run.id)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('phase9_bridge_runs')
+            .select('id', { count: 'exact', head: true })
+            .eq('workspace_id', workspaceId)
+            .eq('evaluation_run_id', phase9Run.id),
+        ])
+      : [
+          { count: 0 },
+          { data: [] as Array<{ candidate_hash: string; created_at: string }> },
+          { count: 0 },
+        ];
+  const phase9Reviewed = new Set((phase9Reviews ?? []).map((row) => row.candidate_hash)).size;
+  const phase9Pending = Math.max(0, (phase9FindingCount ?? 0) - phase9Reviewed);
 
   const latestFindings = new Map<string, LatestFinding>();
   for (const row of findingsResult.data ?? []) {
@@ -159,7 +196,7 @@ export default async function WorkspaceOverviewPage({
         ? {
             label: 'Review submission blockers',
             href: `/w/${workspaceId}/checklist?blocker=yes`,
-            note: `${blockerCount} projected blocker${blockerCount === 1 ? '' : 's'} from Phase 9 findings.`,
+            note: `${blockerCount} projected blocker${blockerCount === 1 ? '' : 's'} from Live Analysis findings.`,
           }
         : {
             label: 'Open Live Analysis',
@@ -172,17 +209,17 @@ export default async function WorkspaceOverviewPage({
           href: `/w/${workspaceId}/documents`,
           note: 'Start by adding the main RFP and addenda.',
         }
-      : requirementCount === 0
+      : requirementCount === 0 && phase9Run?.status === 'completed'
         ? {
-            label: 'Review document processing',
-            href: `/w/${workspaceId}/documents`,
-            note: 'The RFP has not produced requirements yet.',
+            label: 'Review analysis coverage',
+            href: `/w/${workspaceId}/phase9`,
+            note: `${phase9FindingCount ?? 0} source-grounded machine finding${phase9FindingCount === 1 ? '' : 's'} are waiting for team review before the requirement register is built.`,
           }
-        : unresolvedSources > 0
+        : requirementCount === 0
           ? {
-              label: 'Review uncertain requirements',
-              href: `/w/${workspaceId}/requirements?attention=yes`,
-              note: `${unresolvedSources} source assessment${unresolvedSources === 1 ? '' : 's'} need attention.`,
+              label: 'Review document processing',
+              href: `/w/${workspaceId}/documents`,
+              note: 'The RFP has not produced requirements yet.',
             }
           : blockerCount > 0
             ? {
@@ -190,19 +227,31 @@ export default async function WorkspaceOverviewPage({
                 href: `/w/${workspaceId}/checklist?blocker=yes`,
                 note: `${blockerCount} active blocker${blockerCount === 1 ? '' : 's'} could prevent completion.`,
               }
-            : !proposalAudit
+            : unresolvedSources > 0
               ? {
-                  label: 'Review the proposal draft',
-                  href: `/w/${workspaceId}/proposal-audit`,
-                  note: 'Check the response against the submission plan.',
+                  label: 'Review uncertain requirements',
+                  href: `/w/${workspaceId}/requirements?attention=yes`,
+                  note: `${unresolvedSources} source assessment${unresolvedSources === 1 ? '' : 's'} need attention.`,
                 }
-              : {
-                  label: 'Open final review',
-                  href: latestReport
-                    ? `/w/${workspaceId}/reports/${latestReport.id}`
-                    : `/w/${workspaceId}/reports`,
-                  note: 'Prepare the opportunity for final human review.',
-                };
+              : reviewPending > 0
+                ? {
+                    label: 'Record team judgments',
+                    href: `/w/${workspaceId}/requirements?review=pending`,
+                    note: `${reviewPending} machine assessment${reviewPending === 1 ? '' : 's'} still need a person.`,
+                  }
+                : !proposalAudit
+                  ? {
+                      label: 'Review the proposal draft',
+                      href: `/w/${workspaceId}/proposal-audit`,
+                      note: 'Check the response against the submission plan.',
+                    }
+                  : {
+                      label: 'Open final review',
+                      href: latestReport
+                        ? `/w/${workspaceId}/reports/${latestReport.id}`
+                        : `/w/${workspaceId}/reports`,
+                      note: 'Prepare the opportunity for final human review. This does not authorize submission.',
+                    };
 
   const deadlineDays = daysUntil(workspace.deadline);
   const deadlineUrgent = deadlineDays != null && deadlineDays < 0;
@@ -221,10 +270,17 @@ export default async function WorkspaceOverviewPage({
         <div className="relative flex flex-wrap items-start justify-between gap-x-10 gap-y-6">
           <div className="min-w-0 max-w-3xl">
             <div className="flex flex-wrap items-center gap-3">
-              <p className="page-eyebrow">Opportunity command center</p>
+              <p className="page-eyebrow">Opportunity readiness</p>
               <StatusBadge value={workspace.status} />
             </div>
             <h1 className="page-title mt-3">{workspace.name}</h1>
+            <p className="mt-3 max-w-2xl text-base leading-relaxed text-ink">
+              {blockerCount > 0
+                ? `${blockerCount} submission blocker${blockerCount === 1 ? '' : 's'} need attention before leadership review. This view shows risk first — then what to do next.`
+                : reviewPending + phase9Pending > 0
+                  ? `${reviewPending + phase9Pending} assessment${reviewPending + phase9Pending === 1 ? '' : 's'} still need a person. Nothing here authorizes submission.`
+                  : 'See whether this opportunity is blocked, what still needs judgment, and the single best next step.'}
+            </p>
             <p className="mt-3 text-sm text-ink-soft">
               {workspace.customer ?? 'Customer not set'}
               {workspace.deadline ? ` · Response deadline ${formatDate(workspace.deadline)}` : ''}
@@ -283,27 +339,44 @@ export default async function WorkspaceOverviewPage({
       ) : null}
 
       <section
-        aria-label="Opportunity health"
+        aria-label="What needs attention first"
         className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
       >
         <Metric
-          label="Required work complete"
-          value={
-            readiness
-              ? `${readiness.completed_required} of ${readiness.total_required}`
-              : 'Not generated'
-          }
+          label="Submission blockers"
+          value={blockerCount}
           note={
-            readiness
-              ? `${completion}% of required checklist work`
-              : 'Generate a submission plan after verification'
+            blockerCount ? 'Requires action before final review' : 'No active blockers recorded'
           }
+          danger={blockerCount > 0}
         />
         <Metric
-          label="RFP requirements"
-          value={requirementCount}
-          note={`${unresolvedSources} need source attention`}
-          warning={unresolvedSources > 0}
+          label="Team reviews pending"
+          value={reviewPending + phase9Pending}
+          note={
+            phase9Pending
+              ? `${phase9Pending} live-analysis findings await review`
+              : 'Machine findings awaiting a human decision'
+          }
+          warning={reviewPending + phase9Pending > 0}
+        />
+        <Metric
+          label="Company evidence needed"
+          value={proofNeeded}
+          note="Certificates, licenses, or team confirmation"
+          info={proofNeeded > 0}
+        />
+        <Metric
+          label={requirementCount ? 'RFP requirements' : 'AI findings'}
+          value={requirementCount || phase9FindingCount || 0}
+          note={
+            requirementCount
+              ? `${unresolvedSources} need source attention`
+              : phase9BridgeCount
+                ? 'Reviewed findings were published; refresh the requirement register'
+                : 'Not checklist work until a person accepts the source assessment'
+          }
+          warning={unresolvedSources > 0 || (!requirementCount && Boolean(phase9FindingCount))}
         />
         <Metric
           label="Latest proposal review"
@@ -316,24 +389,17 @@ export default async function WorkspaceOverviewPage({
           warning={Boolean(proposalAudit?.finding_count)}
         />
         <Metric
-          label="Submission blockers"
-          value={blockerCount}
-          note={
-            blockerCount ? 'Requires action before final review' : 'No active blockers recorded'
+          label="Required work complete"
+          value={
+            readiness
+              ? `${readiness.completed_required} of ${readiness.total_required}`
+              : 'Not generated'
           }
-          danger={blockerCount > 0}
-        />
-        <Metric
-          label="Company evidence needed"
-          value={proofNeeded}
-          note="Certificates, licenses, or team confirmation"
-          info={proofNeeded > 0}
-        />
-        <Metric
-          label="Team reviews pending"
-          value={reviewPending}
-          note="Machine findings awaiting a human decision"
-          warning={reviewPending > 0}
+          note={
+            readiness
+              ? `${completion}% of required checklist work — not submission approval`
+              : 'Generate a submission plan after verification'
+          }
         />
       </section>
 
@@ -379,137 +445,163 @@ export default async function WorkspaceOverviewPage({
       </section>
 
       <section className="mt-10" aria-labelledby="journey-heading">
-        <div className="mb-4">
-          <p className="section-kicker">Bid journey</p>
-          <h2 id="journey-heading" className="section-title mt-1 text-xl">
-            Progress by stage
-          </h2>
-        </div>
-        <div className="grid gap-3 md:grid-cols-3">
-          <StageCard
-            number="1"
-            kind="Business"
-            title="Create opportunity"
-            summary="Customer, deadline, and response context are established"
-            status="ready"
-            href={`/w/${workspaceId}`}
-            action="Review opportunity"
-          />
-          <StageCard
-            number="2"
-            kind="Business"
-            title="Collect RFP files"
-            summary={`${documentCount} document${documentCount === 1 ? '' : 's'} in this opportunity`}
-            status={documentCount ? 'ready' : 'not_started'}
-            href={`/w/${workspaceId}/documents`}
-            action="Open documents"
-          />
-          <StageCard
-            number="3"
-            kind="Processing"
-            title="Read and organize documents"
-            summary={
-              documentCount
-                ? 'Documents are available for processing review'
-                : 'Waiting for source documents'
-            }
-            status={documentCount ? 'ready' : 'not_started'}
-            href={`/w/${workspaceId}/documents`}
-            action="Check processing"
-          />
-          <StageCard
-            number="4"
-            kind="Review"
-            title="Review RFP requirements"
-            summary={`${requirementCount} requirement${requirementCount === 1 ? '' : 's'} identified`}
-            status={
-              unresolvedSources ? 'needs_follow_up' : requirementCount ? 'ready' : 'not_started'
-            }
-            href={`/w/${workspaceId}/requirements`}
-            action="Review requirements"
-          />
-          <StageCard
-            number="5"
-            kind="Business"
-            title="Build submission checklist"
-            summary={readiness?.summary ?? 'Plan not generated'}
-            status={blockerCount ? 'blocked' : readiness ? 'ready' : 'not_started'}
-            href={`/w/${workspaceId}/checklist`}
-            action="Open submission plan"
-          />
-          <StageCard
-            number="6"
-            kind="Business"
-            title="Assign and complete work"
-            summary={
-              readiness
-                ? `${readiness.completed_required} required tasks completed`
-                : 'Checklist ownership has not started'
-            }
-            status={blockerCount ? 'blocked' : readiness ? 'in_progress' : 'not_started'}
-            href={`/w/${workspaceId}/checklist`}
-            action="Open team work"
-          />
-          <StageCard
-            number="7"
-            kind="Review"
-            title="Review proposal draft"
-            summary={
-              proposalAudit
-                ? `${proposalAudit.finding_count} issue${proposalAudit.finding_count === 1 ? '' : 's'} found in latest review`
-                : 'No completed draft review'
-            }
-            status={
-              proposalAudit?.finding_count
-                ? 'needs_follow_up'
-                : proposalAudit
-                  ? 'ready'
-                  : 'not_started'
-            }
-            href={`/w/${workspaceId}/proposal-audit`}
-            action="Open proposal audit"
-          />
-          <StageCard
-            number="8"
-            kind="Review"
-            title="Resolve issues and decisions"
-            summary={
-              proposalAudit
-                ? `${proposalAudit.finding_count} draft issues require review context`
-                : 'Begins after a proposal review'
-            }
-            status={
-              proposalAudit?.finding_count
-                ? 'needs_follow_up'
-                : proposalAudit
-                  ? 'ready'
-                  : 'not_started'
-            }
-            href={`/w/${workspaceId}/proposal-audit`}
-            action="Review issues"
-          />
-          <StageCard
-            number="9"
-            kind="Business"
-            title="Prepare final human review"
-            summary={
-              latestReport
-                ? `Latest report generated ${formatDate(latestReport.generated_at)}`
-                : 'No executive report generated'
-            }
-            status={latestReport ? 'ready_for_review' : 'not_started'}
-            href={
-              latestReport
-                ? `/w/${workspaceId}/reports/${latestReport.id}`
-                : `/w/${workspaceId}/reports`
-            }
-            action="Open final review"
-          />
-        </div>
-        <p className="text-metadata mt-4">
-          Business steps coordinate the response. Processing steps prepare source material. Review
-          steps require human judgment. Workflow progress never means automatic approval.
-        </p>
+        <details className="surface-card group">
+          <summary className="cursor-pointer list-none px-5 py-4 marker:content-none">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="section-kicker">Optional context</p>
+                <h2 id="journey-heading" className="section-title mt-1 text-lg">
+                  How this response typically progresses
+                </h2>
+              </div>
+              <span className="text-metadata group-open:hidden">Show stages</span>
+              <span className="text-metadata hidden group-open:inline">Hide stages</span>
+            </div>
+          </summary>
+          <div className="border-t border-line-subtle px-5 pb-5 pt-4">
+            <div className="grid gap-3 md:grid-cols-3">
+              <StageCard
+                number="1"
+                kind="Business"
+                title="Create opportunity"
+                summary="Customer, deadline, and response context are established"
+                status="ready"
+                href={`/w/${workspaceId}`}
+                action="Review opportunity"
+              />
+              <StageCard
+                number="2"
+                kind="Business"
+                title="Collect RFP files"
+                summary={`${documentCount} document${documentCount === 1 ? '' : 's'} in this opportunity`}
+                status={documentCount ? 'ready' : 'not_started'}
+                href={`/w/${workspaceId}/documents`}
+                action="Open documents"
+              />
+              <StageCard
+                number="3"
+                kind="Processing"
+                title="Read and organize documents"
+                summary={
+                  documentCount
+                    ? 'Documents are available for processing review'
+                    : 'Waiting for source documents'
+                }
+                status={documentCount ? 'ready' : 'not_started'}
+                href={`/w/${workspaceId}/documents`}
+                action="Check processing"
+              />
+              <StageCard
+                number="4"
+                kind="Review"
+                title="Review RFP requirements"
+                summary={
+                  requirementCount
+                    ? `${requirementCount} reviewed requirement${requirementCount === 1 ? '' : 's'} in the register`
+                    : phase9FindingCount
+                      ? `${phase9FindingCount} machine finding${phase9FindingCount === 1 ? '' : 's'} awaiting controlled review`
+                      : 'No requirements identified yet'
+                }
+                status={
+                  unresolvedSources || (!requirementCount && phase9FindingCount)
+                    ? 'needs_follow_up'
+                    : requirementCount
+                      ? 'ready'
+                      : 'not_started'
+                }
+                href={
+                  requirementCount
+                    ? `/w/${workspaceId}/requirements`
+                    : phase9FindingCount
+                      ? `/w/${workspaceId}/phase9`
+                      : `/w/${workspaceId}/requirements`
+                }
+                action={requirementCount ? 'Review requirements' : 'Review analysis findings'}
+              />
+              <StageCard
+                number="5"
+                kind="Business"
+                title="Build submission checklist"
+                summary={readiness?.summary ?? 'Plan not generated'}
+                status={blockerCount ? 'blocked' : readiness ? 'ready' : 'not_started'}
+                href={`/w/${workspaceId}/checklist`}
+                action="Open submission plan"
+              />
+              <StageCard
+                number="6"
+                kind="Business"
+                title="Assign and complete work"
+                summary={
+                  readiness
+                    ? `${readiness.completed_required} required tasks completed`
+                    : 'Checklist ownership has not started'
+                }
+                status={blockerCount ? 'blocked' : readiness ? 'in_progress' : 'not_started'}
+                href={`/w/${workspaceId}/checklist`}
+                action="Open team work"
+              />
+              <StageCard
+                number="7"
+                kind="Review"
+                title="Review proposal draft"
+                summary={
+                  proposalAudit
+                    ? `${proposalAudit.finding_count} issue${proposalAudit.finding_count === 1 ? '' : 's'} found in latest review`
+                    : 'No completed draft review'
+                }
+                status={
+                  proposalAudit?.finding_count
+                    ? 'needs_follow_up'
+                    : proposalAudit
+                      ? 'ready'
+                      : 'not_started'
+                }
+                href={`/w/${workspaceId}/proposal-audit`}
+                action="Open proposal audit"
+              />
+              <StageCard
+                number="8"
+                kind="Review"
+                title="Resolve issues and decisions"
+                summary={
+                  proposalAudit
+                    ? `${proposalAudit.finding_count} draft issues require review context`
+                    : 'Begins after a proposal review'
+                }
+                status={
+                  proposalAudit?.finding_count
+                    ? 'needs_follow_up'
+                    : proposalAudit
+                      ? 'ready'
+                      : 'not_started'
+                }
+                href={`/w/${workspaceId}/proposal-audit`}
+                action="Review issues"
+              />
+              <StageCard
+                number="9"
+                kind="Business"
+                title="Prepare final human review"
+                summary={
+                  latestReport
+                    ? `Latest report generated ${formatDate(latestReport.generated_at)}`
+                    : 'No executive report generated'
+                }
+                status={latestReport ? 'ready_for_review' : 'not_started'}
+                href={
+                  latestReport
+                    ? `/w/${workspaceId}/reports/${latestReport.id}`
+                    : `/w/${workspaceId}/reports`
+                }
+                action="Open final review"
+              />
+            </div>
+            <p className="text-metadata mt-4">
+              Business steps coordinate the response. Processing steps prepare source material.
+              Review steps require human judgment. Workflow progress never means automatic approval.
+            </p>
+          </div>
+        </details>
       </section>
 
       <section

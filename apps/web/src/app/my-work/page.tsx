@@ -43,8 +43,9 @@ export default async function MyWorkPage({
             <p className="page-eyebrow">Personal work queue</p>
             <h1 className="page-title mt-2">My Work</h1>
             <p className="page-lede mt-3">
-              Your assigned actions across authorized opportunities. Completing a task never changes
-              the underlying RFP evidence or human-review decision.
+              Your assigned checklist actions across opportunities. Open an item to see due date,
+              proof needed, and the linked requirement. Completing a task never changes RFP evidence
+              or a human-review decision.
             </p>
           </div>
         </div>
@@ -126,7 +127,8 @@ export default async function MyWorkPage({
             <EmptyStateArt />
             <h2 className="empty-state-title">No assigned work in this view</h2>
             <p className="empty-state-body">
-              Open an opportunity checklist to review unassigned work.
+              Checklist items appear here when they are assigned to you. Open an opportunity’s
+              submission list to pick up unassigned work, or switch the filter above.
             </p>
             <Link href="/opportunities" className="secondary-action">
               Open opportunities

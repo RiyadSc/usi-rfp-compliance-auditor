@@ -18,7 +18,7 @@ async function signIn(page: Page, which: 'A' | 'B') {
 }
 async function createWorkspace(page: Page, name: string) {
   await page.getByLabel(/Opportunity name/).fill(name);
-  await page.getByRole('button', { name: 'Create workspace' }).click();
+  await page.getByRole('button', { name: 'Create opportunity' }).click();
   await expect(page).toHaveURL(/\/w\/[0-9a-f-]{36}$/);
   return page.url().match(/\/w\/([0-9a-f-]{36})/)![1];
 }

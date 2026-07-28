@@ -114,7 +114,7 @@ export function UploadForm({ workspaceId, supabaseUrl, supabaseAnonKey, maxUploa
             Document type
           </label>
           <select id="documentType" name="documentType" defaultValue="primary_rfp">
-            <option value="primary_rfp">Primary RFP</option>
+            <option value="primary_rfp">Main RFP</option>
             <option value="addendum">Addendum</option>
             <option value="attachment">Attachment</option>
             <option value="proposal_draft">Proposal draft</option>

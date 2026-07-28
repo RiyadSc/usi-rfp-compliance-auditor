@@ -181,7 +181,7 @@ export default async function ChecklistItemPage({
             <strong className="font-semibold text-ink">Due:</strong>{' '}
             {item.due_at
               ? `${formatDate(item.due_at)} · ${item.due_timezone ?? 'timezone not stated'}`
-              : 'No deterministic deadline identified'}
+              : 'No deadline identified from the RFP'}
           </span>
         </p>
       </section>
@@ -209,7 +209,7 @@ export default async function ChecklistItemPage({
                 value={
                   item.due_at
                     ? `${new Date(item.due_at).toLocaleString()} (${item.due_timezone ?? 'timezone not stated'})`
-                    : 'Not deterministically identified'
+                    : 'Not identified from the RFP text'
                 }
               />
               <Field name="Generation" value={item.generation_version} />
@@ -218,7 +218,7 @@ export default async function ChecklistItemPage({
               className="action-link mt-5 inline-flex items-center gap-1.5 text-sm"
               href={`/w/${workspaceId}/requirements/${item.candidate_id}`}
             >
-              Open linked Phase 4 requirement →
+              Open linked requirement →
             </Link>
           </section>
           <section className="surface-card p-5">
@@ -246,8 +246,8 @@ export default async function ChecklistItemPage({
               </ul>
             ) : (
               <p className="mt-3 text-sm text-ink-muted">
-                No exact Phase 4 evidence was eligible for this record. It remains excluded or
-                review-needed.
+                No exact source quote was eligible for this record. It remains excluded or needs
+                review.
               </p>
             )}
           </section>

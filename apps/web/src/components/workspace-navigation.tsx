@@ -10,9 +10,9 @@ export const opportunityNavigation = [
   { id: 'requirements', label: 'Requirements', short: 'Requirements', href: '/requirements' },
   { id: 'checklist', label: 'Submission Checklist', short: 'Checklist', href: '/checklist' },
   { id: 'proposal-audit', label: 'Proposal Review', short: 'Proposal', href: '/proposal-audit' },
-  { id: 'documents', label: 'Documents', short: 'Documents', href: '/documents' },
+  { id: 'reports', label: 'Final Review', short: 'Review', href: '/reports' },
+  { id: 'documents', label: 'Documents', short: 'Files', href: '/documents' },
   { id: 'phase9', label: 'Live Analysis', short: 'Analysis', href: '/phase9' },
-  { id: 'reports', label: 'Reports', short: 'Reports', href: '/reports' },
 ] satisfies Array<{ id: WorkspaceStage; label: string; short: string; href: string }>;
 
 export function WorkspaceNavigation({

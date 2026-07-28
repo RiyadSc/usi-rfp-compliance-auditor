@@ -38,6 +38,20 @@ export default async function ProposalAuditDetailPage({
     .eq('workspace_id', workspaceId)
     .maybeSingle();
   if (!run) notFound();
+  const { data: checklistRun } = await supabase
+    .from('checklist_generation_runs')
+    .select('id,verification_run_id,generator_version')
+    .eq('id', run.checklist_generation_run_id)
+    .eq('workspace_id', workspaceId)
+    .maybeSingle();
+  const { data: bridgeRun } = checklistRun
+    ? await supabase
+        .from('phase9_bridge_runs')
+        .select('id,evaluation_run_id,published_count,bridge_version')
+        .eq('workspace_id', workspaceId)
+        .eq('verification_run_id', checklistRun.verification_run_id)
+        .maybeSingle()
+    : { data: null };
   const [{ data: findings }, { data: coverage }, { data: matches }] = await Promise.all([
     supabase
       .from('proposal_audit_findings')
@@ -129,6 +143,25 @@ export default async function ProposalAuditDetailPage({
         </p>
       </div>
 
+      {bridgeRun ? (
+        <div className="notice notice-info mt-3">
+          <strong className="notice-title">Requirement provenance is connected.</strong>
+          <p className="mt-1">
+            This draft was checked against a submission checklist derived from{' '}
+            {bridgeRun.published_count} human-accepted, source-supported live-analysis findings.
+            Machine source assessments and proposal-review decisions remain separate.
+          </p>
+          <div className="mt-2 flex flex-wrap gap-3">
+            <Link href={`/w/${workspaceId}/requirements`} className="action-link">
+              Open reviewed requirements
+            </Link>
+            <Link href={`/w/${workspaceId}/phase9`} className="action-link">
+              Open source coverage
+            </Link>
+          </div>
+        </div>
+      ) : null}
+
       <section
         aria-label="Draft review summary"
         className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
@@ -158,6 +191,16 @@ export default async function ProposalAuditDetailPage({
             <p className="section-kicker">Input hash</p>
             <p className="mono mt-1.5 break-all text-xs text-ink-soft">{run.input_hash}</p>
           </div>
+          {checklistRun ? (
+            <div className="sm:col-span-3">
+              <p className="section-kicker">Requirement source</p>
+              <p className="mono mt-1.5 break-all text-xs text-ink-soft">
+                {bridgeRun
+                  ? `${bridgeRun.bridge_version} · ${bridgeRun.published_count} published findings`
+                  : checklistRun.generator_version}
+              </p>
+            </div>
+          ) : null}
         </div>
       </details>
 

@@ -167,9 +167,7 @@ test('@demo-critical completes the exact protected synthetic presentation flow',
     await expect(
       page.getByRole('status').filter({ hasText: 'expires in 300 seconds' }),
     ).toBeVisible();
-    await report
-      .getByRole('link', { name: 'Open deterministic report and private export' })
-      .click();
+    await report.getByRole('link', { name: 'Open readiness report and private export' }).click();
     await expect(page.getByText('DEMO — SYNTHETIC DATA — NOT FOR SUBMISSION')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Private exports' })).toBeVisible();
     await expect(page.getByText('prepared-fallback.html')).toBeVisible();

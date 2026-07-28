@@ -25,15 +25,21 @@ export function StatusBadge({
   label,
   tone,
   title,
+  ariaDescribedBy,
 }: {
   value: string;
   label?: string;
   tone?: Tone;
   title?: string;
+  ariaDescribedBy?: string;
 }) {
   const resolved = tone ?? statusTone(value);
   return (
-    <span title={title} className={`badge ${toneClasses[resolved]}`}>
+    <span
+      title={title}
+      aria-describedby={ariaDescribedBy}
+      className={`badge ${toneClasses[resolved]}`}
+    >
       <ToneGlyph tone={resolved} />
       {label ?? businessLabel(value)}
     </span>
@@ -41,14 +47,16 @@ export function StatusBadge({
 }
 
 export function StatusAxis({ label, value, help }: { label: string; value: string; help: string }) {
+  const helpId = `${label.replaceAll(/[^a-zA-Z0-9]+/g, '-').toLowerCase()}-help`;
   return (
     <div className="surface-panel p-4">
-      <p className="metric-label" title={help}>
-        {label}
-      </p>
+      <p className="metric-label">{label}</p>
       <div className="mt-2.5">
-        <StatusBadge value={value} title={help} />
+        <StatusBadge value={value} title={help} ariaDescribedBy={helpId} />
       </div>
+      <p id={helpId} className="mt-2 text-xs leading-relaxed text-ink-muted">
+        {help}
+      </p>
     </div>
   );
 }

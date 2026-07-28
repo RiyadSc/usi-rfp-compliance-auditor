@@ -44,6 +44,13 @@ export default async function RequirementsPage({
     )
     .eq('workspace_id', workspaceId)
     .order('created_at', { ascending: false });
+  const { data: latestPhase9Run } = await supabase
+    .from('phase9_evaluation_runs')
+    .select('id,status,created_at')
+    .eq('workspace_id', workspaceId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
   const candidateIds = (candidates ?? []).map((candidate) => candidate.id);
   const documentIds = [...new Set((candidates ?? []).map((candidate) => candidate.document_id))];
   const { data: documents } = documentIds.length
@@ -141,13 +148,13 @@ export default async function RequirementsPage({
       />
       <div className="page-header">
         <div>
-          <p className="page-eyebrow">Opportunity requirements</p>
+          <p className="page-eyebrow">What the solicitation requires</p>
           <h1 aria-label="Requirement register" className="page-title mt-2">
             Requirements
           </h1>
           <p className="page-lede mt-3">
-            Understand what the RFP requires, whether it is still current, what company evidence is
-            needed, and whether your team has reviewed it.
+            Open an obligation to see the exact RFP language it came from — then decide whether your
+            team accepts that reading.
           </p>
         </div>
         {verificationRun ? (
@@ -158,6 +165,20 @@ export default async function RequirementsPage({
         ) : null}
       </div>
 
+      {!candidates?.length && latestPhase9Run?.status === 'completed' ? (
+        <div className="notice notice-warning mb-6">
+          <strong className="notice-title">Live analysis is waiting for team review.</strong>
+          <p className="mt-1">
+            Machine findings do not enter this register automatically. Review the page coverage and
+            source evidence, record team decisions, then publish only the accepted, source-supported
+            active findings.
+          </p>
+          <Link href={`/w/${workspaceId}/phase9`} className="action-link mt-3 inline-flex">
+            Review analysis coverage and findings →
+          </Link>
+        </div>
+      ) : null}
+
       <section
         aria-label="Requirement summary"
         className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
@@ -165,7 +186,7 @@ export default async function RequirementsPage({
         <Summary
           label="Requirements identified"
           value={candidates?.length ?? 0}
-          note="Immutable extraction candidates"
+          note="From the uploaded solicitation package"
         />
         <Summary
           label="Needs attention"
@@ -176,13 +197,13 @@ export default async function RequirementsPage({
         <Summary
           label="Company evidence needed"
           value={companyProof}
-          note="Proof remains separate from source support"
+          note="Separate from whether the RFP backs the item"
           tone={companyProof ? 'info' : 'neutral'}
         />
         <Summary
           label="Team reviews pending"
           value={pendingReviews}
-          note="Machine-supported is not human-approved"
+          note="Still needs a person — not submission approval"
           tone={pendingReviews ? 'warning' : 'positive'}
         />
       </section>

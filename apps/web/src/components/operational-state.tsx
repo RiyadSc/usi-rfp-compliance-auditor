@@ -18,15 +18,15 @@ export type OperationalState =
 
 const labels: Record<OperationalState, string> = {
   loading: 'Loading',
-  empty: 'No records available',
-  partial: 'Partial result — human review required',
-  parser_uncertain: 'Parser uncertainty — human review required',
+  empty: 'Nothing to show yet',
+  partial: 'Partial result — a person should review before relying on it',
+  parser_uncertain: 'Document needs manual review — the system could not read this reliably',
   unauthorized: 'This workspace resource is unavailable',
-  failed: 'The operation failed safely',
-  stale: 'Cached result is stale and was not used',
-  expired: 'The private download grant has expired',
+  failed: 'Something failed safely — work that already finished was kept',
+  stale: 'This cached result is out of date and was not used',
+  expired: 'The private download link has expired',
   revoked: 'This private export has been revoked',
-  cached: 'Validated cached analysis',
+  cached: 'Using a validated cached analysis',
   fallback: 'Prepared fallback snapshot — synthetic data',
 };
 

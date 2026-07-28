@@ -31,7 +31,7 @@ export function StartExtractionButton({ workspaceId, documentId, canStart }: Pro
           value={mode}
           onChange={(event) => setMode(event.target.value as typeof mode)}
         >
-          <option value="quick_scan">Quick scan — deterministic discovery, no provider</option>
+          <option value="quick_scan">Quick scan — rules-based discovery only</option>
           <option value="standard_analysis">
             Standard analysis — extraction plus independent verification
           </option>

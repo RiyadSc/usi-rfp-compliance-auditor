@@ -1,0 +1,55 @@
+{
+  "rehearsal": "test",
+  "testTitle": "@demo-critical completes the exact protected synthetic presentation flow",
+  "startedAt": "2026-07-27T09:39:38.398Z",
+  "completedAt": "2026-07-27T09:39:59.784Z",
+  "totalDurationMs": 21386,
+  "timings": [
+    {
+      "step": "reset",
+      "durationMs": 119
+    },
+    {
+      "step": "sign_in_and_workspace",
+      "durationMs": 2831
+    },
+    {
+      "step": "requirements_and_evidence",
+      "durationMs": 2306
+    },
+    {
+      "step": "checklist_and_missing_forms",
+      "durationMs": 1429
+    },
+    {
+      "step": "proposal_audit",
+      "durationMs": 4164
+    },
+    {
+      "step": "report_export_and_audit",
+      "durationMs": 6206
+    },
+    {
+      "step": "fallback_and_language_policy",
+      "durationMs": 1471
+    },
+    {
+      "step": "cross_workspace_denial",
+      "durationMs": 1653
+    }
+  ],
+  "reset": {
+    "dryRun": false,
+    "mutated": true,
+    "scopeHash": "968cbb31c9f38fd88f42b315335cf7f644bda461caa8d554275fd3667ef4548c",
+    "finalStateHash": "215f97d1472e013de82fa0e74d1f6821eabc88608ede05f516f956367fde833e"
+  },
+  "cacheMode": "prepared",
+  "fallbackActivated": true,
+  "failures": 0,
+  "retries": 0,
+  "providerCalls": 0,
+  "screenshot": "artifacts/rehearsals/phase8-demo-test.png",
+  "fixtureVersion": "full-roadmap-known-answer-v1",
+  "fingerprint": "c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b"
+}

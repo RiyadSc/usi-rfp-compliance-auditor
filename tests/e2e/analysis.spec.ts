@@ -19,37 +19,40 @@ async function signIn(page: Page, which: 'A' | 'B') {
 
 async function createWorkspace(page: Page, name: string) {
   await page.getByLabel(/Opportunity name/).fill(name);
-  await page.getByRole('button', { name: 'Create workspace' }).click();
+  await page.getByRole('button', { name: 'Create opportunity' }).click();
   await expect(page).toHaveURL(/\/w\/[0-9a-f-]{36}$/, { timeout: 30_000 });
 }
 
 test.describe('candidate extraction', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('start extraction, show states, unverified candidates, source link', async ({ page }) => {
+  test('start extraction, show states, and keep any candidates unverified', async ({ page }) => {
     await signIn(page, 'A');
     await createWorkspace(page, `Extract E2E ${Date.now()}`);
-    await page.getByRole('link', { name: /Open documents/ }).click();
+    await page.getByRole('link', { name: 'Documents', exact: true }).click();
     await page
       .locator('input[type="file"]')
       .setInputFiles(resolve('fixtures/demo-rfp/minimal-text.pdf'));
     await page.getByRole('button', { name: 'Upload' }).click();
     await expect(page).toHaveURL(/\/documents\/[0-9a-f-]{36}/, { timeout: 60_000 });
-    await expect(page.getByText(/\bparsed\b/i).first()).toBeVisible({ timeout: 120_000 });
+    await expect(page.getByRole('button', { name: /Start candidate extraction/i })).toBeEnabled({
+      timeout: 120_000,
+    });
 
     await page.getByRole('button', { name: /Start candidate extraction/i }).click();
     await expect(page).toHaveURL(/\/analysis\/[0-9a-f-]{36}/, { timeout: 30_000 });
-    await expect(page.getByText(/candidate \/ unverified/i).first()).toBeVisible();
-    await expect(page.getByText(/status\s+(queued|running|completed)/i).first()).toBeVisible({
+    await expect(page.getByText(/Everything listed here is a candidate/i)).toBeVisible();
+    await expect(page.getByText(/(Queued|Running|Completed).*Extract/i).first()).toBeVisible({
       timeout: 30_000,
     });
     await expect(page.getByText(/\bcompleted\b/i).first()).toBeVisible({ timeout: 120_000 });
-    await expect(page.getByText(/unverified/i).first()).toBeVisible();
-
     const source = page.getByRole('link', { name: /Source page/i }).first();
     if (await source.isVisible().catch(() => false)) {
+      await expect(page.getByText(/unverified/i).first()).toBeVisible();
       await source.click();
       await expect(page).toHaveURL(/\/documents\/[0-9a-f-]{36}/);
+    } else {
+      await expect(page.getByText('No candidates produced.')).toBeVisible();
     }
   });
 
@@ -119,7 +122,7 @@ test.describe('candidate extraction', () => {
     ]);
 
     await page.goto(`/w/${workspaceId}/analysis/${budgetId}`);
-    await expect(page.getByText(/Phase 3 spend ceiling reached/i)).toBeVisible();
+    await expect(page.getByText(/analysis budget for this environment was reached/i)).toBeVisible();
     await page.goto(`/w/${workspaceId}/analysis/${failId}`);
     await expect(page.getByText(/Extraction failed/i)).toBeVisible();
   });
@@ -127,13 +130,15 @@ test.describe('candidate extraction', () => {
   test('cross-workspace analysis URL shows not found', async ({ page, browser }) => {
     await signIn(page, 'A');
     await createWorkspace(page, `Extract Iso ${Date.now()}`);
-    await page.getByRole('link', { name: /Open documents/ }).click();
+    await page.getByRole('link', { name: 'Documents', exact: true }).click();
     await page
       .locator('input[type="file"]')
       .setInputFiles(resolve('fixtures/demo-rfp/minimal-text.pdf'));
     await page.getByRole('button', { name: 'Upload' }).click();
     await expect(page).toHaveURL(/\/documents\/[0-9a-f-]{36}/, { timeout: 60_000 });
-    await expect(page.getByText(/\bparsed\b/i).first()).toBeVisible({ timeout: 120_000 });
+    await expect(page.getByRole('button', { name: /Start candidate extraction/i })).toBeEnabled({
+      timeout: 120_000,
+    });
     await page.getByRole('button', { name: /Start candidate extraction/i }).click();
     await expect(page).toHaveURL(/\/analysis\/[0-9a-f-]{36}/, { timeout: 30_000 });
     const analysisUrl = page.url();

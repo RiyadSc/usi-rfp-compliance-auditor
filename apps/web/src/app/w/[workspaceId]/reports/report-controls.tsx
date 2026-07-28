@@ -47,8 +47,8 @@ export function ReportGenerationControls({
           setMessage(
             result.ok
               ? result.reused
-                ? 'Existing deterministic report reused.'
-                : 'Deterministic report generated.'
+                ? 'This briefing already exists for that source chain.'
+                : 'Leadership briefing created.'
               : result.error,
           );
           if (result.ok) router.push(`/w/${workspaceId}/reports/${result.snapshotId}`);
@@ -56,16 +56,17 @@ export function ReportGenerationControls({
       }}
     >
       <div>
-        <h2 className="section-title">Generate a versioned report</h2>
+        <h2 className="section-title">Create a leadership briefing</h2>
         <p className="section-lede">
-          Uses persisted Phase 4–6 records only. No model provider is called.
+          Snapshots blockers, open judgments, and missing proof from completed review work. It does
+          not authorize submission.
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="field">
-          <span className="field-label">Source run chain</span>
+          <span className="field-label">Completed draft review</span>
           <select required name="source">
-            <option value="">Select completed proposal audit</option>
+            <option value="">Select a completed proposal review</option>
             {sourceOptions.map((option) => (
               <option key={option.proposalAuditRunId} value={option.proposalAuditRunId}>
                 {option.label}
@@ -74,7 +75,7 @@ export function ReportGenerationControls({
           </select>
         </label>
         <label className="field">
-          <span className="field-label">Report view</span>
+          <span className="field-label">Briefing view</span>
           <select name="reportType">
             <option value="executive">Executive readiness</option>
             <option value="detailed_audit">Detailed audit</option>
@@ -87,7 +88,7 @@ export function ReportGenerationControls({
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <button disabled={pending || !sourceOptions.length} className="primary-action">
-          {pending ? 'Generating…' : 'Generate report'}
+          {pending ? 'Creating…' : 'Create briefing'}
         </button>
         {message ? (
           <p aria-live="polite" className="text-sm text-ink-soft">

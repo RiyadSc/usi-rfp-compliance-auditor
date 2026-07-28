@@ -15,7 +15,7 @@ async function signIn(page: Page, which: 'A' | 'B') {
 }
 async function createWorkspace(page: Page, name: string) {
   await page.getByLabel(/Opportunity name/).fill(name);
-  await page.getByRole('button', { name: 'Create workspace' }).click();
+  await page.getByRole('button', { name: 'Create opportunity' }).click();
   await expect(page).toHaveURL(/\/w\/[0-9a-f-]{36}$/);
   return page.url().match(/\/w\/([0-9a-f-]{36})/)![1];
 }
@@ -433,7 +433,7 @@ test('Phase 6 proposal audit keeps evidence, findings, human decisions, and work
   ]);
 
   await page.goto(`/w/${workspaceId}`);
-  await page.getByRole('link', { name: 'Open proposal audit →' }).click();
+  await page.getByRole('link', { name: 'Proposal Review', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Proposal draft audit' })).toBeVisible();
   await Promise.all([
     page.waitForURL(new RegExp(`/proposal-audit/${ids.auditRun}$`), { timeout: 30_000 }),
@@ -454,11 +454,13 @@ test('Phase 6 proposal audit keeps evidence, findings, human decisions, and work
     'href',
     `/w/${workspaceId}/documents/${ids.sourceDocument}?page=1`,
   );
-  await page.getByLabel('Human decision').selectOption('accepted');
+  await page.getByLabel('Team decision').selectOption('accepted');
   await page.getByLabel('Finding workflow').selectOption('resolved');
   await page.getByLabel('Reason').fill('Synthetic reviewer accepted this machine assessment.');
   await page.getByRole('button', { name: 'Record decision' }).click();
-  await expect(page.getByText('Human decision appended.')).toBeVisible();
+  await expect(
+    page.getByText('Team decision recorded. This does not authorize submission.'),
+  ).toBeVisible();
   await page.goto(`/w/${workspaceId}/proposal-audit/${ids.auditRun}`);
   await expect(page.locator('span').filter({ hasText: /^Resolved$/ })).toBeVisible({
     timeout: 30_000,

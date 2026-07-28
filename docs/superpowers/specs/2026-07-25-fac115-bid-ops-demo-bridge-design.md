@@ -13,7 +13,7 @@ The opportunity **Overview** bid journey (steps 4–9) still reads Phase 4–7 b
 
 For a sales proof that the product can handle a **real public RFP**, the walkthrough must show both:
 
-1. Live Analysis as the accuracy/cost proof, and  
+1. Live Analysis as the accuracy/cost proof, and
 2. The normal bid journey (requirements → checklist → illustrative proposal/report) so the story matches how a security company would work an opportunity.
 
 ## 2. Goals
@@ -47,8 +47,8 @@ Operator-driven video call:
 
 Spoken honesty on the call:
 
-- Files + requirements + checklist projection = real public RFP + live analysis  
-- Proposal/report = illustrative because no confidential bidder draft is in the public package  
+- Files + requirements + checklist projection = real public RFP + live analysis
+- Proposal/report = illustrative because no confidential bidder draft is in the public package
 - Harbor City remains the synthetic full-roadmap sandbox; FAC115 is the real-RFP proof
 
 ## 5. Architecture
@@ -76,7 +76,7 @@ Overview / Requirements / Checklist / Proposal / Reports continue to read only b
 
 Bridge approximately:
 
-- The **23** expected-answer bindings from `artifacts/evaluation/phase9-fac115-expected-vs-actual-v1.json` / frozen expected answers, plus  
+- The **23** expected-answer bindings from `artifacts/evaluation/phase9-fac115-expected-vs-actual-v1.json` / frozen expected answers, plus
 - A small set of mandatory-form / company-proof seeds that create visible checklist blockers.
 
 Do not dump the full seed/finding population into the Director UI.
@@ -109,12 +109,12 @@ Because the public package has no bidder response:
 
 ## 8. Provisioning
 
-| Item | Value |
-|---|---|
-| Lib | `scripts/lib/phase9-fac115-bid-ops-bridge.ts` |
-| Script | `scripts/provision-phase9-fac115-bid-ops-bridge.mts` |
-| npm | `provision:phase9:fac115:bid-ops` |
-| Flag | `PHASE9_BID_OPS_BRIDGE=1` |
+| Item   | Value                                                                                  |
+| ------ | -------------------------------------------------------------------------------------- |
+| Lib    | `scripts/lib/phase9-fac115-bid-ops-bridge.ts`                                          |
+| Script | `scripts/provision-phase9-fac115-bid-ops-bridge.mts`                                   |
+| npm    | `provision:phase9:fac115:bid-ops`                                                      |
+| Flag   | `PHASE9_BID_OPS_BRIDGE=1`                                                              |
 | Guards | Project ref `uxmxkdjschbekkbnweby`; FAC115 workspace binding; refuse identity mismatch |
 
 Deterministic UUIDs in the `80000000-…` namespace for analysis/verification/checklist/proposal/report parents. Idempotent upserts; fail closed on hash/identity drift.
@@ -128,14 +128,14 @@ Deterministic UUIDs in the `80000000-…` namespace for analysis/verification/ch
 
 ## 10. Risks and mitigations
 
-| Risk | Mitigation |
-|---|---|
-| RLS blocks demo user | Add membership for operator/demo identity |
-| Missing `document_pages` breaks evidence FKs | Backfill pages for evidence-bearing docs before findings |
-| Bridging 900 findings floods UI | Curate ~23 + blocker set |
-| Immutable tables make remapping hard | Deterministic IDs + idempotent provision; new IDs only on intentional reset |
-| Report fingerprint requirements | Follow existing Phase 8/report service constraints consciously for demo path |
-| Overclaiming proposal audit | Explicit illustrative labeling |
+| Risk                                         | Mitigation                                                                   |
+| -------------------------------------------- | ---------------------------------------------------------------------------- |
+| RLS blocks demo user                         | Add membership for operator/demo identity                                    |
+| Missing `document_pages` breaks evidence FKs | Backfill pages for evidence-bearing docs before findings                     |
+| Bridging 900 findings floods UI              | Curate ~23 + blocker set                                                     |
+| Immutable tables make remapping hard         | Deterministic IDs + idempotent provision; new IDs only on intentional reset  |
+| Report fingerprint requirements              | Follow existing Phase 8/report service constraints consciously for demo path |
+| Overclaiming proposal audit                  | Explicit illustrative labeling                                               |
 
 ## 11. Success criteria
 

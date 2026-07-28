@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { AnalysisStatusPoller } from './analysis-status-poller';
 import { StartVerificationButton } from '../../requirements/start-verification-button';
+import { WorkspaceNavigation } from '@/components/workspace-navigation';
+import { businessLabel } from '@/lib/presentation';
 
 const uuidSchema = z.string().uuid();
 
@@ -48,30 +50,42 @@ export default async function AnalysisRunPage({
 
   return (
     <main className="page-shell">
+      <WorkspaceNavigation
+        workspaceId={workspaceId}
+        workspaceName={workspace.name}
+        current="documents"
+        compact
+      />
       <nav aria-label="Breadcrumb" className="mb-6">
         <Link
           href={`/w/${workspaceId}/documents/${run.document_id}`}
           className="quiet-link text-sm"
         >
-          ← Document
+          ← Source file
         </Link>
       </nav>
 
       <div className="page-header">
         <div>
-          <h1 className="page-title">Candidate extraction</h1>
+          <p className="page-eyebrow">Requirement discovery</p>
+          <h1 className="page-title">Extracting RFP requirements</h1>
           <p className="page-lede mt-2">
-            status <span className="font-medium capitalize text-ink">{run.status}</span>
-            {run.stage ? ` · stage ${run.stage}` : ''}
-            {run.provider_name ? ` · provider ${run.provider_name}` : ''}
-            {run.extract_model ? ` · model ${run.extract_model}` : ''}
+            {businessLabel(run.status)}
+            {run.stage ? ` · ${businessLabel(run.stage)}` : ''}
+            {active
+              ? ' — this page updates while the system finds candidate obligations.'
+              : ' — candidates below are suggestions until source verification finishes.'}
+          </p>
+          <p className="analyst-only text-metadata mt-2">
+            {[run.provider_name, run.extract_model].filter(Boolean).join(' · ') ||
+              'Provider detail hidden in executive view'}
           </p>
         </div>
       </div>
 
       <p className="notice notice-warning mb-6">
-        All extracted requirements are <strong>candidate / unverified</strong>. Extraction cannot
-        create verified findings.
+        Everything listed here is a <strong>candidate</strong>. Nothing is treated as a verified
+        requirement until source evidence is checked and a person reviews it.
       </p>
 
       <AnalysisStatusPoller active={active} />
@@ -79,14 +93,14 @@ export default async function AnalysisRunPage({
       {run.status === 'failed' || run.status === 'budget_exceeded' ? (
         <p role="alert" className="notice notice-critical mb-4">
           {run.status === 'budget_exceeded'
-            ? 'Phase 3 spend ceiling reached. Request approval before continuing.'
-            : `Extraction failed${run.error_category ? ` (${run.error_category})` : ''}.`}
+            ? 'The analysis budget for this environment was reached. Ask an operator before retrying.'
+            : `Extraction failed${run.error_category ? ` (${businessLabel(run.error_category)})` : ''}. The uploaded file was kept.`}
         </p>
       ) : null}
 
       <section aria-labelledby="candidates-heading" className="mb-8">
         <h2 id="candidates-heading" className="section-title mb-3">
-          Candidates ({candidates?.length ?? 0})
+          Suggested obligations ({candidates?.length ?? 0})
         </h2>
         {candidates && candidates.length > 0 ? (
           <ul className="surface-card divide-y divide-line-subtle overflow-hidden">
@@ -96,7 +110,7 @@ export default async function AnalysisRunPage({
                   <div>
                     <p className="font-medium text-ink">{c.title}</p>
                     <p className="text-metadata mt-1">
-                      {c.category} · {c.mandatory_class} ·{' '}
+                      {businessLabel(c.category)} · {businessLabel(c.mandatory_class)} ·{' '}
                       <span className="uppercase tracking-wide text-warning-400">unverified</span>
                     </p>
                   </div>

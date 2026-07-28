@@ -14,7 +14,7 @@ async function signIn(page: Page, which: 'A' | 'B') {
 }
 async function createWorkspace(page: Page, name: string) {
   await page.getByLabel(/Opportunity name/).fill(name);
-  await page.getByRole('button', { name: 'Create workspace' }).click();
+  await page.getByRole('button', { name: 'Create opportunity' }).click();
   await expect(page).toHaveURL(/\/w\/[0-9a-f-]{36}$/);
   return page.url().match(/\/w\/([0-9a-f-]{36})/)![1];
 }
@@ -524,7 +524,7 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
     await expect(page.getByRole('link', { name: 'Signed Proposal Form A-1' })).not.toBeVisible();
     await page.getByRole('link', { name: 'Clear' }).click();
     await page.getByRole('link', { name: 'Signed Proposal Form A-1' }).click();
-    await expect(page.getByText(/Machine assessment:/)).toBeVisible();
+    await expect(page.getByText('What the RFP requires', { exact: true })).toBeVisible();
     await expect(page.getByText(pages[0], { exact: true }).first()).toBeVisible();
     await expect(page.locator('mark')).toContainText('Proposal Form A-1');
     await expect(page.getByRole('link', { name: 'related requirement' })).toBeVisible();
@@ -540,7 +540,7 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
     await page.getByLabel('Reviewer note').fill('Evidence checked');
     await page.getByRole('button', { name: 'Record review' }).click();
     await expect(page.getByText('Evidence checked')).toBeVisible({ timeout: 30_000 });
-    await page.getByRole('link', { name: /Requirement register/ }).click();
+    await page.getByRole('link', { name: 'Requirement list', exact: true }).click();
     await page.getByRole('link', { name: 'Email submission permitted' }).click();
     await expect(
       page.getByText('Email submissions are not accepted.', { exact: true }).first(),
@@ -549,7 +549,7 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
     await page.getByLabel('Reviewer note').fill('Machine scope is wrong');
     await page.getByRole('button', { name: 'Record review' }).click();
     await expect(page.getByText('Machine scope is wrong')).toBeVisible({ timeout: 30_000 });
-    await page.getByRole('link', { name: /Requirement register/ }).click();
+    await page.getByRole('link', { name: 'Requirement list', exact: true }).click();
     await page.getByRole('link', { name: 'Pending challenge candidate' }).click();
     await expect(page.getByText('succeeded: entails')).toBeVisible();
     await expect(
@@ -558,13 +558,13 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
         .locator('..')
         .getByText('Team review pending', { exact: true }),
     ).toBeVisible();
-    await page.getByRole('link', { name: /Requirement register/ }).click();
+    await page.getByRole('link', { name: 'Requirement list', exact: true }).click();
     await page.getByRole('link', { name: 'Certificate proof' }).click();
     await expect(
       page.getByText(/Challenge failed; this candidate cannot be source-supported/),
     ).toBeVisible();
     await expect(page.getByText('Deterministic/model disagreement')).toBeVisible();
-    await page.getByRole('link', { name: /Requirement register/ }).click();
+    await page.getByRole('link', { name: 'Requirement list', exact: true }).click();
     await page.getByRole('link', { name: 'Unresolved North Campus insurance conflict' }).click();
     await expect(
       page
@@ -572,7 +572,7 @@ test.describe('Phase 4 requirement register and evidence viewer', () => {
         .locator('..')
         .getByText('Conflicting source instructions', { exact: true }),
     ).toBeVisible();
-    await page.getByRole('link', { name: /Requirement register/ }).click();
+    await page.getByRole('link', { name: 'Requirement list', exact: true }).click();
     await page.getByRole('link', { name: 'Image-only obligation' }).click();
     await page.getByLabel('Decision').selectOption('needs_follow_up');
     await page.getByLabel('Reviewer note').fill('Confirm with procurement');

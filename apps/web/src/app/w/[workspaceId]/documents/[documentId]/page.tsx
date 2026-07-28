@@ -5,6 +5,8 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { EvidenceProcessingMark } from '@/components/brand';
 import { IconAlert, IconBlocker } from '@/components/icons';
+import { WorkspaceNavigation } from '@/components/workspace-navigation';
+import { businessLabel } from '@/lib/presentation';
 import { DeleteDocumentButton } from './delete-button';
 import { PageViewer } from './page-viewer';
 import { ParseStatusPoller } from './parse-status-poller';
@@ -193,24 +195,38 @@ export default async function DocumentDetailPage({
 
   return (
     <main className="page-shell">
-      <nav aria-label="Breadcrumb" className="breadcrumb mb-6">
+      <WorkspaceNavigation
+        workspaceId={workspaceId}
+        workspaceName={workspace.name}
+        current="documents"
+        compact
+      />
+      <nav aria-label="Document breadcrumb" className="breadcrumb mb-6">
         <Link href={`/w/${workspaceId}/documents`} className="quiet-link font-medium">
-          ← Documents
+          ← All files
         </Link>
       </nav>
 
       <div className="page-header">
         <div className="min-w-0">
-          <p className="page-eyebrow">Source document</p>
+          <p className="page-eyebrow">Source file</p>
           <h1 className="page-title mt-1.5 break-words">{document.normalized_filename}</h1>
           <p className="mt-3 text-sm text-ink-soft">
-            {document.document_type} · status{' '}
-            <span className="font-medium capitalize text-ink">{document.status}</span>
+            {businessLabel(document.document_type)} ·{' '}
+            <span className="font-medium text-ink">{businessLabel(document.status)}</span>
             {document.page_count != null ? ` · ${document.page_count} pages` : ''}
-            {document.parser_name ? ` · ${document.parser_name}@${document.parser_version}` : ''}
+          </p>
+          <p className="analyst-only text-metadata mt-1.5">
+            {document.parser_name
+              ? `Parser ${document.parser_name}@${document.parser_version}`
+              : 'Parser metadata pending'}
           </p>
           <p className="text-metadata mt-1.5">
             Uploaded {new Date(document.created_at).toLocaleString()}
+          </p>
+          <p className="mt-3 max-w-2xl text-sm text-ink-soft">
+            Inspect page text and tables here when you need to confirm what the system read — or
+            recover a failed parse before continuing.
           </p>
         </div>
         <div className="flex w-full flex-col items-stretch gap-4 sm:w-auto sm:min-w-[18rem]">
@@ -233,7 +249,7 @@ export default async function DocumentDetailPage({
             <IconBlocker size={16} />
           </span>
           <span>
-            Parsing failed
+            Document reading failed
             {document.error_category ? ` (${document.error_category})` : ''}. Review the file and
             re-upload if needed.
           </span>
@@ -244,7 +260,7 @@ export default async function DocumentDetailPage({
         <div className="notice notice-warning rail-warning mb-6">
           <p className="notice-title mb-2">
             <IconAlert size={15} />
-            Parser warnings
+            Document reading warnings
           </p>
           <ul className="list-disc space-y-1 pl-5 text-sm text-ink-soft">
             {(document.warnings as string[]).map((w) => (
@@ -354,7 +370,7 @@ export default async function DocumentDetailPage({
       ) : processing ? (
         <p className="surface-panel flex items-center gap-3 p-5 text-sm text-ink-soft">
           <EvidenceProcessingMark size={22} />
-          Waiting for asynchronous parsing…
+          Waiting for the document to finish reading…
         </p>
       ) : null}
       <StructuredTableEvidence tables={structuredTables} />

@@ -201,3 +201,18 @@ Append-only. Each entry: date, decision, rationale, reversibility, source.
 - 2026-07-22: Replace the leading-page slice with complete deterministic inspection plus `whole-document-selection-v1` bounded batches.
 - 2026-07-22: Adopt complete version-bound cache keys and `targeted-cache-invalidation-v1`; conflicting cache provenance is rejected.
 - 2026-07-22: Context7 documentation for `yauzl` and `fast-xml-parser` informed lazy/strict archive reading and inert OOXML parsing. No provider call occurred.
+
+## Phase 9 controlled workflow decisions (2026-07-27)
+
+- Context7 `/vercel/next.js` confirmed the official patch-line upgrade command and recommendation to
+  stay current for security fixes. The repository used the stable `16.2.12` patch rather than a
+  major upgrade, preview release, or npm's unsafe forced downgrade.
+- **D-UX-001 — Coverage is a first-class result, not a finding count.** The director view reports every selected page, no-requirement decisions, parser uncertainty, unassessed seeds, and high-risk form/deadline exceptions. Page coverage is not labeled as perfect recall.
+- **D-UX-002 — Human review precedes operational publication.** General live findings remain immutable Phase 9 records. Append-only team decisions are required for every finding, and unresolved follow-up blocks the handoff.
+- **D-UX-003 — Phase 9 cannot write Phase 5 directly.** The owner-only `phase9-reviewed-bridge-v1` transaction revalidates source status, precedence, document/page scope, and exact quotation before creating versioned Phase 4 records. The unchanged Phase 5 generator then applies normal eligibility and blocker rules.
+- **D-UX-004 — Non-active and disputed findings remain exceptions.** Rejected, unsupported, contradicted, superseded, conflicting, parser-uncertain, and unreviewed findings remain visible in Phase 9 and cannot silently become checklist obligations.
+- **D-UX-005 — Proposal audit consumes bridge provenance through the checklist.** A proposal audit remains tied to one checklist generation run; the UI exposes when that run originated from reviewed live findings and links back to requirement and coverage evidence.
+- **D-UX-006 — Coverage exceptions are decisions, not decorative warnings.** Parser uncertainty, missing coverage, unassessed seeds, and high-risk pages without findings receive append-only page decisions. The database blocks publication until the current exception set is reviewed with no unresolved follow-up.
+- **D-UX-007 — Idempotent publication still revalidates current review state.** Returning an existing reviewed bridge is allowed only after rechecking the latest finding and page-exception decisions. A later follow-up decision closes the gate again; idempotency cannot bypass current human-review state.
+- **D-UX-008 — Review completeness must not inherit PostgREST's default row cap.** The live-analysis review surface pages through every finding, seed, source-coverage row, usage row, and append-only decision. A large run may be operationally demanding, but it cannot silently present the first 1,000 rows as the complete review population.
+- **D-UX-009 — Apply supported security patches; reject destructive audit suggestions.** Next.js was updated within its supported 16.2 patch line to `16.2.12`, following current official upgrade guidance. ESLint/TypeScript ESLint moved to mutually compatible patched versions. The remaining nested PostCSS/Sharp audit findings have no stable non-breaking resolver in the current Next.js package; the suggested forced downgrade to Next.js 9 was rejected.

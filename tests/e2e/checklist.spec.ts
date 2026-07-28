@@ -26,7 +26,7 @@ async function signIn(page: Page, which: 'A' | 'B') {
 }
 async function createWorkspace(page: Page, name: string) {
   await page.getByLabel(/Opportunity name/).fill(name);
-  await page.getByRole('button', { name: 'Create workspace' }).click();
+  await page.getByRole('button', { name: 'Create opportunity' }).click();
   await expect(page).toHaveURL(/\/w\/[0-9a-f-]{36}$/);
   return page.url().match(/\/w\/([0-9a-f-]{36})/)![1];
 }
@@ -355,7 +355,7 @@ test('Phase 5 checklist detects five missing forms and preserves evidence, workf
 
   await page.goto(`/w/${workspaceId}/checklist`);
   await expect(
-    page.getByRole('heading', { name: 'Deterministic checklist and blockers' }),
+    page.getByRole('heading', { name: 'Submission checklist and blockers' }),
   ).toBeVisible();
   await expect(page.getByText('Blocked by 5 required items')).toBeVisible();
   const blockingGroup = page.getByRole('region', { name: /Blocking submission/ });

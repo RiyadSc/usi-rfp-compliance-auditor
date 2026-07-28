@@ -135,10 +135,7 @@ type PageRow = {
 };
 
 const evalArtifact = JSON.parse(
-  await readFile(
-    resolve('artifacts/evaluation/phase9-fac115-expected-vs-actual-v1.json'),
-    'utf8',
-  ),
+  await readFile(resolve('artifacts/evaluation/phase9-fac115-expected-vs-actual-v1.json'), 'utf8'),
 ) as { rows: Fac115EvalRow[]; matched: number; total: number };
 if (evalArtifact.total !== 23 || evalArtifact.rows.length !== 23)
   throw new Error('phase9_bid_ops_bridge_expected_row_count_mismatch');
@@ -185,9 +182,7 @@ const candidateHashes = [
 ];
 const { data: seeds, error: seedsError } = await admin
   .from('phase9_candidate_seeds')
-  .select(
-    'candidate_hash,requirement_type,obligation_text,evidence_text,source_block_hashes',
-  )
+  .select('candidate_hash,requirement_type,obligation_text,evidence_text,source_block_hashes')
   .eq('evaluation_run_id', EVAL_RUN_ID)
   .eq('workspace_id', FAC115_WORKSPACE_ID)
   .in('candidate_hash', candidateHashes);
@@ -223,16 +218,12 @@ const evidenceHashes = [
 ];
 const { data: coverage, error: coverageError } = await admin
   .from('phase9_source_block_coverage')
-  .select(
-    'block_hash,source_document_id,source_document_key,page_number,sheet_name,cell_range',
-  )
+  .select('block_hash,source_document_id,source_document_key,page_number,sheet_name,cell_range')
   .eq('evaluation_run_id', EVAL_RUN_ID)
   .eq('workspace_id', FAC115_WORKSPACE_ID)
   .in('block_hash', evidenceHashes);
 if (coverageError) throw coverageError;
-const coverageByHash = new Map(
-  (coverage ?? []).map((row) => [row.block_hash, row as CoverageRow]),
-);
+const coverageByHash = new Map((coverage ?? []).map((row) => [row.block_hash, row as CoverageRow]));
 
 const { data: existingPages, error: pagesError } = await admin
   .from('document_pages')
@@ -240,10 +231,7 @@ const { data: existingPages, error: pagesError } = await admin
   .eq('workspace_id', FAC115_WORKSPACE_ID);
 if (pagesError) throw pagesError;
 const pageByDocPage = new Map(
-  (existingPages ?? []).map((page) => [
-    `${page.document_id}:${page.page_number}`,
-    page as PageRow,
-  ]),
+  (existingPages ?? []).map((page) => [`${page.document_id}:${page.page_number}`, page as PageRow]),
 );
 
 const { data: existingParseRuns, error: parseRunsError } = await admin
@@ -598,7 +586,8 @@ for (const item of bridged) {
           : 'missing_mandatory_form',
       severity: 'critical',
       source: 'deterministic_checklist_engine',
-      reason: 'Required company artifact or form is not yet linked for this public-evaluation demo.',
+      reason:
+        'Required company artifact or form is not yet linked for this public-evaluation demo.',
       readiness_impact: 'blocks',
       status: 'open',
       engine_version: 'checklist-blockers-v1',
@@ -746,8 +735,7 @@ await upsert('proposal_claims', {
   proposal_section_id: sectionId,
   stable_key: sha256Text('fac115-proposal-claim:1'),
   claim_type: 'requirement_response',
-  claim_text:
-    'Illustrative claim: company response forms will be completed before submission.',
+  claim_text: 'Illustrative claim: company response forms will be completed before submission.',
   normalized_text:
     'Illustrative claim: company response forms will be completed before submission.',
   page_number: 1,
@@ -849,9 +837,12 @@ const reportRequirements: ReportInput['requirements'] = bridged.map((item) => ({
   findingId: item.findingId,
   candidateId: item.candidateId,
   title: item.title,
-  sourceSupportStatus: item.sourceSupportStatus as ReportInput['requirements'][number]['sourceSupportStatus'],
-  precedenceStatus: item.precedenceStatus as ReportInput['requirements'][number]['precedenceStatus'],
-  proofRequirement: item.proofRequirement as ReportInput['requirements'][number]['proofRequirement'],
+  sourceSupportStatus:
+    item.sourceSupportStatus as ReportInput['requirements'][number]['sourceSupportStatus'],
+  precedenceStatus:
+    item.precedenceStatus as ReportInput['requirements'][number]['precedenceStatus'],
+  proofRequirement:
+    item.proofRequirement as ReportInput['requirements'][number]['proofRequirement'],
   humanReviewStatus: 'pending',
   documentId: item.documentId,
   pageNumber: item.pageNumber,
@@ -885,9 +876,12 @@ const reportChecklist: ReportInput['checklistItems'] = bridged.map((item) => ({
   sourcePageNumber: item.pageNumber,
   sourceQuote: item.quote.slice(0, 2000),
   sourceEvidenceValidated: true,
-  sourceSupportStatus: item.sourceSupportStatus as ReportInput['checklistItems'][number]['sourceSupportStatus'],
-  precedenceStatus: item.precedenceStatus as ReportInput['checklistItems'][number]['precedenceStatus'],
-  proofRequirement: item.proofRequirement as ReportInput['checklistItems'][number]['proofRequirement'],
+  sourceSupportStatus:
+    item.sourceSupportStatus as ReportInput['checklistItems'][number]['sourceSupportStatus'],
+  precedenceStatus:
+    item.precedenceStatus as ReportInput['checklistItems'][number]['precedenceStatus'],
+  proofRequirement:
+    item.proofRequirement as ReportInput['checklistItems'][number]['proofRequirement'],
   humanReviewStatus: 'pending',
   relationshipRole: 'atomic',
 }));

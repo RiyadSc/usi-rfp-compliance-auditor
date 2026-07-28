@@ -31,7 +31,7 @@ export function ProposalAuditControls({
             checklistGenerationRunId: String(data.get('checklistRun')),
             priorDraftId: String(data.get('priorDraft') || '') || null,
           });
-          setMessage(result.ok ? 'Deterministic audit recorded.' : result.error);
+          setMessage(result.ok ? 'Draft review recorded.' : result.error);
           if (result.ok) {
             router.push(`/w/${workspaceId}/proposal-audit/${result.auditRunId}`);
             router.refresh();
@@ -40,10 +40,10 @@ export function ProposalAuditControls({
       }}
     >
       <div>
-        <h2 className="section-title">Start deterministic draft audit</h2>
+        <h2 className="section-title">Start a draft review</h2>
         <p className="section-lede">
-          Select a parsed proposal draft and a completed checklist generation. No model provider is
-          called.
+          Compare a parsed proposal against the current submission list. Exact RFP evidence stays
+          attached to every issue.
         </p>
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
@@ -86,7 +86,7 @@ export function ProposalAuditControls({
           disabled={pending || !documents.length || !checklistRuns.length}
           className="primary-action"
         >
-          {pending ? 'Auditing…' : 'Run proposal audit'}
+          {pending ? 'Auditing…' : 'Compare draft to RFP'}
         </button>
         {message ? (
           <p aria-live="polite" className="text-metadata">

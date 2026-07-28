@@ -1,10 +1,16 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
+import { summarizePhase9Coverage } from '@usi/domain';
 import { StatusBadge } from '@/components/status-badge';
 import { WorkspaceNavigation } from '@/components/workspace-navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { serverEnv } from '@/lib/env';
+import {
+  Phase9CoverageReviewControls,
+  Phase9FindingReviewControls,
+  PublishReviewedFindings,
+} from './finding-review-controls';
 import { LiveAnalysisControls } from './live-analysis-controls';
 
 const uuid = z.string().uuid();
@@ -19,6 +25,35 @@ type Finding = {
   machine_only: boolean;
   human_review_status: string;
 };
+
+type CoverageBlock = {
+  block_hash: string;
+  source_document_id: string;
+  source_document_key: string;
+  page_number: number | null;
+  sheet_name: string | null;
+  cell_range: string | null;
+  route: string;
+  deterministic_signals: unknown;
+};
+
+type PagedResult<T> = {
+  data: T[] | null;
+  error: { message: string } | null;
+};
+
+async function loadAllPages<T>(
+  loadPage: (from: number, to: number) => PromiseLike<PagedResult<T>>,
+): Promise<T[]> {
+  const pageSize = 1000;
+  const rows: T[] = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await loadPage(from, from + pageSize - 1);
+    if (error) throw new Error(`phase9_review_load_failed:${error.message}`);
+    rows.push(...(data ?? []));
+    if (!data || data.length < pageSize) return rows;
+  }
+}
 
 export default async function Phase9AnalysisPage({
   params,
@@ -90,46 +125,129 @@ export default async function Phase9AnalysisPage({
   }
 
   const [
-    { data: findings, count: findingCount },
-    { data: candidates },
-    { data: coverage },
-    { data: usage },
+    findings,
+    candidates,
+    coverage,
+    usage,
+    reviewDecisions,
+    coverageReviewDecisions,
+    bridgeRuns,
   ] = await Promise.all([
-    supabase
-      .from('phase9_findings')
-      .select(
-        'candidate_hash,source_support_status,precedence_status,proof_requirement,evidence_block_hashes,ambiguity_code,machine_only,human_review_status',
-        { count: 'exact' },
-      )
-      .eq('workspace_id', workspaceId)
-      .eq('evaluation_run_id', run.id)
-      .order('created_at')
-      .limit(200),
-    supabase
-      .from('phase9_candidate_seeds')
-      .select('candidate_hash,requirement_type,obligation_text,evidence_text,discovery_route')
-      .eq('workspace_id', workspaceId)
-      .eq('evaluation_run_id', run.id)
-      .limit(2000),
-    supabase
-      .from('phase9_source_block_coverage')
-      .select(
-        'block_hash,source_document_id,source_document_key,page_number,sheet_name,cell_range,route',
-      )
-      .eq('workspace_id', workspaceId)
-      .eq('evaluation_run_id', run.id),
-    supabase
-      .from('phase9_provider_usage')
-      .select('input_tokens,output_tokens,reasoning_tokens,latency_ms,cost_usd')
-      .eq('workspace_id', workspaceId)
-      .eq('evaluation_run_id', run.id),
+    loadAllPages<Finding>((from, to) =>
+      supabase
+        .from('phase9_findings')
+        .select(
+          'candidate_hash,source_support_status,precedence_status,proof_requirement,evidence_block_hashes,ambiguity_code,machine_only,human_review_status',
+        )
+        .eq('workspace_id', workspaceId)
+        .eq('evaluation_run_id', run.id)
+        .order('created_at')
+        .range(from, to),
+    ),
+    loadAllPages<{
+      candidate_hash: string;
+      requirement_type: string;
+      obligation_text: string;
+      evidence_text: string;
+      discovery_route: string;
+      source_block_hashes: string[];
+      material_facts: unknown;
+    }>((from, to) =>
+      supabase
+        .from('phase9_candidate_seeds')
+        .select(
+          'candidate_hash,requirement_type,obligation_text,evidence_text,discovery_route,source_block_hashes,material_facts',
+        )
+        .eq('workspace_id', workspaceId)
+        .eq('evaluation_run_id', run.id)
+        .order('candidate_hash')
+        .range(from, to),
+    ),
+    loadAllPages<CoverageBlock>((from, to) =>
+      supabase
+        .from('phase9_source_block_coverage')
+        .select(
+          'block_hash,source_document_id,source_document_key,page_number,sheet_name,cell_range,route,deterministic_signals',
+        )
+        .eq('workspace_id', workspaceId)
+        .eq('evaluation_run_id', run.id)
+        .order('block_hash')
+        .range(from, to),
+    ),
+    loadAllPages<{
+      input_tokens: number;
+      output_tokens: number;
+      reasoning_tokens: number;
+      latency_ms: number;
+      cost_usd: number;
+    }>((from, to) =>
+      supabase
+        .from('phase9_provider_usage')
+        .select('input_tokens,output_tokens,reasoning_tokens,latency_ms,cost_usd')
+        .eq('workspace_id', workspaceId)
+        .eq('evaluation_run_id', run.id)
+        .order('created_at')
+        .range(from, to),
+    ),
+    loadAllPages<{
+      id: string;
+      candidate_hash: string;
+      decision: string;
+      corrections: unknown;
+      created_at: string;
+    }>((from, to) =>
+      supabase
+        .from('phase9_finding_review_decisions')
+        .select('id,candidate_hash,decision,corrections,created_at')
+        .eq('workspace_id', workspaceId)
+        .eq('evaluation_run_id', run.id)
+        .order('created_at', { ascending: false })
+        .range(from, to),
+    ),
+    loadAllPages<{
+      id: string;
+      source_document_id: string;
+      page_number: number;
+      decision: string;
+      created_at: string;
+    }>((from, to) =>
+      supabase
+        .from('phase9_coverage_review_decisions')
+        .select('id,source_document_id,page_number,decision,created_at')
+        .eq('workspace_id', workspaceId)
+        .eq('evaluation_run_id', run.id)
+        .order('created_at', { ascending: false })
+        .range(from, to),
+    ),
+    loadAllPages<{
+      id: string;
+      verification_run_id: string;
+      published_count: number;
+      created_at: string;
+    }>((from, to) =>
+      supabase
+        .from('phase9_bridge_runs')
+        .select('id,verification_run_id,published_count,created_at')
+        .eq('workspace_id', workspaceId)
+        .eq('evaluation_run_id', run.id)
+        .order('created_at', { ascending: false })
+        .range(from, to),
+    ),
   ]);
+  const { data: documentBindings } = await supabase
+    .from('phase9_evaluation_documents')
+    .select('document_id,page_count,ordinal')
+    .eq('workspace_id', workspaceId)
+    .eq('evaluation_run_id', run.id)
+    .order('ordinal');
   const candidateByHash = new Map(
     (candidates ?? []).map((candidate) => [candidate.candidate_hash, candidate]),
   );
-  const blockByHash = new Map((coverage ?? []).map((block) => [block.block_hash, block]));
-  const rows = (findings ?? []) as Finding[];
-  const totals = (usage ?? []).reduce(
+  const blocks = (coverage ?? []) as CoverageBlock[];
+  const blockByHash = new Map(blocks.map((block) => [block.block_hash, block]));
+  const rows = findings;
+  const findingCount = findings.length;
+  const totals = usage.reduce(
     (sum, item) => ({
       input: sum.input + item.input_tokens,
       output: sum.output + item.output_tokens,
@@ -144,6 +262,118 @@ export default async function Phase9AnalysisPage({
   const humanQueue = rows.filter(
     (finding) => finding.human_review_status === 'pending' || finding.ambiguity_code,
   ).length;
+  const latestReview = new Map<
+    string,
+    { id: string; decision: string; corrections: unknown; created_at: string }
+  >();
+  for (const decision of reviewDecisions ?? [])
+    if (!latestReview.has(decision.candidate_hash))
+      latestReview.set(decision.candidate_hash, decision);
+  const reviewedCount = latestReview.size;
+  const followUpCount = [...latestReview.values()].filter(
+    (decision) => decision.decision === 'needs_follow_up',
+  ).length;
+  const publishableCount = rows.filter(
+    (finding) =>
+      latestReview.get(finding.candidate_hash)?.decision === 'accepted' &&
+      finding.source_support_status === 'supported' &&
+      finding.precedence_status === 'active' &&
+      finding.machine_only &&
+      finding.evidence_block_hashes.length > 0,
+  ).length;
+  const findingBlockHashes = new Set(rows.flatMap((finding) => finding.evidence_block_hashes));
+  const findingCandidateHashes = new Set(rows.map((finding) => finding.candidate_hash));
+  const seedByBlock = new Map<string, Array<{ candidate_hash: string }>>();
+  for (const candidate of candidates ?? []) {
+    for (const blockHash of candidate.source_block_hashes as string[]) {
+      seedByBlock.set(blockHash, [
+        ...(seedByBlock.get(blockHash) ?? []),
+        { candidate_hash: candidate.candidate_hash },
+      ]);
+    }
+  }
+  const coveragePages = new Map<
+    string,
+    {
+      documentId: string;
+      pageNumber: number;
+      route: string;
+      parserUncertain: boolean;
+      hasFinding: boolean;
+      hasSeedWithoutFinding: boolean;
+      hasFormSignal: boolean;
+      hasDeadlineSignal: boolean;
+    }
+  >();
+  for (const block of blocks) {
+    if (!block.page_number) continue;
+    const key = `${block.source_document_id}:${block.page_number}`;
+    const signals = Array.isArray(block.deterministic_signals)
+      ? block.deterministic_signals.map(String)
+      : [];
+    const prior = coveragePages.get(key);
+    const blockSeeds = seedByBlock.get(block.block_hash) ?? [];
+    coveragePages.set(key, {
+      documentId: block.source_document_id,
+      pageNumber: block.page_number,
+      route:
+        prior?.route === 'parser_uncertain' || block.route === 'parser_uncertain'
+          ? 'parser_uncertain'
+          : block.route,
+      parserUncertain: Boolean(prior?.parserUncertain) || block.route === 'parser_uncertain',
+      hasFinding: Boolean(prior?.hasFinding) || findingBlockHashes.has(block.block_hash),
+      hasSeedWithoutFinding:
+        Boolean(prior?.hasSeedWithoutFinding) ||
+        blockSeeds.some((seed) => !findingCandidateHashes.has(seed.candidate_hash)),
+      hasFormSignal:
+        Boolean(prior?.hasFormSignal) ||
+        signals.some((signal) => /form|signature|attachment|schedule/i.test(signal)),
+      hasDeadlineSignal:
+        Boolean(prior?.hasDeadlineSignal) ||
+        signals.some((signal) => /date|deadline|due|time/i.test(signal)),
+    });
+  }
+  const expectedPages = (documentBindings ?? []).flatMap((binding) =>
+    Array.from({ length: binding.page_count }, (_, index) => ({
+      documentId: binding.document_id,
+      pageNumber: index + 1,
+    })),
+  );
+  const coverageSummary = summarizePhase9Coverage({
+    expectedPages,
+    pages: [...coveragePages.values()],
+  });
+  const coverageExceptions = coverageSummary.pages.filter(
+    (page) =>
+      page.parserUncertain ||
+      page.hasSeedWithoutFinding ||
+      page.route === 'missing' ||
+      ((page.hasFormSignal || page.hasDeadlineSignal) && !page.hasFinding),
+  );
+  const latestCoverageReview = new Map<string, { decision: string; created_at: string }>();
+  for (const decision of coverageReviewDecisions ?? []) {
+    const key = `${decision.source_document_id}:${decision.page_number}`;
+    if (!latestCoverageReview.has(key)) latestCoverageReview.set(key, decision);
+  }
+  const coverageReviewedCount = coverageExceptions.filter((page) =>
+    latestCoverageReview.has(`${page.documentId}:${page.pageNumber}`),
+  ).length;
+  const coverageFollowUpCount = coverageExceptions.filter(
+    (page) =>
+      latestCoverageReview.get(`${page.documentId}:${page.pageNumber}`)?.decision ===
+      'needs_follow_up',
+  ).length;
+  const orderedRows = [...rows].sort((left, right) => {
+    const leftException =
+      left.source_support_status !== 'supported' ||
+      left.precedence_status !== 'active' ||
+      Boolean(left.ambiguity_code);
+    const rightException =
+      right.source_support_status !== 'supported' ||
+      right.precedence_status !== 'active' ||
+      Boolean(right.ambiguity_code);
+    return Number(rightException) - Number(leftException);
+  });
 
   return (
     <main className="page-shell">
@@ -178,6 +408,78 @@ export default async function Phase9AnalysisPage({
           label="Actual provider cost"
           value={`$${Number(run.actual_usd ?? totals.cost).toFixed(4)}`}
         />
+      </section>
+
+      <section className="surface-card rail-teal mb-6 p-5" aria-label="Completeness checkpoint">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="section-kicker">Completeness checkpoint</p>
+            <h2 className="section-title mt-1.5">
+              {coverageSummary.reviewedPages} of {coverageSummary.totalPages} pages accounted for
+            </h2>
+            <p className="section-lede mt-2 max-w-3xl">
+              This proves which pages entered the bounded analysis and surfaces exceptions. It does
+              not claim perfect recall; the exception queue is where a person checks possible
+              omissions without rereading the whole package.
+            </p>
+          </div>
+          <StatusBadge
+            value={coverageSummary.exceptionPages ? 'needs_follow_up' : 'ready_for_review'}
+          />
+        </div>
+        <dl className="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <CoverageMetric label="Requirement pages" value={coverageSummary.requirementPages} />
+          <CoverageMetric label="No requirement found" value={coverageSummary.noRequirementPages} />
+          <CoverageMetric label="Parser uncertainty" value={coverageSummary.parserUncertainPages} />
+          <CoverageMetric label="Unexamined pages" value={coverageSummary.unexaminedPages} />
+          <CoverageMetric label="Exception pages" value={coverageSummary.exceptionPages} />
+          <CoverageMetric
+            label="Seeds not assessed"
+            value={
+              (candidates ?? []).filter(
+                (candidate) => !findingCandidateHashes.has(candidate.candidate_hash),
+              ).length
+            }
+          />
+        </dl>
+        {coverageSummary.exceptionPages ? (
+          <details className="disclosure mt-4">
+            <summary>Review page-level exceptions</summary>
+            <div className="disclosure-body">
+              <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {coverageExceptions.map((page) => (
+                  <li key={`${page.documentId}:${page.pageNumber}`} className="surface-inset p-3">
+                    <Link
+                      className="action-link"
+                      href={`/w/${workspaceId}/documents/${page.documentId}?page=${page.pageNumber}`}
+                    >
+                      Page {page.pageNumber}
+                    </Link>
+                    <p className="text-metadata mt-1">
+                      {page.route === 'missing'
+                        ? 'No persisted coverage record'
+                        : page.parserUncertain
+                          ? 'Parser uncertainty'
+                          : page.hasSeedWithoutFinding
+                            ? 'Candidate seed was not assessed'
+                            : 'Form or deadline signal needs confirmation'}
+                    </p>
+                    <Phase9CoverageReviewControls
+                      workspaceId={workspaceId}
+                      evaluationRunId={run.id}
+                      documentId={page.documentId}
+                      pageNumber={page.pageNumber}
+                      currentDecision={
+                        latestCoverageReview.get(`${page.documentId}:${page.pageNumber}`)
+                          ?.decision ?? null
+                      }
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </details>
+        ) : null}
       </section>
 
       <section className="surface-panel p-5">
@@ -219,6 +521,35 @@ export default async function Phase9AnalysisPage({
         </div>
       </section>
 
+      {run.status === 'completed' ? (
+        <section className="mt-6">
+          <PublishReviewedFindings
+            workspaceId={workspaceId}
+            evaluationRunId={run.id}
+            eligibleCount={publishableCount}
+            reviewedCount={reviewedCount}
+            totalCount={rows.length}
+            followUpCount={followUpCount}
+            coverageExceptionCount={coverageExceptions.length}
+            coverageReviewedCount={coverageReviewedCount}
+            coverageFollowUpCount={coverageFollowUpCount}
+          />
+          {bridgeRuns?.[0] ? (
+            <p className="notice notice-info mt-3">
+              {bridgeRuns[0].published_count} reviewed requirements were published to the register.{' '}
+              <Link href={`/w/${workspaceId}/requirements`} className="action-link">
+                Open requirement register
+              </Link>{' '}
+              or{' '}
+              <Link href={`/w/${workspaceId}/checklist`} className="action-link">
+                build the submission checklist
+              </Link>
+              .
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
       <section className="surface-card mt-6 overflow-hidden">
         <div className="border-b border-line-subtle px-5 py-4">
           <h2 className="section-title">Source-grounded findings</h2>
@@ -228,7 +559,7 @@ export default async function Phase9AnalysisPage({
           </p>
         </div>
         <div className="divide-y divide-line-subtle">
-          {rows.map((finding) => {
+          {orderedRows.map((finding) => {
             const candidate = candidateByHash.get(finding.candidate_hash);
             const evidence = finding.evidence_block_hashes
               .map((hash) => blockByHash.get(hash))
@@ -278,6 +609,21 @@ export default async function Phase9AnalysisPage({
                 <p className="text-metadata mt-3">
                   Machine-generated · human review {finding.human_review_status}
                 </p>
+                <details className="disclosure mt-4">
+                  <summary>
+                    {latestReview.has(finding.candidate_hash)
+                      ? 'Update team decision'
+                      : 'Review this finding'}
+                  </summary>
+                  <div className="disclosure-body">
+                    <Phase9FindingReviewControls
+                      workspaceId={workspaceId}
+                      evaluationRunId={run.id}
+                      candidateHash={finding.candidate_hash}
+                      currentDecision={latestReview.get(finding.candidate_hash)?.decision ?? null}
+                    />
+                  </div>
+                </details>
               </article>
             );
           })}
@@ -287,6 +633,15 @@ export default async function Phase9AnalysisPage({
         </div>
       </section>
     </main>
+  );
+}
+
+function CoverageMetric({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="surface-inset p-3">
+      <dt className="metric-label">{label}</dt>
+      <dd className="mt-1 text-lg font-semibold text-ink">{value}</dd>
+    </div>
   );
 }
 

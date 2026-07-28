@@ -40,13 +40,13 @@ async function signIn(page: Page, which: 'A' | 'B') {
 
 async function createWorkspace(page: Page, name: string) {
   await page.getByLabel(/Opportunity name/).fill(name);
-  await page.getByRole('button', { name: 'Create workspace' }).click();
+  await page.getByRole('button', { name: 'Create opportunity' }).click();
   await expect(page).toHaveURL(/\/w\/[0-9a-f-]{36}$/, { timeout: 30_000 });
   await expect(page.getByRole('heading', { name })).toBeVisible();
 }
 
 async function openDocuments(page: Page) {
-  await page.getByRole('link', { name: /Open documents/ }).click();
+  await page.getByRole('link', { name: 'Documents', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Documents', exact: true })).toBeVisible();
 }
 
@@ -55,9 +55,15 @@ async function uploadPdf(page: Page, fixtureRelative: string) {
   await page.getByRole('button', { name: 'Upload' }).click();
 }
 
-/** Poll until document status text matches (uploaded|parsing|parsed|failed…). */
+/** Poll until the document reaches a requested business-facing state. */
 async function waitForStatus(page: Page, pattern: RegExp, timeout = 120_000) {
   await expect(page.getByText(pattern).first()).toBeVisible({ timeout });
+}
+
+async function waitForParsed(page: Page, timeout = 120_000) {
+  await expect(page.getByRole('button', { name: /Start candidate extraction/i })).toBeEnabled({
+    timeout,
+  });
 }
 
 test.describe('document ingestion', () => {
@@ -72,18 +78,14 @@ test.describe('document ingestion', () => {
     await uploadPdf(page, 'fixtures/demo-rfp/minimal-two-page.pdf');
     await expect(page).toHaveURL(/\/documents\/[0-9a-f-]{36}/, { timeout: 60_000 });
 
-    // Processing-state behavior: either intermediate (uploaded/parsing + poller) or parsed.
-    await expect(
-      page.getByText(/status\s+(uploaded|validating|validated|parsing|parsed)\b/i),
-    ).toBeVisible({ timeout: 30_000 });
-    const poller = page.getByText(/Processing asynchronously|Waiting for asynchronous parsing/i);
-    const alreadyParsed = page.getByText(/\bparsed\b/i);
-    // Prefer observable state: poll until parsed (covers intermediate if still visible).
+    // Processing-state behavior: either an intermediate reader or the enabled extraction action.
+    const poller = page.getByText(
+      /Reading the document|Waiting for the document to finish reading/i,
+    );
     if (await poller.isVisible().catch(() => false)) {
       await expect(poller).toBeVisible();
     }
-    await waitForStatus(page, /\bparsed\b/i);
-    await expect(alreadyParsed.first()).toBeVisible();
+    await waitForParsed(page);
 
     await expect(
       page.getByRole('heading', { name: /Extracted text — page 1 of 2/i }),
@@ -103,13 +105,14 @@ test.describe('document ingestion', () => {
     ).toBeVisible();
 
     // Processed-document listing
-    await page.getByRole('link', { name: '← Documents' }).click();
+    await page.getByRole('link', { name: '← All files' }).click();
     await expect(page.getByRole('heading', { name: 'Documents', exact: true })).toBeVisible();
     const listLink = page.getByRole('link', { name: /minimal-two-page\.pdf/i });
     await expect(listLink).toBeVisible();
-    await expect(listLink.getByText('Ready', { exact: true })).toBeVisible();
+    const listItem = page.getByRole('listitem').filter({ has: listLink });
+    await expect(listItem.getByText('Ready', { exact: true })).toBeVisible();
     await listLink.click();
-    await expect(page.getByText(/\bparsed\b/i)).toBeVisible();
+    await waitForParsed(page);
 
     // Deletion / demo reset
     page.once('dialog', (dialog) => dialog.accept());
@@ -126,8 +129,8 @@ test.describe('document ingestion', () => {
     await openDocuments(page);
     await uploadPdf(page, 'fixtures/demo-rfp/minimal-empty.pdf');
     await expect(page).toHaveURL(/\/documents\/[0-9a-f-]{36}/, { timeout: 60_000 });
-    await waitForStatus(page, /\bparsed\b/i);
-    await expect(page.getByText('Parser warnings', { exact: true })).toBeVisible();
+    await waitForParsed(page);
+    await expect(page.getByText('Document reading warnings', { exact: true })).toBeVisible();
     await expect(
       page.getByText(/page 1: (no extractable text|ocr_required)/i).first(),
     ).toBeVisible();
@@ -193,7 +196,7 @@ test.describe('document ingestion', () => {
     await uploadPdf(page, 'fixtures/demo-rfp/malformed.pdf');
     await expect(page).toHaveURL(/\/documents\/[0-9a-f-]{36}/, { timeout: 60_000 });
     await waitForStatus(page, /\bfailed\b|\brejected\b/i, 120_000);
-    await expect(page.getByText(/Parsing failed/i)).toBeVisible();
+    await expect(page.getByText(/Document reading failed/i)).toBeVisible();
   });
 
   test('unauthenticated document URL redirects to login', async ({ page, browser }) => {

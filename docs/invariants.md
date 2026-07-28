@@ -197,3 +197,19 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] Mixed event summaries preserve real question/submission deadlines even when nearby meetings are marked not applicable.
 - [x] Rejected and reclassified candidates are counted with a versioned deterministic reason; no record is silently promoted by exact quotation alone.
 - [x] The immutable New Jersey source replays offline with both official deadlines and a smaller bounded plan; no provider call or paid spend occurred.
+
+## Phase 9 coverage-review bridge invariant result — 2026-07-27
+
+- [x] A raw Phase 9 finding count is never presented as a completed requirement register.
+- [x] Every selected page has an explicit reviewed, no-requirement, uncertain, or unexamined state.
+- [x] “All pages accounted for” is never described as proof of perfect requirement recall.
+- [x] Machine findings and append-only team decisions remain separate.
+- [x] Publication requires a latest team decision for every finding and no unresolved follow-up.
+- [x] Every current parser, missing-page, unassessed-seed, or high-risk omission exception requires
+      a separate page-level decision; unresolved exceptions block publication.
+- [x] Only accepted, source-supported, active findings with exact/normalized-exact same-workspace page evidence enter Phase 4.
+- [x] Unsupported, contradicted, superseded, conflicting, parser-uncertain, rejected, and pending findings cannot become ordinary checklist obligations.
+- [x] Publication is owner-only, transactional, idempotent, versioned, audited, and cross-workspace constrained.
+- [x] Phase 4 candidates remain immutable/unverified proposals; Phase 4 machine findings remain machine-only with separate human decisions.
+- [x] Phase 5 and proposal-audit provenance remain linked to the published finding, exact quote, document, page, and bridge run.
+- [x] No provider call or paid spend is part of coverage review or publication.

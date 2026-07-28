@@ -31,16 +31,25 @@ export function ProposalFindingControls({
             workflowStatus: String(data.get('workflowStatus')),
             reason: String(data.get('reason')),
           });
-          setMessage(result.ok ? 'Human decision appended.' : result.error);
+          setMessage(
+            result.ok
+              ? 'Team decision recorded. This does not authorize submission.'
+              : result.error,
+          );
           if (result.ok) router.refresh();
         });
       }}
     >
+      <p className="text-sm text-ink-soft sm:col-span-2">
+        Records your judgment on this draft issue. It does{' '}
+        <strong className="font-semibold text-ink">not</strong> authorize submission or replace
+        final human review.
+      </p>
       <label className="field">
-        <span className="field-label">Human decision</span>
+        <span className="field-label">Team decision</span>
         <select name="humanStatus">
           <option value="accepted">Accept assessment</option>
-          <option value="rejected">Reject assessment</option>
+          <option value="rejected">Dispute assessment</option>
           <option value="needs_follow_up">Needs follow-up</option>
           <option value="waived">Record waiver</option>
         </select>

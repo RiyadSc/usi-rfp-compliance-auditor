@@ -42,7 +42,10 @@ export function fac115BridgeUuid(
     pfind: '3',
     psec: '4',
   };
-  const h = hex64.toLowerCase().replace(/[^0-9a-f]/g, '').padEnd(64, '0');
+  const h = hex64
+    .toLowerCase()
+    .replace(/[^0-9a-f]/g, '')
+    .padEnd(64, '0');
   return `80000000-0000-4000-${nibble[kind]}${h.slice(0, 3)}-${h.slice(3, 15)}`;
 }
 

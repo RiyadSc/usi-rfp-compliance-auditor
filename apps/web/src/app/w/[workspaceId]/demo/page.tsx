@@ -332,7 +332,7 @@ export default async function Phase8DemoPage({
         </h2>
         <p className="section-lede mt-1">
           Critical blockers, unresolved findings, missing artifacts, source coverage, and review
-          completion are deterministic projections.
+          completion are projected from current findings.
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {executiveMetrics.map((metric) => (
@@ -347,7 +347,7 @@ export default async function Phase8DemoPage({
           className="action-link"
           href={`/w/${workspaceId}/reports/${scope.binding.reportSnapshotId}`}
         >
-          Open deterministic report and private export
+          Open readiness report and private export
         </Link>
         <div className="mt-3">
           <DemoDownloadGrantButton workspaceId={workspaceId} scopeId={PHASE8_SCOPE_ID} />

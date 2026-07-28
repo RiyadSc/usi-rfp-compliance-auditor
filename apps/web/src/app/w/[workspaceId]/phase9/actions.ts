@@ -13,6 +13,7 @@ import {
   phase9StableHash,
   type Phase9WorkspaceDocument,
 } from '@usi/ai';
+import { phase9CoverageReviewInputSchema, phase9FindingReviewInputSchema } from '@usi/domain';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { serverEnv } from '@/lib/env';
@@ -399,6 +400,168 @@ export async function startPhase9WorkspaceAnalysisAction(rawInput: {
     return {
       ok: false,
       error: error instanceof Error ? error.message : 'Live analysis could not be started.',
+    };
+  }
+}
+
+export async function recordPhase9FindingReviewAction(rawInput: {
+  workspaceId: string;
+  evaluationRunId: string;
+  candidateHash: string;
+  decision: string;
+  note?: string;
+  corrections?: {
+    title?: string;
+    category?: string;
+    mandatoryClass?: string;
+  };
+}): Promise<{ ok: true; decisionId: string } | { ok: false; error: string }> {
+  try {
+    const input = phase9FindingReviewInputSchema.parse(rawInput);
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not signed in');
+    const { data: workspace } = await supabase
+      .from('workspaces')
+      .select('id')
+      .eq('id', input.workspaceId)
+      .maybeSingle();
+    if (!workspace) throw new Error('Workspace not found');
+    await enforceRateLimit({
+      operation: 'verification_request',
+      actorId: user.id,
+      workspaceId: input.workspaceId,
+    });
+    const { data, error } = await supabase.rpc('record_phase9_finding_review', {
+      p_workspace_id: input.workspaceId,
+      p_evaluation_run_id: input.evaluationRunId,
+      p_candidate_hash: input.candidateHash,
+      p_decision: input.decision,
+      p_note: input.note,
+      p_corrections: input.corrections,
+    });
+    if (error) throw error;
+    revalidatePath(`/w/${input.workspaceId}`);
+    revalidatePath(`/w/${input.workspaceId}/phase9`);
+    return { ok: true, decisionId: z.string().uuid().parse(data) };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Could not record finding review.',
+    };
+  }
+}
+
+export async function recordPhase9CoverageReviewAction(rawInput: {
+  workspaceId: string;
+  evaluationRunId: string;
+  documentId: string;
+  pageNumber: number;
+  decision: string;
+  note?: string;
+}): Promise<{ ok: true; decisionId: string } | { ok: false; error: string }> {
+  try {
+    const input = phase9CoverageReviewInputSchema.parse(rawInput);
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not signed in');
+    const { data: workspace } = await supabase
+      .from('workspaces')
+      .select('id')
+      .eq('id', input.workspaceId)
+      .maybeSingle();
+    if (!workspace) throw new Error('Workspace not found');
+    await enforceRateLimit({
+      operation: 'verification_request',
+      actorId: user.id,
+      workspaceId: input.workspaceId,
+    });
+    const { data, error } = await supabase.rpc('record_phase9_coverage_review', {
+      p_workspace_id: input.workspaceId,
+      p_evaluation_run_id: input.evaluationRunId,
+      p_source_document_id: input.documentId,
+      p_page_number: input.pageNumber,
+      p_decision: input.decision,
+      p_note: input.note,
+    });
+    if (error) throw error;
+    revalidatePath(`/w/${input.workspaceId}`);
+    revalidatePath(`/w/${input.workspaceId}/phase9`);
+    return { ok: true, decisionId: z.string().uuid().parse(data) };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Could not record coverage review.',
+    };
+  }
+}
+
+export async function publishReviewedPhase9FindingsAction(rawInput: {
+  workspaceId: string;
+  evaluationRunId: string;
+}): Promise<
+  | {
+      ok: true;
+      bridgeRunId: string;
+      analysisRunId: string;
+      verificationRunId: string;
+      publishedCount: number;
+      reused: boolean;
+    }
+  | { ok: false; error: string }
+> {
+  try {
+    const input = z
+      .object({
+        workspaceId: z.string().uuid(),
+        evaluationRunId: z.string().uuid(),
+      })
+      .parse(rawInput);
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not signed in');
+    const { data: membership } = await supabase
+      .from('workspace_members')
+      .select('role')
+      .eq('workspace_id', input.workspaceId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (!membership || membership.role !== 'owner')
+      throw new Error('Only the workspace owner can publish reviewed requirements.');
+    await enforceRateLimit({
+      operation: 'verification_request',
+      actorId: user.id,
+      workspaceId: input.workspaceId,
+    });
+    const { data, error } = await supabase.rpc('publish_phase9_reviewed_findings', {
+      p_workspace_id: input.workspaceId,
+      p_evaluation_run_id: input.evaluationRunId,
+    });
+    if (error) throw error;
+    const result = z
+      .object({
+        bridgeRunId: z.string().uuid(),
+        analysisRunId: z.string().uuid(),
+        verificationRunId: z.string().uuid(),
+        publishedCount: z.number().int().positive(),
+        reused: z.boolean(),
+      })
+      .parse(data);
+    revalidatePath(`/w/${input.workspaceId}`);
+    revalidatePath(`/w/${input.workspaceId}/phase9`);
+    revalidatePath(`/w/${input.workspaceId}/requirements`);
+    revalidatePath(`/w/${input.workspaceId}/checklist`);
+    return { ok: true, ...result };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Could not publish reviewed requirements.',
     };
   }
 }

@@ -71,17 +71,18 @@ export function AppHeader() {
             })}
           </ul>
         </nav>
-        <form action={submitSearch} role="search" className="hidden items-center gap-2 xl:flex">
+        <form action={submitSearch} role="search" className="flex items-center gap-2">
           <label htmlFor="global-search" className="sr-only">
             Search this account
           </label>
-          <div className="search-field w-64">
+          <div className="search-field w-44 sm:w-56 xl:w-64">
             <IconSearch size={16} />
             <input
               id="global-search"
               name="q"
               defaultValue={pathname === '/search' ? (searchParams.get('q') ?? '') : ''}
-              placeholder="Search opportunities and work"
+              placeholder="Search work"
+              className="xl:placeholder:opacity-100"
             />
           </div>
         </form>

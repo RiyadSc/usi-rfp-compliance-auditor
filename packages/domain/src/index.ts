@@ -9,3 +9,4 @@ export * from './checklist';
 export * from './proposal-audit';
 export * from './reporting';
 export * from './hardening';
+export * from './phase9-bridge';

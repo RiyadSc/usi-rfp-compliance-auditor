@@ -363,3 +363,31 @@ See `docs/implementation-plan.md`.
 ## Post-roadmap — Large-document ingestion (COMPLETE)
 
 Mixed-format normalization, structured tables, selective OCR state, durable jobs/work units, targeted page retry, bounded whole-document selection, caching/invalidation, cost estimates/modes, progress/recovery UI, and structured evidence are implemented. Migrations 24–25 are applied to development project `uxmxkdjschbekkbnweby`; all 16 new tables retain RLS. The idempotent 420-page prepared demo and mock evaluation pass with zero provider calls. Unit, integration, isolated mock browser, lint, formatting, type, production-build, dependency, lockfile, secret, and invariant gates pass. General live verification remains disabled.
+
+## Phase 9 completeness and workflow bridge — 2026-07-27
+
+Status: implemented; final repository regression is recorded in the completion handoff.
+
+- Added `phase9-coverage-summary-v1` page accounting and director-facing exception review.
+- Added append-only `phase9-finding-review-v1` decisions with RLS, scoped RPC writes, and audit history.
+- Added append-only `phase9-coverage-review-v1` decisions for page-level omission/parser exceptions.
+- Added owner-only, transactional, idempotent `phase9-reviewed-bridge-v1`.
+- Publication is locked until all findings and current coverage exceptions have team decisions and
+  no follow-up remains unresolved.
+- Only accepted + supported + active + exact-page-evidence findings can enter Phase 4.
+- The overview distinguishes live machine findings from reviewed requirement-register records.
+- Requirements directs incomplete live work back to coverage review instead of a misleading empty state.
+- Standard Phase 5 checklist generation consumes the completed bridge verification run.
+- Proposal audit displays reviewed-live-analysis provenance through its checklist run.
+- Migrations `20260727000029` through `20260727000032` are applied to development project
+  `uxmxkdjschbekkbnweby`. The final reuse guard rechecks the latest finding and page-exception
+  decisions before returning an existing idempotent bridge, so a newly reopened follow-up cannot
+  bypass the publication lock.
+- The coverage/review UI now loads findings, candidate seeds, source coverage, usage, and review
+  history in deterministic 1,000-row pages rather than silently truncating large public-RFP runs.
+- Next.js is patched from `16.2.10` to `16.2.12`; ESLint and TypeScript ESLint are updated to the
+  compatible `10.8.0` / `8.65.0` releases. The repository build, lint, and type gates pass on those
+  versions. The dependency audit still reports three upstream nested Next.js advisories in
+  `postcss@8.4.31` and optional `sharp@0.34.5`; npm offers only an invalid Next.js downgrade, so no
+  force install was accepted.
+- No provider call or paid spend occurred.

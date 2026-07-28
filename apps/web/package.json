@@ -15,7 +15,7 @@
     "@usi/config": "*",
     "@usi/documents": "*",
     "@usi/domain": "*",
-    "next": "^16.1.0",
+    "next": "^16.2.12",
     "pg-boss": "^12.26.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

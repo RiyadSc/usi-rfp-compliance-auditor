@@ -61,13 +61,13 @@ export default async function ProposalAuditPage({
       />
       <div className="page-header">
         <div>
-          <p className="page-eyebrow">Proposal quality review</p>
+          <p className="page-eyebrow">Does the draft answer the RFP?</p>
           <h1 aria-label="Proposal draft audit" className="page-title mt-1.5">
             Proposal Review
           </h1>
           <p className="page-lede mt-2.5">
-            Compare the proposal against the RFP-backed submission plan and focus the team on
-            material issues before final review.
+            Open the latest review to see conflicts, gaps, and claims that still need company proof
+            — beside the original RFP evidence.
           </p>
         </div>
         <div className="page-actions">

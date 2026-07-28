@@ -84,7 +84,7 @@ export default async function DocumentsPage({
         <summary>
           <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
             <span className="text-sm font-semibold text-ink">Upload a document</span>
-            <span className="text-metadata">PDF files only</span>
+            <span className="text-metadata">PDF, Office, HTML, text, images, or ZIP</span>
           </span>
         </summary>
         <div className="disclosure-body">
@@ -98,7 +98,9 @@ export default async function DocumentsPage({
               </span>
             </li>
             <li className="surface-panel p-4">
-              <strong className="text-[0.8125rem] font-semibold text-ink">2. Select the PDF</strong>
+              <strong className="text-[0.8125rem] font-semibold text-ink">
+                2. Select the file
+              </strong>
               <span className="mt-1.5 block text-ink-soft">
                 The file stays private and workspace-scoped.
               </span>
@@ -108,7 +110,7 @@ export default async function DocumentsPage({
                 3. Review processing
               </strong>
               <span className="mt-1.5 block text-ink-soft">
-                Resolve parser warnings before trusting source text.
+                Resolve reading warnings before trusting source text.
               </span>
             </li>
           </ol>

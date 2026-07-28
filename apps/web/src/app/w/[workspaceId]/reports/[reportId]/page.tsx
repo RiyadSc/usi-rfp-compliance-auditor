@@ -139,6 +139,22 @@ export default async function ReportDetailPage({
     ? Math.round((report.summary.completedRequiredItems / report.summary.requiredItems) * 100)
     : 0;
   const blockingTotal = report.summary.criticalBlockers + report.summary.blockingIssues;
+
+  const [{ count: laterReviewCount }, { count: laterProposalResolutionCount }] = await Promise.all([
+    supabase
+      .from('human_review_decisions')
+      .select('id', { count: 'exact', head: true })
+      .eq('workspace_id', workspaceId)
+      .gt('created_at', row.generated_at),
+    supabase
+      .from('proposal_finding_resolutions')
+      .select('id', { count: 'exact', head: true })
+      .eq('workspace_id', workspaceId)
+      .gt('created_at', row.generated_at),
+  ]);
+  const decisionsAfterBriefing = (laterReviewCount ?? 0) + (laterProposalResolutionCount ?? 0);
+  const briefingStale = decisionsAfterBriefing > 0;
+
   return (
     <main className="page-shell">
       {report.demoWatermark ? (
@@ -160,15 +176,32 @@ export default async function ReportDetailPage({
       </Link>
       <div className="page-header mt-5">
         <div>
-          <p className="page-eyebrow">Executive final review</p>
+          <p className="page-eyebrow">Leadership decision support</p>
           <h1 className="page-title mt-2">{label(report.reportType)} report</h1>
           <p className="text-metadata mt-3">
-            Generated <span className="tabular">{new Date(row.generated_at).toLocaleString()}</span>{' '}
-            · revision <span className="tabular">{report.summary.proposalRevision}</span>
+            Point-in-time briefing generated{' '}
+            <span className="tabular">{new Date(row.generated_at).toLocaleString()}</span>
+            {' · '}
+            revision <span className="tabular">{report.summary.proposalRevision}</span>
+            {briefingStale ? ' · Newer team decisions exist' : ''}
           </p>
         </div>
         <StatusBadge value="pending" label="Human decisions remain separate" tone="warning" />
       </div>
+      {briefingStale ? (
+        <aside className="notice notice-warning mt-4" role="status">
+          <strong className="notice-title">This briefing may be out of date.</strong>
+          <div className="mt-2 text-sm">
+            {decisionsAfterBriefing} team decision
+            {decisionsAfterBriefing === 1 ? '' : 's'} were recorded after this snapshot was
+            generated. Create a new briefing before leadership review. This snapshot remains an
+            audit record and is not changed.
+          </div>
+          <Link href={`/w/${workspaceId}/reports`} className="action-link mt-3 inline-flex">
+            Open briefing history
+          </Link>
+        </aside>
+      ) : null}
       <p className="notice notice-info">{report.provenance.humanReviewDisclaimer}</p>
 
       <nav
@@ -489,7 +522,7 @@ export default async function ReportDetailPage({
       </section>
 
       <section className="mt-10" id="requirements">
-        <h2 className="section-title mb-4">Phase 4 source requirements</h2>
+        <h2 className="section-title mb-4">RFP-backed requirements in this briefing</h2>
         <div className="data-frame">
           <div className="data-scroll">
             <table className="data-table">

@@ -69,7 +69,8 @@ export default async function SearchPage({
           <div className="empty-state mt-8">
             <EmptyStateArt />
             <p className="empty-state-body">
-              Enter a business name, form number, requirement, or task.
+              Enter a business name, form number, requirement, or task. Results stay limited to
+              opportunities you are authorized to open.
             </p>
           </div>
         ) : (

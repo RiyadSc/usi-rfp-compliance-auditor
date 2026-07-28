@@ -1,5 +1,38 @@
 # Demo Runbook
 
+## DX0 — Kerry / Justin guided path (minimal narration)
+
+**Workstream:** `docs/ux-discovery/32-dx0-charter.md`
+**North star:** Can a first-time stakeholder understand the product in five minutes?
+**Assume you speak as little as possible** — let the UI carry orientation.
+
+### Preflight
+
+Same as Phase 8 protected full-roadmap demo (provision + reset + live flags off). Use **View for: Director** and Executive view.
+
+### Reveal sequence (click path)
+
+1. **Home** → open Harbor City Full-Roadmap Synthetic Demo.
+2. **Overview** — pause. Let them read: opportunity name, whether blocked, recommended next action. Do not explain the optional stage list unless asked.
+3. **Requirements** → open one mandatory form obligation → show **exact quote** → open **original page**.
+4. **Submission Checklist** → **Blocking submission** group (five missing forms).
+5. **Proposal Review** → open latest run → one conflict/unsupported finding beside RFP evidence → record one human decision if time.
+6. **Final Review** → open briefing → blockers + “human decisions remain separate” + staleness if applicable. Stop.
+
+Skip Documents / Live Analysis unless asked. Skip technical fingerprints unless Justin asks.
+
+### Spoken lines (optional, short)
+
+- “This is decision support with exact source proof — not an autopilot.”
+- “Accepting an assessment is not approving a bid.”
+- “Prepared synthetic demo” stays visible on purpose.
+
+### Observation
+
+Run Session 0 scribe (`20-…`) and score predictions (`31-…`) after the meeting.
+
+---
+
 ## Role-based director walkthrough
 
 Start at Home, leave **View for: Director**, and open the Harbor City Full-Roadmap Synthetic Demo. On Overview, explain the six readiness signals, three decision signals, and recommended next action. Follow the nine-step journey to Requirements; open one requirement, its exact quote, and the original PDF page. In Submission Checklist, show the five items under **Blocking submission**. Switch to **Proposal manager** for requirements/checklist depth, **Contributor** for My Work, and **Technical reviewer** only when showing provenance. End in Reports. Never describe a workflow status as compliance or approval.

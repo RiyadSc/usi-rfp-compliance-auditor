@@ -26,7 +26,7 @@ export function GenerateChecklistButton({
             const result = await generateChecklistAction({ workspaceId, verificationRunId });
             setMessage(
               result.ok
-                ? `Checklist ${result.reused ? 'reused' : 'generated'} deterministically.`
+                ? `Submission list ${result.reused ? 'already up to date' : 'built'} from the verified requirements.`
                 : result.error,
             );
             if (result.ok) router.refresh();
@@ -34,7 +34,7 @@ export function GenerateChecklistButton({
         }
       >
         <IconSpark size={16} className="shrink-0" />
-        {pending ? 'Generating…' : 'Generate deterministic checklist'}
+        {pending ? 'Building…' : 'Build submission list'}
       </button>
       {message ? (
         <p role="status" className="text-metadata max-w-64">
