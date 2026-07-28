@@ -265,7 +265,10 @@ export default async function WorkspaceOverviewPage({
         current="overview"
       />
 
-      <header className="hero-panel texture-nodes mb-6 p-6 lg:p-8">
+      <header
+        className="hero-panel texture-nodes mb-6 p-6 lg:p-8"
+        data-tour-target="opportunity-overview"
+      >
         <EvidenceField className="opacity-25" />
         <div className="relative flex flex-wrap items-start justify-between gap-x-10 gap-y-6">
           <div className="min-w-0 max-w-3xl">
@@ -404,7 +407,10 @@ export default async function WorkspaceOverviewPage({
       </section>
 
       <section className="mt-6 grid gap-4 lg:grid-cols-[1.25fr_0.75fr]">
-        <div className="surface-card rail-teal flex flex-col p-6">
+        <div
+          className="surface-card rail-teal flex flex-col p-6"
+          data-tour-target="next-recommended-action"
+        >
           <p className="section-kicker">Recommended next action</p>
           <h2 className="section-title mt-2 text-xl">{nextAction.label}</h2>
           <p className="mt-2 text-sm text-ink-soft">{nextAction.note}</p>
@@ -413,7 +419,7 @@ export default async function WorkspaceOverviewPage({
             <IconArrowRight size={16} />
           </Link>
         </div>
-        <div className="surface-card p-6">
+        <div className="surface-card p-6" data-tour-target="closing-value">
           <p className="section-kicker">Decision signals</p>
           <ul className="mt-4 space-y-3 text-sm text-ink-soft">
             <Signal

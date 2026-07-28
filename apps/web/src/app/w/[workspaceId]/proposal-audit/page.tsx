@@ -108,7 +108,7 @@ export default async function ProposalAuditPage({
           />
         </div>
       </details>
-      <section className="mt-10">
+      <section className="mt-10" data-tour-target="proposal-audit">
         <div className="mb-4">
           <h2 className="section-title">Completed draft reviews</h2>
           <p className="section-lede">

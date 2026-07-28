@@ -34,7 +34,7 @@ export function PageViewer({
   const base = `/w/${workspaceId}/documents/${documentId}`;
 
   return (
-    <div className="grid gap-5 xl:grid-cols-2">
+    <div className="grid gap-5 xl:grid-cols-2" data-tour-target="source-page-viewer">
       <section
         aria-labelledby="pdf-heading"
         className="surface-card flex min-w-0 flex-col overflow-hidden"

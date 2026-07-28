@@ -60,7 +60,11 @@ export function WorkspaceNavigation({
           Activity
         </Link>
       </div>
-      <nav aria-label="Opportunity stages" className={`stage-nav mb-8 ${compact ? 'text-sm' : ''}`}>
+      <nav
+        aria-label="Opportunity stages"
+        data-tour-target="opportunity-navigation"
+        className={`stage-nav mb-8 ${compact ? 'text-sm' : ''}`}
+      >
         <ol className="flex min-w-max items-center gap-1">
           {opportunityNavigation.map((stage) => {
             const active = stage.id === current;

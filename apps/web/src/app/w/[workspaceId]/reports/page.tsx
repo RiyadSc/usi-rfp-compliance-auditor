@@ -107,7 +107,11 @@ export default async function ReportsPage({
           <ReportGenerationControls workspaceId={workspaceId} sourceOptions={sourceOptions} />
         </div>
       </details>
-      <section className="mt-10" aria-labelledby="report-history">
+      <section
+        className="mt-10"
+        aria-labelledby="report-history"
+        data-tour-target="readiness-report"
+      >
         <h2 id="report-history" className="section-title">
           Executive review history
         </h2>

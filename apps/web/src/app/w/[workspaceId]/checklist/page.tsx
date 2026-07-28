@@ -196,7 +196,11 @@ export default async function ChecklistPage({
         )}
       </div>
       {readiness ? (
-        <section aria-label="Readiness" className="surface-card mb-6 overflow-hidden">
+        <section
+          aria-label="Readiness"
+          data-tour-target="submission-checklist"
+          className="surface-card mb-6 overflow-hidden"
+        >
           <div className="grid divide-y divide-line-subtle sm:grid-cols-4 sm:divide-x sm:divide-y-0">
             <ReadinessMetric
               label="Required work"
