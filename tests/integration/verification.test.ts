@@ -466,15 +466,23 @@ describe('Phase 4 verification persistence and isolation', () => {
       new MockProvider(),
     );
     const svc = admin();
-    const { data: finding } = await svc
-      .from('verification_findings')
-      .select('id')
-      .eq('candidate_id', seed.candidateId)
-      .single();
+    let findingId: string | null = null;
+    await expect
+      .poll(async () => {
+        const { data, error } = await svc
+          .from('verification_findings')
+          .select('id')
+          .eq('candidate_id', seed.candidateId)
+          .maybeSingle();
+        expect(error).toBeNull();
+        findingId = data?.id ?? null;
+        return findingId;
+      })
+      .not.toBeNull();
     const deniedUpdate = await userA
       .from('verification_findings')
       .update({ source_support_status: 'contradicted' })
-      .eq('id', finding!.id)
+      .eq('id', findingId!)
       .select('id');
     expect(deniedUpdate.data ?? []).toEqual([]);
     expect(
@@ -482,13 +490,12 @@ describe('Phase 4 verification persistence and isolation', () => {
         await svc
           .from('verification_findings')
           .select('source_support_status')
-          .eq('id', finding!.id)
+          .eq('id', findingId!)
           .single()
       ).data?.source_support_status,
     ).toBe('supported');
     const foreignDoc = crypto.randomUUID(),
       foreignParse = crypto.randomUUID();
-    const userBId = (await userB.auth.getUser()).data.user!.id;
     await svc.from('documents').insert({
       id: foreignDoc,
       workspace_id: workspaceB,
@@ -529,7 +536,7 @@ describe('Phase 4 verification persistence and isolation', () => {
       .single();
     const cross = await svc.from('verification_evidence').insert({
       workspace_id: workspaceA,
-      finding_id: finding!.id,
+      finding_id: findingId!,
       document_id: foreignDoc,
       document_page_id: foreignPage!.id,
       page_number: 1,
@@ -557,7 +564,7 @@ describe('Phase 4 verification persistence and isolation', () => {
     });
     const mismatchedDocumentPage = await svc.from('verification_evidence').insert({
       workspace_id: workspaceA,
-      finding_id: finding!.id,
+      finding_id: findingId!,
       document_id: sameWorkspaceOtherDocument,
       document_page_id: seed.pageId,
       page_number: 1,

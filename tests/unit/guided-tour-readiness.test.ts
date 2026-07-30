@@ -39,6 +39,10 @@ describe('guided product-tour static readiness', () => {
           version: 'guided-product-tour-v1',
           audience: 'stakeholder_demo',
           demoOnly: true,
+          eligibility: {
+            workspaceMode: 'prepared_demo_only',
+            requiredWorkspaceMarker: 'phase8-synthetic-demo-only',
+          },
           steps: [
             {
               id: 'missing',
@@ -57,5 +61,40 @@ describe('guided product-tour static readiness', () => {
     });
     expect(result.passed).toBe(false);
     expect(result.missingRoutes).toEqual(['/w/:workspaceId/does-not-exist']);
+  });
+
+  it('reports an optional missing target without failing release readiness', () => {
+    const result = evaluateGuidedTourStaticReadiness({
+      definitions: [
+        {
+          id: 'optional-target-test',
+          version: 'guided-product-tour-v1',
+          audience: 'stakeholder_demo',
+          demoOnly: true,
+          eligibility: {
+            workspaceMode: 'prepared_demo_only',
+            requiredWorkspaceMarker: 'phase8-synthetic-demo-only',
+          },
+          steps: [
+            {
+              id: 'optional',
+              order: 1,
+              route: '/w/:workspaceId',
+              targetKey: 'optional-target-that-is-not-present',
+              title: 'Optional context',
+              text: 'This optional context may be unavailable without breaking the prepared tour.',
+              preferredPlacement: 'bottom',
+              interactionRequirement: 'informational',
+              fallbackBehavior: 'optional',
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.missingTargets).toEqual([]);
+    expect(result.optionalMissingTargets).toEqual([
+      'optional-target-test:optional:optional-target-that-is-not-present',
+    ]);
+    expect(result.checks.requiredTargetsAvailable).toBe(true);
   });
 });

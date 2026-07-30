@@ -45,6 +45,8 @@ describe('New Jersey Phase 9 review-acceleration evaluation', () => {
     expect(result.acceleratedReview.estimatedFindingInteractionsAfter).toBeLessThan(
       result.acceleratedReview.estimatedFindingInteractionsBefore,
     );
+    expect(result.acceleratedReview.estimatedFindingInteractionsAfter).toBe(109);
+    expect(result.acceleratedReview.estimatedTotalInteractionsAfter).toBe(147);
     expect(result.acceleratedReview.unchangedCoverageExceptionInteractions).toBe(38);
     expect(result.safety.publicationRulesUnchanged).toBe(true);
     expect(result.safety.machineAcceptanceIntroduced).toBe(false);

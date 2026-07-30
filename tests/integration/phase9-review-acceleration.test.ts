@@ -22,6 +22,8 @@ const candidateHashes = {
   exception: sha('phase9-review-acceleration:exception'),
   duplicateA: sha('phase9-review-acceleration:duplicate-a'),
   duplicateB: sha('phase9-review-acceleration:duplicate-b'),
+  emptyQuote: sha('phase9-review-acceleration:empty-quote'),
+  electronic: sha('phase9-review-acceleration:electronic-submission'),
 };
 
 const requirements = {
@@ -31,6 +33,8 @@ const requirements = {
   critical: 'Bid submissions are due September 1, 2027 at 2:00 PM.',
   exception: 'The contractor shall provide aerial surveillance.',
   duplicate: 'The contractor shall maintain a quality-management log.',
+  emptyQuote: 'The contractor shall maintain a current escalation roster.',
+  electronic: 'The bidder shall upload the proposal through the procurement portal.',
 };
 
 async function insertFixture() {
@@ -200,6 +204,25 @@ async function insertFixture() {
       text: requirements.duplicate,
       facts: { subject: 'contractor', action: 'maintain quality-management log' },
     },
+    {
+      hash: candidateHashes.emptyQuote,
+      key: 'emptyQuote',
+      type: 'other',
+      text: requirements.emptyQuote,
+      evidence: '',
+      facts: { subject: 'contractor', action: 'maintain escalation roster' },
+    },
+    {
+      hash: candidateHashes.electronic,
+      key: 'electronic',
+      type: 'other',
+      text: requirements.electronic,
+      facts: {
+        subject: 'bidder',
+        action: 'upload proposal',
+        submissionMethod: 'procurement portal',
+      },
+    },
   ];
   expect(
     (
@@ -211,7 +234,7 @@ async function insertFixture() {
           source_block_hashes: [blockHashByKey[seed.key]],
           requirement_type: seed.type,
           obligation_text: seed.text,
-          evidence_text: seed.text,
+          evidence_text: 'evidence' in seed ? seed.evidence : seed.text,
           material_facts: seed.facts,
           discovery_route: 'deterministic',
           miner_version: 'phase9-deterministic-miner-v1',
@@ -235,6 +258,22 @@ async function insertFixture() {
       )
     ).error,
   ).toBeNull();
+  expect(
+    (
+      await admin.from('phase9_candidate_seeds').insert({
+        workspace_id: workspaceId,
+        evaluation_run_id: runId,
+        candidate_hash: sha('phase9-review-acceleration:coverage-unassessed'),
+        source_block_hashes: [blockHashByKey.critical],
+        requirement_type: 'other',
+        obligation_text: 'An intentionally unassessed coverage signal.',
+        evidence_text: requirements.critical,
+        material_facts: { testOnlyCoverageException: true },
+        discovery_route: 'coverage_sweep',
+        miner_version: 'phase9-deterministic-miner-v1',
+      })
+    ).error,
+  ).toBeNull();
 }
 
 beforeAll(async () => {
@@ -247,6 +286,15 @@ beforeAll(async () => {
   actorB = (await userB.auth.getUser()).data.user!.id;
   workspaceId = await createTestWorkspace(userA, `phase9 review acceleration ${Date.now()}`);
   await insertFixture();
+  const initialCoverageDecision = await userA.rpc('record_phase9_coverage_review', {
+    p_workspace_id: workspaceId,
+    p_evaluation_run_id: runId,
+    p_source_document_id: documentId,
+    p_page_number: 1,
+    p_decision: 'accepted',
+    p_note: 'Initial source-page coverage was reviewed for the fixture.',
+  });
+  expect(initialCoverageDecision.error).toBeNull();
 });
 
 describe('Phase 9 review acceleration persistence', () => {
@@ -260,9 +308,20 @@ describe('Phase 9 review acceleration persistence', () => {
       p_page_size: 25,
     });
     expect(ownQueue.error).toBeNull();
-    expect(ownQueue.data).toMatchObject({ total: 7, page: 1, pageSize: 25 });
+    expect(ownQueue.data).toMatchObject({ total: 9, page: 1, pageSize: 25 });
 
-    const foreignSummary = await userB.rpc('get_phase9_review_summary', {
+    const ownDashboard = await userA.rpc('get_phase9_review_dashboard_v1', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+    });
+    expect(ownDashboard.error).toBeNull();
+    expect(ownDashboard.data).toMatchObject({
+      version: 'phase9-review-priority-v1',
+      totalFindings: 9,
+      publicationEligible: false,
+    });
+
+    const foreignSummary = await userB.rpc('get_phase9_review_dashboard_v1', {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
     });
@@ -278,11 +337,89 @@ describe('Phase 9 review acceleration persistence', () => {
     }
   });
 
+  it('keeps SQL category classification aligned with review-lane business semantics', async () => {
+    const cases = [
+      {
+        type: 'deadline',
+        obligation: 'Questions must be submitted by August 12, 2027.',
+        facts: {},
+        expected: 'question_deadline',
+      },
+      {
+        type: 'form',
+        obligation: 'Submit the mandatory cost proposal form.',
+        facts: { formReference: 'Cost-1' },
+        expected: 'pricing_form',
+      },
+      {
+        type: 'other',
+        obligation: 'The bidder shall acknowledge Addendum 2.',
+        facts: {},
+        expected: 'addendum_acknowledgment',
+      },
+      {
+        type: 'other',
+        obligation: 'Upload the proposal through the procurement portal.',
+        facts: {},
+        expected: 'electronic_submission',
+      },
+      {
+        type: 'other',
+        obligation: 'Deliver three sealed hard copies.',
+        facts: {},
+        expected: 'physical_submission',
+      },
+      {
+        type: 'other',
+        obligation: 'Provide the required certification.',
+        facts: {},
+        expected: 'certification',
+      },
+      {
+        type: 'other',
+        obligation: 'List and identify every proposed subcontractor.',
+        facts: {},
+        expected: 'subcontractor_disclosure',
+      },
+    ] as const;
+
+    for (const item of cases) {
+      const result = await userA.rpc('phase9_review_category_v1', {
+        p_requirement_type: item.type,
+        p_obligation_text: item.obligation,
+        p_material_facts: item.facts,
+      });
+      expect(result.error).toBeNull();
+      expect(result.data).toBe(item.expected);
+    }
+  });
+
+  it('fails closed when quotation evidence is empty even though its page exists', async () => {
+    const queue = await userA.rpc('get_phase9_review_queue', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_lane: 'exception',
+      p_search: requirements.emptyQuote,
+      p_page: 1,
+      p_page_size: 10,
+    });
+    expect(queue.error).toBeNull();
+    expect(queue.data.rows).toEqual([
+      expect.objectContaining({
+        candidate_hash: candidateHashes.emptyQuote,
+        quote_match_type: 'not_found',
+        review_lane: 'exception',
+        lane_reason: 'quotation_not_validated',
+        batch_accept_eligible: false,
+      }),
+    ]);
+  });
+
   it('records one append-only decision per selected finding under one shared batch ID', async () => {
     const idempotencyKey = randomUUID();
     const reviewSessionId = randomUUID();
     const selected = [candidateHashes.routineA, candidateHashes.routineB];
-    const first = await userA.rpc('record_phase9_review_batch', {
+    const batchInput = {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
       p_candidate_hashes: selected,
@@ -290,12 +427,22 @@ describe('Phase 9 review acceleration persistence', () => {
       p_reason: '',
       p_idempotency_key: idempotencyKey,
       p_review_session_id: reviewSessionId,
-    });
+    };
+    // Sequential duplicate delivery under suite load: concurrent identical batch
+    // RPCs can contend on the same idempotency row and hit statement_timeout.
+    const first = await userA.rpc('record_phase9_review_batch_v2', batchInput);
     expect(first.error).toBeNull();
     expect(first.data).toMatchObject({
       action: 'accept_routine',
       selectionCount: 2,
       reused: false,
+    });
+    const second = await userA.rpc('record_phase9_review_batch_v2', batchInput);
+    expect(second.error).toBeNull();
+    expect(second.data).toMatchObject({
+      batchOperationId: first.data.batchOperationId,
+      selectionCount: 2,
+      reused: true,
     });
     const batchId = first.data.batchOperationId as string;
 
@@ -320,8 +467,25 @@ describe('Phase 9 review acceleration persistence', () => {
         prior_decision_id: null,
       });
     }
+    const batchRecord = await userA
+      .from('phase9_review_batch_operations')
+      .select('reason')
+      .eq('id', batchId)
+      .single();
+    expect(batchRecord.error).toBeNull();
+    expect(batchRecord.data?.reason).toContain('server-owned batch policy');
+    const activitySummary = await userA.rpc('get_phase9_review_activity_summary', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_review_session_id: reviewSessionId,
+    });
+    expect(activitySummary.error).toBeNull();
+    expect(activitySummary.data).toMatchObject({
+      batchOperations: 1,
+      batchDecisions: 2,
+    });
 
-    const repeat = await userA.rpc('record_phase9_review_batch', {
+    const repeat = await userA.rpc('record_phase9_review_batch_v2', {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
       p_candidate_hashes: [...selected].reverse(),
@@ -345,7 +509,7 @@ describe('Phase 9 review acceleration persistence', () => {
       ).data,
     ).toHaveLength(2);
 
-    const identityMismatch = await userA.rpc('record_phase9_review_batch', {
+    const identityMismatch = await userA.rpc('record_phase9_review_batch_v2', {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
       p_candidate_hashes: [candidateHashes.routineA],
@@ -359,7 +523,7 @@ describe('Phase 9 review acceleration persistence', () => {
 
   it('rolls back an entire stale or ineligible batch and refuses critical batch follow-up', async () => {
     const mixedKey = randomUUID();
-    const mixed = await userA.rpc('record_phase9_review_batch', {
+    const mixed = await userA.rpc('record_phase9_review_batch_v2', {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
       p_candidate_hashes: [candidateHashes.routineStale, candidateHashes.critical],
@@ -384,11 +548,13 @@ describe('Phase 9 review acceleration persistence', () => {
         await userA
           .from('phase9_finding_review_decisions')
           .select('candidate_hash')
+          .eq('workspace_id', workspaceId)
+          .eq('evaluation_run_id', runId)
           .in('candidate_hash', [candidateHashes.routineStale, candidateHashes.critical])
       ).data,
     ).toEqual([]);
 
-    const criticalFollowUp = await userA.rpc('record_phase9_review_batch', {
+    const criticalFollowUp = await userA.rpc('record_phase9_review_batch_v2', {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
       p_candidate_hashes: [candidateHashes.critical],
@@ -411,7 +577,7 @@ describe('Phase 9 review acceleration persistence', () => {
     });
     expect(individual.error).toBeNull();
     const staleKey = randomUUID();
-    const stale = await userA.rpc('record_phase9_review_batch', {
+    const stale = await userA.rpc('record_phase9_review_batch_v2', {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
       p_candidate_hashes: [candidateHashes.routineStale],
@@ -447,7 +613,7 @@ describe('Phase 9 review acceleration persistence', () => {
     const duplicateHash = queue.data.rows[0].candidate_hash as string;
     expect([candidateHashes.duplicateA, candidateHashes.duplicateB]).toContain(duplicateHash);
 
-    const rejected = await userA.rpc('record_phase9_review_batch', {
+    const rejected = await userA.rpc('record_phase9_review_batch_v2', {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
       p_candidate_hashes: [duplicateHash],
@@ -476,11 +642,11 @@ describe('Phase 9 review acceleration persistence', () => {
           .eq('workspace_id', workspaceId)
           .eq('evaluation_run_id', runId)
       ).data,
-    ).toHaveLength(7);
+    ).toHaveLength(9);
   });
 
   it('denies cross-workspace batches and direct or privileged history mutation', async () => {
-    const foreign = await userB.rpc('record_phase9_review_batch', {
+    const foreign = await userB.rpc('record_phase9_review_batch_v2', {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
       p_candidate_hashes: [candidateHashes.critical],
@@ -528,6 +694,35 @@ describe('Phase 9 review acceleration persistence', () => {
     );
   });
 
+  it('revokes the superseded broad batch and activity RPCs from authenticated users', async () => {
+    const oldBatch = await userA.rpc('record_phase9_review_batch', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_candidate_hashes: [candidateHashes.critical],
+      p_action: 'mark_follow_up',
+      p_reason: 'The retired entry point must not remain callable.',
+      p_idempotency_key: randomUUID(),
+      p_review_session_id: randomUUID(),
+    });
+    expect(oldBatch.error).not.toBeNull();
+    expect(oldBatch.error?.message).toMatch(/permission denied|schema cache|could not find/i);
+
+    const oldActivity = await userA.rpc('record_phase9_review_activity', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_event_type: 'finding_opened',
+      p_review_session_id: randomUUID(),
+      p_idempotency_key: randomUUID(),
+      p_candidate_hash: candidateHashes.critical,
+      p_source_document_id: null,
+      p_page_number: null,
+      p_batch_operation_id: null,
+      p_metadata: {},
+    });
+    expect(oldActivity.error).not.toBeNull();
+    expect(oldActivity.error?.message).toMatch(/permission denied|schema cache|could not find/i);
+  });
+
   it('keeps privacy-safe activity idempotent, isolated, and outside publication logic', async () => {
     const before = await userA.rpc('get_phase9_review_summary', {
       p_workspace_id: workspaceId,
@@ -536,64 +731,74 @@ describe('Phase 9 review acceleration persistence', () => {
     expect(before.error).toBeNull();
     const reviewSessionId = randomUUID();
     const idempotencyKey = randomUUID();
-    const event = await userA.rpc('record_phase9_review_activity', {
+    const event = await userA.rpc('record_phase9_observational_activity_v1', {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
+      p_event_type: 'finding_opened',
       p_review_session_id: reviewSessionId,
       p_idempotency_key: idempotencyKey,
-      p_event_type: 'finding_opened',
       p_candidate_hash: candidateHashes.critical,
       p_source_document_id: null,
       p_page_number: null,
-      p_batch_operation_id: null,
       p_metadata: { lane: 'critical' },
     });
     expect(event.error).toBeNull();
     expect(typeof event.data).toBe('string');
-    const repeat = await userA.rpc('record_phase9_review_activity', {
+    const repeat = await userA.rpc('record_phase9_observational_activity_v1', {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
+      p_event_type: 'finding_opened',
       p_review_session_id: reviewSessionId,
       p_idempotency_key: idempotencyKey,
-      p_event_type: 'finding_opened',
       p_candidate_hash: candidateHashes.critical,
       p_source_document_id: null,
       p_page_number: null,
-      p_batch_operation_id: null,
       p_metadata: { lane: 'critical' },
     });
     expect(repeat.error).toBeNull();
     expect(repeat.data).toBe(event.data);
 
-    const identityMismatch = await userA.rpc('record_phase9_review_activity', {
+    const identityMismatch = await userA.rpc('record_phase9_observational_activity_v1', {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
+      p_event_type: 'finding_opened',
       p_review_session_id: reviewSessionId,
       p_idempotency_key: idempotencyKey,
-      p_event_type: 'finding_opened',
       p_candidate_hash: candidateHashes.routineStale,
       p_source_document_id: null,
       p_page_number: null,
-      p_batch_operation_id: null,
       p_metadata: { lane: 'routine' },
     });
     expect(identityMismatch.error?.message).toContain(
       'review activity idempotency identity mismatch',
     );
 
-    const prohibited = await userA.rpc('record_phase9_review_activity', {
+    const prohibited = await userA.rpc('record_phase9_observational_activity_v1', {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
+      p_event_type: 'finding_opened',
       p_review_session_id: randomUUID(),
       p_idempotency_key: randomUUID(),
-      p_event_type: 'finding_opened',
       p_candidate_hash: candidateHashes.critical,
       p_source_document_id: null,
       p_page_number: null,
-      p_batch_operation_id: null,
       p_metadata: { quotationText: 'must not be stored' },
     });
     expect(prohibited.error?.message).toContain('review activity metadata is not permitted');
+    const fabricatedDecision = await userA.rpc('record_phase9_observational_activity_v1', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_event_type: 'individual_decision_recorded',
+      p_review_session_id: randomUUID(),
+      p_idempotency_key: randomUUID(),
+      p_candidate_hash: candidateHashes.critical,
+      p_source_document_id: null,
+      p_page_number: null,
+      p_metadata: { result: randomUUID() },
+    });
+    expect(fabricatedDecision.error?.message).toContain(
+      'only observational review activity is permitted',
+    );
     expect(
       (
         await userB
@@ -610,6 +815,40 @@ describe('Phase 9 review acceleration persistence', () => {
     expect(after.error).toBeNull();
     expect(after.data.reviewed).toBe(before.data.reviewed);
     expect(after.data.publicationEligible).toBe(before.data.publicationEligible);
+  });
+
+  it('uses a dedicated high-volume, provider-free review workflow rate bucket', async () => {
+    const result = await admin.rpc('consume_phase8_rate_limit', {
+      p_operation: 'phase9_review_workflow',
+      p_key_hash: sha(`phase9-review-workflow:${randomUUID()}`),
+      p_workspace_id: workspaceId,
+      p_actor_id: actorA,
+    });
+    expect(result.error).toBeNull();
+    expect(result.data?.[0]).toMatchObject({
+      allowed: true,
+      limit_value: 600,
+      remaining: 599,
+    });
+  });
+
+  it('keeps publication locked while any finding lacks a team decision', async () => {
+    const publication = await userA.rpc('publish_phase9_reviewed_findings', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+    });
+    expect(publication.error?.message).toContain(
+      'all phase9 findings require a team decision before publication',
+    );
+    expect(
+      (
+        await userA
+          .from('phase9_bridge_runs')
+          .select('id')
+          .eq('workspace_id', workspaceId)
+          .eq('evaluation_run_id', runId)
+      ).data,
+    ).toEqual([]);
   });
 
   it('moves a finding into the exception lane while its source-page follow-up is unresolved', async () => {
@@ -642,7 +881,7 @@ describe('Phase 9 review acceleration persistence', () => {
       }),
     ]);
 
-    const forbiddenBatch = await userA.rpc('record_phase9_review_batch', {
+    const forbiddenBatch = await userA.rpc('record_phase9_review_batch_v2', {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
       p_candidate_hashes: [candidateHashes.critical],
@@ -684,7 +923,298 @@ describe('Phase 9 review acceleration persistence', () => {
     ]);
   });
 
+  it('fails closed on invalid accepted evidence and records only authoritative publication activity', async () => {
+    // Self-heal routine accepts if an earlier shared-suite step timed out before writing.
+    for (const candidateHash of [candidateHashes.routineA, candidateHashes.routineB]) {
+      const existing = await userA
+        .from('phase9_finding_review_decisions')
+        .select('id')
+        .eq('workspace_id', workspaceId)
+        .eq('evaluation_run_id', runId)
+        .eq('candidate_hash', candidateHash)
+        .limit(1);
+      expect(existing.error).toBeNull();
+      if ((existing.data?.length ?? 0) > 0) continue;
+      const healed = await userA.rpc('record_phase9_finding_review', {
+        p_workspace_id: workspaceId,
+        p_evaluation_run_id: runId,
+        p_candidate_hash: candidateHash,
+        p_decision: 'accepted',
+        p_note: 'Healed routine accept for publication gate coverage.',
+        p_corrections: {},
+      });
+      expect(healed.error).toBeNull();
+    }
+
+    const individualDecisions = [
+      [candidateHashes.critical, 'accepted', 'Deadline checked against the exact source page.'],
+      [
+        candidateHashes.electronic,
+        'accepted',
+        'Electronic submission method checked against the exact source page.',
+      ],
+      [
+        candidateHashes.exception,
+        'rejected',
+        'Unsupported machine finding rejected after source review.',
+      ],
+      [
+        candidateHashes.emptyQuote,
+        'accepted',
+        'Deliberately accepted to prove publication independently rejects empty evidence.',
+      ],
+    ] as const;
+    for (const [candidateHash, decision, note] of individualDecisions) {
+      const result = await userA.rpc('record_phase9_finding_review', {
+        p_workspace_id: workspaceId,
+        p_evaluation_run_id: runId,
+        p_candidate_hash: candidateHash,
+        p_decision: decision,
+        p_note: note,
+        p_corrections: {},
+      });
+      expect(result.error).toBeNull();
+    }
+
+    const remainingDuplicateCanonical = await userA.rpc('get_phase9_review_queue', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_lane: 'routine',
+      p_search: requirements.duplicate,
+      p_page: 1,
+      p_page_size: 10,
+    });
+    expect(remainingDuplicateCanonical.error).toBeNull();
+    expect(remainingDuplicateCanonical.data.rows).toEqual([
+      expect.objectContaining({
+        review_lane: 'routine',
+        batch_accept_eligible: true,
+      }),
+    ]);
+    const canonicalHash = remainingDuplicateCanonical.data.rows[0].candidate_hash as string;
+    const canonicalDecision = await userA.rpc('record_phase9_review_batch_v2', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_candidate_hashes: [canonicalHash],
+      p_action: 'accept_routine',
+      p_reason: '',
+      p_idempotency_key: randomUUID(),
+      p_review_session_id: randomUUID(),
+    });
+    expect(canonicalDecision.error).toBeNull();
+
+    const invalidPublication = await userA.rpc('publish_phase9_reviewed_findings', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+    });
+    expect(invalidPublication.error?.message).toContain(
+      `accepted phase9 finding is not publishable:${candidateHashes.emptyQuote}`,
+    );
+    const invalidDashboard = await userA.rpc('get_phase9_review_dashboard_v1', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+    });
+    expect(invalidDashboard.error).toBeNull();
+    expect(invalidDashboard.data).toMatchObject({
+      invalidAccepted: 1,
+      unrepresentedFindings: 0,
+      publicationEligible: false,
+      nextRecommendedAction: 'review_exceptions',
+    });
+    expect(
+      (
+        await userA
+          .from('phase9_bridge_runs')
+          .select('id')
+          .eq('workspace_id', workspaceId)
+          .eq('evaluation_run_id', runId)
+      ).data,
+    ).toEqual([]);
+
+    const rejectInvalidEvidence = await userA.rpc('record_phase9_finding_review', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_candidate_hash: candidateHashes.emptyQuote,
+      p_decision: 'rejected',
+      p_note: 'Empty quotation evidence cannot support publication.',
+      p_corrections: {},
+    });
+    expect(rejectInvalidEvidence.error).toBeNull();
+    const readyDashboard = await userA.rpc('get_phase9_review_dashboard_v1', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+    });
+    expect(readyDashboard.error).toBeNull();
+    expect(readyDashboard.data).toMatchObject({
+      invalidAccepted: 0,
+      unrepresentedFindings: 0,
+      publishableAccepted: 6,
+      publicationEligible: true,
+      nextRecommendedAction: 'publish_reviewed_requirements',
+    });
+
+    const reviewerMembership = await admin.from('workspace_members').upsert(
+      {
+        workspace_id: workspaceId,
+        user_id: actorB,
+        role: 'reviewer',
+      },
+      { onConflict: 'workspace_id,user_id', ignoreDuplicates: true },
+    );
+    expect(reviewerMembership.error).toBeNull();
+    const reviewerAttempt = await userB.rpc('record_phase9_publication_activity_v1', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_event_type: 'publication_attempted',
+      p_review_session_id: randomUUID(),
+      p_idempotency_key: randomUUID(),
+      p_bridge_run_id: null,
+    });
+    expect(reviewerAttempt.error?.message).toContain(
+      'workspace owner required for publication activity',
+    );
+
+    const reviewSessionId = randomUUID();
+    const attemptKey = randomUUID();
+    const attempted = await userA.rpc('record_phase9_publication_activity_v1', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_event_type: 'publication_attempted',
+      p_review_session_id: reviewSessionId,
+      p_idempotency_key: attemptKey,
+      p_bridge_run_id: null,
+    });
+    expect(attempted.error).toBeNull();
+    const repeatedAttempt = await userA.rpc('record_phase9_publication_activity_v1', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_event_type: 'publication_attempted',
+      p_review_session_id: reviewSessionId,
+      p_idempotency_key: attemptKey,
+      p_bridge_run_id: null,
+    });
+    expect(repeatedAttempt.error).toBeNull();
+    expect(repeatedAttempt.data).toBe(attempted.data);
+
+    const attemptWithResult = await userA.rpc('record_phase9_publication_activity_v1', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_event_type: 'publication_attempted',
+      p_review_session_id: reviewSessionId,
+      p_idempotency_key: randomUUID(),
+      p_bridge_run_id: randomUUID(),
+    });
+    expect(attemptWithResult.error?.message).toContain('publication attempt cannot name a result');
+    const fabricatedCompletion = await userA.rpc('record_phase9_publication_activity_v1', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_event_type: 'publication_completed',
+      p_review_session_id: reviewSessionId,
+      p_idempotency_key: randomUUID(),
+      p_bridge_run_id: randomUUID(),
+    });
+    expect(fabricatedCompletion.error?.message).toContain(
+      'publication result is not authoritative',
+    );
+
+    const publication = await userA.rpc('publish_phase9_reviewed_findings', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+    });
+    expect(publication.error).toBeNull();
+    expect(publication.data).toMatchObject({ publishedCount: 6, reused: false });
+    const bridgeRunId = publication.data.bridgeRunId as string;
+
+    const completed = await userA.rpc('record_phase9_publication_activity_v1', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_event_type: 'publication_completed',
+      p_review_session_id: reviewSessionId,
+      p_idempotency_key: randomUUID(),
+      p_bridge_run_id: bridgeRunId,
+    });
+    expect(completed.error).toBeNull();
+    const activityRows = await userA
+      .from('phase9_review_activity_events')
+      .select('event_type,metadata')
+      .eq('workspace_id', workspaceId)
+      .eq('evaluation_run_id', runId)
+      .in('id', [attempted.data as string, completed.data as string])
+      .order('event_type');
+    expect(activityRows.error).toBeNull();
+    expect(activityRows.data).toEqual([
+      {
+        event_type: 'publication_attempted',
+        metadata: { publicationState: 'attempted' },
+      },
+      {
+        event_type: 'publication_completed',
+        metadata: { publicationState: 'completed', result: bridgeRunId },
+      },
+    ]);
+
+    const electronicBridge = await userA
+      .from('phase9_bridge_items')
+      .select('requirement_candidate_id')
+      .eq('bridge_run_id', bridgeRunId)
+      .eq('candidate_hash', candidateHashes.electronic)
+      .single();
+    expect(electronicBridge.error).toBeNull();
+    const electronicRequirement = await userA
+      .from('requirement_candidates')
+      .select('category,evidence_quote')
+      .eq('id', electronicBridge.data!.requirement_candidate_id)
+      .single();
+    expect(electronicRequirement.error).toBeNull();
+    expect(electronicRequirement.data).toEqual({
+      category: 'electronic_submission',
+      evidence_quote: requirements.electronic,
+    });
+  });
+
+  it('enforces the review activity cap inside the directly callable database wrapper', async () => {
+    const windowStartedAt = new Date(
+      Math.floor(Date.now() / 1000 / 300) * 300 * 1000,
+    ).toISOString();
+    const keyHash = sha(`phase8-rate-limits-v1:phase9_review_workflow:${actorA}:${workspaceId}`);
+    const seeded = await admin.from('operation_rate_limit_buckets').upsert(
+      {
+        operation: 'phase9_review_workflow',
+        key_hash: keyHash,
+        workspace_id: workspaceId,
+        window_started_at: windowStartedAt,
+        window_seconds: 300,
+        request_count: 600,
+        policy_version: 'phase8-rate-limits-v1',
+      },
+      { onConflict: 'operation,key_hash,window_started_at' },
+    );
+    expect(seeded.error).toBeNull();
+    const blocked = await userA.rpc('record_phase9_observational_activity_v1', {
+      p_workspace_id: workspaceId,
+      p_evaluation_run_id: runId,
+      p_event_type: 'finding_opened',
+      p_review_session_id: randomUUID(),
+      p_idempotency_key: randomUUID(),
+      p_candidate_hash: candidateHashes.critical,
+      p_source_document_id: null,
+      p_page_number: null,
+      p_metadata: { lane: 'critical' },
+    });
+    expect(blocked.error?.message).toContain('review activity rate limit exceeded');
+  });
+
   it('isolates guided-tour completion per user even inside one shared workspace', async () => {
+    const reviewerMembership = await admin.from('workspace_members').upsert(
+      {
+        workspace_id: workspaceId,
+        user_id: actorB,
+        role: 'reviewer',
+      },
+      { onConflict: 'workspace_id,user_id', ignoreDuplicates: true },
+    );
+    expect(reviewerMembership.error).toBeNull();
+
     const foreignWorkspaceId = await createTestWorkspace(
       userB,
       `phase9 guided tour foreign ${Date.now()}`,
@@ -698,15 +1228,17 @@ describe('Phase 9 review acceleration persistence', () => {
     });
     expect(crossWorkspaceSave.error?.message).toContain('authorized workspace member required');
 
-    expect(
-      (
-        await admin.from('workspace_members').insert({
-          workspace_id: workspaceId,
-          user_id: actorB,
-          role: 'reviewer',
-        })
-      ).error,
-    ).toBeNull();
+    const unboundPresenterTour = await userA.rpc('save_guided_tour_state', {
+      p_workspace_id: workspaceId,
+      p_tour_id: 'stakeholder-demo',
+      p_tour_version: 'guided-product-tour-v1',
+      p_status: 'started',
+      p_last_completed_step: 0,
+    });
+    expect(unboundPresenterTour.error?.message).toContain(
+      'authorized prepared demo identity required',
+    );
+
     const savedA = await userA.rpc('save_guided_tour_state', {
       p_workspace_id: workspaceId,
       p_tour_id: 'first-run-rfp-review',

@@ -24,11 +24,12 @@
     "everyOriginalFindingRepresented": true,
     "exactlyOneLanePerFinding": true
   },
-  "lanes": { "critical": 79, "exception": 11, "duplicate": 0, "routine": 239 },
+  "lanes": { "critical": 88, "exception": 11, "duplicate": 0, "routine": 230 },
   "critical": {
     "candidateHashes": [
       "00d1729eb9ab74ad3bf50852b631c48706d803fa2e2d42e574f88b63173be041",
       "00dd0472f0554d4518623a784c4dc8dc5842455b6213a43b4c61a84930b88b48",
+      "01add78347523b78a205d7a7f03c48a491a0f4a70f283d97416161d125c68398",
       "025571162e2a9e6ac1520c730ceb02374c538f6d8d25d82138ff100feea1eb45",
       "04980b49455518eafb105b385c26f00106d1d60ed4ee853ac88fa95fa7502131",
       "04d363ea83d7f44a824c096fba42a97e2fb68ed72859e283f83d05526e3a3e78",
@@ -45,12 +46,14 @@
       "23a6d3b79b44fdf0fc2751dc833b86ee4906d754de23ac5973aa4c7afc7998bf",
       "25e09f2a56dd16de6da5e5f1082b71ba058d794006c29c1b26c83b34a3128a01",
       "27d17b55abfb8c51d4bad1bcbb35b3184aecd97f860ad40ad023a3cb15497bb3",
+      "27e7b49d3d1b2e8420596415f108301b2e0017860a1e79ff71025c1ed84e7f32",
       "2ff838a6d062cae3804976e02a0bad30516a1aff3c3cea50ce14c71dbf6fb448",
       "35350a61377fc4c36e98e268e6e0470badac5c093c30bcfe429c105719f43ed7",
       "3887c216d555c5e2b431716a96667e654ea0c95afdab92d6be0fa177b232b794",
       "3cff99337a6a80ff3dcd5e842296706fe60502dddd61f14322d444ac31df495b",
       "3d27fc6ef6c8db673103ec170ac102bd5d0034c5ee4bfb23a7092192f65000e7",
       "3ec99acdfdd01565ba7254c38a1dc4746c78dffefbce8d62eddbb480549e866c",
+      "4028dedc875bdd91b773b15f38d1de841a1358c95ad3936d19a720310b8bf143",
       "4177a30ba99b99661e1f4d942347d72b22b9aa0608a8c9bbaef8b997cd5f698a",
       "41b493f9cd463914816ed7aa59704ff8aab2bb3f8df414ebd75ca9b344f85c26",
       "43c89bc7bf4811859583bc3055993b4fe0ca980892b1b5bd40c5a3a23ed60ad0",
@@ -78,6 +81,7 @@
       "874391b507d54c537c90718ffafd959090e5161d0fd4a2e3dd03fb19686b699e",
       "8d3a0d0d10aaf5305bfae857382eaf74a2170c44c0e1e74322ae44bd50f1456b",
       "951705d43241a5140656adcb2bd8bff378e7ea7d886d18d380d6a128222cd02f",
+      "9a3cb08546a37afff217c64183f304b0956ae11a374bc1b3e1ecb4b1a2f10256",
       "9b06f1b48159d2389c3212f0c1c7868081f1324941cd3d2963529d9fc425235a",
       "9fe0b5fa5a87a826645a5f46f1c81a3a7a9f76771bbe0c76a54e3f63dac816cb",
       "a2c6d30c6c6e402288361e27127c95b2b81a72aae132e1b8f8c33c3de967d75c",
@@ -91,24 +95,31 @@
       "c2be6c0edc1f1c8b681eff836fd9038dd50cf708723db6c2d6c9af6cd1550d27",
       "cfb21342debe7da578ab3a575f16117a130889c1197aae64558ac30f9b9b2ed2",
       "d084da288d9da959b134fb3402e42cb845e7e2c233f44920a34d8cdfb1911f37",
+      "d37bc14c723fe76a94c922bfe803d0f7c1354f82b8d4b831f29ef76d93a6ddf7",
       "d636323b3b03791149ebd695f626b537ed1ed178c7ea625b8cddc052d47c8143",
       "d6f5030556c8dfc22914a0172fa6cc20d1e9499a6195a509cd17064f54eaa858",
       "d744a3a145895be71ba282bb45d546749a2d62b9a0ab44356db6fbfd18a5e03e",
       "df19a0fd3685ac23365bf2395282d1baabf5aba90f69f5804ecbfaf007b7c714",
+      "e2a4129a6941bbf03c8e8fc3eb9acefd785292316b49a8aaf3ee591bb29f09dc",
       "e49ab050173b062f95fff8642c7dd3f7318f1965764c2c9939750aceb52e1d0b",
       "e61f69e47959991de30b09832cc4a494285c1d6e7d9eea6eb29920d31fe29dfd",
       "e7ea01e9517d61d8ff720e83ba266f89d8b31196bc05963381af7f10103074b3",
       "e87064b6a5b56a69c390985310e5f050c802d07fb1a247d0c0c0d63f9e5aea95",
       "ed21caaa2306de7d0201656f75c047029b88a06b9d03e6bbbe21681b8c747741",
       "ee6379733de13314b4b2fd70e43a2d70ce283bd0f2a1eff367c2043e397ba0ff",
+      "ef198e5b348cc7030204f62056830aa995917de18f88ed1cf938ac9d06154ce6",
       "ef4ee4bea10256f9e642ad13a04896c3e5494421e1edcbcdf052fa52a928780d",
       "f05b91d0d0a02838db7bcacf7774f17449945d005ac57815bf24ce4052657677",
       "f28b975bd1f8efe9eb290dadab2238b2c8bf94cb2acfcecac11aeb1c6a1a3814",
       "f2c86e8491feedbffc5212be407c3caa6a3a03ac22bb132f2c1b6699e505582e",
+      "f364d2cd887f93a8b5ce595e3565f2ead7b252b0ae1b6d920addad0d9b318150",
+      "f81c95bc20e94ecc77318bcdf4daa709fcf80ec23df110dae9b52e7df1e03e9c",
       "fa83e93cfe612eeae88ad2cb292cfc1205d5ac795d75f05a1a37ea1d6c1df607"
     ],
     "byCategory": {
+      "attachment": 1,
       "bond": 2,
+      "certification": 8,
       "insurance": 10,
       "license": 10,
       "mandatory_form": 11,
@@ -319,14 +330,14 @@
   },
   "duplicates": { "groupCount": 0, "nonCanonicalFindingCount": 0, "groups": [] },
   "acceleratedReview": {
-    "batchEligibleRoutineFindings": 239,
-    "individualReviewFindings": 90,
+    "batchEligibleRoutineFindings": 230,
+    "individualReviewFindings": 99,
     "estimatedFindingInteractionsBefore": 329,
-    "estimatedFindingInteractionsAfter": 91,
+    "estimatedFindingInteractionsAfter": 109,
     "unchangedCoverageExceptionInteractions": 38,
     "estimatedTotalInteractionsBefore": 367,
-    "estimatedTotalInteractionsAfter": 129,
-    "estimatedReductionInIndividualFindingDecisions": 0.723404255319149,
+    "estimatedTotalInteractionsAfter": 147,
+    "estimatedReductionInIndividualFindingDecisions": 0.668693009118541,
     "zeroCriticalBatchAcceptEligible": true,
     "zeroExceptionBatchAcceptEligible": true
   },
@@ -359,11 +370,11 @@
     },
     {
       "candidateHash": "01add78347523b78a205d7a7f03c48a491a0f4a70f283d97416161d125c68398",
-      "lane": "routine",
-      "reason": "clean_routine",
+      "lane": "critical",
+      "reason": "submission_critical",
       "category": "certification",
       "sourcePage": 19,
-      "batchAcceptEligible": true,
+      "batchAcceptEligible": false,
       "duplicateOfCandidateHash": null
     },
     {
@@ -917,11 +928,11 @@
     },
     {
       "candidateHash": "27e7b49d3d1b2e8420596415f108301b2e0017860a1e79ff71025c1ed84e7f32",
-      "lane": "routine",
-      "reason": "clean_routine",
+      "lane": "critical",
+      "reason": "submission_critical",
       "category": "certification",
       "sourcePage": 19,
-      "batchAcceptEligible": true,
+      "batchAcceptEligible": false,
       "duplicateOfCandidateHash": null
     },
     {
@@ -1178,11 +1189,11 @@
     },
     {
       "candidateHash": "4028dedc875bdd91b773b15f38d1de841a1358c95ad3936d19a720310b8bf143",
-      "lane": "routine",
-      "reason": "clean_routine",
+      "lane": "critical",
+      "reason": "submission_critical",
       "category": "certification",
       "sourcePage": 34,
-      "batchAcceptEligible": true,
+      "batchAcceptEligible": false,
       "duplicateOfCandidateHash": null
     },
     {
@@ -2141,11 +2152,11 @@
     },
     {
       "candidateHash": "9a3cb08546a37afff217c64183f304b0956ae11a374bc1b3e1ecb4b1a2f10256",
-      "lane": "routine",
-      "reason": "clean_routine",
+      "lane": "critical",
+      "reason": "submission_critical",
       "category": "certification",
       "sourcePage": 33,
-      "batchAcceptEligible": true,
+      "batchAcceptEligible": false,
       "duplicateOfCandidateHash": null
     },
     {
@@ -2753,11 +2764,11 @@
     },
     {
       "candidateHash": "d37bc14c723fe76a94c922bfe803d0f7c1354f82b8d4b831f29ef76d93a6ddf7",
-      "lane": "routine",
-      "reason": "clean_routine",
+      "lane": "critical",
+      "reason": "submission_critical",
       "category": "attachment",
       "sourcePage": 27,
-      "batchAcceptEligible": true,
+      "batchAcceptEligible": false,
       "duplicateOfCandidateHash": null
     },
     {
@@ -2897,11 +2908,11 @@
     },
     {
       "candidateHash": "e2a4129a6941bbf03c8e8fc3eb9acefd785292316b49a8aaf3ee591bb29f09dc",
-      "lane": "routine",
-      "reason": "clean_routine",
+      "lane": "critical",
+      "reason": "submission_critical",
       "category": "certification",
       "sourcePage": 33,
-      "batchAcceptEligible": true,
+      "batchAcceptEligible": false,
       "duplicateOfCandidateHash": null
     },
     {
@@ -3068,11 +3079,11 @@
     },
     {
       "candidateHash": "ef198e5b348cc7030204f62056830aa995917de18f88ed1cf938ac9d06154ce6",
-      "lane": "routine",
-      "reason": "clean_routine",
+      "lane": "critical",
+      "reason": "submission_critical",
       "category": "certification",
       "sourcePage": 21,
-      "batchAcceptEligible": true,
+      "batchAcceptEligible": false,
       "duplicateOfCandidateHash": null
     },
     {
@@ -3167,11 +3178,11 @@
     },
     {
       "candidateHash": "f364d2cd887f93a8b5ce595e3565f2ead7b252b0ae1b6d920addad0d9b318150",
-      "lane": "routine",
-      "reason": "clean_routine",
+      "lane": "critical",
+      "reason": "submission_critical",
       "category": "certification",
       "sourcePage": 19,
-      "batchAcceptEligible": true,
+      "batchAcceptEligible": false,
       "duplicateOfCandidateHash": null
     },
     {
@@ -3212,11 +3223,11 @@
     },
     {
       "candidateHash": "f81c95bc20e94ecc77318bcdf4daa709fcf80ec23df110dae9b52e7df1e03e9c",
-      "lane": "routine",
-      "reason": "clean_routine",
+      "lane": "critical",
+      "reason": "submission_critical",
       "category": "certification",
       "sourcePage": 8,
-      "batchAcceptEligible": true,
+      "batchAcceptEligible": false,
       "duplicateOfCandidateHash": null
     },
     {

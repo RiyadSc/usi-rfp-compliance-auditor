@@ -145,6 +145,24 @@ describe('Phase 9 reviewed bridge', () => {
         obligationText: 'Maintain $3 million aggregate liability insurance.',
       }),
     ).toBe('insurance');
+    expect(
+      mapPhase9RequirementCategory({
+        requirementType: 'other',
+        obligationText: 'Acknowledge Addendum 2 with the response.',
+      }),
+    ).toBe('addendum_acknowledgment');
+    expect(
+      mapPhase9RequirementCategory({
+        requirementType: 'other',
+        obligationText: 'Upload one electronic PDF through the procurement portal.',
+      }),
+    ).toBe('electronic_submission');
+    expect(
+      mapPhase9RequirementCategory({
+        requirementType: 'other',
+        obligationText: 'List and identify every proposed subcontractor.',
+      }),
+    ).toBe('subcontractor_disclosure');
   });
 
   it('binds the immutable decisions and source run into a stable bridge hash', () => {

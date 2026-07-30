@@ -267,8 +267,8 @@ describe('controlled Phase 9 publication', () => {
       p_workspace_id: workspaceId,
       p_evaluation_run_id: runId,
       p_candidate_hash: unsupportedHash,
-      p_decision: 'accepted',
-      p_note: 'Accepted as an unsupported machine assessment.',
+      p_decision: 'rejected',
+      p_note: 'Rejected because the machine assessment has no supporting source evidence.',
       p_corrections: {},
     });
     expect(unsupported.error).toBeNull();

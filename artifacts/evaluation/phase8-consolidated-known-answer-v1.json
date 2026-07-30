@@ -1,6 +1,6 @@
 {
   "artifactVersion": "phase8-consolidated-evaluation-v1",
-  "generatedAt": "2026-07-19T06:31:09.521Z",
+  "generatedAt": "2026-07-30T21:23:46.462Z",
   "provider": { "name": "MockProvider", "calls": 0, "spendUsd": 0 },
   "fixtures": {
     "phase4": "verification-cases-v2",

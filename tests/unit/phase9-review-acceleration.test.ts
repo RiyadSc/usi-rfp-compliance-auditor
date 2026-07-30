@@ -6,6 +6,7 @@ import {
   evaluatePhase9BatchEligibility,
   groupPhase9DeterministicDuplicates,
   guidedTourDefinitionSchema,
+  phase9ReviewFindingSchema,
   transitionGuidedTourState,
   type Phase9ReviewFinding,
 } from '@usi/domain';
@@ -71,6 +72,10 @@ describe('Phase 9 review prioritization', () => {
     expect(assignPhase9ReviewLane(finding(overrides)).lane).toBe('exception');
   });
 
+  it('rejects empty quotation text before lane assignment', () => {
+    expect(() => phase9ReviewFindingSchema.parse(finding({ evidenceText: '   ' }))).toThrow();
+  });
+
   it.each([
     'submission_deadline',
     'question_deadline',
@@ -88,6 +93,48 @@ describe('Phase 9 review prioritization', () => {
     'packaging_requirement',
   ] as const)('classifies %s as critical', (category) => {
     expect(assignPhase9ReviewLane(finding({ category })).lane).toBe('critical');
+  });
+
+  it('keeps explicit disqualification language critical even when mandatory metadata is absent', () => {
+    expect(
+      assignPhase9ReviewLane(
+        finding({
+          mandatoryClass: 'uncertain',
+          obligationText:
+            'Failure to include the disclosure may result in the proposal being deemed nonresponsive.',
+        }),
+      ),
+    ).toMatchObject({ lane: 'critical', reason: 'submission_critical' });
+  });
+
+  it.each(['bid opening', 'proposal opening'])(
+    'keeps a mandatory %s instruction in individual critical review',
+    (opening) => {
+      expect(
+        assignPhase9ReviewLane(
+          finding({
+            obligationText: `The ${opening} will occur at 2:00 PM.`,
+          }),
+        ),
+      ).toMatchObject({
+        lane: 'critical',
+        reason: 'submission_critical',
+      });
+    },
+  );
+
+  it('classifies a deterministic 1,000-finding population without dropping records', () => {
+    const assignments = Array.from({ length: 1_000 }, (_, index) =>
+      assignPhase9ReviewLane(
+        finding({
+          candidateHash: hash(index + 1),
+          sourceOrder: index,
+          sourcePage: (index % 50) + 1,
+        }),
+      ),
+    );
+    expect(assignments).toHaveLength(1_000);
+    expect(assignments.every((assignment) => assignment.lane === 'routine')).toBe(true);
   });
 });
 

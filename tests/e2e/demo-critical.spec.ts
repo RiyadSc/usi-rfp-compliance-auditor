@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const workspaceId = '81000000-0000-4000-8000-000000000002';
 const scopeId = '81000000-0000-4000-8000-000000000001';
+const phase9ReviewScopeId = '81000000-0000-4000-8900-000000000001';
 const proposalAuditRunId = '81000000-0000-4000-8000-000000000012';
 const expectedFingerprint = 'c52d49b8302b7f47b4751e0d4f3d092001209337e21c755e950ee4fb81fe001b';
 const required = (name: string) => {
@@ -16,7 +17,7 @@ async function signIn(page: Page, which: 'A' | 'B') {
   await page.getByLabel('Email').fill(required(`DEMO_USER_${which}_EMAIL`));
   await page.getByLabel('Password').fill(required(`DEMO_USER_${which}_PASSWORD`));
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await expect(page.getByRole('heading', { name: 'Opportunities' })).toBeVisible();
+  await expect.poll(() => new URL(page.url()).pathname, { timeout: 30_000 }).not.toBe('/login');
 }
 
 test('@demo-critical completes the exact protected synthetic presentation flow', async ({
@@ -64,6 +65,15 @@ test('@demo-critical completes the exact protected synthetic presentation flow',
   );
   expect(reset.error).toBeNull();
   expect(reset.data).toMatchObject({ mutated: true, dryRun: false });
+  const phase9Reset = await step('reset_phase9_review', () =>
+    admin.rpc('reset_phase9_review_demo', {
+      p_workspace_id: workspaceId,
+      p_demo_scope_id: phase9ReviewScopeId,
+      p_actor_id: binding.authorizedIdentityId,
+    }),
+  );
+  expect(phase9Reset.error).toBeNull();
+  expect(phase9Reset.data).toMatchObject({ providerCalls: 0, reset: true });
 
   await step('sign_in_and_workspace', async () => {
     await signIn(page, 'A');

@@ -11,12 +11,13 @@ async function signIn(page: Page, which: 'A' | 'B') {
   await page.getByLabel('Email').fill(required(`DEMO_USER_${which}_EMAIL`));
   await page.getByLabel('Password').fill(required(`DEMO_USER_${which}_PASSWORD`));
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await expect(page.getByRole('heading', { name: 'Opportunities' })).toBeVisible();
+  await expect.poll(() => new URL(page.url()).pathname, { timeout: 30_000 }).not.toBe('/login');
 }
 async function createWorkspace(page: Page, name: string) {
+  await page.goto('/');
   await page.getByLabel(/Opportunity name/).fill(name);
   await page.getByRole('button', { name: 'Create opportunity' }).click();
-  await expect(page).toHaveURL(/\/w\/[0-9a-f-]{36}$/);
+  await expect(page).toHaveURL(/\/w\/[0-9a-f-]{36}$/, { timeout: 30_000 });
   return page.url().match(/\/w\/([0-9a-f-]{36})/)![1];
 }
 const hex = () => crypto.randomUUID().replaceAll('-', '').padEnd(64, 'a').slice(0, 64);

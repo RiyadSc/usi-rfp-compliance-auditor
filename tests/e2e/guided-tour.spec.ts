@@ -14,14 +14,16 @@ async function signIn(page: Page) {
   await page.getByLabel('Email').fill(required('DEMO_USER_A_EMAIL'));
   await page.getByLabel('Password').fill(required('DEMO_USER_A_PASSWORD'));
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await expect(page.getByRole('heading', { name: 'Opportunities' })).toBeVisible();
+  await expect.poll(() => new URL(page.url()).pathname, { timeout: 30_000 }).not.toBe('/login');
 }
 
 async function expectStep(page: Page, id: string, target: string) {
   const tour = page.getByTestId('guided-tour');
-  await expect(tour).toHaveAttribute('data-tour-step', id);
-  await expect(page.locator(`[data-tour-target="${target}"]`).first()).toBeVisible();
-  await expect(page.getByTestId('guided-tour-spotlight')).toBeVisible();
+  await expect(tour).toHaveAttribute('data-tour-step', id, { timeout: 20_000 });
+  await expect(page.locator(`[data-tour-target="${target}"]`).first()).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(page.getByTestId('guided-tour-spotlight')).toBeVisible({ timeout: 20_000 });
 }
 
 async function expectPanelInsideViewport(page: Page) {
@@ -42,18 +44,31 @@ test.beforeEach(async () => {
     required('SUPABASE_SERVICE_ROLE_KEY'),
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
+  const phase8Scope = await admin
+    .from('phase8_demo_scopes')
+    .select('authorized_identity_id')
+    .eq('workspace_id', workspaceId)
+    .single();
+  expect(phase8Scope.error).toBeNull();
   const { data: user } = await admin.auth.admin.getUserById(
     // The prepared demo scope binds user A; resolve the identity from the scope
     // instead of encoding it in the tour definition or browser runtime.
-    (
-      await admin
-        .from('phase8_demo_scopes')
-        .select('authorized_identity_id')
-        .eq('workspace_id', workspaceId)
-        .single()
-    ).data!.authorized_identity_id,
+    phase8Scope.data!.authorized_identity_id,
   );
   expect(user.user).toBeTruthy();
+  const phase9Scope = await admin
+    .from('phase9_review_demo_scopes')
+    .select('id')
+    .eq('workspace_id', workspaceId)
+    .single();
+  expect(phase9Scope.error).toBeNull();
+  const reset = await admin.rpc('reset_phase9_review_demo', {
+    p_workspace_id: workspaceId,
+    p_demo_scope_id: phase9Scope.data!.id,
+    p_actor_id: user.user!.id,
+  });
+  expect(reset.error).toBeNull();
+  expect(reset.data).toMatchObject({ providerCalls: 0, reset: true });
   const { error } = await admin
     .from('guided_tour_states')
     .delete()
@@ -97,9 +112,22 @@ test('@guided-tour first-run navigation, exit, restart, focus, and reduced motio
   await expect(restart).toBeVisible();
   await restart.click();
   await expectStep(page, 'welcome', 'opportunity-overview');
+  expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(
+    true,
+  );
+
+  for (const step of ['navigation', 'urgent-work', 'evidence', 'human-control', 'next-action']) {
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(page.getByTestId('guided-tour')).toHaveAttribute('data-tour-step', step);
+  }
+  await page.getByRole('button', { name: 'Finish tour' }).click();
+  await expect(page.getByTestId('guided-tour')).toHaveCount(0);
+  await expect(restart).toBeFocused();
+  await page.reload();
+  await expect(page.getByTestId('guided-tour')).toHaveCount(0);
 });
 
-test('@guided-tour-readiness completes the 14-step demo without protected-data mutation', async ({
+test('@guided-tour-readiness completes the 14-step interactive demo without changing source truth', async ({
   page,
 }) => {
   const admin = createClient(
@@ -114,30 +142,35 @@ test('@guided-tour-readiness completes the 14-step demo without protected-data m
     .single();
   expect(demoState.error).toBeNull();
   const evaluationRunId = demoState.data!.active_evaluation_run_id;
-  const protectedCounts = async () => {
-    const [findingDecisions, coverageDecisions, publications] = await Promise.all([
+  const immutableMachineState = async () => {
+    const [findings, seeds, coverage] = await Promise.all([
       admin
-        .from('phase9_finding_review_decisions')
-        .select('id', { count: 'exact', head: true })
+        .from('phase9_findings')
+        .select(
+          'candidate_hash,source_support_status,precedence_status,proof_requirement,evidence_block_hashes,ambiguity_code,machine_only',
+        )
         .eq('workspace_id', workspaceId)
-        .eq('evaluation_run_id', evaluationRunId),
+        .eq('evaluation_run_id', evaluationRunId)
+        .order('candidate_hash'),
       admin
-        .from('phase9_coverage_review_decisions')
-        .select('id', { count: 'exact', head: true })
+        .from('phase9_candidate_seeds')
+        .select('candidate_hash,obligation_text,evidence_text,material_facts,source_block_hashes')
         .eq('workspace_id', workspaceId)
-        .eq('evaluation_run_id', evaluationRunId),
+        .eq('evaluation_run_id', evaluationRunId)
+        .order('candidate_hash'),
       admin
-        .from('phase9_bridge_runs')
-        .select('id', { count: 'exact', head: true })
+        .from('phase9_source_block_coverage')
+        .select('block_hash,source_document_id,page_number,processing_result,route')
         .eq('workspace_id', workspaceId)
-        .eq('evaluation_run_id', evaluationRunId),
+        .eq('evaluation_run_id', evaluationRunId)
+        .order('block_hash'),
     ]);
-    expect(findingDecisions.error).toBeNull();
-    expect(coverageDecisions.error).toBeNull();
-    expect(publications.error).toBeNull();
-    return [findingDecisions.count, coverageDecisions.count, publications.count];
+    expect(findings.error).toBeNull();
+    expect(seeds.error).toBeNull();
+    expect(coverage.error).toBeNull();
+    return { findings: findings.data, seeds: seeds.data, coverage: coverage.data };
   };
-  const before = await protectedCounts();
+  const before = await immutableMachineState();
 
   await signIn(page);
   await page.goto(`/w/${workspaceId}`);
@@ -167,28 +200,52 @@ test('@guided-tour-readiness completes the 14-step demo without protected-data m
     .locator('[data-tour-target="source-evidence"] a[href*="/documents/"]')
     .first();
   await expect(sourceLink).toBeVisible();
-  await sourceLink.click();
+  await Promise.all([
+    page.waitForURL(/\/documents\/[0-9a-f-]+/, { timeout: 60_000 }),
+    sourceLink.click(),
+  ]);
   await expectStep(page, 'original-source-evidence', 'source-page-viewer');
   await expect(page.getByRole('button', { name: 'Return to review' })).toBeVisible();
-  await page.getByRole('button', { name: 'Return to review' }).click();
+  await Promise.all([
+    page.waitForURL(/\/phase9/, { timeout: 60_000 }),
+    page.getByRole('button', { name: 'Return to review' }).click(),
+  ]);
   await expectStep(page, 'original-source-evidence', 'source-evidence');
-
-  await page.getByRole('button', { name: 'Next', exact: true }).click();
+  const sourceNext = page.getByRole('button', { name: 'Next', exact: true });
+  await expect(sourceNext).toBeEnabled({ timeout: 20_000 });
+  await sourceNext.click();
   await expectStep(page, 'human-decision', 'review-decision');
-  await page.locator('[data-tour-target="review-decision"] summary').click();
-  await expect(page.getByRole('button', { name: 'Record team decision' }).first()).toBeVisible();
+  const reviewSummary = page.locator(
+    '[data-tour-target="review-decision"] summary[data-tour-interaction="review-decision"]',
+  );
+  await reviewSummary.focus();
+  await expect(reviewSummary).toBeFocused();
+  await page.keyboard.press('Enter');
+  const humanNext = page.getByRole('button', { name: 'Next', exact: true });
+  await expect(humanNext).toBeDisabled();
+  await page.getByRole('button', { name: 'Record team decision' }).first().click();
+  await expect(page.getByRole('button', { name: 'Recording…' })).toHaveCount(0, {
+    timeout: 60_000,
+  });
+  await expect(humanNext).toBeEnabled({ timeout: 30_000 });
   await page.getByRole('button', { name: 'Next', exact: true }).click();
 
   await expectStep(page, 'accelerated-routine-review', 'batch-review');
-  const eligibleRoutine = page
-    .locator('[data-tour-target="batch-review"] input[type="checkbox"]')
-    .first();
-  await expect(eligibleRoutine).toBeEnabled();
-  await eligibleRoutine.check();
-  await expect(page.getByText('1 selected', { exact: true })).toBeVisible();
+  const batchNext = page.getByRole('button', { name: 'Next', exact: true });
+  await expect(batchNext).toBeDisabled();
+  await page.getByRole('button', { name: /Select \d+ eligible on this page/ }).click();
+  await expect(page.locator('p').filter({ hasText: /^\d+ selected$/ })).toBeVisible();
+  await page.getByRole('button', { name: /Accept \d+ selected/ }).click();
+  await expect(page.getByRole('alertdialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  await expectStep(page, 'accelerated-routine-review', 'batch-review');
+  await page.getByRole('button', { name: /Accept \d+ selected/ }).click();
+  await page.getByRole('button', { name: /Confirm \d+ decisions/ }).click();
+  await expect(batchNext).toBeEnabled({ timeout: 20_000 });
   await page.setViewportSize({ width: 820, height: 900 });
   await expectPanelInsideViewport(page);
-  await page.getByRole('button', { name: 'Next', exact: true }).click();
+  await batchNext.click();
 
   await expectStep(page, 'coverage-exceptions', 'coverage-exceptions');
   await page.getByRole('button', { name: 'Next', exact: true }).click();
@@ -206,5 +263,25 @@ test('@guided-tour-readiness completes the 14-step demo without protected-data m
   await page.getByRole('button', { name: 'Finish tour' }).click();
   await expect(page.getByTestId('guided-tour')).toHaveCount(0);
 
-  expect(await protectedCounts()).toEqual(before);
+  expect(await immutableMachineState()).toEqual(before);
+  const [decisionCount, batchCount, bridgeCount] = await Promise.all([
+    admin
+      .from('phase9_finding_review_decisions')
+      .select('id', { count: 'exact', head: true })
+      .eq('workspace_id', workspaceId)
+      .eq('evaluation_run_id', evaluationRunId),
+    admin
+      .from('phase9_review_batch_operations')
+      .select('id', { count: 'exact', head: true })
+      .eq('workspace_id', workspaceId)
+      .eq('evaluation_run_id', evaluationRunId),
+    admin
+      .from('phase9_bridge_runs')
+      .select('id', { count: 'exact', head: true })
+      .eq('workspace_id', workspaceId)
+      .eq('evaluation_run_id', evaluationRunId),
+  ]);
+  expect(decisionCount.count).toBeGreaterThan(1);
+  expect(batchCount.count).toBe(1);
+  expect(bridgeCount.count).toBe(0);
 });

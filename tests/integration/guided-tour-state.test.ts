@@ -55,7 +55,7 @@ describe('guided tour state isolation', () => {
       p_tour_id: 'first-run-rfp-review',
       p_tour_version: 'guided-product-tour-v1',
       p_status: 'completed',
-      p_last_completed_step: 6,
+      p_last_completed_step: 5,
     });
     expect(completed.error).toBeNull();
     expect(completed.data).toBe(started.data);
@@ -74,7 +74,7 @@ describe('guided tour state isolation', () => {
       tour_id: 'first-run-rfp-review',
       tour_version: 'guided-product-tour-v1',
       status: 'completed',
-      last_completed_step: 6,
+      last_completed_step: 5,
       dismissed_at: null,
     });
     expect(row.data?.completed_at).toBeTruthy();
@@ -109,6 +109,14 @@ describe('guided tour state isolation', () => {
   });
 
   it('rejects invalid versions and workspaces where the user is not a member', async () => {
+    const invalidStep = await userA.rpc('save_guided_tour_state', {
+      p_workspace_id: workspaceId,
+      p_tour_id: 'first-run-rfp-review',
+      p_tour_version: 'guided-product-tour-v1',
+      p_status: 'completed',
+      p_last_completed_step: 6,
+    });
+    expect(invalidStep.error?.message).toContain('invalid guided tour state');
     const invalidVersion = await userA.rpc('save_guided_tour_state', {
       p_workspace_id: workspaceId,
       p_tour_id: 'first-run-rfp-review',

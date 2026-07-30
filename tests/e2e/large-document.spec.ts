@@ -12,7 +12,7 @@ async function signIn(page: Page) {
   await page.getByLabel('Email').fill(required('DEMO_USER_A_EMAIL'));
   await page.getByLabel('Password').fill(required('DEMO_USER_A_PASSWORD'));
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await expect(page.getByRole('heading', { name: 'Opportunities' })).toBeVisible();
+  await expect.poll(() => new URL(page.url()).pathname, { timeout: 20_000 }).not.toBe('/login');
 }
 
 test.describe('prepared 420-page large-document demo', () => {

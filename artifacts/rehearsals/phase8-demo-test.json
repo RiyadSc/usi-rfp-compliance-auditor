@@ -1,41 +1,45 @@
 {
   "rehearsal": "test",
   "testTitle": "@demo-critical completes the exact protected synthetic presentation flow",
-  "startedAt": "2026-07-27T09:39:38.398Z",
-  "completedAt": "2026-07-27T09:39:59.784Z",
-  "totalDurationMs": 21386,
+  "startedAt": "2026-07-30T21:29:20.282Z",
+  "completedAt": "2026-07-30T21:29:43.423Z",
+  "totalDurationMs": 23141,
   "timings": [
     {
       "step": "reset",
-      "durationMs": 119
+      "durationMs": 113
+    },
+    {
+      "step": "reset_phase9_review",
+      "durationMs": 436
     },
     {
       "step": "sign_in_and_workspace",
-      "durationMs": 2831
+      "durationMs": 3099
     },
     {
       "step": "requirements_and_evidence",
-      "durationMs": 2306
+      "durationMs": 2399
     },
     {
       "step": "checklist_and_missing_forms",
-      "durationMs": 1429
+      "durationMs": 2088
     },
     {
       "step": "proposal_audit",
-      "durationMs": 4164
+      "durationMs": 4327
     },
     {
       "step": "report_export_and_audit",
-      "durationMs": 6206
+      "durationMs": 6435
     },
     {
       "step": "fallback_and_language_policy",
-      "durationMs": 1471
+      "durationMs": 1463
     },
     {
       "step": "cross_workspace_denial",
-      "durationMs": 1653
+      "durationMs": 1703
     }
   ],
   "reset": {

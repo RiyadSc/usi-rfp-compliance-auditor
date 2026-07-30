@@ -122,10 +122,15 @@ describe('Phase 8 hardening contracts', () => {
   });
 
   it('uses fixed server-owned rate policies and privacy-preserving keys', () => {
-    expect(Object.keys(RATE_LIMIT_POLICIES)).toHaveLength(14);
+    expect(Object.keys(RATE_LIMIT_POLICIES)).toHaveLength(15);
     expect(RATE_LIMIT_POLICIES.verification_request).toEqual({
       limit: 3,
       windowSeconds: 600,
+      keyScope: 'actor_workspace',
+    });
+    expect(RATE_LIMIT_POLICIES.phase9_review_workflow).toEqual({
+      limit: 600,
+      windowSeconds: 300,
       keyScope: 'actor_workspace',
     });
     const first = buildRateLimitKey({

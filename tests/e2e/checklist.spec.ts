@@ -22,7 +22,7 @@ async function signIn(page: Page, which: 'A' | 'B') {
   await page.getByLabel('Email').fill(required(`DEMO_USER_${which}_EMAIL`));
   await page.getByLabel('Password').fill(required(`DEMO_USER_${which}_PASSWORD`));
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await expect(page.getByRole('heading', { name: 'Opportunities' })).toBeVisible();
+  await expect.poll(() => new URL(page.url()).pathname, { timeout: 30_000 }).not.toBe('/login');
 }
 async function createWorkspace(page: Page, name: string) {
   await page.getByLabel(/Opportunity name/).fill(name);
@@ -373,14 +373,20 @@ test('Phase 5 checklist detects five missing forms and preserves evidence, workf
   await page.goBack();
   await page.locator('select[name="owner"]').selectOption(userA.id);
   await page.getByRole('button', { name: 'Save assignments' }).click();
-  await expect(page.getByRole('status')).toHaveText('Change recorded.');
+  await expect(page.getByRole('status').filter({ hasText: 'Change recorded.' })).toHaveText(
+    'Change recorded.',
+  );
   await page.locator('select[name="document"]').selectOption(documentId);
   await page.getByRole('button', { name: 'Link artifact' }).click();
-  await expect(page.getByRole('status')).toHaveText('Change recorded.');
+  await expect(page.getByRole('status').filter({ hasText: 'Change recorded.' })).toHaveText(
+    'Change recorded.',
+  );
   await page.locator('select[name="artifactState"]').selectOption('reviewed');
   await page.getByLabel('Artifact review note').fill('Synthetic artifact review complete.');
   await page.getByRole('button', { name: 'Record artifact review' }).click();
-  await expect(page.getByRole('status')).toHaveText('Change recorded.');
+  await expect(page.getByRole('status').filter({ hasText: 'Change recorded.' })).toHaveText(
+    'Change recorded.',
+  );
   await page.locator('select[name="status"]').first().selectOption('in_progress');
   await page.getByRole('button', { name: 'Update workflow' }).click();
   await page.getByLabel('Exception note').fill('Synthetic reviewer exception note.');

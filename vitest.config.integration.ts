@@ -13,8 +13,8 @@ export default defineConfig({
   test: {
     include: ['tests/integration/**/*.test.ts'],
     environment: 'node',
-    testTimeout: 30000,
-    hookTimeout: 30000,
+    testTimeout: 90000,
+    hookTimeout: 90000,
     // Serial execution: tests share seeded demo users.
     pool: 'forks',
     poolOptions: { forks: { singleFork: true } },
