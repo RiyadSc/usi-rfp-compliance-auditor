@@ -23,6 +23,10 @@ review run from the immutable prepared template and resets `guided-product-tour-
 it does not reuse provider results or change protected Phase 4–8 evidence. Start web/worker with
 `LIVE_PROVIDER_ENABLED=false` and `PHASE4_LIVE_VERIFICATION_ENABLED=false`.
 
+The prepared checklist, draft-audit, and report examples are explicitly bound to their intended
+completed checklist-generation run. Do not substitute a newer or arbitrary run for the prepared
+story: that would weaken the evidence-to-workflow provenance the demo is meant to show.
+
 Open the prepared Harbor City workspace in **Director / Executive** view. From **Guided tour**:
 
 - choose **Start guided demo** for the session-only 14-step stakeholder story;

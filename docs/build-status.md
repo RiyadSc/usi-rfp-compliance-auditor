@@ -1,5 +1,24 @@
 # Build Status
 
+## Phase 9 release finalization — 2026-07-29
+
+Status: implementation and provider-free documentation are ready for final sequential repository
+gates; release closure is pending that rerun and final diff review. No provider call or paid spend is
+part of this finalization work.
+
+The review workspace is additionally hardened to make its display gate agree with the authoritative
+publication contract: invalid accepted decisions and any immutable findings missing from the review
+queue remain visible and block publication rather than being hidden by a summary projection. The
+current register is scoped to the latest completed verification scope; immutable historical runs stay
+available for audit rather than being mixed into the operating register. The prepared demo binds its
+checklist, audit, and report story to an exact completed generation run. The director dashboard now
+aggregates through the same direct-scoped review plan as the bounded queue so concurrent demo load
+cannot time out on historical-run seq scans.
+
+The root dependency policy now pins Next `16.2.12`, PostCSS `8.5.19`, and Sharp `0.35.3`; the current
+lockfile dependency audit reports zero vulnerabilities. The complete sequential gate remains the
+release evidence and must be rerun after the final additive migration set is applied.
+
 ## Phase 9 review acceleration and guided demo — 2026-07-28
 
 Status: implemented provider-free; final release gates are the repository-owned sequential gates.
@@ -33,9 +52,10 @@ publication.
 
 The provider-free corrected New Jersey replay preserves all `329 / 329` findings: `88` critical,
 `11` exception, `0` deterministic non-canonical duplicates, and `230` routine. No critical or
-exception finding is batch-accept eligible. Estimated finding-decision interactions are `329 → 100`
-(`69.60%` reduction); including `38` unchanged page-coverage decisions they are `367 → 138`
-(`62.40%`). Both official question and submission deadlines remain critical. These are interaction
+exception finding is batch-accept eligible. Bounded 25-item queue pages require `10` explicit
+routine confirmations, producing estimated finding-decision interactions of `329 → 109`
+(`66.87%` reduction); including `38` unchanged page-coverage decisions they are `367 → 147`
+(`59.95%`). Both official question and submission deadlines remain critical. These are interaction
 estimates, not measured time or extraction precision/recall, and the release does not claim that
 all requirements were found.
 

@@ -39,14 +39,14 @@ With the new policy:
 
 - 99 findings remain individual review work: 88 critical plus 11 exceptions;
 - 230 clean routine findings are eligible for an explicit, server-revalidated batch;
-- one routine batch confirmation is sufficient for this 230-item population if eligibility remains
-  unchanged at confirmation;
-- the estimated finding-decision interaction count is therefore 100;
-- the estimated reduction in individual finding-decision interactions is `69.60%`.
+- bounded 25-item queue pages require 10 explicit routine batch confirmations if eligibility
+  remains unchanged at each confirmation;
+- the estimated finding-decision interaction count is therefore 109;
+- the estimated reduction in individual finding-decision interactions is `66.87%`.
 
 Thirty-eight page-coverage exceptions remain separate, required human decisions. They are not
 hidden, excluded, or treated as routine findings. Including those unchanged page decisions, the
-planning comparison is 367 interactions before and 138 after, a `62.40%` reduction.
+planning comparison is 367 interactions before and 147 after, a `59.95%` reduction.
 
 These are deterministic interaction estimates, not measured human-review times. Actual effort will
 vary with reviewer judgment, source complexity, filtering, and any findings that become stale or

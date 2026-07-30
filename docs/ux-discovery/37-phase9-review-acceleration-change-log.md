@@ -4,7 +4,8 @@
 **Scope:** Reduce human review burden without reducing the audit population or human accountability  
 **Evidence:** Stakeholder trust/missed-form concern, immutable corrected New Jersey public run,
 existing coverage-review bridge, deterministic fixtures  
-**Status:** Shipped behind existing protected/public-data and demo controls
+**Status:** Implemented behind existing protected/public-data and demo controls; final sequential
+release-gate rerun pending
 
 This release does not redesign the product or claim extraction completeness. It changes how a
 proposal director reaches decisions over a large machine population.
@@ -78,8 +79,8 @@ The immutable corrected New Jersey run remains fully represented:
 | Deterministic non-canonical duplicate    |                            0 |
 | Routine                                  |                          230 |
 | Critical/exception batch-accept eligible |                            0 |
-| Estimated finding interactions           | 329 → 100 (69.60% reduction) |
-| Estimate including 38 page decisions     | 367 → 138 (62.40% reduction) |
+| Estimated finding interactions           | 329 → 109 (66.87% reduction) |
+| Estimate including 38 page decisions     | 367 → 147 (59.95% reduction) |
 
 The official question and submission deadlines remain critical. The estimate is a workflow-planning
 comparison, not observed review time. No independently reviewed known-answer set exists, so this
@@ -95,3 +96,12 @@ work makes no precision, recall, or completeness claim.
 
 Human accountability remains unchanged: the product accelerates review; it does not authorize a
 submission or guarantee that extraction found every obligation.
+
+## Release-finalization hardening — 2026-07-29
+
+The dashboard now treats two projection discrepancies as visible, fail-closed review work: an
+accepted decision that is not publication-eligible, and an immutable finding that is not represented
+by the current queue. The director sees the issue instead of a misleading publication-ready state.
+The normal register is scoped to the latest completed verification run, while the prepared demo's
+checklist/audit/report sequence remains bound to its exact completed generation run. These changes
+improve provenance clarity; they do not make a completeness claim.

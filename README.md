@@ -80,7 +80,9 @@ The server recomputes eligibility at confirmation. An invalid or stale selection
 
 The executive summary emphasizes blockers, deadlines, unresolved exceptions, next action, progress, and an approximate review-effort range before showing the total population. The estimate is a planning range based on remaining individual items, duplicate groups, and batch-eligible work; it is not a guarantee.
 
-The provider-free New Jersey replay preserved all 329 findings: 88 critical, 11 exception, 0 deterministic duplicates, and 230 routine. Estimated finding-decision interactions fell from 329 to 100 (69.60%). Including 38 unchanged page-coverage decisions, estimated interactions fell from 367 to 138 (62.40%). These are workflow estimates—not measured review duration, extraction precision/recall, or proof that every requirement was found.
+The provider-free New Jersey replay preserved all 329 findings: 88 critical, 11 exception, 0 deterministic duplicates, and 230 routine. With bounded 25-item queue pages, the routine population needs 10 explicit batch confirmations, so estimated finding-decision interactions fall from 329 to 109 (66.87%). Including 38 unchanged page-coverage decisions, estimated interactions fall from 367 to 147 (59.95%). These are workflow estimates—not measured review duration, extraction precision/recall, or proof that every requirement was found.
+
+The review queue is scoped to one completed analysis run. The ordinary requirement register projects the latest completed verification scope only; prior runs and rejected, uncertain, superseded, or follow-up findings remain available as immutable audit history rather than silently mixing into the current operating view. The prepared demo likewise binds checklist and downstream examples to their exact completed generation run, so a later demo reset or review population cannot change what a prepared checklist represents.
 
 ## Testing and quality gates
 
@@ -91,6 +93,8 @@ npm run gates
 ```
 
 `npm run gates` runs the static/core gates first (lint, formatting, type-check, unit tests, deterministic evaluation, migration validation, lockfile, dependency and secret checks, and production build), then runs the Supabase integration suite and isolated Playwright suite. It requires a configured development Supabase project in `.env.local` and does not make live AI calls.
+
+The root lockfile now pins the compatible security patch set Next `16.2.12`, PostCSS `8.5.19`, and Sharp `0.35.3`; the current dependency audit reports zero vulnerabilities. The full sequential release rerun is still required before this workstream is called closed—do not infer it from a single core, integration, or browser result.
 
 For environments without Supabase/browser services, the static portion is explicit:
 
@@ -119,6 +123,7 @@ If GitHub shows no status for `main`, check that Actions are enabled and that th
 ## Latest known limitations
 
 - There is no mathematical guarantee that an arbitrary RFP produced every requirement. Completeness is reported through page coverage, parser warnings, source exceptions, and human review; a real solicitation still needs an accountable reviewer.
+- Review acceleration reduces repetitive decisions over the findings that exist; it cannot discover an obligation that the source-analysis population never contained.
 - Addenda, tables, scanned pages, ambiguous dates, and badly extracted PDFs can remain parser-uncertain or require follow-up.
 - A finding is not a bidder-compliance decision. Company evidence such as insurance certificates, licenses, staffing proof, and signatures still needs human/company validation.
 - The ordinary live path is rollout-disabled. The generic Phase 9 path is for explicitly selected public/authorized documents and remains exploratory until its source coverage and recall are independently evaluated.

@@ -225,10 +225,12 @@ At the end of each phase confirm and record in `build-status.md`:
 - [x] A batch remains an explicit human action, is server-revalidated, fails atomically when stale or mixed, and creates one append-only decision per affected finding.
 - [x] Batch and individual workflow state never changes source support, precedence, evidence, provider artifacts, or machine findings.
 - [x] Existing publication eligibility remains unchanged and fail closed while any finding or page-level exception is undecided or needs follow-up.
+- [x] A review summary cannot make publication look eligible when an accepted decision is invalid or an immutable finding is absent from the queue projection; both remain visible, block publication, and require corrective review.
 - [x] The queue uses bounded server-side population reads and deterministic order; no 1,000-row client dump is required.
 - [x] Review analytics contain no document text, quotations, proposals, prompts, tokens, or secrets and never affect workflow authorization or publication.
 - [x] New Jersey offline review acceleration preserved `329 / 329` findings, batch-enabled zero critical/exception findings, and made no provider call.
 - [x] The reported New Jersey interaction reductions are estimates, not measured time, precision/recall, or a completeness guarantee.
+- [x] The operating requirement register is scoped to the latest completed verification scope; historical runs remain immutable/auditable, and the prepared downstream demo binds one exact completed generation run.
 
 ## Guided-tour invariant result — 2026-07-28
 

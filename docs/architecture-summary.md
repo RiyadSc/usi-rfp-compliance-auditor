@@ -229,6 +229,13 @@ invalid or stale item rejects the entire batch. A successful batch writes one im
 plus one append-only finding decision per selected record with actor, policy version, reason, count,
 and shared operation ID. Existing individual and publication RPCs remain authoritative.
 
+The review read model is scoped to one completed evaluation run and is not a substitute for the
+publication contract. It reports invalid accepted decisions and immutable findings absent from its
+queue projection; either condition fails closed and prevents publication. The ordinary requirement
+register separately projects only the latest completed verification scope. Historical runs remain
+immutable audit records, while prepared demo downstream records bind an exact completed checklist
+generation run.
+
 The review workspace consumes bounded queue/summary RPCs rather than loading the full population
 into one server component. Server-side filters, deterministic ordering, stable cursors/pages, and a
 large-population fixture keep the workflow usable at 1,000+ findings. The executive summary,
