@@ -68,8 +68,10 @@ const hex = (value: string) => sha256Canonical(value);
 const id = (group: number, index: number) =>
   `81000000-0000-4000-${String(8200 + group).slice(0, 4)}-${String(index).padStart(12, '0')}`;
 
-async function insert(table: string, values: unknown) {
-  const { error } = await admin.from(table).upsert(values as never, { ignoreDuplicates: true });
+async function insert(table: string, values: unknown, onConflict?: string) {
+  const { error } = await admin
+    .from(table)
+    .upsert(values as never, { ignoreDuplicates: true, onConflict });
   if (error) throw new Error(`${table}:${error.message}`);
 }
 
@@ -1062,14 +1064,18 @@ await insert('phase9_evaluation_runs', {
   expected_answers_used: false,
   requested_maximum_usd: 0,
 });
-await insert('phase9_evaluation_documents', {
-  workspace_id: PHASE8_DEMO_WORKSPACE_ID,
-  evaluation_run_id: PHASE9_REVIEW_TEMPLATE_RUN_ID,
-  document_id: PHASE8_SOURCE_DOCUMENT_ID,
-  source_hash: PHASE8_SOURCE_SHA,
-  ordinal: 0,
-  page_count: PHASE8_SOURCE_PAGES.length,
-});
+await insert(
+  'phase9_evaluation_documents',
+  {
+    workspace_id: PHASE8_DEMO_WORKSPACE_ID,
+    evaluation_run_id: PHASE9_REVIEW_TEMPLATE_RUN_ID,
+    document_id: PHASE8_SOURCE_DOCUMENT_ID,
+    source_hash: PHASE8_SOURCE_SHA,
+    ordinal: 0,
+    page_count: PHASE8_SOURCE_PAGES.length,
+  },
+  'evaluation_run_id,document_id',
+);
 await insert(
   'phase9_source_block_coverage',
   PHASE9_REVIEW_DEMO_SOURCE_BLOCKS.map((block) => ({
@@ -1087,6 +1093,7 @@ await insert(
     processing_result: block.processingResult,
     coverage_version: 'phase9-source-coverage-v1',
   })),
+  'evaluation_run_id,block_hash',
 );
 await insert(
   'phase9_candidate_seeds',
@@ -1103,6 +1110,7 @@ await insert(
     machine_status: 'candidate_unverified',
     miner_version: 'phase9-deterministic-miner-v1',
   })),
+  'evaluation_run_id,candidate_hash',
 );
 await insert(
   'phase9_findings',
@@ -1119,6 +1127,7 @@ await insert(
     human_review_status: 'pending',
     decision_version: 'phase9-deterministic-verification-v1',
   })),
+  'evaluation_run_id,candidate_hash',
 );
 await ensureImmutablePhase9ReviewDemoScope({
   id: PHASE9_REVIEW_DEMO_SCOPE_ID,
@@ -1138,13 +1147,17 @@ await ensureImmutablePhase9ReviewDemoScope({
   source_block_count: PHASE9_REVIEW_DEMO_EXPECTED.sourceBlocks,
   coverage_exception_count: PHASE9_REVIEW_DEMO_EXPECTED.coverageExceptions,
 });
-await insert('phase9_review_demo_states', {
-  workspace_id: PHASE8_DEMO_WORKSPACE_ID,
-  demo_scope_id: PHASE9_REVIEW_DEMO_SCOPE_ID,
-  active_evaluation_run_id: PHASE9_REVIEW_TEMPLATE_RUN_ID,
-  reset_count: 0,
-  state_version: 'phase9-review-demo-state-v1',
-});
+await insert(
+  'phase9_review_demo_states',
+  {
+    workspace_id: PHASE8_DEMO_WORKSPACE_ID,
+    demo_scope_id: PHASE9_REVIEW_DEMO_SCOPE_ID,
+    active_evaluation_run_id: PHASE9_REVIEW_TEMPLATE_RUN_ID,
+    reset_count: 0,
+    state_version: 'phase9-review-demo-state-v1',
+  },
+  'workspace_id',
+);
 
 const { data: candidateCount } = await admin
   .from('requirement_candidates')

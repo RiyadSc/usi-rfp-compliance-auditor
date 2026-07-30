@@ -25,6 +25,10 @@ export type GuidedTourDefinition = {
   version: typeof GUIDED_PRODUCT_TOUR_VERSION;
   audience: GuidedTourAudience;
   demoOnly: boolean;
+  eligibility: {
+    workspaceMode: 'prepared_demo_only';
+    requiredWorkspaceMarker: 'phase8-synthetic-demo-only';
+  };
   steps: readonly GuidedTourStep[];
 };
 
@@ -36,6 +40,10 @@ export const firstRunTour: GuidedTourDefinition = {
   version: GUIDED_PRODUCT_TOUR_VERSION,
   audience: 'first_run',
   demoOnly: true,
+  eligibility: {
+    workspaceMode: 'prepared_demo_only',
+    requiredWorkspaceMarker: 'phase8-synthetic-demo-only',
+  },
   steps: [
     {
       id: 'welcome',
@@ -123,6 +131,10 @@ export const stakeholderDemoTour: GuidedTourDefinition = {
   version: GUIDED_PRODUCT_TOUR_VERSION,
   audience: 'stakeholder_demo',
   demoOnly: true,
+  eligibility: {
+    workspaceMode: 'prepared_demo_only',
+    requiredWorkspaceMarker: 'phase8-synthetic-demo-only',
+  },
   steps: [
     {
       id: 'opportunity-overview',
@@ -308,6 +320,11 @@ export function validateGuidedTourDefinition(definition: GuidedTourDefinition): 
   const errors: string[] = [];
   if (!/^[a-z0-9-]+$/.test(definition.id)) errors.push('invalid_tour_id');
   if (definition.version !== GUIDED_PRODUCT_TOUR_VERSION) errors.push('invalid_tour_version');
+  if (
+    definition.eligibility.workspaceMode !== 'prepared_demo_only' ||
+    definition.eligibility.requiredWorkspaceMarker !== 'phase8-synthetic-demo-only'
+  )
+    errors.push('invalid_tour_eligibility');
   if (!definition.steps.length) errors.push('tour_requires_steps');
   const ids = new Set<string>();
   const targets = new Set<string>();

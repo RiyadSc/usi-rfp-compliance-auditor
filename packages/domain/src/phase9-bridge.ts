@@ -152,35 +152,59 @@ export function mapPhase9RequirementCategory(input: {
 }): ChecklistCategory {
   const type = input.requirementType.toLowerCase();
   const text = `${input.obligationText} ${input.formReference ?? ''}`.toLowerCase();
-  if (/\b(addendum|amendment)\b.*\b(acknowledge|acknowledgment)\b/.test(text))
-    return 'addendum_acknowledgment';
-  if (/\b(questions?|inquir(?:y|ies))\b/.test(text) && /\b(due|deadline|submit)\b/.test(text))
+  if (
+    /\b(questions?|inquir(?:y|ies))\b/.test(text) &&
+    /\b(due|deadline|submit(?:ted)?)\b/.test(text)
+  )
     return 'question_deadline';
-  if (type === 'deadline' || /\b(proposal|bid|response)\b.*\b(due|deadline)\b/.test(text))
+  if (
+    type === 'deadline' ||
+    /\b(proposal|bid|response|submission)\b.*\b(due|deadline)\b/.test(text)
+  )
     return 'submission_deadline';
   if (type === 'form' || input.formReference || /\bform\s+[a-z0-9-]+\b/i.test(text))
     return /\b(price|pricing|cost)\b/.test(text) ? 'pricing_form' : 'mandatory_form';
+  if (
+    /\b(addendum|amendment)\b.*\b(acknowledge|acknowledgment|confirm)\b/.test(text) ||
+    /\b(acknowledge|acknowledgment|confirm)\b.*\b(addendum|amendment)\b/.test(text)
+  )
+    return 'addendum_acknowledgment';
   if (type === 'signature' || /\b(sign|signature|signed)\b/.test(text)) return 'signature';
+  if (/\binitials?\b|\binitialed\b/.test(text)) return 'initials';
+  if (/\backnowledg(?:e|ement|ment)\b/.test(text)) return 'acknowledgment';
+  if (/\battest(?:ation)?\b/.test(text)) return 'attestation';
   if (type === 'insurance' || /\binsurance\b/.test(text)) return 'insurance';
   if (type === 'license' || /\blicen[cs]e\b|\bpermit\b/.test(text)) return 'license';
-  if (type === 'staffing' || /\bstaffing plan\b/.test(text)) return 'staffing_plan';
   if (type === 'meeting' || /\b(pre[- ]?bid|site visit|conference|meeting)\b/.test(text))
     return /\bsite visit\b/.test(text)
       ? 'site_visit'
       : /\bpre[- ]?bid|conference\b/.test(text)
         ? 'pre_bid_conference'
         : 'meeting';
-  if (type === 'attachment' || /\battachment\b/.test(text)) return 'attachment';
   if (type === 'pricing' || /\bpricing\b|\bcost sheet\b/.test(text)) return 'pricing_form';
+  if (type === 'attachment' || /\battachment\b/.test(text)) return 'attachment';
   if (/\bbond\b/.test(text)) return 'bond';
   if (/\bcertificate|certification\b/.test(text)) return 'certification';
+  if (type === 'staffing' || /\bstaffing plan\b/.test(text)) return 'staffing_plan';
   if (/\bresume\b/.test(text)) return 'resume';
   if (/\breference\b/.test(text)) return 'reference';
-  if (/\belectronic|portal|email\b/.test(text) && /\bsubmit|delivery\b/.test(text))
+  if (
+    /\bsubcontractor\b.*\b(disclose|disclosure|list|identify)\b/.test(text) ||
+    /\b(disclose|disclosure|list|identify)\b.*\bsubcontractor\b/.test(text)
+  )
+    return 'subcontractor_disclosure';
+  if (/\b(electronic|portal|email)\b/.test(text) && /\b(submit|deliver|upload)\b/.test(text))
     return 'electronic_submission';
-  if (/\bsealed|hard cop(?:y|ies)|physical\b/.test(text)) return 'physical_submission';
-  if (/\bpackage|packaging\b/.test(text)) return 'packaging_requirement';
-  if (/\bfile format|\\.pdf|\\.xlsx\b/.test(text)) return 'file_format';
+  if (
+    /\b(sealed|hard cop(?:y|ies)|physical)\b/.test(text) &&
+    /\b(submit|deliver|package)\b/.test(text)
+  )
+    return 'physical_submission';
+  if (/\bcopy|copies\b/.test(text)) return 'copy_count';
+  if (/\bfile name|naming convention\b/.test(text)) return 'naming_requirement';
+  if (/\bfile format\b|\.pdf\b|\.xlsx\b/.test(text)) return 'file_format';
+  if (/\bdelivery method|deliver by|submit by\b/.test(text)) return 'delivery_method';
+  if (/\bpackage|packaging|seal(?:ed|ing)?\b/.test(text)) return 'packaging_requirement';
   return 'other_material_requirement';
 }
 

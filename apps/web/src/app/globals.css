@@ -1054,6 +1054,78 @@ html[data-view-mode='analyst'] .executive-only {
   display: none;
 }
 
+@layer components {
+  .executive-review-grid {
+    @apply grid gap-5 lg:grid-cols-[minmax(0,1.7fr)_minmax(18rem,0.8fr)];
+  }
+
+  .executive-primary-card {
+    @apply rounded-lg border border-line-default bg-surface-850 p-5 shadow-card;
+    box-shadow:
+      inset 3px 0 0 rgba(255, 91, 75, 0.66),
+      var(--shadow-card);
+  }
+
+  .executive-metric {
+    @apply rounded-md border border-line-subtle bg-canvas-850 p-3;
+  }
+
+  .executive-metric-critical {
+    @apply border-critical-500/30;
+    background: linear-gradient(135deg, rgba(255, 91, 75, 0.1), rgba(11, 13, 13, 0.4));
+  }
+
+  .executive-metric-warning {
+    @apply border-warning-500/30;
+    background: linear-gradient(135deg, rgba(220, 174, 88, 0.09), rgba(11, 13, 13, 0.4));
+  }
+
+  .filter-tab {
+    @apply inline-flex min-h-9 items-center gap-1 rounded-full border border-line-default bg-canvas-850 px-3 py-1.5 text-sm font-medium text-ink-soft;
+    transition:
+      border-color var(--motion-control) var(--ease),
+      background-color var(--motion-control) var(--ease),
+      color var(--motion-control) var(--ease);
+  }
+
+  .filter-tab:hover {
+    @apply border-line-strong bg-surface-800 text-ink;
+  }
+
+  .filter-tab-active {
+    @apply border-teal-400 bg-teal-600/20 text-teal-300;
+  }
+
+  .review-progress-track {
+    @apply h-2.5 overflow-hidden rounded-full bg-canvas-850;
+  }
+
+  .review-progress-track > span {
+    @apply block h-full rounded-full bg-teal-400;
+    min-width: 0;
+    transition: width var(--motion-panel) var(--ease);
+  }
+
+  .review-queue-row {
+    scroll-margin-top: 6rem;
+    transition: background-color var(--motion-control) var(--ease);
+  }
+
+  .review-queue-row:focus,
+  .review-queue-row:focus-within {
+    @apply bg-surface-850;
+  }
+
+  .review-dialog-backdrop {
+    @apply fixed inset-0 z-[90] grid place-items-center bg-black/70 p-4;
+    backdrop-filter: blur(3px);
+  }
+
+  .review-dialog {
+    @apply w-full max-w-xl rounded-lg border border-line-strong bg-surface-850 p-5 shadow-overlay;
+  }
+}
+
 @media (max-width: 640px) {
   .page-shell,
   .page-shell-narrow {

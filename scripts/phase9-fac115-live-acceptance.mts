@@ -35,6 +35,7 @@ import {
   settlePhase9CallPlan,
 } from '../apps/worker/src/phase9-cost-control.ts';
 import {
+  FAC115_DOCUMENT_IDS,
   FAC115_EVALUATOR_VERSION,
   FAC115_SYNTHETIC_IDENTITY_ID,
   FAC115_WORKSPACE_ID,
@@ -144,6 +145,39 @@ const uncachedTasks = plan.tasks.filter((task) => !validCacheKeys.has(task.cache
 if (plan.hardMaximumUsd > PHASE9_LEDGER_CEILING_USD)
   throw new Error('phase9_live_acceptance_cached_plan_over_ceiling');
 
+const expectedDocumentIds = Object.values(FAC115_DOCUMENT_IDS);
+const documentBindingById = new Map<string, { sourceHash: string; maximumPageNumber: number }>();
+for (const block of production.blocks) {
+  const existing = documentBindingById.get(block.documentId);
+  if (existing && existing.sourceHash !== block.sourceHash)
+    throw new Error('phase9_live_acceptance_document_source_hash_conflict');
+  documentBindingById.set(block.documentId, {
+    sourceHash: block.sourceHash,
+    maximumPageNumber: Math.max(existing?.maximumPageNumber ?? 0, block.pageNumber ?? 0),
+  });
+}
+if (
+  documentBindingById.size !== expectedDocumentIds.length ||
+  expectedDocumentIds.some((documentId) => !documentBindingById.has(documentId))
+)
+  throw new Error('phase9_live_acceptance_document_binding_set_mismatch');
+const documentPreflight = await admin
+  .from('documents')
+  .select('id,workspace_id,sha256')
+  .eq('workspace_id', FAC115_WORKSPACE_ID)
+  .in('id', expectedDocumentIds);
+if (documentPreflight.error)
+  throw new Error(`phase9_live_acceptance_document_preflight:${documentPreflight.error.message}`);
+if (
+  documentPreflight.data.length !== expectedDocumentIds.length ||
+  documentPreflight.data.some(
+    (document) =>
+      document.workspace_id !== FAC115_WORKSPACE_ID ||
+      document.sha256 !== documentBindingById.get(document.id)?.sourceHash,
+  )
+)
+  throw new Error('phase9_live_acceptance_document_preflight_mismatch');
+
 const compatibilityFingerprint = phase9CompatibilityFingerprint();
 const evaluationRunId = randomUUID();
 const evaluationInsert = await admin.from('phase9_evaluation_runs').insert({
@@ -168,6 +202,26 @@ const evaluationInsert = await admin.from('phase9_evaluation_runs').insert({
 });
 if (evaluationInsert.error)
   throw new Error(`phase9_live_run_insert:${evaluationInsert.error.message}`);
+
+const evaluationDocumentsInsert = await admin.from('phase9_evaluation_documents').insert(
+  expectedDocumentIds.map((documentId, ordinal) => {
+    const binding = documentBindingById.get(documentId)!;
+    return {
+      workspace_id: FAC115_WORKSPACE_ID,
+      evaluation_run_id: evaluationRunId,
+      document_id: documentId,
+      source_hash: binding.sourceHash,
+      ordinal,
+      // Spreadsheet and portal blocks do not always expose PDF-style page
+      // numbers. They still represent one bounded source surface for coverage.
+      page_count: Math.max(1, binding.maximumPageNumber),
+    };
+  }),
+);
+if (evaluationDocumentsInsert.error)
+  throw new Error(
+    `phase9_live_evaluation_documents_insert:${evaluationDocumentsInsert.error.message}`,
+  );
 
 const blockById = new Map(production.blocks.map((block) => [block.id, block]));
 const candidateById = new Map(

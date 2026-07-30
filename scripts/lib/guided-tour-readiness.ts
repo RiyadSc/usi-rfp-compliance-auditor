@@ -56,6 +56,8 @@ export type GuidedTourStaticReadiness = {
   };
   missingRoutes: string[];
   missingTargets: string[];
+  optionalMissingRoutes: string[];
+  optionalMissingTargets: string[];
   prohibitedAutomationMatches: string[];
   passed: boolean;
 };
@@ -79,31 +81,43 @@ function validateTourTargets(
 ): {
   missingRoutes: string[];
   missingTargets: string[];
+  optionalMissingRoutes: string[];
+  optionalMissingTargets: string[];
 } {
   const missingRoutes = new Set<string>();
   const missingTargets = new Set<string>();
+  const optionalMissingRoutes = new Set<string>();
+  const optionalMissingTargets = new Set<string>();
   for (const definition of definitions)
     for (const step of definition.steps) {
       const exactSources = routeSources[step.route];
       const baseSources = routeSources[routeKey(step.route)];
       const paths = exactSources ?? baseSources;
       if (!paths) {
-        missingRoutes.add(step.route);
+        (step.fallbackBehavior === 'required' ? missingRoutes : optionalMissingRoutes).add(
+          step.route,
+        );
         continue;
       }
       let source = '';
       try {
         source = loadSources(paths, read);
       } catch {
-        missingRoutes.add(step.route);
+        (step.fallbackBehavior === 'required' ? missingRoutes : optionalMissingRoutes).add(
+          step.route,
+        );
         continue;
       }
       if (!sourceContainsTarget(source, step.targetKey))
-        missingTargets.add(`${definition.id}:${step.id}:${step.targetKey}`);
+        (step.fallbackBehavior === 'required' ? missingTargets : optionalMissingTargets).add(
+          `${definition.id}:${step.id}:${step.targetKey}`,
+        );
     }
   return {
     missingRoutes: [...missingRoutes].sort(),
     missingTargets: [...missingTargets].sort(),
+    optionalMissingRoutes: [...optionalMissingRoutes].sort(),
+    optionalMissingTargets: [...optionalMissingTargets].sort(),
   };
 }
 
@@ -161,6 +175,8 @@ export function evaluateGuidedTourStaticReadiness(input?: {
     checks,
     missingRoutes: targetResult.missingRoutes,
     missingTargets: targetResult.missingTargets,
+    optionalMissingRoutes: targetResult.optionalMissingRoutes,
+    optionalMissingTargets: targetResult.optionalMissingTargets,
     prohibitedAutomationMatches,
     passed: Object.values(checks).every(Boolean),
   };

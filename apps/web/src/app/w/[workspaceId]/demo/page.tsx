@@ -44,6 +44,13 @@ export default async function Phase8DemoPage({
   } catch {
     notFound();
   }
+  const checklistLinks = await admin
+    .from('checklist_generation_run_items')
+    .select('checklist_item_id')
+    .eq('workspace_id', workspaceId)
+    .eq('generation_run_id', scope.binding.checklistGenerationRunId);
+  if (checklistLinks.error || !checklistLinks.data?.length) notFound();
+  const checklistItemIds = checklistLinks.data.map((link) => link.checklist_item_id);
   const [candidates, checklist, blockers, state, report, events] = await Promise.all([
     admin
       .from('requirement_candidates')
@@ -57,12 +64,13 @@ export default async function Phase8DemoPage({
       .from('checklist_items')
       .select('id,title,category,workflow_status,artifact_state,finding_id')
       .eq('workspace_id', workspaceId)
-      .eq('generation_version', 'checklist-generator-v1')
+      .in('id', checklistItemIds)
       .order('id'),
     admin
       .from('checklist_blockers')
       .select('id,checklist_item_id,blocker_type,severity,reason,status')
       .eq('workspace_id', workspaceId)
+      .in('checklist_item_id', checklistItemIds)
       .eq('blocker_type', 'missing_mandatory_form')
       .eq('status', 'open'),
     admin

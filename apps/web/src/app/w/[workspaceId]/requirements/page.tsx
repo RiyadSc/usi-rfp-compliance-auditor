@@ -1,24 +1,44 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { z } from 'zod';
 import { StatusBadge, StatusAxis } from '@/components/status-badge';
 import { WorkspaceNavigation } from '@/components/workspace-navigation';
 import { EmptyStateArt } from '@/components/brand';
 import { IconSearch } from '@/components/icons';
 import { businessLabel } from '@/lib/presentation';
+import {
+  emptyRequirementRegister,
+  loadRequirementRegister,
+} from '@/lib/requirements/register-service';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 const uuid = z.string().uuid();
+const sourceStatuses = [
+  'supported',
+  'partially_supported',
+  'unsupported',
+  'contradicted',
+  'parser_uncertain',
+] as const;
+const precedenceStatuses = ['active', 'superseded', 'conflicting', 'undetermined'] as const;
+const proofRequirements = [
+  'none_identified',
+  'requires_human_confirmation',
+  'requires_company_artifact',
+  'requires_external_validation',
+  'undetermined',
+] as const;
+const mandatoryClasses = ['mandatory', 'optional', 'uncertain'] as const;
+const reviewStatuses = ['pending', 'accepted', 'rejected', 'needs_follow_up', 'waived'] as const;
+const registerPageSize = 50;
 
-type FindingRow = {
-  id: string;
-  candidate_id: string;
-  source_support_status: string;
-  precedence_status: string;
-  proof_requirement: string;
-  created_at: string;
-  verification_run_id: string;
-};
+function allowedFilter<const Values extends readonly string[]>(
+  value: string | string[] | undefined,
+  allowed: Values,
+): Values[number] | '' {
+  if (typeof value !== 'string' || !allowed.includes(value)) return '';
+  return value as Values[number];
+}
 
 export default async function RequirementsPage({
   params,
@@ -30,6 +50,18 @@ export default async function RequirementsPage({
   const { workspaceId } = await params;
   const filters = await searchParams;
   if (!uuid.safeParse(workspaceId).success) notFound();
+  const sourceFilter = allowedFilter(filters.source, sourceStatuses);
+  const precedenceFilter = allowedFilter(filters.precedence, precedenceStatuses);
+  const proofFilter = allowedFilter(filters.proof, proofRequirements);
+  const categoryFilter =
+    typeof filters.category === 'string' ? filters.category.trim().slice(0, 160) : '';
+  const mandatoryFilter = allowedFilter(filters.mandatory, mandatoryClasses);
+  const reviewFilter = allowedFilter(filters.review, reviewStatuses);
+  const queryFilter = typeof filters.q === 'string' ? filters.q.trim().slice(0, 120) : '';
+  const attentionOnly = filters.attention === 'yes';
+  const parsedPage = z.coerce.number().int().min(1).max(1_000_000).safeParse(filters.page);
+  const page = parsedPage.success ? parsedPage.data : 1;
+
   const supabase = await createSupabaseServerClient();
   const { data: workspace } = await supabase
     .from('workspaces')
@@ -37,13 +69,14 @@ export default async function RequirementsPage({
     .eq('id', workspaceId)
     .maybeSingle();
   if (!workspace) notFound();
-  const { data: candidates } = await supabase
-    .from('requirement_candidates')
-    .select(
-      'id, analysis_run_id, category, title, obligation, mandatory_class, preliminary_page, document_id, created_at',
-    )
+  const { data: latestVerificationScope } = await supabase
+    .from('verification_runs')
+    .select('id,analysis_run_id,status,model,reasoning_effort,created_at')
     .eq('workspace_id', workspaceId)
-    .order('created_at', { ascending: false });
+    .eq('status', 'completed')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
   const { data: latestPhase9Run } = await supabase
     .from('phase9_evaluation_runs')
     .select('id,status,created_at')
@@ -51,93 +84,40 @@ export default async function RequirementsPage({
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
-  const candidateIds = (candidates ?? []).map((candidate) => candidate.id);
-  const documentIds = [...new Set((candidates ?? []).map((candidate) => candidate.document_id))];
-  const { data: documents } = documentIds.length
-    ? await supabase
-        .from('documents')
-        .select('id, normalized_filename')
-        .eq('workspace_id', workspaceId)
-        .in('id', documentIds)
-    : { data: [] };
-  const documentNames = new Map(
-    (documents ?? []).map((document) => [document.id, document.normalized_filename]),
-  );
-  const { data: findings } = candidateIds.length
-    ? await supabase
-        .from('verification_findings')
-        .select(
-          'id, candidate_id, source_support_status, precedence_status, proof_requirement, created_at, verification_run_id',
-        )
-        .eq('workspace_id', workspaceId)
-        .in('candidate_id', candidateIds)
-        .order('finding_version', { ascending: false })
-    : { data: [] };
-  const latest = new Map<string, FindingRow>();
-  for (const finding of findings ?? [])
-    if (!latest.has(finding.candidate_id)) latest.set(finding.candidate_id, finding as FindingRow);
-  const findingIds = [...latest.values()].map((finding) => finding.id);
-  const { data: decisions } = findingIds.length
-    ? await supabase
-        .from('human_review_decisions')
-        .select('finding_id, decision, created_at')
-        .eq('workspace_id', workspaceId)
-        .in('finding_id', findingIds)
-        .order('created_at', { ascending: false })
-    : { data: [] };
-  const reviews = new Map<string, string>();
-  for (const decision of decisions ?? [])
-    if (!reviews.has(decision.finding_id)) reviews.set(decision.finding_id, decision.decision);
-  const sourceFilter = typeof filters.source === 'string' ? filters.source : '';
-  const precedenceFilter = typeof filters.precedence === 'string' ? filters.precedence : '';
-  const proofFilter = typeof filters.proof === 'string' ? filters.proof : '';
-  const categoryFilter = typeof filters.category === 'string' ? filters.category : '';
-  const mandatoryFilter = typeof filters.mandatory === 'string' ? filters.mandatory : '';
-  const reviewFilter = typeof filters.review === 'string' ? filters.review : '';
-  const queryFilter =
-    typeof filters.q === 'string' ? filters.q.trim().toLowerCase().slice(0, 120) : '';
-  const attentionOnly = filters.attention === 'yes';
-  const rows = (candidates ?? []).filter((candidate) => {
-    const finding = latest.get(candidate.id);
-    const review = finding ? (reviews.get(finding.id) ?? 'pending') : 'pending';
-    return (
-      (!sourceFilter || finding?.source_support_status === sourceFilter) &&
-      (!precedenceFilter || finding?.precedence_status === precedenceFilter) &&
-      (!proofFilter || finding?.proof_requirement === proofFilter) &&
-      (!categoryFilter || candidate.category === categoryFilter) &&
-      (!mandatoryFilter || candidate.mandatory_class === mandatoryFilter) &&
-      (!reviewFilter || review === reviewFilter) &&
-      (!queryFilter ||
-        candidate.title.toLowerCase().includes(queryFilter) ||
-        candidate.obligation.toLowerCase().includes(queryFilter) ||
-        candidate.category.toLowerCase().includes(queryFilter)) &&
-      (!attentionOnly ||
-        !finding ||
-        finding.source_support_status !== 'supported' ||
-        finding.precedence_status !== 'active' ||
-        review === 'pending')
-    );
-  });
-  const latestRun = (findings ?? [])[0]?.verification_run_id;
-  const { data: verificationRun } = latestRun
-    ? await supabase
-        .from('verification_runs')
-        .select('status, model, reasoning_effort, created_at')
-        .eq('id', latestRun)
-        .maybeSingle()
-    : { data: null };
-
-  const latestRows = [...latest.values()];
-  const needsAttention = latestRows.filter(
-    (finding) =>
-      finding.source_support_status !== 'supported' || finding.precedence_status !== 'active',
-  ).length;
-  const companyProof = latestRows.filter(
-    (finding) => finding.proof_requirement !== 'none_identified',
-  ).length;
-  const pendingReviews = latestRows.filter(
-    (finding) => (reviews.get(finding.id) ?? 'pending') === 'pending',
-  ).length;
+  const register = latestVerificationScope
+    ? await loadRequirementRegister(supabase, {
+        workspaceId,
+        verificationRunId: latestVerificationScope.id,
+        sourceStatus: sourceFilter,
+        precedenceStatus: precedenceFilter,
+        proofRequirement: proofFilter,
+        category: categoryFilter,
+        mandatoryClass: mandatoryFilter,
+        reviewStatus: reviewFilter,
+        search: queryFilter,
+        attentionOnly,
+        page,
+        pageSize: registerPageSize,
+      })
+    : emptyRequirementRegister(page, registerPageSize);
+  const rows = register.rows;
+  const verificationRun = latestVerificationScope;
+  const pageCount = Math.max(1, Math.ceil(register.total / register.pageSize));
+  const requirementsHref = (targetPage: number) => {
+    const search = new URLSearchParams();
+    if (queryFilter) search.set('q', queryFilter);
+    if (categoryFilter) search.set('category', categoryFilter);
+    if (sourceFilter) search.set('source', sourceFilter);
+    if (precedenceFilter) search.set('precedence', precedenceFilter);
+    if (proofFilter) search.set('proof', proofFilter);
+    if (mandatoryFilter) search.set('mandatory', mandatoryFilter);
+    if (reviewFilter) search.set('review', reviewFilter);
+    if (attentionOnly) search.set('attention', 'yes');
+    if (targetPage > 1) search.set('page', String(targetPage));
+    const query = search.toString();
+    return `/w/${workspaceId}/requirements${query ? `?${query}` : ''}`;
+  };
+  if (page > pageCount) redirect(requirementsHref(pageCount));
 
   return (
     <main className="page-shell">
@@ -165,7 +145,7 @@ export default async function RequirementsPage({
         ) : null}
       </div>
 
-      {!candidates?.length && latestPhase9Run?.status === 'completed' ? (
+      {!register.summary.totalRequirements && latestPhase9Run?.status === 'completed' ? (
         <div className="notice notice-warning mb-6">
           <strong className="notice-title">Live analysis is waiting for team review.</strong>
           <p className="mt-1">
@@ -185,26 +165,26 @@ export default async function RequirementsPage({
       >
         <Summary
           label="Requirements identified"
-          value={candidates?.length ?? 0}
+          value={register.summary.totalRequirements}
           note="From the uploaded solicitation package"
         />
         <Summary
           label="Needs attention"
-          value={needsAttention}
+          value={register.summary.needsAttention}
           note="Source or current-version issue"
-          tone={needsAttention ? 'warning' : 'positive'}
+          tone={register.summary.needsAttention ? 'warning' : 'positive'}
         />
         <Summary
           label="Company evidence needed"
-          value={companyProof}
+          value={register.summary.companyEvidenceRequired}
           note="Separate from whether the RFP backs the item"
-          tone={companyProof ? 'info' : 'neutral'}
+          tone={register.summary.companyEvidenceRequired ? 'info' : 'neutral'}
         />
         <Summary
           label="Team reviews pending"
-          value={pendingReviews}
+          value={register.summary.pendingReviews}
           note="Still needs a person — not submission approval"
-          tone={pendingReviews ? 'warning' : 'positive'}
+          tone={register.summary.pendingReviews ? 'warning' : 'positive'}
         />
       </section>
 
@@ -246,6 +226,7 @@ export default async function RequirementsPage({
         </Preset>
       </div>
       <form method="get" className="filter-bar mb-5 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        {attentionOnly ? <input type="hidden" name="attention" value="yes" /> : null}
         <label className="field-label sm:col-span-3 lg:col-span-6">
           Search requirements
           <span className="search-field mt-1.5 block">
@@ -261,7 +242,7 @@ export default async function RequirementsPage({
           name="category"
           label="Category"
           value={categoryFilter}
-          options={[...new Set((candidates ?? []).map((c) => c.category))]}
+          options={register.categories}
         />
         <Filter
           name="source"
@@ -333,49 +314,45 @@ export default async function RequirementsPage({
               </tr>
             </thead>
             <tbody>
-              {rows.map((candidate) => {
-                const finding = latest.get(candidate.id);
-                const review = finding ? (reviews.get(finding.id) ?? 'pending') : 'pending';
-                return (
-                  <tr key={candidate.id}>
-                    <td className="max-w-sm">
-                      <Link
-                        className="cell-primary hover:text-teal-300"
-                        href={`/w/${workspaceId}/requirements/${candidate.id}`}
-                      >
-                        {candidate.title}
-                      </Link>
-                      <p className="text-metadata mt-1.5 line-clamp-2">{candidate.obligation}</p>
-                    </td>
-                    <td className="whitespace-nowrap">{businessLabel(candidate.category)}</td>
-                    <td>
-                      <StatusBadge value={candidate.mandatory_class} />
-                    </td>
-                    <td>
-                      <div className="flex flex-col items-start gap-1.5">
-                        <StatusBadge value={finding?.source_support_status ?? 'pending'} />
-                        <StatusBadge value={finding?.precedence_status ?? 'undetermined'} />
-                      </div>
-                    </td>
-                    <td>
-                      <StatusBadge value={finding?.proof_requirement ?? 'undetermined'} />
-                    </td>
-                    <td>
-                      <span className="locator">
-                        {documentNames.get(candidate.document_id) ?? 'Source document'} · page{' '}
-                        {candidate.preliminary_page}
-                      </span>
-                    </td>
-                    <td>
-                      <StatusBadge value={review} />
-                      <span className="analyst-only text-metadata tabular mt-1.5 block whitespace-nowrap">
-                        Updated{' '}
-                        {new Date(finding?.created_at ?? candidate.created_at).toLocaleString()}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
+              {rows.map((candidate) => (
+                <tr key={candidate.id}>
+                  <td className="max-w-sm">
+                    <Link
+                      className="cell-primary hover:text-teal-300"
+                      href={`/w/${workspaceId}/requirements/${candidate.id}`}
+                    >
+                      {candidate.title}
+                    </Link>
+                    <p className="text-metadata mt-1.5 line-clamp-2">{candidate.obligation}</p>
+                  </td>
+                  <td className="whitespace-nowrap">{businessLabel(candidate.category)}</td>
+                  <td>
+                    <StatusBadge value={candidate.mandatoryClass} />
+                  </td>
+                  <td>
+                    <div className="flex flex-col items-start gap-1.5">
+                      <StatusBadge value={candidate.sourceSupportStatus ?? 'pending'} />
+                      <StatusBadge value={candidate.precedenceStatus ?? 'undetermined'} />
+                    </div>
+                  </td>
+                  <td>
+                    <StatusBadge value={candidate.proofRequirement ?? 'undetermined'} />
+                  </td>
+                  <td>
+                    <span className="locator">
+                      {candidate.documentName ?? 'Source document'} · page{' '}
+                      {candidate.preliminaryPage}
+                    </span>
+                  </td>
+                  <td>
+                    <StatusBadge value={candidate.humanReviewStatus} />
+                    <span className="analyst-only text-metadata tabular mt-1.5 block whitespace-nowrap">
+                      Updated{' '}
+                      {new Date(candidate.findingCreatedAt ?? candidate.createdAt).toLocaleString()}
+                    </span>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -386,6 +363,31 @@ export default async function RequirementsPage({
           </div>
         ) : null}
       </div>
+      {register.total > register.pageSize ? (
+        <nav
+          aria-label="Requirement pages"
+          className="mt-4 flex flex-wrap items-center justify-between gap-3"
+        >
+          {page > 1 ? (
+            <Link className="secondary-action btn-sm" href={requirementsHref(page - 1)}>
+              ← Previous
+            </Link>
+          ) : (
+            <span aria-hidden="true" />
+          )}
+          <p className="text-metadata tabular">
+            Showing {(page - 1) * register.pageSize + 1}–
+            {Math.min(page * register.pageSize, register.total)} of {register.total}
+          </p>
+          {page < pageCount ? (
+            <Link className="secondary-action btn-sm" href={requirementsHref(page + 1)}>
+              Next →
+            </Link>
+          ) : (
+            <span aria-hidden="true" />
+          )}
+        </nav>
+      ) : null}
 
       <section className="mt-8 grid gap-3 md:grid-cols-4" aria-label="Status guide">
         <StatusAxis

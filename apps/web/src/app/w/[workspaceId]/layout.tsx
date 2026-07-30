@@ -29,6 +29,7 @@ export default async function WorkspaceLayout({
         .from('phase8_demo_scopes')
         .select('id')
         .eq('workspace_id', workspaceId)
+        .eq('authorized_identity_id', user.id)
         .eq('synthetic_marker', 'phase8-synthetic-demo-only')
         .limit(1)
         .maybeSingle(),

@@ -48,7 +48,7 @@ export const phase9ReviewFindingSchema = z
     category: checklistCategorySchema,
     requirementType: z.string().trim().min(1).max(120),
     obligationText: z.string().trim().min(1).max(8000),
-    evidenceText: z.string().max(8000),
+    evidenceText: z.string().trim().min(1).max(8000),
     evidenceCount: z.number().int().nonnegative(),
     pageReferencesComplete: z.boolean(),
     quoteMatchType: quoteMatchSchema,
@@ -110,6 +110,8 @@ const CRITICAL_CATEGORIES = new Set<ChecklistCategory>([
 
 const CRITICAL_MEANING =
   /\b(deadline|due date|bid opening|proposal opening|mandatory form|required form|pricing (?:form|sheet|submission)|signature|signed|initials?|attest(?:ation)?|acknowledg(?:e|ment)|insurance|bond|licen[cs]e|permit|pre[- ]?bid|site visit|delivery method|electronic submission|physical submission|hard cop(?:y|ies)|copy count|file (?:format|name|naming)|packag(?:e|ing)|seal(?:ed|ing)|mandatory attachment|subcontractor disclosure|failure to (?:submit|attend).*(?:reject|disqualif)|shall be rejected|will be rejected)\b/i;
+const DISQUALIFYING_MEANING =
+  /\b(?:failure|omission)\b.{0,160}\b(?:reject(?:ed|ion)?|disqualif(?:y|ied|ication)?|nonresponsive|invalidate)\b|\b(?:shall|will|may)\s+be\s+(?:rejected|disqualified|deemed\s+nonresponsive)\b/i;
 
 export function isPhase9CriticalFinding(finding: Phase9ReviewFinding): boolean {
   const parsed = phase9ReviewFindingSchema.parse(finding);
@@ -119,6 +121,7 @@ export function isPhase9CriticalFinding(finding: Phase9ReviewFinding): boolean {
     (parsed.category === 'attachment' || parsed.category === 'certification')
   )
     return true;
+  if (DISQUALIFYING_MEANING.test(parsed.obligationText)) return true;
   return (
     parsed.mandatoryClass === 'mandatory' &&
     CRITICAL_MEANING.test(`${parsed.obligationText} ${parsed.formReference ?? ''}`)
@@ -285,7 +288,6 @@ export function groupPhase9DeterministicDuplicates(
     .map<Phase9DuplicateGroup>(([groupKey, entries]) => {
       const ordered = [...entries].sort(
         (left, right) =>
-          left.sourceOrder - right.sourceOrder ||
           (left.sourcePage ?? Number.MAX_SAFE_INTEGER) -
             (right.sourcePage ?? Number.MAX_SAFE_INTEGER) ||
           left.candidateHash.localeCompare(right.candidateHash),
@@ -459,11 +461,7 @@ export const guidedTourStepSchema = z
     title: z.string().trim().min(1).max(80),
     text: z.string().trim().min(1).max(320),
     preferredPlacement: guidedTourPlacementSchema,
-    interactionRequirement: z.enum([
-      'informational',
-      'open_source',
-      'manual_business_action',
-    ]),
+    interactionRequirement: z.enum(['informational', 'open_source', 'manual_business_action']),
     precondition: z.literal('target_available').optional(),
     completionCondition: z
       .enum(['manual_next', 'source_opened', 'business_action_observed'])

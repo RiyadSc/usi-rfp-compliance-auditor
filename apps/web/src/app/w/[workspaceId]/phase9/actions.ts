@@ -2,6 +2,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
+import { after } from 'next/server';
 import { z } from 'zod';
 import {
   PHASE9_MINER_VERSION,
@@ -13,7 +14,11 @@ import {
   phase9StableHash,
   type Phase9WorkspaceDocument,
 } from '@usi/ai';
-import { phase9CoverageReviewInputSchema, phase9FindingReviewInputSchema } from '@usi/domain';
+import {
+  phase9BatchActionSchema,
+  phase9CoverageReviewInputSchema,
+  phase9FindingReviewInputSchema,
+} from '@usi/domain';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { serverEnv } from '@/lib/env';
@@ -27,6 +32,20 @@ const startSchema = z.object({
   budgetConfirmed: z.literal(true),
   publicOrAuthorizedDataConfirmed: z.literal(true),
 });
+
+function actionErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message.trim()) return error.message;
+  if (
+    typeof error === 'object' &&
+    error &&
+    'message' in error &&
+    typeof (error as { message: unknown }).message === 'string' &&
+    (error as { message: string }).message.trim()
+  ) {
+    return (error as { message: string }).message;
+  }
+  return fallback;
+}
 
 const chunks = <T>(items: T[], size = 400) =>
   Array.from({ length: Math.ceil(items.length / size) }, (_, index) =>
@@ -415,9 +434,22 @@ export async function recordPhase9FindingReviewAction(rawInput: {
     category?: string;
     mandatoryClass?: string;
   };
+  reviewSessionId?: string;
+  idempotencyKey?: string;
 }): Promise<{ ok: true; decisionId: string } | { ok: false; error: string }> {
   try {
-    const input = phase9FindingReviewInputSchema.parse(rawInput);
+    const input = phase9FindingReviewInputSchema
+      .and(
+        z.object({
+          reviewSessionId: z.string().uuid().optional(),
+          idempotencyKey: z.string().uuid().optional(),
+        }),
+      )
+      .refine(
+        (value) => Boolean(value.reviewSessionId) === Boolean(value.idempotencyKey),
+        'Review session and idempotency key must be supplied together.',
+      )
+      .parse(rawInput);
     const supabase = await createSupabaseServerClient();
     const {
       data: { user },
@@ -430,26 +462,39 @@ export async function recordPhase9FindingReviewAction(rawInput: {
       .maybeSingle();
     if (!workspace) throw new Error('Workspace not found');
     await enforceRateLimit({
-      operation: 'verification_request',
+      operation: 'phase9_review_workflow',
       actorId: user.id,
       workspaceId: input.workspaceId,
     });
-    const { data, error } = await supabase.rpc('record_phase9_finding_review', {
-      p_workspace_id: input.workspaceId,
-      p_evaluation_run_id: input.evaluationRunId,
-      p_candidate_hash: input.candidateHash,
-      p_decision: input.decision,
-      p_note: input.note,
-      p_corrections: input.corrections,
-    });
+    const { data, error } = input.reviewSessionId
+      ? await supabase.rpc('record_phase9_finding_review_accelerated', {
+          p_workspace_id: input.workspaceId,
+          p_evaluation_run_id: input.evaluationRunId,
+          p_candidate_hash: input.candidateHash,
+          p_decision: input.decision,
+          p_note: input.note,
+          p_corrections: input.corrections,
+          p_review_session_id: input.reviewSessionId,
+          p_idempotency_key: input.idempotencyKey,
+        })
+      : await supabase.rpc('record_phase9_finding_review', {
+          p_workspace_id: input.workspaceId,
+          p_evaluation_run_id: input.evaluationRunId,
+          p_candidate_hash: input.candidateHash,
+          p_decision: input.decision,
+          p_note: input.note,
+          p_corrections: input.corrections,
+        });
     if (error) throw error;
-    revalidatePath(`/w/${input.workspaceId}`);
-    revalidatePath(`/w/${input.workspaceId}/phase9`);
+    // Return before cache work so the reviewer UI can advance focus immediately.
+    after(() => {
+      revalidatePath(`/w/${input.workspaceId}/phase9`);
+    });
     return { ok: true, decisionId: z.string().uuid().parse(data) };
   } catch (error) {
     return {
       ok: false,
-      error: error instanceof Error ? error.message : 'Could not record finding review.',
+      error: actionErrorMessage(error, 'Could not record finding review.'),
     };
   }
 }
@@ -461,9 +506,22 @@ export async function recordPhase9CoverageReviewAction(rawInput: {
   pageNumber: number;
   decision: string;
   note?: string;
+  reviewSessionId?: string;
+  idempotencyKey?: string;
 }): Promise<{ ok: true; decisionId: string } | { ok: false; error: string }> {
   try {
-    const input = phase9CoverageReviewInputSchema.parse(rawInput);
+    const input = phase9CoverageReviewInputSchema
+      .and(
+        z.object({
+          reviewSessionId: z.string().uuid().optional(),
+          idempotencyKey: z.string().uuid().optional(),
+        }),
+      )
+      .refine(
+        (value) => Boolean(value.reviewSessionId) === Boolean(value.idempotencyKey),
+        'Review session and idempotency key must be supplied together.',
+      )
+      .parse(rawInput);
     const supabase = await createSupabaseServerClient();
     const {
       data: { user },
@@ -476,40 +534,56 @@ export async function recordPhase9CoverageReviewAction(rawInput: {
       .maybeSingle();
     if (!workspace) throw new Error('Workspace not found');
     await enforceRateLimit({
-      operation: 'verification_request',
+      operation: 'phase9_review_workflow',
       actorId: user.id,
       workspaceId: input.workspaceId,
     });
-    const { data, error } = await supabase.rpc('record_phase9_coverage_review', {
-      p_workspace_id: input.workspaceId,
-      p_evaluation_run_id: input.evaluationRunId,
-      p_source_document_id: input.documentId,
-      p_page_number: input.pageNumber,
-      p_decision: input.decision,
-      p_note: input.note,
-    });
+    const { data, error } = input.reviewSessionId
+      ? await supabase.rpc('record_phase9_coverage_review_accelerated', {
+          p_workspace_id: input.workspaceId,
+          p_evaluation_run_id: input.evaluationRunId,
+          p_source_document_id: input.documentId,
+          p_page_number: input.pageNumber,
+          p_decision: input.decision,
+          p_note: input.note,
+          p_review_session_id: input.reviewSessionId,
+          p_idempotency_key: input.idempotencyKey,
+        })
+      : await supabase.rpc('record_phase9_coverage_review', {
+          p_workspace_id: input.workspaceId,
+          p_evaluation_run_id: input.evaluationRunId,
+          p_source_document_id: input.documentId,
+          p_page_number: input.pageNumber,
+          p_decision: input.decision,
+          p_note: input.note,
+        });
     if (error) throw error;
-    revalidatePath(`/w/${input.workspaceId}`);
-    revalidatePath(`/w/${input.workspaceId}/phase9`);
+    after(() => {
+      revalidatePath(`/w/${input.workspaceId}/phase9`);
+    });
     return { ok: true, decisionId: z.string().uuid().parse(data) };
   } catch (error) {
     return {
       ok: false,
-      error: error instanceof Error ? error.message : 'Could not record coverage review.',
+      error: actionErrorMessage(error, 'Could not record coverage review.'),
     };
   }
 }
 
-export async function publishReviewedPhase9FindingsAction(rawInput: {
+export async function recordPhase9ReviewBatchAction(rawInput: {
   workspaceId: string;
   evaluationRunId: string;
+  candidateHashes: string[];
+  action: string;
+  reason?: string;
+  idempotencyKey: string;
+  reviewSessionId: string;
 }): Promise<
   | {
       ok: true;
-      bridgeRunId: string;
-      analysisRunId: string;
-      verificationRunId: string;
-      publishedCount: number;
+      batchOperationId: string;
+      selectionCount: number;
+      action: string;
       reused: boolean;
     }
   | { ok: false; error: string }
@@ -519,7 +593,223 @@ export async function publishReviewedPhase9FindingsAction(rawInput: {
       .object({
         workspaceId: z.string().uuid(),
         evaluationRunId: z.string().uuid(),
+        candidateHashes: z
+          .array(z.string().regex(/^[0-9a-f]{64}$/))
+          .min(1)
+          .max(500),
+        action: phase9BatchActionSchema,
+        reason: z.string().max(1000).default(''),
+        idempotencyKey: z.string().uuid(),
+        reviewSessionId: z.string().uuid(),
       })
+      .strict()
+      .superRefine((value, context) => {
+        if (new Set(value.candidateHashes).size !== value.candidateHashes.length)
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['candidateHashes'],
+            message: 'A finding may appear only once in a batch.',
+          });
+        if (
+          ['reject_duplicate', 'mark_follow_up'].includes(value.action) &&
+          value.reason.trim().length < 5
+        )
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['reason'],
+            message: 'This batch decision requires a reason.',
+          });
+      })
+      .parse(rawInput);
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not signed in');
+    const { data: workspace } = await supabase
+      .from('workspaces')
+      .select('id')
+      .eq('id', input.workspaceId)
+      .maybeSingle();
+    if (!workspace) throw new Error('Workspace not found');
+    await enforceRateLimit({
+      operation: 'phase9_review_workflow',
+      actorId: user.id,
+      workspaceId: input.workspaceId,
+    });
+    const { data, error } = await supabase.rpc('record_phase9_review_batch_v2', {
+      p_workspace_id: input.workspaceId,
+      p_evaluation_run_id: input.evaluationRunId,
+      p_candidate_hashes: input.candidateHashes,
+      p_action: input.action,
+      p_reason: input.reason,
+      p_idempotency_key: input.idempotencyKey,
+      p_review_session_id: input.reviewSessionId,
+    });
+    if (error) throw error;
+    const result = z
+      .object({
+        batchOperationId: z.string().uuid(),
+        selectionCount: z.number().int().positive(),
+        action: phase9BatchActionSchema,
+        reused: z.boolean(),
+      })
+      .parse(data);
+    after(() => {
+      revalidatePath(`/w/${input.workspaceId}/phase9`);
+    });
+    return { ok: true, ...result };
+  } catch (error) {
+    return {
+      ok: false,
+      error: actionErrorMessage(error, 'Could not record batch review.'),
+    };
+  }
+}
+
+export async function recordPhase9ReviewActivityAction(rawInput: {
+  workspaceId: string;
+  evaluationRunId: string;
+  eventType: string;
+  reviewSessionId: string;
+  idempotencyKey: string;
+  candidateHash?: string;
+  sourceDocumentId?: string;
+  pageNumber?: number;
+  metadata?: Record<string, string | number | boolean | null>;
+}): Promise<{ ok: true; eventId: string } | { ok: false; error: string }> {
+  try {
+    const input = z
+      .object({
+        workspaceId: z.string().uuid(),
+        evaluationRunId: z.string().uuid(),
+        eventType: z.enum(['review_session_started', 'finding_opened', 'source_page_opened']),
+        reviewSessionId: z.string().uuid(),
+        idempotencyKey: z.string().uuid(),
+        candidateHash: z
+          .string()
+          .regex(/^[0-9a-f]{64}$/)
+          .optional(),
+        sourceDocumentId: z.string().uuid().optional(),
+        pageNumber: z.number().int().positive().optional(),
+        metadata: z
+          .record(z.string(), z.union([z.string().max(120), z.number(), z.boolean(), z.null()]))
+          .default({}),
+      })
+      .strict()
+      .parse(rawInput);
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase.rpc('record_phase9_observational_activity_v1', {
+      p_workspace_id: input.workspaceId,
+      p_evaluation_run_id: input.evaluationRunId,
+      p_event_type: input.eventType,
+      p_review_session_id: input.reviewSessionId,
+      p_idempotency_key: input.idempotencyKey,
+      p_candidate_hash: input.candidateHash ?? null,
+      p_source_document_id: input.sourceDocumentId ?? null,
+      p_page_number: input.pageNumber ?? null,
+      p_metadata: input.metadata,
+    });
+    if (error) throw error;
+    return { ok: true, eventId: z.string().uuid().parse(data) };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Could not record review activity.',
+    };
+  }
+}
+
+export async function loadPhase9ReviewActivitySummaryAction(rawInput: {
+  workspaceId: string;
+  evaluationRunId: string;
+  reviewSessionId: string;
+}): Promise<
+  | {
+      ok: true;
+      summary: {
+        elapsedSeconds: number;
+        individualDecisions: number;
+        batchOperations: number;
+        batchDecisions: number;
+        sourceOpenings: number;
+        decisionsPerMinute: number;
+        remainingWork: number;
+      };
+    }
+  | { ok: false; error: string }
+> {
+  try {
+    const input = z
+      .object({
+        workspaceId: z.string().uuid(),
+        evaluationRunId: z.string().uuid(),
+        reviewSessionId: z.string().uuid(),
+      })
+      .strict()
+      .parse(rawInput);
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase.rpc('get_phase9_review_activity_summary', {
+      p_workspace_id: input.workspaceId,
+      p_evaluation_run_id: input.evaluationRunId,
+      p_review_session_id: input.reviewSessionId,
+    });
+    if (error) throw error;
+    const summary = z
+      .object({
+        version: z.literal('phase9-review-analytics-v1'),
+        elapsedSeconds: z.coerce.number().int().nonnegative(),
+        individualDecisions: z.coerce.number().int().nonnegative(),
+        batchOperations: z.coerce.number().int().nonnegative(),
+        batchDecisions: z.coerce.number().int().nonnegative(),
+        sourceOpenings: z.coerce.number().int().nonnegative(),
+        decisionsPerMinute: z.coerce.number().nonnegative(),
+        remainingWork: z.coerce.number().int().nonnegative(),
+      })
+      .strict()
+      .parse(data);
+    return { ok: true, summary };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Could not load review activity.',
+    };
+  }
+}
+
+export async function publishReviewedPhase9FindingsAction(rawInput: {
+  workspaceId: string;
+  evaluationRunId: string;
+  reviewSessionId?: string;
+  attemptIdempotencyKey?: string;
+  completionIdempotencyKey?: string;
+}): Promise<
+  | {
+      ok: true;
+      bridgeRunId: string;
+      analysisRunId: string;
+      verificationRunId: string;
+      publishedCount: number;
+      reused: boolean;
+      instrumentationWarning?: string;
+    }
+  | { ok: false; error: string }
+> {
+  try {
+    const input = z
+      .object({
+        workspaceId: z.string().uuid(),
+        evaluationRunId: z.string().uuid(),
+        reviewSessionId: z.string().uuid().optional(),
+        attemptIdempotencyKey: z.string().uuid().optional(),
+        completionIdempotencyKey: z.string().uuid().optional(),
+      })
+      .refine(
+        (value) =>
+          !value.reviewSessionId ||
+          Boolean(value.attemptIdempotencyKey && value.completionIdempotencyKey),
+        'Publication activity identifiers are incomplete.',
+      )
       .parse(rawInput);
     const supabase = await createSupabaseServerClient();
     const {
@@ -535,10 +825,25 @@ export async function publishReviewedPhase9FindingsAction(rawInput: {
     if (!membership || membership.role !== 'owner')
       throw new Error('Only the workspace owner can publish reviewed requirements.');
     await enforceRateLimit({
-      operation: 'verification_request',
+      operation: 'phase9_review_workflow',
       actorId: user.id,
       workspaceId: input.workspaceId,
     });
+    const instrumentationWarnings: string[] = [];
+    if (input.reviewSessionId) {
+      const attempt = await supabase.rpc('record_phase9_publication_activity_v1', {
+        p_workspace_id: input.workspaceId,
+        p_evaluation_run_id: input.evaluationRunId,
+        p_event_type: 'publication_attempted',
+        p_review_session_id: input.reviewSessionId,
+        p_idempotency_key: input.attemptIdempotencyKey,
+        p_bridge_run_id: null,
+      });
+      if (attempt.error)
+        instrumentationWarnings.push(
+          'The non-authoritative publication-attempt activity could not be recorded.',
+        );
+    }
     const { data, error } = await supabase.rpc('publish_phase9_reviewed_findings', {
       p_workspace_id: input.workspaceId,
       p_evaluation_run_id: input.evaluationRunId,
@@ -553,15 +858,37 @@ export async function publishReviewedPhase9FindingsAction(rawInput: {
         reused: z.boolean(),
       })
       .parse(data);
-    revalidatePath(`/w/${input.workspaceId}`);
-    revalidatePath(`/w/${input.workspaceId}/phase9`);
-    revalidatePath(`/w/${input.workspaceId}/requirements`);
-    revalidatePath(`/w/${input.workspaceId}/checklist`);
-    return { ok: true, ...result };
+    if (input.reviewSessionId) {
+      const completion = await supabase.rpc('record_phase9_publication_activity_v1', {
+        p_workspace_id: input.workspaceId,
+        p_evaluation_run_id: input.evaluationRunId,
+        p_event_type: 'publication_completed',
+        p_review_session_id: input.reviewSessionId,
+        p_idempotency_key: input.completionIdempotencyKey,
+        p_bridge_run_id: result.bridgeRunId,
+      });
+      if (completion.error)
+        instrumentationWarnings.push(
+          'Publication succeeded, but the non-authoritative activity summary could not be updated.',
+        );
+    }
+    after(() => {
+      revalidatePath(`/w/${input.workspaceId}`);
+      revalidatePath(`/w/${input.workspaceId}/phase9`);
+      revalidatePath(`/w/${input.workspaceId}/requirements`);
+      revalidatePath(`/w/${input.workspaceId}/checklist`);
+    });
+    return {
+      ok: true,
+      ...result,
+      ...(instrumentationWarnings.length
+        ? { instrumentationWarning: instrumentationWarnings.join(' ') }
+        : {}),
+    };
   } catch (error) {
     return {
       ok: false,
-      error: error instanceof Error ? error.message : 'Could not publish reviewed requirements.',
+      error: actionErrorMessage(error, 'Could not publish reviewed requirements.'),
     };
   }
 }

@@ -1,11 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   publishReviewedPhase9FindingsAction,
   recordPhase9CoverageReviewAction,
   recordPhase9FindingReviewAction,
+  recordPhase9ReviewActivityAction,
 } from './actions';
 
 const CATEGORIES = [
@@ -46,13 +48,19 @@ export function Phase9FindingReviewControls({
   evaluationRunId,
   candidateHash,
   currentDecision,
+  reviewSessionId,
+  nextHref,
 }: {
   workspaceId: string;
   evaluationRunId: string;
   candidateHash: string;
   currentDecision: string | null;
+  reviewSessionId?: string;
+  nextHref?: string | null;
 }) {
   const router = useRouter();
+  const [fallbackReviewSessionId] = useState(() => crypto.randomUUID());
+  const activeReviewSessionId = reviewSessionId ?? fallbackReviewSessionId;
   const [decision, setDecision] = useState<'accepted' | 'rejected' | 'needs_follow_up'>(
     currentDecision === 'rejected' || currentDecision === 'needs_follow_up'
       ? currentDecision
@@ -68,6 +76,7 @@ export function Phase9FindingReviewControls({
   return (
     <form
       className="surface-inset mt-4 space-y-3 p-4"
+      data-tour-interaction="review-decision"
       onSubmit={(event) => {
         event.preventDefault();
         start(async () => {
@@ -83,13 +92,44 @@ export function Phase9FindingReviewControls({
             decision,
             note,
             corrections,
+            reviewSessionId: activeReviewSessionId,
+            idempotencyKey: crypto.randomUUID(),
           });
-          setMessage(
-            result.ok
-              ? 'Team source decision recorded. The requirement register has not been changed yet.'
-              : result.error,
-          );
-          if (result.ok) router.refresh();
+          if (result.ok) {
+            document.dispatchEvent(
+              new CustomEvent('phase9-review-action-completed', {
+                detail: {
+                  kind: 'individual_review',
+                  targetKey: 'review-decision',
+                  workspaceId,
+                  evaluationRunId,
+                  candidateHash,
+                },
+              }),
+            );
+            const tourActive = Boolean(
+              document.querySelector('[data-testid="guided-tour"][data-tour-step]'),
+            );
+            if (tourActive) {
+              // The tour observes the custom event; avoid remounting the review
+              // dashboard mid-walkthrough.
+              setMessage(
+                'Team source decision recorded. The requirement register has not been changed yet.',
+              );
+              return;
+            }
+            if (nextHref) {
+              // Navigate before local state updates so the one-shot focus query is not dropped.
+              router.push(nextHref);
+              return;
+            }
+            setMessage(
+              'Team source decision recorded. The requirement register has not been changed yet.',
+            );
+            router.refresh();
+            return;
+          }
+          setMessage(result.error);
         });
       }}
     >
@@ -190,14 +230,20 @@ export function Phase9CoverageReviewControls({
   documentId,
   pageNumber,
   currentDecision,
+  reviewSessionId,
+  sourceHref,
 }: {
   workspaceId: string;
   evaluationRunId: string;
   documentId: string;
   pageNumber: number;
   currentDecision: string | null;
+  reviewSessionId?: string;
+  sourceHref?: string;
 }) {
   const router = useRouter();
+  const [fallbackReviewSessionId] = useState(() => crypto.randomUUID());
+  const activeReviewSessionId = reviewSessionId ?? fallbackReviewSessionId;
   const [decision, setDecision] = useState<'accepted' | 'needs_follow_up'>(
     currentDecision === 'needs_follow_up' ? 'needs_follow_up' : 'accepted',
   );
@@ -217,12 +263,35 @@ export function Phase9CoverageReviewControls({
             pageNumber,
             decision,
             note,
+            reviewSessionId: activeReviewSessionId,
+            idempotencyKey: crypto.randomUUID(),
           });
           setMessage(result.ok ? 'Page exception decision recorded.' : result.error);
           if (result.ok) router.refresh();
         });
       }}
     >
+      {sourceHref ? (
+        <Link
+          className="action-link inline-flex"
+          href={sourceHref}
+          data-tour-interaction="source-evidence"
+          onClick={() => {
+            void recordPhase9ReviewActivityAction({
+              workspaceId,
+              evaluationRunId,
+              eventType: 'source_page_opened',
+              reviewSessionId: activeReviewSessionId,
+              idempotencyKey: crypto.randomUUID(),
+              sourceDocumentId: documentId,
+              pageNumber,
+              metadata: { source: 'coverage_exception' },
+            });
+          }}
+        >
+          Open source page {pageNumber}
+        </Link>
+      ) : null}
       <label className="field-label">
         Exception decision
         <select
@@ -269,6 +338,9 @@ export function PublishReviewedFindings({
   coverageExceptionCount,
   coverageReviewedCount,
   coverageFollowUpCount,
+  publicationEligible,
+  invalidAcceptedCount,
+  unrepresentedFindingCount,
 }: {
   workspaceId: string;
   evaluationRunId: string;
@@ -279,8 +351,12 @@ export function PublishReviewedFindings({
   coverageExceptionCount: number;
   coverageReviewedCount: number;
   coverageFollowUpCount: number;
+  publicationEligible: boolean;
+  invalidAcceptedCount: number;
+  unrepresentedFindingCount: number;
 }) {
   const router = useRouter();
+  const [reviewSessionId] = useState(() => crypto.randomUUID());
   const [confirmed, setConfirmed] = useState(false);
   const [message, setMessage] = useState('');
   const [pending, start] = useTransition();
@@ -301,14 +377,17 @@ export function PublishReviewedFindings({
         {coverageReviewedCount} of {coverageExceptionCount} page exceptions have a team decision
         {coverageFollowUpCount ? ` · ${coverageFollowUpCount} still need follow-up` : ''}.
       </p>
-      {reviewedCount !== totalCount ||
-      followUpCount ||
-      coverageReviewedCount !== coverageExceptionCount ||
-      coverageFollowUpCount ? (
+      {!publicationEligible ? (
         <p className="notice notice-warning mt-3">
           Publication stays locked until every finding and page-level exception has a team decision
           and no follow-up remains unresolved. Rejected or non-active findings remain in the audit
           history and do not become checklist obligations.
+          {invalidAcceptedCount
+            ? ` ${invalidAcceptedCount} accepted decision${invalidAcceptedCount === 1 ? '' : 's'} no longer pass the source-publication rules.`
+            : ''}
+          {unrepresentedFindingCount
+            ? ` ${unrepresentedFindingCount} machine finding${unrepresentedFindingCount === 1 ? ' is' : 's are'} not represented in the review queue.`
+            : ''}
         </p>
       ) : null}
       <label className="mt-4 flex max-w-3xl items-start gap-2 text-sm text-ink-soft">
@@ -326,24 +405,19 @@ export function PublishReviewedFindings({
       <button
         type="button"
         className="primary-action mt-4"
-        disabled={
-          !confirmed ||
-          eligibleCount === 0 ||
-          reviewedCount !== totalCount ||
-          followUpCount > 0 ||
-          coverageReviewedCount !== coverageExceptionCount ||
-          coverageFollowUpCount > 0 ||
-          pending
-        }
+        disabled={!confirmed || eligibleCount === 0 || !publicationEligible || pending}
         onClick={() =>
           start(async () => {
             const result = await publishReviewedPhase9FindingsAction({
               workspaceId,
               evaluationRunId,
+              reviewSessionId,
+              attemptIdempotencyKey: crypto.randomUUID(),
+              completionIdempotencyKey: crypto.randomUUID(),
             });
             setMessage(
               result.ok
-                ? `${result.publishedCount} reviewed requirement${result.publishedCount === 1 ? '' : 's'} ${result.reused ? 'were already published' : 'published'}. You can now open the requirement register and build the submission checklist.`
+                ? `${result.publishedCount} reviewed requirement${result.publishedCount === 1 ? '' : 's'} ${result.reused ? 'were already published' : 'published'}. You can now open the requirement register and build the submission checklist.${result.instrumentationWarning ? ` ${result.instrumentationWarning}` : ''}`
                 : result.error,
             );
             if (result.ok) router.refresh();

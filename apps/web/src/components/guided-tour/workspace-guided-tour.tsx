@@ -10,10 +10,14 @@ import {
   useReducer,
   useRef,
   useState,
+  useTransition,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { saveGuidedTourStateAction } from '@/app/w/[workspaceId]/tour-actions';
+import {
+  prepareGuidedDemoAction,
+  saveGuidedTourStateAction,
+} from '@/app/w/[workspaceId]/tour-actions';
 import {
   firstRunTour,
   resolveGuidedTourRoute,
@@ -44,8 +48,55 @@ type TargetState = {
 } | null;
 
 const PANEL_WIDTH = 360;
+
+function guidedTourTerminalKey(workspaceId: string, tourId: string, tourVersion: string): string {
+  return `guided-tour-terminal:${workspaceId}:${tourId}:${tourVersion}`;
+}
+
+function readGuidedTourTerminal(
+  workspaceId: string,
+  tourId: string,
+  tourVersion: string,
+): 'completed' | 'dismissed' | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const value = window.sessionStorage.getItem(
+      guidedTourTerminalKey(workspaceId, tourId, tourVersion),
+    );
+    return value === 'completed' || value === 'dismissed' ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearGuidedTourTerminal(workspaceId: string, tourId: string, tourVersion: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.removeItem(guidedTourTerminalKey(workspaceId, tourId, tourVersion));
+  } catch {
+    // Best-effort only.
+  }
+}
+
+function writeGuidedTourTerminal(
+  workspaceId: string,
+  tourId: string,
+  tourVersion: string,
+  status: 'completed' | 'dismissed',
+): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.setItem(guidedTourTerminalKey(workspaceId, tourId, tourVersion), status);
+  } catch {
+    // Session storage is a reload guard only; persistence still goes to the server.
+  }
+}
 const TARGET_PADDING = 6;
-const TARGET_WAIT_MS = 2_500;
+// A server-rendered route transition can take several seconds in the isolated
+// production-build browser gate. Keep the walkthrough in its explicit loading
+// state long enough for that bounded transition before declaring the semantic
+// target unavailable.
+const TARGET_WAIT_MS = 12_000;
 
 const focusableSelector = [
   'a[href]',
@@ -53,6 +104,7 @@ const focusableSelector = [
   'input:not([disabled])',
   'select:not([disabled])',
   'textarea:not([disabled])',
+  'summary',
   '[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
@@ -95,9 +147,17 @@ export function WorkspaceGuidedTour({
   const [mounted, setMounted] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const [persistenceError, setPersistenceError] = useState('');
+  const [launcherMessage, setLauncherMessage] = useState('');
+  const [preparingDemo, startPreparingDemo] = useTransition();
+  const [onboardingPreviouslyStarted, setOnboardingPreviouslyStarted] = useState(
+    () => initialOnboardingState !== null,
+  );
+  const [completedInteractions, setCompletedInteractions] = useState<Set<string>>(() => new Set());
+  const appRootRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const launcherRef = useRef<HTMLButtonElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
+  const restoreFocusPendingRef = useRef(false);
   const autoStartedRef = useRef(false);
   const missingDiagnosticRef = useRef('');
 
@@ -107,9 +167,35 @@ export function WorkspaceGuidedTour({
   const active = activeState !== null;
   const step = activeState ? activeState.definition.steps[activeState.stepIndex] : null;
   const resolvedStepRoute = step ? resolveGuidedTourRoute(step.route, workspaceId) : null;
+  const onDocumentsPath = pathname.startsWith(`/w/${workspaceId}/documents/`);
+  const showingSourceDetour = Boolean(activeState?.sourceDetour && onDocumentsPath);
   const reducedMotion = mounted
     ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
     : true;
+
+  useEffect(() => {
+    if (!activeState || !step) return;
+    // Clear a stale detour flag after returning to the review route so the
+    // primary control becomes Next instead of remaining "Return to review".
+    if (
+      activeState.sourceDetour &&
+      !onDocumentsPath &&
+      step.interactionRequirement === 'open_source'
+    ) {
+      if (step.completionCondition === 'source_opened') {
+        setCompletedInteractions((existing) => new Set(existing).add(step.id));
+      }
+      dispatch({ type: 'source_detour', active: false });
+    }
+  }, [activeState, onDocumentsPath, step]);
+
+  useEffect(() => {
+    if (active || !restoreFocusPendingRef.current) return;
+    restoreFocusPendingRef.current = false;
+    // The inert-background effect is cleaned up before this idle-state effect.
+    // Restore focus only after that cleanup so the launcher is focusable.
+    window.requestAnimationFrame(() => returnFocusRef.current?.focus());
+  }, [active]);
 
   const persist = useCallback(
     async (
@@ -117,8 +203,8 @@ export function WorkspaceGuidedTour({
       mode: GuidedTourRunMode,
       status: 'started' | 'completed' | 'dismissed',
       lastCompletedStep: number,
-    ) => {
-      if (mode === 'demo') return;
+    ): Promise<boolean> => {
+      if (mode === 'demo') return true;
       const result = await saveGuidedTourStateAction({
         workspaceId,
         tourId: definition.id,
@@ -126,7 +212,11 @@ export function WorkspaceGuidedTour({
         status,
         lastCompletedStep,
       });
-      if (!result.ok) setPersistenceError(result.error);
+      if (!result.ok) {
+        setPersistenceError(result.error);
+        return false;
+      }
+      return true;
     },
     [workspaceId],
   );
@@ -140,12 +230,16 @@ export function WorkspaceGuidedTour({
     ) => {
       returnFocusRef.current =
         source ?? launcherRef.current ?? (document.activeElement as HTMLElement);
+      if (mode === 'onboarding') setOnboardingPreviouslyStarted(true);
       setPersistenceError('');
+      setLauncherMessage('');
+      clearGuidedTourTerminal(workspaceId, definition.id, definition.version);
+      setCompletedInteractions(new Set());
       dispatch({ type: 'start', definition, mode, stepIndex: startAt });
       setAnnouncement(`${definition.steps[startAt]?.title ?? 'Guided tour'} started.`);
       void persist(definition, mode, 'started', Math.max(0, startAt));
     },
-    [persist],
+    [persist, workspaceId],
   );
 
   useEffect(() => {
@@ -155,7 +249,8 @@ export function WorkspaceGuidedTour({
       state.status !== 'idle' ||
       pathname !== `/w/${workspaceId}` ||
       initialOnboardingState?.status === 'completed' ||
-      initialOnboardingState?.status === 'dismissed'
+      initialOnboardingState?.status === 'dismissed' ||
+      readGuidedTourTerminal(workspaceId, firstRunTour.id, firstRunTour.version) !== null
     )
       return;
     autoStartedRef.current = true;
@@ -176,10 +271,12 @@ export function WorkspaceGuidedTour({
     }
     const definition = activeState.definition;
     const missingTarget = activeState.missingTarget;
+    const onDocumentsPath = pathname.startsWith(`/w/${workspaceId}/documents/`);
+    // Treat an open_source documents visit as a detour even before the click-time
+    // flag commits, otherwise the route guard can bounce the navigation back.
     const sourceDetour =
-      state.status !== 'idle' &&
-      state.sourceDetour &&
-      pathname.startsWith(`/w/${workspaceId}/documents/`);
+      onDocumentsPath &&
+      (activeState.sourceDetour || step.interactionRequirement === 'open_source');
     const targetKey = sourceDetour ? 'source-page-viewer' : step.targetKey;
     const expected = routeParts(resolvedStepRoute);
     if (
@@ -222,6 +319,11 @@ export function WorkspaceGuidedTour({
       resizeObserver.observe(element);
       window.addEventListener('resize', updateTarget);
       window.addEventListener('scroll', updateTarget, true);
+      if (sourceDetour && step.interactionRequirement === 'open_source') {
+        if (!activeState.sourceDetour) dispatch({ type: 'source_detour', active: true });
+        setCompletedInteractions((current) => new Set(current).add(step.id));
+        setAnnouncement('Original source page opened. Return to the review when you are ready.');
+      }
       clearTimeout(timeout);
       if (missingTarget) dispatch({ type: 'missing_target', missing: false });
       return true;
@@ -258,7 +360,7 @@ export function WorkspaceGuidedTour({
       const anchor = (event.target as Element | null)?.closest('a[href*="/documents/"]');
       if (anchor && locatedElement?.contains(anchor)) {
         dispatch({ type: 'source_detour', active: true });
-        setAnnouncement('Original source opened. Return to the review when you are ready.');
+        setAnnouncement('Opening the original source page…');
       }
     };
     document.addEventListener('click', onTargetClick, true);
@@ -286,6 +388,96 @@ export function WorkspaceGuidedTour({
   ]);
 
   useEffect(() => {
+    if (!activeState || !step || step.interactionRequirement !== 'manual_business_action') return;
+    const onCompleted = (event: Event) => {
+      if (!(event instanceof CustomEvent)) return;
+      const detail = event.detail as
+        | {
+            kind?: unknown;
+            targetKey?: unknown;
+            workspaceId?: unknown;
+          }
+        | undefined;
+      const expectedKind =
+        step.targetKey === 'review-decision'
+          ? 'individual_review'
+          : step.targetKey === 'batch-review'
+            ? 'batch_review'
+            : null;
+      if (
+        !expectedKind ||
+        detail?.kind !== expectedKind ||
+        detail.targetKey !== step.targetKey ||
+        detail.workspaceId !== workspaceId
+      )
+        return;
+      setCompletedInteractions((current) => new Set(current).add(step.id));
+      setAnnouncement('The application action was recorded. Continue when you are ready.');
+    };
+    document.addEventListener('phase9-review-action-completed', onCompleted);
+    return () => document.removeEventListener('phase9-review-action-completed', onCompleted);
+  }, [activeState, step, workspaceId]);
+
+  useEffect(() => {
+    if (!active || !step || step.interactionRequirement === 'informational' || !target?.element)
+      return;
+    const targetElement = target.element;
+    const allowedSelector = `[data-tour-interaction="${step.targetKey}"]`;
+    const isAllowed = (eventTarget: EventTarget | null) => {
+      const element = eventTarget instanceof Element ? eventTarget : null;
+      const allowed = element?.closest<HTMLElement>(allowedSelector);
+      return Boolean(allowed && targetElement.contains(allowed));
+    };
+    const blockUnintendedInteraction = (event: Event) => {
+      if (isAllowed(event.target)) return;
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    targetElement.addEventListener('click', blockUnintendedInteraction, true);
+    targetElement.addEventListener('pointerdown', blockUnintendedInteraction, true);
+    return () => {
+      targetElement.removeEventListener('click', blockUnintendedInteraction, true);
+      targetElement.removeEventListener('pointerdown', blockUnintendedInteraction, true);
+    };
+  }, [active, step, target?.element]);
+
+  useEffect(() => {
+    if (!active || !appRootRef.current) return;
+    const changed: Array<{
+      element: HTMLElement;
+      inert: boolean;
+      ariaHidden: string | null;
+    }> = [];
+    const isolate = (element: HTMLElement) => {
+      if (changed.some((entry) => entry.element === element)) return;
+      changed.push({
+        element,
+        inert: element.inert,
+        ariaHidden: element.getAttribute('aria-hidden'),
+      });
+      element.inert = true;
+      element.setAttribute('aria-hidden', 'true');
+    };
+    if (step?.interactionRequirement === 'informational' || !target?.element) {
+      isolate(appRootRef.current);
+    } else {
+      let current: HTMLElement = target.element;
+      while (current.parentElement && current.parentElement !== document.body) {
+        for (const sibling of current.parentElement.children)
+          if (sibling !== current && sibling instanceof HTMLElement) isolate(sibling);
+        current = current.parentElement;
+      }
+    }
+    return () => {
+      for (const entry of changed) {
+        entry.element.inert = entry.inert;
+        if (entry.ariaHidden === null) entry.element.removeAttribute('aria-hidden');
+        else entry.element.setAttribute('aria-hidden', entry.ariaHidden);
+      }
+    };
+  }, [active, step?.interactionRequirement, target?.element]);
+
+  useEffect(() => {
     if (!active || !panelRef.current) return;
     const update = () => {
       const rect = panelRef.current?.getBoundingClientRect();
@@ -301,14 +493,33 @@ export function WorkspaceGuidedTour({
     (status: 'completed' | 'dismissed' = 'completed') => {
       if (state.status === 'idle') return;
       const completedStep =
-        status === 'completed' ? state.definition.steps.length : state.stepIndex;
-      void persist(state.definition, state.mode, status, completedStep);
-      dispatch({ type: 'exit' });
-      setTarget(null);
-      setAnnouncement(status === 'completed' ? 'Guided tour completed.' : 'Guided tour dismissed.');
-      window.requestAnimationFrame(() => returnFocusRef.current?.focus());
+        status === 'completed' ? Math.max(state.definition.steps.length - 1, 0) : state.stepIndex;
+      const closeTour = () => {
+        restoreFocusPendingRef.current = true;
+        dispatch({ type: 'exit' });
+        setTarget(null);
+        setAnnouncement(
+          status === 'completed' ? 'Guided tour completed.' : 'Guided tour dismissed.',
+        );
+      };
+      if (state.mode === 'demo') {
+        closeTour();
+        return;
+      }
+      // Close immediately for responsive UX. Guard auto-start across remounts
+      // and fast reloads with a session terminal marker while the server write
+      // may still be in flight behind earlier progress saves.
+      writeGuidedTourTerminal(workspaceId, state.definition.id, state.definition.version, status);
+      closeTour();
+      void persist(state.definition, state.mode, status, completedStep).then((result) => {
+        if (result === false) {
+          setLauncherMessage(
+            'Tour progress could not be saved. The walkthrough can continue in this browser session.',
+          );
+        }
+      });
     },
-    [persist, state],
+    [persist, state, workspaceId],
   );
 
   const next = useCallback(() => {
@@ -316,9 +527,24 @@ export function WorkspaceGuidedTour({
     const current = state.definition.steps[state.stepIndex];
     if (!current) return;
     if (state.sourceDetour && resolvedStepRoute) {
+      if (current.completionCondition === 'source_opened') {
+        setCompletedInteractions((existing) => new Set(existing).add(current.id));
+      }
       dispatch({ type: 'source_detour', active: false });
       router.push(resolvedStepRoute);
       setAnnouncement('Returned to the source-evidence step.');
+      return;
+    }
+    if (
+      current.completionCondition &&
+      current.completionCondition !== 'manual_next' &&
+      !completedInteractions.has(current.id)
+    ) {
+      setAnnouncement(
+        current.completionCondition === 'source_opened'
+          ? 'Open the highlighted source page before continuing.'
+          : 'Perform the highlighted application action before continuing.',
+      );
       return;
     }
     if (state.stepIndex === state.definition.steps.length - 1) {
@@ -332,7 +558,21 @@ export function WorkspaceGuidedTour({
         state.definition.steps[state.stepIndex + 1]?.title ?? ''
       }`,
     );
-  }, [finish, persist, resolvedStepRoute, router, state]);
+  }, [completedInteractions, finish, persist, resolvedStepRoute, router, state]);
+
+  const continueMissingTarget = useCallback(() => {
+    if (state.status === 'idle') return;
+    if (state.stepIndex === state.definition.steps.length - 1) {
+      finish('completed');
+      return;
+    }
+    const current = state.definition.steps[state.stepIndex];
+    if (current) void persist(state.definition, state.mode, 'started', current.order);
+    dispatch({ type: 'next' });
+    setAnnouncement(
+      `Continued after unavailable step. Step ${state.stepIndex + 2} of ${state.definition.steps.length}.`,
+    );
+  }, [finish, persist, state]);
 
   const back = useCallback(() => {
     if (state.status === 'idle') return;
@@ -349,6 +589,7 @@ export function WorkspaceGuidedTour({
     if (!active) return;
     window.requestAnimationFrame(() => panelRef.current?.focus());
     const onKeyDown = (event: KeyboardEvent) => {
+      if (document.body.dataset.phase9NestedDialog === 'open') return;
       if (event.key === 'Escape') {
         event.preventDefault();
         dispatch({ type: 'request_exit' });
@@ -368,12 +609,24 @@ export function WorkspaceGuidedTour({
       }
       if (event.key !== 'Tab' || !panelRef.current) return;
       const panelFocusable = [...panelRef.current.querySelectorAll<HTMLElement>(focusableSelector)];
+      const interactionTargetKey = step?.targetKey;
       const targetFocusable =
-        step?.interactionRequirement === 'informational' || !target?.element
+        step?.interactionRequirement === 'informational' ||
+        !interactionTargetKey ||
+        !target?.element
           ? []
-          : [...target.element.querySelectorAll<HTMLElement>(focusableSelector)].filter(visible);
-      if (target?.element.matches(focusableSelector) && visible(target.element))
-        targetFocusable.unshift(target.element);
+          : [
+              ...new Set(
+                [
+                  ...target.element.querySelectorAll<HTMLElement>(
+                    `[data-tour-interaction="${interactionTargetKey}"]`,
+                  ),
+                ].flatMap((allowed) => [
+                  ...(allowed.matches(focusableSelector) ? [allowed] : []),
+                  ...allowed.querySelectorAll<HTMLElement>(focusableSelector),
+                ]),
+              ),
+            ].filter(visible);
       const focusable = [...targetFocusable, ...panelFocusable];
       if (!focusable.length) {
         event.preventDefault();
@@ -413,16 +666,30 @@ export function WorkspaceGuidedTour({
     });
   }, [mounted, panelSize, step?.preferredPlacement, target]);
 
-  const resetDemo = (source: HTMLElement) => {
-    const firstStep = stakeholderDemoTour.steps[0];
-    if (!firstStep) return;
-    startTour(stakeholderDemoTour, 'demo', 0, source);
-    router.push(resolveGuidedTourRoute(firstStep.route, workspaceId));
+  const launchPreparedDemo = (source: HTMLElement, reset: boolean) => {
+    startPreparingDemo(async () => {
+      setLauncherMessage(reset ? 'Restoring the prepared walkthrough…' : 'Checking demo state…');
+      const result = await prepareGuidedDemoAction({ workspaceId, reset });
+      if (!result.ok) {
+        setLauncherMessage(result.error);
+        return;
+      }
+      const firstStep = stakeholderDemoTour.steps[0];
+      if (!firstStep) return;
+      setLauncherMessage(
+        reset
+          ? 'A fresh provider-free walkthrough is ready.'
+          : 'The prepared walkthrough is ready.',
+      );
+      startTour(stakeholderDemoTour, 'demo', 0, source);
+      router.push(resolveGuidedTourRoute(firstStep.route, workspaceId));
+      router.refresh();
+    });
   };
 
   return (
     <>
-      {children}
+      <div ref={appRootRef}>{children}</div>
       {demoEligible ? (
         <details
           hidden={state.status !== 'idle'}
@@ -438,22 +705,29 @@ export function WorkspaceGuidedTour({
               className="secondary-action btn-sm"
               onClick={(event) => startTour(firstRunTour, 'onboarding', 0, event.currentTarget)}
             >
-              {initialOnboardingState ? 'Restart tour' : 'Start guided tour'}
+              {onboardingPreviouslyStarted ? 'Restart tour' : 'Start guided tour'}
             </button>
             <button
               type="button"
               className="primary-action btn-sm"
-              onClick={(event) => startTour(stakeholderDemoTour, 'demo', 0, event.currentTarget)}
+              disabled={preparingDemo}
+              onClick={(event) => launchPreparedDemo(event.currentTarget, false)}
             >
-              Start guided demo
+              {preparingDemo ? 'Checking…' : 'Start guided demo'}
             </button>
             <button
               type="button"
               className="tertiary-action btn-sm"
-              onClick={(event) => resetDemo(event.currentTarget)}
+              disabled={preparingDemo}
+              onClick={(event) => launchPreparedDemo(event.currentTarget, true)}
             >
               Reset demo walkthrough
             </button>
+            {launcherMessage ? (
+              <p className="max-w-64 text-xs leading-relaxed text-ink-muted" role="status">
+                {launcherMessage}
+              </p>
+            ) : null}
           </div>
         </details>
       ) : null}
@@ -473,6 +747,7 @@ export function WorkspaceGuidedTour({
               onRequestExit={() => dispatch({ type: 'request_exit' })}
               onCancelExit={() => dispatch({ type: 'cancel_exit' })}
               onSkip={() => finish('dismissed')}
+              onContinueMissing={continueMissingTarget}
               onRetry={() => {
                 dispatch({ type: 'missing_target', missing: false });
                 setRetryNonce((value) => value + 1);
@@ -489,6 +764,13 @@ export function WorkspaceGuidedTour({
                 router.push(resolveGuidedTourRoute(firstStep.route, workspaceId));
               }}
               onToggleNotes={() => dispatch({ type: 'toggle_presenter_notes' })}
+              canAdvance={
+                !step.completionCondition ||
+                step.completionCondition === 'manual_next' ||
+                completedInteractions.has(step.id) ||
+                showingSourceDetour
+              }
+              showingSourceDetour={showingSourceDetour}
             />,
             document.body,
           )
@@ -514,9 +796,12 @@ function TourOverlay({
   onRequestExit,
   onCancelExit,
   onSkip,
+  onContinueMissing,
   onRetry,
   onRestart,
   onToggleNotes,
+  canAdvance,
+  showingSourceDetour,
 }: {
   state: Exclude<ReturnType<typeof guidedTourReducer>, { status: 'idle' }>;
   step: GuidedTourStep;
@@ -531,9 +816,12 @@ function TourOverlay({
   onRequestExit: () => void;
   onCancelExit: () => void;
   onSkip: () => void;
+  onContinueMissing: () => void;
   onRetry: () => void;
   onRestart: () => void;
   onToggleNotes: () => void;
+  canAdvance: boolean;
+  showingSourceDetour: boolean;
 }) {
   const informational = step.interactionRequirement === 'informational';
   const missing = state.missingTarget;
@@ -601,7 +889,7 @@ function TourOverlay({
       <div
         ref={panelRef}
         role="dialog"
-        aria-modal="true"
+        aria-modal={informational ? true : undefined}
         aria-labelledby="guided-tour-step-title"
         aria-describedby="guided-tour-step-description"
         tabIndex={-1}
@@ -645,7 +933,7 @@ function TourOverlay({
               <button type="button" className="secondary-action btn-sm" onClick={onRetry}>
                 Retry
               </button>
-              <button type="button" className="secondary-action btn-sm" onClick={onNext}>
+              <button type="button" className="secondary-action btn-sm" onClick={onContinueMissing}>
                 Continue
               </button>
               <button type="button" className="tertiary-action btn-sm" onClick={onRequestExit}>
@@ -705,13 +993,17 @@ function TourOverlay({
               id="guided-tour-step-description"
               className="mt-2 text-sm leading-relaxed text-ink-soft"
             >
-              {state.sourceDetour
+              {showingSourceDetour
                 ? 'You are viewing the original source. Return to the review to continue from the same step.'
                 : step.text}
             </p>
             {step.interactionRequirement === 'manual_business_action' ? (
-              <p className="notice notice-info mt-3 py-3">
+              <p id="guided-tour-action-required" className="notice notice-info mt-3 py-3">
                 Perform the highlighted action only if you choose. The tour will not do it for you.
+              </p>
+            ) : step.interactionRequirement === 'open_source' && !canAdvance ? (
+              <p id="guided-tour-action-required" className="notice notice-info mt-3 py-3">
+                Open the highlighted source page to continue. The tour will return to this step.
               </p>
             ) : null}
             {state.mode === 'demo' && step.presenterNote ? (
@@ -744,13 +1036,19 @@ function TourOverlay({
                 <button
                   type="button"
                   className="secondary-action btn-sm"
-                  disabled={state.stepIndex === 0 && !state.sourceDetour}
+                  disabled={state.stepIndex === 0 && !showingSourceDetour}
                   onClick={onBack}
                 >
                   Back
                 </button>
-                <button type="button" className="primary-action btn-sm" onClick={onNext}>
-                  {state.sourceDetour ? 'Return to review' : last ? 'Finish tour' : 'Next'}
+                <button
+                  type="button"
+                  className="primary-action btn-sm"
+                  onClick={onNext}
+                  disabled={!canAdvance}
+                  aria-describedby={!canAdvance ? 'guided-tour-action-required' : undefined}
+                >
+                  {showingSourceDetour ? 'Return to review' : last ? 'Finish tour' : 'Next'}
                 </button>
               </div>
               <div className="flex gap-1">

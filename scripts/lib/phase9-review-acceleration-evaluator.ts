@@ -15,6 +15,7 @@ import {
 export const PHASE9_NJ_REVIEW_SNAPSHOT_VERSION = 'phase9-review-acceleration-snapshot-v1' as const;
 export const PHASE9_NJ_REVIEW_EVALUATION_VERSION =
   'phase9-review-acceleration-new-jersey-v1' as const;
+const REVIEW_QUEUE_PAGE_SIZE = 25;
 
 export const PHASE9_NJ_IMMUTABLE_SOURCE = {
   workspaceId: '90000000-0000-4000-8000-000000000100',
@@ -259,7 +260,7 @@ export function evaluatePhase9NewJerseyReviewAcceleration(
   );
   const duplicateGroups = duplicateResult.groups.length;
   const routineBatchConfirmations = batchEligibleRoutine.length
-    ? Math.ceil(batchEligibleRoutine.length / 500)
+    ? Math.ceil(batchEligibleRoutine.length / REVIEW_QUEUE_PAGE_SIZE)
     : 0;
   const estimatedFindingInteractionsAfter =
     individualReview.length + duplicateGroups + routineBatchConfirmations;
