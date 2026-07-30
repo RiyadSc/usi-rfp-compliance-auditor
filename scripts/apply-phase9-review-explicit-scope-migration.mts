@@ -7,15 +7,15 @@ loadEnv({ path: resolve('.env.local'), quiet: true });
 loadEnv({ path: resolve('.env'), quiet: true });
 
 const PROJECT_REF = 'uxmxkdjschbekkbnweby';
-const VERSION = '20260728000033';
-const NAME = 'phase9_review_acceleration';
-const PATH = resolve('supabase/migrations/20260728000033_phase9_review_acceleration.sql');
+const VERSION = '20260729000039';
+const NAME = 'phase9_review_explicit_scope';
+const PATH = resolve('supabase/migrations/20260729000039_phase9_review_explicit_scope.sql');
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const databaseUrl = process.env.DATABASE_URL;
-if (!supabaseUrl || !databaseUrl) throw new Error('phase9_review_migration_runtime_missing');
+if (!supabaseUrl || !databaseUrl) throw new Error('phase9_review_scope_runtime_missing');
 if (new URL(supabaseUrl).hostname.split('.')[0] !== PROJECT_REF)
-  throw new Error('phase9_review_migration_project_mismatch');
+  throw new Error('phase9_review_scope_project_mismatch');
 
 const client = new pg.Client({
   connectionString: databaseUrl,
@@ -40,7 +40,7 @@ try {
   );
   if (existing.rows.length) {
     if (existing.rows[0]?.name !== NAME)
-      throw new Error('phase9_review_migration_identity_mismatch');
+      throw new Error('phase9_review_scope_migration_identity_mismatch');
     console.info(
       JSON.stringify({
         projectRef: PROJECT_REF,
